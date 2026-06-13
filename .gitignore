@@ -1,0 +1,14 @@
+# Python temporary files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Experiment result caches
+adaptive.json
+frozen.json
+closure_scan.json
+closure_scan_L7.json
+forge_results.json
+file_world_results.json
+skills_archive.json
+*.log
