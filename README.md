@@ -1,40 +1,40 @@
-# rsi-metaforge-core
+﻿# RSI MetaForge Core
 
-**rsi-metaforge-core** is a standalone Python runtime implementing a budget-constrained stochastic search system for program synthesis, stacked VM bytecode generation, and measured recursive self-improvement (RSI) gates.
+Experimental Python research runtime for studying validation-gated adaptive search, program synthesis, and candidate modification under bounded benchmark environments.
 
-## Core Architecture
+This repository is not an AGI system, not an ASI system, and not a deployed autonomous agent. It is a research artifact for examining whether adaptive search procedures can produce measurable improvements over frozen baselines under explicitly defined evaluation gates.
 
-This core is rebuilt with a focus on real measured self-improvement rather than hardcoded oracles:
-- **Typed Stack VM**: Values are integers or list of integers. Out-of-bounds, type errors, and overflows trigger explicit `VMCrash` exceptions.
-- **Budgeted Stochastic Search**: Synthesizes programs from training input/output pairs using mutation, macro extraction, and evolutionary search.
-- **Meta-Gate Validation**: Candidate macro improvements must pass A/B testing against the incumbent searcher on a fresh frontier using equal resources.
-- **Multi-Mechanism General-Domain Layers**:
-  - **S1 PRM**: StepScorer with PRM beam search.
-  - **S2 Debate**: Committee debate under a scarce label budget.
-  - **S3 World Model**: Learn op-semantics models from real VM observations.
-  - **S4 Meta-Learning**: Oracle-free configuration selection and curriculum drift audit.
+## Scope
 
-## Verification & Tests
+- Single-file experimental research runtime
+- Program synthesis, VM-style execution, mutation, and validation-gated candidate selection
+- Adaptive search procedures compared against frozen baselines
+- Bounded benchmark environments with explicit evaluation rules
+- Development history preserved for review and reconstruction
 
-The core contains an extensive verification suite comprising 99 tests:
-- **VM Safety**: Tests crash behaviors, stack sizes, and integer capping.
-- **Deterministic Playback**: Ensures that fixed seeds produce identical macro adoptions and search trajectories.
-- **Counterfactual Gain**: Validates that the adaptive searcher strictly outperforms the frozen baseline.
-- **HDC Space & Kuramoto Decoders**: Verifies phase-locking synchronization and analogy transfer in high-dimensional vector representations.
+## Non-scope
 
-### How to Run
+- Not a claim of general intelligence
+- Not an open-ended autonomous self-improving system
+- Not a deployed agent
+- Not a production framework
+- Not safety-certified
+- Not intended for real-world autonomous operation
 
-To run the adaptive demo:
-```bash
-python rsi_levels_metaforge_unified.py --mode demo
-```
+## Usage
 
-To run the unit verification suite:
+For local research inspection:
+
 ```bash
 python rsi_levels_metaforge_unified.py --mode test
-```
-
-To run the integration smoke tests:
-```bash
+python rsi_levels_metaforge_unified.py --mode demo
 python rsi_levels_metaforge_unified.py --mode organic
-```
+Interpretation
+
+Passing tests or outperforming frozen baselines should be interpreted as bounded adaptive improvement within this repository's defined benchmark environments.
+
+It should not be interpreted as evidence of open-ended general recursive self-improvement, autonomous AGI, ASI, or deployment readiness.
+
+Repository status
+
+This repository is maintained as a research artifact. Results, terminology, and implementation details should be read as experimental, bounded, and subject to revision.
