@@ -18,7 +18,7 @@ The current runtime extends the previous public evidence line with:
 - dynamic residue-driven feature expansion through `expansion-battery`
 - depth-1 grammar feature expansion through `grammar-battery`
 - depth-2 grammar feature expansion through `grammar2-battery`
-- a full built-in regression suite expected to report `116 passed, 0 failed, 0 skipped`
+- a full built-in regression suite expected to report `116 passed, 0 failed`
 
 The current runtime should be treated as publicly validated only after the **Full Evidence** GitHub Actions workflow succeeds for the commit that contains it.
 
@@ -121,7 +121,7 @@ The grammar primitives are designer-declared. These batteries measure bounded ex
 The current Full Evidence workflow requires the built-in full suite to end with:
 
 ```text
-RESULT: 116 passed, 0 failed, 0 skipped
+RESULT: 116 passed, 0 failed
 ALL TESTS PASSED
 ```
 

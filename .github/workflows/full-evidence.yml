@@ -86,7 +86,7 @@ jobs:
         run: |
           set -o pipefail
           python -u "rsi_levels_metaforge_unified (3).py" --mode test 2>&1 | tee reports/evidence/full_test.log
-          grep -E '^RESULT: 116 passed, 0 failed, 0 skipped$' reports/evidence/full_test.log
+          grep -E '^RESULT: 116 passed, 0 failed$' reports/evidence/full_test.log
           grep -E '^ALL TESTS PASSED$' reports/evidence/full_test.log
 
       - name: Collect generated evidence artifacts
