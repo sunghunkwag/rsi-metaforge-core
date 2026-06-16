@@ -5,8 +5,10 @@ on:
     branches:
       - main
     paths:
-      - rsi_levels_metaforge_unified.py
-      - .github/workflows/full-evidence.yml
+      - "rsi_levels_metaforge_unified (3).py"
+      - "README.md"
+      - "EVIDENCE.md"
+      - ".github/workflows/full-evidence.yml"
   workflow_dispatch:
 
 permissions:
@@ -35,32 +37,56 @@ jobs:
         run: mkdir -p reports/evidence
 
       - name: Compile runtime
-        run: python -m py_compile rsi_levels_metaforge_unified.py
+        run: python -m py_compile "rsi_levels_metaforge_unified (3).py"
 
       - name: Run file-world evidence battery
         shell: bash
         run: |
           set -o pipefail
-          python -u rsi_levels_metaforge_unified.py --mode file-battery 2>&1 | tee reports/evidence/file_battery.log
+          python -u "rsi_levels_metaforge_unified (3).py" --mode file-battery 2>&1 | tee reports/evidence/file_battery.log
 
       - name: Run self-forge evidence battery
         shell: bash
         run: |
           set -o pipefail
-          python -u rsi_levels_metaforge_unified.py --mode forge-battery 2>&1 | tee reports/evidence/forge_battery.log
+          python -u "rsi_levels_metaforge_unified (3).py" --mode forge-battery 2>&1 | tee reports/evidence/forge_battery.log
 
       - name: Run horizon scan certificate
         shell: bash
         run: |
           set -o pipefail
-          python -u rsi_levels_metaforge_unified.py --mode horizon-scan 2>&1 | tee reports/evidence/horizon_scan.log
+          python -u "rsi_levels_metaforge_unified (3).py" --mode horizon-scan 2>&1 | tee reports/evidence/horizon_scan.log
+
+      - name: Run continuous functional substrate battery
+        shell: bash
+        run: |
+          set -o pipefail
+          python -u "rsi_levels_metaforge_unified (3).py" --mode cfs-battery 2>&1 | tee reports/evidence/cfs_battery.log
+
+      - name: Run expansion battery
+        shell: bash
+        run: |
+          set -o pipefail
+          python -u "rsi_levels_metaforge_unified (3).py" --mode expansion-battery 2>&1 | tee reports/evidence/expansion_battery.log
+
+      - name: Run grammar battery
+        shell: bash
+        run: |
+          set -o pipefail
+          python -u "rsi_levels_metaforge_unified (3).py" --mode grammar-battery 2>&1 | tee reports/evidence/grammar_battery.log
+
+      - name: Run grammar2 battery
+        shell: bash
+        run: |
+          set -o pipefail
+          python -u "rsi_levels_metaforge_unified (3).py" --mode grammar2-battery 2>&1 | tee reports/evidence/grammar2_battery.log
 
       - name: Run full test suite after evidence artifacts
         shell: bash
         run: |
           set -o pipefail
-          python -u rsi_levels_metaforge_unified.py --mode test 2>&1 | tee reports/evidence/full_test.log
-          grep -E '^RESULT: [0-9]+ passed, 0 failed, 0 skipped$' reports/evidence/full_test.log
+          python -u "rsi_levels_metaforge_unified (3).py" --mode test 2>&1 | tee reports/evidence/full_test.log
+          grep -E '^RESULT: 116 passed, 0 failed, 0 skipped$' reports/evidence/full_test.log
           grep -E '^ALL TESTS PASSED$' reports/evidence/full_test.log
 
       - name: Collect generated evidence artifacts
@@ -70,6 +96,10 @@ jobs:
           cp file_world_results.json reports/evidence/ 2>/dev/null || true
           cp forge_results.json reports/evidence/ 2>/dev/null || true
           cp closure_scan.json reports/evidence/ 2>/dev/null || true
+          cp cfs_results.json reports/evidence/ 2>/dev/null || true
+          cp expansion_results.json reports/evidence/ 2>/dev/null || true
+          cp grammar_results.json reports/evidence/ 2>/dev/null || true
+          cp grammar2_results.json reports/evidence/ 2>/dev/null || true
           cp -R fileworld reports/evidence/fileworld 2>/dev/null || true
 
       - name: Upload evidence artifacts

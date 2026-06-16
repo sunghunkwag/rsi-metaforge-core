@@ -2,6 +2,9 @@
 __pycache__/
 *.py[cod]
 *$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
 # Experiment result caches
 adaptive.json
@@ -10,5 +13,11 @@ closure_scan.json
 closure_scan_L7.json
 forge_results.json
 file_world_results.json
+cfs_results.json
+expansion_results.json
+grammar_results.json
+grammar2_results.json
 skills_archive.json
+fileworld/
+reports/
 *.log

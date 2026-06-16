@@ -28,13 +28,13 @@ jobs:
           python-version: "3.11"
 
       - name: Compile runtime
-        run: python -m py_compile rsi_levels_metaforge_unified.py
+        run: python -m py_compile "rsi_levels_metaforge_unified (3).py"
 
       - name: Check CLI surface
-        run: python rsi_levels_metaforge_unified.py --help
+        run: python "rsi_levels_metaforge_unified (3).py" --help
 
       - name: Run dynamic-evaluator guard
-        run: python rsi_levels_metaforge_unified.py --mode test --only no_dynamic
+        run: python "rsi_levels_metaforge_unified (3).py" --mode test --only no_dynamic
 
       - name: Run general-domain smoke gate
-        run: python rsi_levels_metaforge_unified.py --mode general-domain-test
+        run: python "rsi_levels_metaforge_unified (3).py" --mode general-domain-test
