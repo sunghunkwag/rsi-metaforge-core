@@ -1,5 +1,8 @@
 # RSI MetaForge Core
 
+[![Quick CI](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/quick-ci.yml/badge.svg)](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/quick-ci.yml)
+[![Full Evidence](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/full-evidence.yml/badge.svg)](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/full-evidence.yml)
+
 RSI MetaForge Core is an experimental Python research runtime for studying validation-gated adaptive search, program synthesis, and candidate modification within bounded benchmark environments. It is intended as a research artifact for investigating whether adaptive search procedures can yield measurable improvements over frozen baselines under explicitly defined evaluation gates.
 
 ## Overview
@@ -27,6 +30,13 @@ python rsi_levels_metaforge_unified.py --mode run-frozen
 ```
 
 Additional modes are available via `python rsi_levels_metaforge_unified.py --help`.
+
+## GitHub Actions validation
+
+This repository separates lightweight hygiene checks from the longer evidence run:
+
+- **Quick CI** runs on push, pull request, and manual dispatch. It compiles the runtime, checks the CLI surface, runs the dynamic-evaluator guard, and runs the general-domain smoke gate.
+- **Full Evidence** runs automatically when the main runtime or evidence workflow changes on `main`, and can also be started manually. It runs the file-world battery, self-forge battery, horizon-scan certificate, and then the full test suite after the evidence artifacts are generated. The workflow uploads generated logs and JSON evidence artifacts.
 
 ## Repository status
 

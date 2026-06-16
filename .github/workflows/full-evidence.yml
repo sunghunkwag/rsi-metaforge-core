@@ -1,0 +1,81 @@
+name: Full Evidence
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - rsi_levels_metaforge_unified.py
+      - .github/workflows/full-evidence.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: full-evidence-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  full-evidence:
+    name: Full evidence battery
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Prepare evidence directory
+        run: mkdir -p reports/evidence
+
+      - name: Compile runtime
+        run: python -m py_compile rsi_levels_metaforge_unified.py
+
+      - name: Run file-world evidence battery
+        shell: bash
+        run: |
+          set -o pipefail
+          python -u rsi_levels_metaforge_unified.py --mode file-battery 2>&1 | tee reports/evidence/file_battery.log
+
+      - name: Run self-forge evidence battery
+        shell: bash
+        run: |
+          set -o pipefail
+          python -u rsi_levels_metaforge_unified.py --mode forge-battery 2>&1 | tee reports/evidence/forge_battery.log
+
+      - name: Run horizon scan certificate
+        shell: bash
+        run: |
+          set -o pipefail
+          python -u rsi_levels_metaforge_unified.py --mode horizon-scan 2>&1 | tee reports/evidence/horizon_scan.log
+
+      - name: Run full test suite after evidence artifacts
+        shell: bash
+        run: |
+          set -o pipefail
+          python -u rsi_levels_metaforge_unified.py --mode test 2>&1 | tee reports/evidence/full_test.log
+          grep -E '^RESULT: [0-9]+ passed, 0 failed, 0 skipped$' reports/evidence/full_test.log
+          grep -E '^ALL TESTS PASSED$' reports/evidence/full_test.log
+
+      - name: Collect generated evidence artifacts
+        if: always()
+        shell: bash
+        run: |
+          cp file_world_results.json reports/evidence/ 2>/dev/null || true
+          cp forge_results.json reports/evidence/ 2>/dev/null || true
+          cp closure_scan.json reports/evidence/ 2>/dev/null || true
+          cp -R fileworld reports/evidence/fileworld 2>/dev/null || true
+
+      - name: Upload evidence artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: metaforge-evidence-${{ github.run_id }}
+          path: reports/evidence
+          if-no-files-found: warn

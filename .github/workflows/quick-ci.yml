@@ -1,0 +1,40 @@
+name: Quick CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quick-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quick-ci:
+    name: Compile and smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Compile runtime
+        run: python -m py_compile rsi_levels_metaforge_unified.py
+
+      - name: Check CLI surface
+        run: python rsi_levels_metaforge_unified.py --help
+
+      - name: Run dynamic-evaluator guard
+        run: python rsi_levels_metaforge_unified.py --mode test --only no_dynamic
+
+      - name: Run general-domain smoke gate
+        run: python rsi_levels_metaforge_unified.py --mode general-domain-test
