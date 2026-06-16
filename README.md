@@ -5,6 +5,8 @@
 
 RSI MetaForge Core is an experimental Python research runtime for studying validation-gated adaptive search, program synthesis, and candidate modification within bounded benchmark environments. It is intended as a research artifact for investigating whether adaptive search procedures can yield measurable improvements over frozen baselines under explicitly defined evaluation gates.
 
+For the current public validation record, see [EVIDENCE.md](EVIDENCE.md).
+
 ## Overview
 
 The runtime implements program synthesis with VM-style execution, candidate mutation, and validation-gated candidate selection. Adaptive search procedures are evaluated against frozen baselines across bounded benchmark environments with explicit evaluation rules. The full development history is preserved to support review and reconstruction of results.
@@ -37,6 +39,8 @@ This repository separates lightweight hygiene checks from the longer evidence ru
 
 - **Quick CI** runs on push, pull request, and manual dispatch. It compiles the runtime, checks the CLI surface, runs the dynamic-evaluator guard, and runs the general-domain smoke gate.
 - **Full Evidence** runs automatically when the main runtime or evidence workflow changes on `main`, and can also be started manually. It runs the file-world battery, self-forge battery, horizon-scan certificate, and then the full test suite after the evidence artifacts are generated. The workflow uploads generated logs and JSON evidence artifacts.
+
+The evidence summary links to the current passing Actions runs and explains the claim boundary: bounded verifier/fitness-harness evidence, not an unrestricted self-improvement claim.
 
 ## Repository status
 
