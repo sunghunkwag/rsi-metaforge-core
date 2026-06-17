@@ -1,0 +1,42 @@
+{
+  "repo_notes": [
+    {
+      "content": "This repository is an experimental Recursive Self-Improvement / MetaForge system. Documentation should focus on executable self-improvement loops, validation gates, anti-cheat controls, lineage tracking, accepted/rejected modifications, benchmark logs, pytest outputs, and known failure modes."
+    },
+    {
+      "content": "Do not summarize this repository as a generic LLM-agent wrapper. The central claim is not prompt orchestration, but experimentally gated self-modification with evidence logs and reproducible tests."
+    },
+    {
+      "content": "Separate demonstrated behavior from speculative general-intelligence or unbounded capability claims. Emphasize what the code and logs actually show, where the evidence is weak, and which components are prototypes."
+    },
+    {
+      "content": "Prioritize human-authored documentation in docs/ as the canonical guide to the architecture, validation logic, evidence map, and limitations."
+    }
+  ],
+  "pages": [
+    {
+      "title": "System Overview",
+      "purpose": "Explain the overall RSI/MetaForge architecture, main files, execution flow, and how the components connect."
+    },
+    {
+      "title": "Recursive Self-Improvement Loop",
+      "purpose": "Document where the system proposes, applies, validates, rejects, or accepts self-modifications."
+    },
+    {
+      "title": "Validation Gates and Anti-Cheat Controls",
+      "purpose": "Explain mechanisms intended to prevent fake improvement, shallow mutation, benchmark gaming, or self-deception."
+    },
+    {
+      "title": "Lineage Tracking and Evidence Logs",
+      "purpose": "Show how logs, lineage records, accepted patches, rejected patches, and test outputs support or weaken the self-improvement claim."
+    },
+    {
+      "title": "Benchmark and Test Harness",
+      "purpose": "Document available tests, result files, battery outputs, pytest logs, demo modes, and how to reproduce reported behavior."
+    },
+    {
+      "title": "Known Limitations and Failure Modes",
+      "purpose": "Clearly separate current experimental capability from unsupported broad self-improvement claims, including brittleness, current limits, and future work."
+    }
+  ]
+}

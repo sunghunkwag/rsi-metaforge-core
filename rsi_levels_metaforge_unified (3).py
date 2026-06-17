@@ -10268,7 +10268,7 @@ def gd_lesson_candidates(env: GDScarceEnv, book: LessonBook,
 
 # Heterogeneous-domain self-improvement harness.
 #
-# This is deliberately not a claim of unbounded AGI. It broadens the runtime
+# This is deliberately not a claim of unbounded general intelligence. It broadens the runtime
 # from one list[int] VM benchmark to a feature-level synthesis layer that can
 # operate over lists, strings, grids, and dict/record-like objects. The searcher
 # sees only train examples. Candidate improvements are reusable expression
@@ -23593,15 +23593,15 @@ def main():
 # END OF unified_rsi_extended.py
 
 
-# START OF NON_RSI_AGI_CORE_v5.py
+# START OF NON_RSI_GENERAL_CORE_v5.py
 
 """
-NON_RSI_AGI_CORE_v5.py
-======================
+NON_RSI_GENERAL_CORE_v5.py
+==========================
 
 Architecture goal:
 - Fixed source code (no code-level RSI).
-- AGI-oriented B×C structure:
+- General-intelligence-oriented B×C structure:
   - B: world-model + planner + memory + skill-DSL interpreter (per agent)
   - C: multi-agent orchestrator + project/goal graph + evaluation/selection
 - Self-improvement happens only via:
@@ -23618,7 +23618,7 @@ v5 Upgrade:
 - Enhanced associative memory.
 
 Run:
-  python NON_RSI_AGI_CORE_v5.py --rounds 40 --agents 8
+  python NON_RSI_GENERAL_CORE_v5.py --rounds 40 --agents 8
 """
 
 
@@ -26326,7 +26326,7 @@ def main() -> None:
     tools.register("evaluate_candidate", tool_evaluate_candidate)
     tools.register("tool_build_report", tool_tool_build_report)
 
-    print("=== NON-RSI AGI CORE v5 (Neuro-Symbolic): RUN START ===")
+    print("=== NON-RSI GENERAL CORE v5 (Neuro-Symbolic): RUN START ===")
     for r in range(args.rounds):
         out = orch.run_round(r)
         top = sorted(out["results"], key=lambda x: x["reward"], reverse=True)[:3]
@@ -26345,7 +26345,7 @@ def main() -> None:
 
 # [DELETED ROGUE MAIN]
 
-# END OF NON_RSI_AGI_CORE_v5.py
+# END OF NON_RSI_GENERAL_CORE_v5.py
 
 
 # ==========================================
@@ -35052,7 +35052,7 @@ def run_full_organic_tests() -> int:
 # ---------------------------------------------------------------------------
 # Heterogeneous-domain self-improvement harness.
 #
-# This is deliberately not a claim of unbounded AGI. It broadens the runtime
+# This is deliberately not a claim of unbounded general intelligence. It broadens the runtime
 # from one list[int] VM benchmark to a feature-level synthesis layer that can
 # operate over lists, strings, grids, and dict/record-like objects. The searcher
 # sees only train examples. Candidate improvements are reusable expression

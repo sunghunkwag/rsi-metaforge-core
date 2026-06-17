@@ -1,6 +1,6 @@
 # Evidence
 
-This repository should be read as a bounded research artifact for validation-gated adaptive search, self-forge style candidate admission, continuous substrate probes, and grammar-mediated feature expansion. It is not an AGI claim, not a drop-in Hermes Phase 4 implementation, and not proof that unrestricted recursive self-improvement has been solved.
+This repository should be read as a bounded research artifact for validation-gated adaptive search, self-forge style candidate admission, continuous substrate probes, and grammar-mediated feature expansion. It is not a general-intelligence claim, not a drop-in Hermes Phase 4 implementation, and not proof that unrestricted recursive self-improvement has been solved.
 
 The useful claim is narrower: the runtime exposes verifier and fitness harnesses that compare adaptive behavior against frozen or fixed-capacity baselines under explicit gates, hidden evaluations, rollback-sensitive admission, and full-suite regression checks.
 

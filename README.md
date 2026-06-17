@@ -2,16 +2,42 @@
 
 [![Quick CI](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/quick-ci.yml/badge.svg)](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/quick-ci.yml)
 [![Full Evidence](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/full-evidence.yml/badge.svg)](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/full-evidence.yml)
+[![DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/sunghunkwag/rsi-metaforge-core)
 
 RSI MetaForge Core is an experimental Python research runtime for studying validation-gated adaptive search, program synthesis, candidate modification, self-forge admission, continuous substrate probes, and grammar-mediated feature expansion inside bounded benchmark environments.
 
 For the current public validation record and claim boundary, see [EVIDENCE.md](EVIDENCE.md).
 
+## Codebase Map and DeepWiki
+
+This repository can be explored through DeepWiki:
+
+https://deepwiki.com/sunghunkwag/rsi-metaforge-core
+
+Suggested DeepWiki questions:
+
+- Where is the recursive self-improvement loop implemented?
+- Where are candidate modifications generated and evaluated?
+- Where are validation gates and anti-cheat controls implemented?
+- Which logs support accepted self-modifications?
+- Which results are inconclusive or failure cases?
+- What are the current limitations and failure modes?
+- How can the reported behavior be reproduced?
+
+Reviewer-oriented documentation:
+
+- [Overview](docs/00_overview.md)
+- [Architecture](docs/01_architecture.md)
+- [Recursive Self-Improvement Loop](docs/02_rsi_loop.md)
+- [Validation Gates and Anti-Cheat Controls](docs/03_validation_gates.md)
+- [Evidence Logs](docs/04_evidence_logs.md)
+- [Limitations](docs/05_limitations.md)
+
 ## Overview
 
 The runtime implements VM-style program synthesis, candidate mutation, validation-gated selection, sealed hidden evaluations, rollback-sensitive admission, file-world artifact tasks, continuous functional substrate checks, and grammar expansion probes. Adaptive procedures are compared against frozen or fixed-capacity baselines under explicit gates.
 
-Results should be interpreted as bounded adaptive improvement within the benchmark environments defined in this repository. This repository is not an AGI claim, not proof of unrestricted recursive self-improvement, and not a drop-in production code-evolution system.
+Results should be interpreted as bounded adaptive improvement within the benchmark environments defined in this repository. This repository is not a general-intelligence claim, not proof of unrestricted recursive self-improvement, and not a drop-in production code-evolution system.
 
 ## Runtime File
 
