@@ -28,12 +28,21 @@ mapping is explicit so that nothing is silently dropped:
 | `asi_architecture_core.py`     | byte-identical to the unified core; the same inline layers |
 | `asi_guarded.py`               | the Socratic-guarded layer (modes `asi-guarded` / `asi-guarded-test`) |
 
-The result is a single runnable file, **`rsi_metaforge_core.py`**, which
+The symbolic core is a single runnable file, **`rsi_metaforge_core.py`**, which
 contains all 8 ASI/RSI layers inline plus the broader RSI machinery: a stack-VM
 substrate, file-world artifact tasks, self-forge primitive admission, continuous
 functional substrate probes, grammar-mediated feature expansion, and the
-cross-domain **general-domain meta-gate** self-improvement test. A small helper,
-`verify_rsi.py`, runs the two self-improvement gates against it.
+cross-domain **general-domain meta-gate** self-improvement test.
+
+Alongside it are three small, inspectable helpers:
+
+- **`repo_rsi.py`** — a real **repository code-repair agent** that edits actual
+  `.py` source files (AST-only) to fix real bugs, verified in disposable
+  workspaces by public tests + fuzz regression + canary, with an adaptive
+  (skill-reusing) vs. frozen counterfactual. See [REPORT.md](REPORT.md).
+- **`test_repo_rsi.py`** — 15 anti-cheat / functional / structural-divergence /
+  determinism tests that keep the patch-agent honest.
+- **`verify_rsi.py`** — runs the three self-improvement gates below.
 
 ## The 8 layers
 
@@ -57,7 +66,7 @@ cross-domain **general-domain meta-gate** self-improvement test. A small helper,
 
 ## Verifying recursive self-improvement
 
-A single command runs both independent, measured demonstrations:
+A single command runs three independent, measured demonstrations:
 
 ```bash
 python verify_rsi.py
@@ -79,14 +88,30 @@ python verify_rsi.py
   (list / string / grid / record). Self-improvement is the measured delta:
   the run is accepted only when the warm searcher validates frontier tasks the
   cold baseline cannot, while out-of-scope probes stay rejected (no leakage).
+- **Gate 3 — repository code-repair agent:** runs the 15 anti-cheat tests and
+  the `repo-rsi-demo` counterfactual. The agent edits real `.py` source files to
+  fix bugs across 6 mini-projects (a 7th is honestly reported OPEN), verified by
+  public + fuzz-regression + canary tests in disposable workspaces. The adaptive
+  arm reuses learned repair skills and beats the frozen arm with a positive
+  recursive gain (fewer search evaluations); no hardcoding, no oracle access.
+
+`verify_rsi.py` exits `0` only if **all three** gates pass.
 
 `verify_rsi.py` exits `0` only if **both** gates pass.
 
 ## Usage
 
 ```bash
-# Recursive self-improvement verification (both gates)
+# Recursive self-improvement verification (all three gates)
 python verify_rsi.py
+
+# Repository code-repair agent: real source edits, adaptive vs frozen
+python rsi_metaforge_core.py --mode repo-rsi-demo
+python rsi_metaforge_core.py --mode repo-rsi-test     # 15 anti-cheat tests
+
+# Evolve real Python functions (no LLM) into a multi-hundred-line program
+python rsi_metaforge_core.py --mode rsi-code --code-phase base
+python rsi_metaforge_core.py --mode rsi-code --code-phase composite
 
 # Per-layer self-improvement test suites (cover all 8 layers)
 python rsi_metaforge_core.py --mode asi-integrated-test   # also asi-open-test, asi-evolve-test,

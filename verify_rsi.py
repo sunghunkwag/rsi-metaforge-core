@@ -138,19 +138,66 @@ def gate_meta_gate() -> bool:
     return ok
 
 
+def gate_repo_patch_agent() -> bool:
+    print("=" * 78)
+    print("GATE 3: repository code-repair agent "
+          "(real source edits; adaptive vs frozen; anti-cheat)")
+    print("=" * 78)
+    # (a) anti-cheat + functional + structural-divergence + determinism tests
+    res = _run([PY, os.path.join(HERE, "repo_rsi.py"), "test"])
+    tail = "\n".join(res.stdout.strip().splitlines()[-3:])
+    print(tail)
+    tests_ok = res.returncode == 0 and "0 failed" in res.stdout
+    # (b) measured adaptive-vs-frozen delta on real repository patch tasks
+    demo_ok = False
+    with tempfile.TemporaryDirectory() as td:
+        rp = os.path.join(td, "repo_rsi_report.json")
+        d = _run([PY, MONOLITH, "--mode", "repo-rsi-demo", "--out-json", rp])
+        if d.returncode == 0 and os.path.exists(rp):
+            with open(rp) as fh:
+                rep = json.load(fh)
+            baselines_real = all(v is False
+                                 for v in rep.get("baseline_public_pass", {}).values())
+            demo_ok = (rep.get("adaptive_beats_frozen") is True
+                       and rep.get("recursive_gain_evaluations", 0) > 0
+                       and rep.get("adaptive", {}).get("skill_reuse_count", 0) >= 1
+                       and rep.get("adaptive_score", 0) >= 6
+                       and baselines_real)
+            print(json.dumps({
+                "frozen_score": rep.get("frozen_score"),
+                "adaptive_score": rep.get("adaptive_score"),
+                "recursive_gain_evaluations": rep.get("recursive_gain_evaluations"),
+                "recursive_gain_pct": rep.get("recursive_gain_pct"),
+                "skill_reuse_count": rep.get("adaptive", {}).get("skill_reuse_count"),
+                "open_tasks": rep.get("open_tasks"),
+            }, indent=2, sort_keys=True))
+        else:
+            sys.stdout.write(d.stdout[-2000:])
+            sys.stderr.write(d.stderr[-2000:])
+    ok = tests_ok and demo_ok
+    print(f"GATE 3 -> {'PASS' if ok else 'FAIL'} "
+          f"(anticheat_tests={'pass' if tests_ok else 'fail'}, "
+          f"adaptive_delta={'pass' if demo_ok else 'fail'})\n")
+    return ok
+
+
 def main() -> int:
     g1 = gate_layer_suites()
     g2 = gate_meta_gate()
+    g3 = gate_repo_patch_agent()
     print("=" * 78)
-    if g1 and g2:
+    if g1 and g2 and g3:
         print("RESULT: RECURSIVE SELF-IMPROVEMENT VERIFIED "
-              "(both gates passed; measured, reproducible, sealed-evaluation).")
+              "(all gates passed; measured, reproducible, sealed-evaluation).")
+        print("  Gate 1: per-layer symbolic self-improvement suites (8 layers).")
+        print("  Gate 2: cross-domain meta-gate (self-proposed abstraction).")
+        print("  Gate 3: real repository code-repair agent, adaptive > frozen.")
         print("Boundary: CPU-scale research system. Not a verified "
               "superintelligence; no AGI/ASI flag is set.")
         return 0
     print("RESULT: VERIFICATION FAILED "
-          f"(gate1={'pass' if g1 else 'fail'}, gate2={'pass' if g2 else 'fail'}). "
-          "Do not commit.")
+          f"(gate1={'pass' if g1 else 'fail'}, gate2={'pass' if g2 else 'fail'}, "
+          f"gate3={'pass' if g3 else 'fail'}). Do not commit.")
     return 1
 
 

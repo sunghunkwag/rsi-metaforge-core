@@ -15,8 +15,10 @@ can solve, without leaking hidden answers or weakening gates.
 
 | File | Role |
 | ---- | ---- |
-| `rsi_metaforge_core.py` | The consolidated single-file runtime (the full monolith): all 8 ASI/RSI layers inline plus the broader RSI machinery (stack-VM substrate, file-world tasks, self-forge admission, continuous functional substrate, grammar expansion, and the cross-domain meta-gate). |
-| `verify_rsi.py` | Single-command RSI verification (both gates below). |
+| `rsi_metaforge_core.py` | The consolidated single-file symbolic runtime (the full monolith): all 8 ASI/RSI layers inline plus the broader RSI machinery (stack-VM substrate, file-world tasks, self-forge admission, continuous functional substrate, grammar expansion, and the cross-domain meta-gate). |
+| `repo_rsi.py` | Real repository code-repair agent (AST-only edits, ungameable verifier, adaptive vs frozen counterfactual). See [REPORT.md](REPORT.md). |
+| `test_repo_rsi.py` | 15 anti-cheat / functional / structural-divergence / determinism tests for the patch-agent. |
+| `verify_rsi.py` | Single-command RSI verification (the three gates below). |
 
 This runtime consolidates four source files (`rsi_metaforge_core_v15.py`,
 `asi_unified_core.py`, `asi_architecture_core.py`, `asi_guarded.py`) into one
@@ -100,6 +102,28 @@ examples only; the holdout was used only for validation.
 This is recursive self-improvement in the precise sense used here: an
 abstraction distilled from prior solutions enables solving new, previously
 unreachable tasks under the same budget, verified on sealed held-out inputs.
+
+### Gate 3 — repository code-repair agent (real source edits)
+
+`python rsi_metaforge_core.py --mode repo-rsi-demo` (and the 15 anti-cheat tests
+via `--mode repo-rsi-test`). The agent edits actual `.py` source files (AST-only)
+to fix bugs across 6 mini-projects; a 7th (even-length `median`) is honestly
+reported OPEN. Each patch is verified in a disposable workspace by the real
+public test plus fuzz-generated regression + canary tests from a sealed
+reference. The adaptive arm reuses learned repair skills; the frozen arm does
+not. Measured (seed 1234, deterministic):
+
+```text
+FROZEN   : solved 6/7   total_evals=60
+ADAPTIVE : solved 6/7   total_evals=44   skill_reuse=1
+recursive_gain: eval_savings=16 (26.67%)   adaptive_beats_frozen=True   OPEN=['median']
+```
+
+No task→solution lookup exists; the solver never receives the reference or the
+hidden tests; patches that special-case observed inputs, weaken/skip tests, or
+exceed a diff bound are rejected; structural mutations must change ≥ 30 % of AST
+topology while staying functionally isomorphic under fuzzing. See
+[REPORT.md](REPORT.md) for the architecture and the full anti-cheat list.
 
 ## Full runtime regression suite
 

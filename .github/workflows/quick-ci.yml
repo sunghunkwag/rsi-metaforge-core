@@ -30,8 +30,10 @@ jobs:
       - name: Install dependencies
         run: python -m pip install --upgrade pip numpy
 
-      - name: Compile runtime
-        run: python -m py_compile rsi_metaforge_core.py
+      - name: Compile runtime and helpers
+        run: |
+          python -m py_compile rsi_metaforge_core.py
+          python -m py_compile repo_rsi.py verify_rsi.py test_repo_rsi.py
 
       - name: Check CLI surface
         run: python rsi_metaforge_core.py --help
@@ -39,5 +41,8 @@ jobs:
       - name: Run dynamic-evaluator guard
         run: python rsi_metaforge_core.py --mode test --only test_trusted_core_dynamic_execution_boundary
 
-      - name: Verify recursive self-improvement (both gates)
+      - name: Repository patch-agent anti-cheat tests
+        run: python rsi_metaforge_core.py --mode repo-rsi-test
+
+      - name: Verify recursive self-improvement (all three gates)
         run: python verify_rsi.py

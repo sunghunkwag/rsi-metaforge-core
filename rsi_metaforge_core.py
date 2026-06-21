@@ -37145,21 +37145,22 @@ _RSI_CODE_EVOLVE_B64 = (
     "KGNvbXBpbGVfcHJvZ3JhbShsaWJyYXJ5W21dLCBtKS5zcGxpdGxpbmVzKCkpCiAgICAgICAgICAgICAgICAgICAgICAgICAgZm9y"
     "IG0gaW4gbGlicmFyeSkKICAgIGlmIHZlcmJvc2U6CiAgICAgICAgcHJpbnQoIlxuW3JzaS1jb2RlXSBSRVNVTFQiKQogICAgICAg"
     "IHByaW50KCIgIGZ1bmN0aW9ucyB3cml0dGVuICAgICAgIDogJWQgLyAlZCIKICAgICAgICAgICAgICAlIChsZW4obGlicmFyeSks"
-    "IGxlbihiYXNlKSArIGxlbihjb21wKSkpCiAgICAgICAgcHJpbnQoIiAgdG90YWwgbGlicmFyeSBjb2RlIGxpbmVzOiAlZCIgJSB0"
-    "b3RhbF9saWJfbGluZXMpCiAgICAgICAgaWYgdG9wOgogICAgICAgICAgICBwcmludCgiICBsYXJnZXN0IGVtZXJnZW50IHByb2dy"
-    "YW06ICclcycgPSAlZCBsaW5lcyBhY3Jvc3MgJWQgY29tcG9zZWQgZnVuY3Rpb25zIgogICAgICAgICAgICAgICAgICAlICh0b3As"
-    "IGxlbihlbWVyZ2VudF9zcmMuc3BsaXRsaW5lcygpKSwKICAgICAgICAgICAgICAgICAgICAgbGVuKF90cmFuc2l0aXZlKHRvcCwg"
-    "bGlicmFyeV9jYWxscykpICsgMSkpCiAgICAgICAgIyBzYW5pdHk6IHJ1biB0aGUgZW1lcmdlbnQgdG9wIHByb2dyYW0gYW5kIHZl"
-    "cmlmeSBpdCBtYXRjaGVzIHRoZSB0YXNrCiAgICByZXBvcnQgPSB7ImZ1bmN0aW9uc193cml0dGVuIjogbGVuKGxpYnJhcnkpLAog"
-    "ICAgICAgICAgICAgICJ0b3RhbF9saWJyYXJ5X2xpbmVzIjogdG90YWxfbGliX2xpbmVzLAogICAgICAgICAgICAgICJsYXJnZXN0"
-    "X2VtZXJnZW50X2Z1bmN0aW9uIjogdG9wLAogICAgICAgICAgICAgICJsYXJnZXN0X2VtZXJnZW50X2xpbmVzIjogbGVuKGVtZXJn"
-    "ZW50X3NyYy5zcGxpdGxpbmVzKCkpIGlmIHRvcCBlbHNlIDAsCiAgICAgICAgICAgICAgInJlc3VsdHMiOiByZXN1bHRzfQogICAg"
-    "aWYgb3V0X2pzb246CiAgICAgICAgd2l0aCBvcGVuKG91dF9qc29uLCAidyIsIGVuY29kaW5nPSJ1dGYtOCIpIGFzIGY6CiAgICAg"
-    "ICAgICAgIF9qc29uLmR1bXAocmVwb3J0LCBmLCBpbmRlbnQ9MikKICAgIHJldHVybiByZXBvcnQsIGVtZXJnZW50X3NyYywgdG9w"
-    "CgoKaWYgX19uYW1lX18gPT0gIl9fbWFpbl9fIiBhbmQgbGVuKHN5cy5hcmd2KSA+IDEgYW5kIHN5cy5hcmd2WzFdID09ICJsYWRk"
-    "ZXIiOgogICAgcmVwLCBlbWVyZ2VudCwgdG9wID0gcnVuX2NvZGVfZXZvbHV0aW9uKHNlZWQ9MCwgdmVyYm9zZT1UcnVlKQogICAg"
-    "cHJpbnQoIlxuPT09PT0gTEFSR0VTVCBFTUVSR0VOVCBQUk9HUkFNICgnJXMnLCAlZCBsaW5lcywgZXZvbHZlZCwgbm8gTExNKSA9"
-    "PT09PSIgJQogICAgICAgICAgKHRvcCwgbGVuKGVtZXJnZW50LnNwbGl0bGluZXMoKSkpKQogICAgcHJpbnQoZW1lcmdlbnQpCg=="
+    "IGxlbihiYXNlKSArIG5fY29tcG9zaXRlcykpCiAgICAgICAgcHJpbnQoIiAgdG90YWwgbGlicmFyeSBjb2RlIGxpbmVzOiAlZCIg"
+    "JSB0b3RhbF9saWJfbGluZXMpCiAgICAgICAgaWYgdG9wOgogICAgICAgICAgICBwcmludCgiICBsYXJnZXN0IGVtZXJnZW50IHBy"
+    "b2dyYW06ICclcycgPSAlZCBsaW5lcyBhY3Jvc3MgJWQgY29tcG9zZWQgZnVuY3Rpb25zIgogICAgICAgICAgICAgICAgICAlICh0"
+    "b3AsIGxlbihlbWVyZ2VudF9zcmMuc3BsaXRsaW5lcygpKSwKICAgICAgICAgICAgICAgICAgICAgbGVuKF90cmFuc2l0aXZlKHRv"
+    "cCwgbGlicmFyeV9jYWxscykpICsgMSkpCiAgICAgICAgIyBzYW5pdHk6IHJ1biB0aGUgZW1lcmdlbnQgdG9wIHByb2dyYW0gYW5k"
+    "IHZlcmlmeSBpdCBtYXRjaGVzIHRoZSB0YXNrCiAgICByZXBvcnQgPSB7ImZ1bmN0aW9uc193cml0dGVuIjogbGVuKGxpYnJhcnkp"
+    "LAogICAgICAgICAgICAgICJ0b3RhbF9saWJyYXJ5X2xpbmVzIjogdG90YWxfbGliX2xpbmVzLAogICAgICAgICAgICAgICJsYXJn"
+    "ZXN0X2VtZXJnZW50X2Z1bmN0aW9uIjogdG9wLAogICAgICAgICAgICAgICJsYXJnZXN0X2VtZXJnZW50X2xpbmVzIjogbGVuKGVt"
+    "ZXJnZW50X3NyYy5zcGxpdGxpbmVzKCkpIGlmIHRvcCBlbHNlIDAsCiAgICAgICAgICAgICAgInJlc3VsdHMiOiByZXN1bHRzfQog"
+    "ICAgaWYgb3V0X2pzb246CiAgICAgICAgd2l0aCBvcGVuKG91dF9qc29uLCAidyIsIGVuY29kaW5nPSJ1dGYtOCIpIGFzIGY6CiAg"
+    "ICAgICAgICAgIF9qc29uLmR1bXAocmVwb3J0LCBmLCBpbmRlbnQ9MikKICAgIHJldHVybiByZXBvcnQsIGVtZXJnZW50X3NyYywg"
+    "dG9wCgoKaWYgX19uYW1lX18gPT0gIl9fbWFpbl9fIiBhbmQgbGVuKHN5cy5hcmd2KSA+IDEgYW5kIHN5cy5hcmd2WzFdID09ICJs"
+    "YWRkZXIiOgogICAgcmVwLCBlbWVyZ2VudCwgdG9wID0gcnVuX2NvZGVfZXZvbHV0aW9uKHNlZWQ9MCwgdmVyYm9zZT1UcnVlKQog"
+    "ICAgcHJpbnQoIlxuPT09PT0gTEFSR0VTVCBFTUVSR0VOVCBQUk9HUkFNICgnJXMnLCAlZCBsaW5lcywgZXZvbHZlZCwgbm8gTExN"
+    "KSA9PT09PSIgJQogICAgICAgICAgKHRvcCwgbGVuKGVtZXJnZW50LnNwbGl0bGluZXMoKSkpKQogICAgcHJpbnQoZW1lcmdlbnQp"
+    "Cg=="
 )
 
 
@@ -44151,7 +44152,9 @@ def main() -> None:
                              "artifact-rsi-audit",
                              "patchworld-demo",
                              "taskforge-demo",
-                             "verifier-loop-demo",),
+                             "verifier-loop-demo",
+                             "repo-rsi-demo",
+                             "repo-rsi-test",),
                     default="demo")
     ap.add_argument("--save", default="")
     ap.add_argument("--adaptive-json", default="adaptive.json")
@@ -44333,6 +44336,18 @@ def main() -> None:
         raise SystemExit(run_taskforge_demo())
     elif args.mode == "verifier-loop-demo":
         raise SystemExit(run_verifier_loop_demo())
+    elif args.mode == "repo-rsi-demo":
+        # real repository code-repair agent: adaptive vs frozen counterfactual
+        import repo_rsi
+        rep = repo_rsi.run_repo_rsi()
+        repo_rsi.print_report(rep)
+        if args.out_json:
+            with open(args.out_json, "w", encoding="utf-8") as _f:
+                json.dump(rep, _f, indent=2, sort_keys=True)
+        raise SystemExit(0)
+    elif args.mode == "repo-rsi-test":
+        import test_repo_rsi
+        raise SystemExit(test_repo_rsi.run())
     elif args.mode == "master":
         raise SystemExit(run_master_orchestrator(
             cycles=args.cycles, budget=args.budget, timeout=args.timeout,

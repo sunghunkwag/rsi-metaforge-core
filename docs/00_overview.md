@@ -6,8 +6,9 @@ The central question is not whether the system has general intelligence. The cen
 
 The repository should be inspected as a set of connected artifacts:
 
-- Consolidated single-file runtime (all 8 ASI/RSI layers inline): [rsi_metaforge_core.py](../rsi_metaforge_core.py)
-- Recursive self-improvement verification (both gates): [verify_rsi.py](../verify_rsi.py)
+- Consolidated single-file symbolic runtime (all 8 ASI/RSI layers inline): [rsi_metaforge_core.py](../rsi_metaforge_core.py)
+- Real repository code-repair agent (AST edits, adaptive vs frozen): [repo_rsi.py](../repo_rsi.py), tests [test_repo_rsi.py](../test_repo_rsi.py), writeup [REPORT.md](../REPORT.md)
+- Recursive self-improvement verification (three gates): [verify_rsi.py](../verify_rsi.py)
 - Claim boundary and evidence notes: [EVIDENCE.md](../EVIDENCE.md)
 - Public CI checks: [Quick CI](../.github/workflows/quick-ci.yml) and [Full Evidence](../.github/workflows/full-evidence.yml)
 - Reviewer guide: this `docs/` directory
