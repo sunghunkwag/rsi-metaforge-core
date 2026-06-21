@@ -1,182 +1,186 @@
 # Evidence
 
-This repository should be read as a bounded research artifact for validation-gated adaptive search, self-forge style candidate admission, continuous substrate probes, and grammar-mediated feature expansion. It is not a general-intelligence claim, not a drop-in Hermes Phase 4 implementation, and not proof that unrestricted recursive self-improvement has been solved.
+This repository is a bounded, CPU-scale research artifact for **measured,
+sealed-evaluation recursive self-improvement (RSI)**. It is not a
+general-intelligence claim, not proof that unrestricted recursive
+self-improvement has been solved, and it sets no "AGI/ASI achieved" flag.
 
-The useful claim is narrower: the runtime exposes verifier and fitness harnesses that compare adaptive behavior against frozen or fixed-capacity baselines under explicit gates, hidden evaluations, rollback-sensitive admission, and full-suite regression checks.
+The useful claim is narrow and falsifiable: the runtime exposes verifier and
+fitness harnesses that compare adaptive behaviour against frozen / cold
+baselines under explicit gates, sealed held-out evaluation, and counterexample
+audits — and a self-proposed abstraction measurably increases what the system
+can solve, without leaking hidden answers or weakening gates.
 
-## Current Runtime
+## Runtime files
 
-The current runtime file is:
+| File | Role |
+| ---- | ---- |
+| `asi_unified_core.py` | Distilled, self-contained 8-layer RSI core with a 49-test suite. |
+| `rsi_metaforge_core.py` | Comprehensive runtime (the full monolith): the 8 layers plus stack-VM substrate, file-world tasks, self-forge admission, continuous functional substrate, grammar expansion, and the cross-domain meta-gate. |
+| `verify_rsi.py` | Single-command RSI verification (both gates below). |
 
-```text
-rsi_levels_metaforge_unified (3).py
+This runtime consolidates four source files (`asi_unified_core.py`,
+`asi_architecture_core.py`, `asi_guarded.py`, `rsi_metaforge_core_v15.py`). The
+architecture core was byte-identical to the unified core (only its header
+docstring differed) and the guarded layer was a stand-alone module that could
+not run on its own; both are folded into `asi_unified_core.py`. See the README
+for the full mapping.
+
+## Recursive self-improvement verification
+
+Run:
+
+```bash
+python verify_rsi.py
 ```
 
-The current runtime extends the previous public evidence line with:
+It passes (exit 0) only when **both** independent, measured gates hold.
 
-- continuous functional substrate checks through `cfs-battery`
-- dynamic residue-driven feature expansion through `expansion-battery`
-- depth-1 grammar feature expansion through `grammar-battery`
-- depth-2 grammar feature expansion through `grammar2-battery`
-- a full built-in regression suite expected to report `116 passed, 0 failed`
+### Gate 1 — distilled-core self-improvement suite
 
-The current runtime should be treated as publicly validated only after the **Full Evidence** GitHub Actions workflow succeeds for the commit that contains it.
-
-## Runtime Evidence Anchor
-
-The previous public runtime evidence anchor covered an older 99-test runtime. It remains useful as historical evidence for the earlier file-world, self-forge, horizon-scan, and full-suite checks, but it does not validate the current `(3)` runtime by itself.
-
-- Workflow: [Full Evidence](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/full-evidence.yml)
-- Historical run: [27588469107](https://github.com/sunghunkwag/rsi-metaforge-core/actions/runs/27588469107)
-- Historical commit: `87d6f08d77eda690cd5a10d38f057ca2d0ffd8d3`
-- Historical result: `success`
-- Historical date: `2026-06-16`
-
-For the current runtime, use the newest successful [Full Evidence](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/full-evidence.yml) run on `main` after this file and `rsi_levels_metaforge_unified (3).py` are committed.
-
-## Full Evidence Workflow
-
-The Full Evidence workflow runs these stages:
-
-- Python compile check
-- File-world evidence battery
-- Self-forge evidence battery
-- Horizon-scan certificate
-- Continuous functional substrate battery
-- Expansion battery
-- Grammar battery
-- Grammar2 battery
-- Full built-in test suite after generated evidence artifacts
-- Evidence artifact upload
-
-The workflow uploads generated logs and JSON artifacts under `reports/evidence`.
-
-## File-World Evidence Battery
-
-The file-world battery runs sealed hidden A/B evaluations on unseen eval seeds. The hidden expectations are not written into the workspace.
-
-The historical public evidence record reported:
-
-| Task family | Frozen score | Adaptive score |
-| --- | ---: | ---: |
-| `csv_normalize` | `0.000` | `1.000` |
-| `log_aggregate` | `0.111` | `1.000` |
-| `config_migrate` | `0.000` | `1.000` |
-| `repo_repair` | `0.704` | `1.000` |
-| Mean | `0.204` | `1.000` |
-
-This is evidence for adaptive improvement inside the repository's bounded file-task harness, not for open-ended autonomy.
-
-## Self-Forge Evidence Battery
-
-The self-forge battery checks whether system-synthesized primitives can be admitted through sealed gates and then reused downstream.
-
-The historical public evidence record reported:
-
-- `forged=4/4`
-- `gate-adopted=2/4`
-- downstream general-domain bridge completed
-- forged-operator downstream task solved only with the admitted forged operations
-
-The gate is intentionally selective: train-only fits can be rejected even when a candidate appears useful during search.
-
-## Continuous Functional Substrate Battery
-
-The CFS battery tests a continuous vector substrate where candidate programs are represented through feature geometry rather than discrete token programs.
-
-The evidence boundary is important:
-
-- geometric or closed-form train fits are measured separately from sealed-gate success
-- train-exact vectors can still be rejected by hidden gates
-- propagation and cascade revocation are checked through a ledger
-- the verifier remains the judge; the substrate does not remove the need for sealed gates
-
-## Expansion Battery
-
-The expansion battery checks whether the system can add measured feature dimensions from residue when the fixed substrate cannot cross a wall.
-
-The intended evidence is:
-
-- fixed-capacity failures are distinguished from extended-substrate successes
-- extensions are admitted only when sealed gates pass
-- speculative candidates can run ahead of the gate but must roll back if finalization fails
-- the verifier is not weakened to manufacture a closure result
-
-## Grammar Batteries
-
-The grammar and grammar2 batteries test declared feature-expression grammars as bounded reach extensions.
-
-The intended evidence is:
-
-- generated grammar features are pure functions of public inputs
-- grammar enumeration is deterministic
-- depth-1 grammar can close a witness wall that the fixed bank cannot
-- grammar2 is a deterministic superset that can close a witness wall beyond depth-1 grammar
-- honest give-up cases remain rejected when the target lies outside the declared grammar closure
-
-The grammar primitives are designer-declared. These batteries measure bounded expressive reach; they are not evidence of unrestricted capability invention.
-
-## Full Test Suite
-
-The current Full Evidence workflow requires the built-in full suite to end with:
+`python asi_unified_core.py test` →
 
 ```text
-RESULT: 116 passed, 0 failed
+RESULT: 49 passed, 0 failed (of 49 across 8 layers)
+```
+
+The self-improvement claims are backed directly by tests in that suite:
+
+- `test_aint_learning_lowers_cost` — a learning run solves at least as much as a
+  no-learning control while using strictly less total search cost.
+- `test_aint_cumulative_abstraction_lineage_ge_3` — abstraction lineage reaches
+  depth ≥ 3 (an improvement built on top of a previous improvement).
+- `test_aint_compression_progress_measured` — the solved library compresses
+  below its fully-expanded base-op size.
+- `test_evolve_derived_operator_reduces_cost` — a derived operator reduces
+  future search cost on later tasks.
+- `test_guarded_loop_only_verified_operators` /
+  `test_guarded_gate_rejects_spurious_accepts_true` — operator promotion is
+  gated by an adversarial Socratic audit: spurious operators are rejected with
+  an explicit counterexample; only verified operators are adopted.
+- `test_*_determinism` across every layer — identical results across runs under
+  fixed seeds.
+- `test_evolve_derived_operator_kernel_fingerprint_unchanged` and the per-layer
+  kernel-fixed tests — the immutable, hash-pinned kernel never moves while
+  expressivity grows.
+
+### Gate 2 — cross-domain meta-gate self-improvement
+
+`python rsi_metaforge_core.py --mode general-domain-test` →
+
+```json
+{
+  "meta_gate": {
+    "accepted": true,
+    "budget_max_cost": 4,
+    "cold_frontier_validated": 0,
+    "delta": 8,
+    "warm_frontier_validated": 8
+  },
+  "unsupported_probe": { "total": 2, "validated": 0 },
+  "train_total": 5,
+  "train_validated": 5,
+  "proposed_macros": [
+    { "name": "GM0", "body": "MUL(SLOT,SLOT)",
+      "source_tasks": ["grid_area_square", "list_sum_square", "record_sum_square",
+                       "string_digit_square", "string_len_square"] }
+  ],
+  "claim_boundary": "heterogeneous feature-level self-improvement over list/string/grid/record tasks; not unbounded real-world general intelligence"
+}
+```
+
+Reading: the system solved 5 training tasks across four domains, then proposed
+the macro `GM0 = MUL(SLOT, SLOT)` (a reusable "square") from its **own** solved
+programs. On a sealed held-out frontier of 8 new cross-domain tasks, the warm
+searcher (with `GM0`) validated all 8 at search-budget cost ≤ 4, while the cold
+baseline (without `GM0`) validated 0. The measured self-improvement is
+`delta = 8`. Two genuinely out-of-scope probes (`semantic_text`,
+`spatial_relation`) validated 0 of 2, confirming the gate fails honestly on
+targets outside the abstraction's reach (no leakage). Search saw training
+examples only; the holdout was used only for validation.
+
+This is recursive self-improvement in the precise sense used here: an
+abstraction distilled from prior solutions enables solving new, previously
+unreachable tasks under the same budget, verified on sealed held-out inputs.
+
+## Full runtime regression suite
+
+The comprehensive runtime ships a full built-in suite:
+
+```bash
+python rsi_metaforge_core.py --mode test
+```
+
+The suite contains 192 tests. A subset reads JSON artifacts produced by the
+evidence batteries (`file-battery`, `forge-battery`, `horizon-scan`,
+`cfs-battery`, `expansion-battery`); those tests fail by design if the suite is
+run before the batteries. The **Full Evidence** workflow runs the batteries
+first and then the suite, which ends with:
+
+```text
+RESULT: 192 passed, 0 failed
 ALL TESTS PASSED
 ```
 
-Relevant tested properties include:
+The dynamic-execution boundary is also enforced as a test
+(`test_trusted_core_dynamic_execution_boundary`): every `eval`/`exec` in the
+runtime must live inside a function explicitly marked
+`@sandbox_execution_boundary`, so candidate execution cannot hide outside the
+audited sandbox surface.
 
-- adaptive search strictly exceeding frozen baselines in the bounded counterfactual setting
-- sealed self-generated tasks and search blindness
-- hidden file-world expectations not being present on disk
-- agents not touching sealed scoring
-- skill-gate rejection blocking reuse
-- repair patches passing hidden checks
-- forged admission being clean and revocable
-- verifier pin stability
-- semantic gates rejecting sabotage
-- continuous substrate search and sealed-gate rejection discipline
-- residue-driven expansion without gate weakening
-- speculative adoption rollback
-- deterministic grammar and grammar2 feature expansion
-- honest rejection of targets outside declared grammar closure
+## Evidence batteries
 
-## Reproduction Paths
+| Battery | Mode | What it checks |
+| ------- | ---- | -------------- |
+| File-world | `--mode file-battery` | Sealed hidden A/B file-task evaluations; hidden expectations never on disk. |
+| Self-forge | `--mode forge-battery` | System-synthesized primitives admitted through sealed gates and reused downstream. |
+| Horizon scan | `--mode horizon-scan` | Closure certificates over reachability walls. |
+| Continuous substrate | `--mode cfs-battery` | Continuous functional substrate search with sealed-gate rejection and cascade revocation. |
+| Expansion | `--mode expansion-battery` | Residue-driven feature expansion admitted only when sealed gates pass; speculative changes roll back on failure. |
+| Grammar / Grammar2 | `--mode grammar-battery` / `--mode grammar2-battery` | Deterministic, designer-declared feature grammars closing witness walls; honest give-up outside the declared closure. |
 
-GitHub Actions is the preferred public verifier because it gives external timestamps, commit identity, logs, and uploaded artifacts.
+These batteries test verifier discipline rather than raw capability: hidden
+answers must not leak, train-only fits must not count as solved, speculative
+changes must roll back when sealed gates fail, and gates must not be weakened to
+manufacture progress.
 
-Manual workflow dispatch:
-
-1. Open [Full Evidence](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/full-evidence.yml).
-2. Select `Run workflow`.
-3. Inspect the completed run log and artifact bundle.
-
-Equivalent local commands, if a reviewer wants to run them outside Actions:
+## Reproduction
 
 ```bash
-python -m py_compile "rsi_levels_metaforge_unified (3).py"
-python -u "rsi_levels_metaforge_unified (3).py" --mode file-battery
-python -u "rsi_levels_metaforge_unified (3).py" --mode forge-battery
-python -u "rsi_levels_metaforge_unified (3).py" --mode horizon-scan
-python -u "rsi_levels_metaforge_unified (3).py" --mode cfs-battery
-python -u "rsi_levels_metaforge_unified (3).py" --mode expansion-battery
-python -u "rsi_levels_metaforge_unified (3).py" --mode grammar-battery
-python -u "rsi_levels_metaforge_unified (3).py" --mode grammar2-battery
-python -u "rsi_levels_metaforge_unified (3).py" --mode test
+pip install numpy
+
+# Recursive self-improvement (both gates)
+python verify_rsi.py
+
+# Distilled core suite
+python asi_unified_core.py test
+
+# Cross-domain meta-gate
+python rsi_metaforge_core.py --mode general-domain-test
+
+# Full evidence ordering (batteries first, then the regression suite)
+python rsi_metaforge_core.py --mode file-battery
+python rsi_metaforge_core.py --mode forge-battery
+python rsi_metaforge_core.py --mode horizon-scan
+python rsi_metaforge_core.py --mode cfs-battery
+python rsi_metaforge_core.py --mode expansion-battery
+python rsi_metaforge_core.py --mode grammar-battery
+python rsi_metaforge_core.py --mode grammar2-battery
+python rsi_metaforge_core.py --mode test
 ```
+
+GitHub Actions is the preferred public verifier because it provides external
+timestamps, commit identity, logs, and uploaded artifacts. Use the newest
+successful [Full Evidence](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/full-evidence.yml)
+run on `main` after this file and the runtimes are committed.
 
 ## Boundary
 
-This evidence is most relevant to verifier design around code-evolution systems:
-
-- hidden eval handling
-- adaptive-vs-frozen comparisons
-- promotion gates
-- train-fit rejection
-- rollback-sensitive admission
-- grammar-bounded feature expansion
-- full-suite regression checks
-- artifact-level auditability
-
-It should not be presented as solving Phase 4 code evolution by itself. The correct framing is a reference harness that can help test whether future mutation loops are actually improving behavior without leaking hidden answers, weakening gates, or retaining unsafe edits.
+This evidence is most relevant to verifier design for self-modifying search:
+sealed/hidden evaluation, adaptive-vs-baseline comparison, promotion gates,
+train-fit rejection, rollback-sensitive admission, counterexample audits, and
+full-suite regression. It should not be presented as solving open-ended,
+real-world recursive self-improvement. The correct framing is a reference
+harness for testing whether a mutation/abstraction loop is *actually* improving
+behaviour without leaking hidden answers, weakening gates, or retaining unsafe
+edits.

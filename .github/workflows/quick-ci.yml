@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   quick-ci:
-    name: Compile and smoke test
+    name: Compile and verify self-improvement
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -27,14 +27,20 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Compile runtime
-        run: python -m py_compile "rsi_levels_metaforge_unified (3).py"
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip numpy
+
+      - name: Compile distilled core
+        run: python -m py_compile asi_unified_core.py
+
+      - name: Compile comprehensive runtime
+        run: python -m py_compile rsi_metaforge_core.py
 
       - name: Check CLI surface
-        run: python "rsi_levels_metaforge_unified (3).py" --help
+        run: python rsi_metaforge_core.py --help
 
       - name: Run dynamic-evaluator guard
-        run: python "rsi_levels_metaforge_unified (3).py" --mode test --only no_dynamic
+        run: python rsi_metaforge_core.py --mode test --only test_trusted_core_dynamic_execution_boundary
 
-      - name: Run general-domain smoke gate
-        run: python "rsi_levels_metaforge_unified (3).py" --mode general-domain-test
+      - name: Verify recursive self-improvement (both gates)
+        run: python verify_rsi.py

@@ -39,26 +39,26 @@ Because these files are not present in the checkout, structured plotting require
 
 Evidence-oriented runtime modes include:
 
-- [`file_battery`](../rsi_levels_metaforge_unified%20%283%29.py#L9164): file-world hidden A/B evaluations.
-- [`forge_battery`](../rsi_levels_metaforge_unified%20%283%29.py#L8050): self-forge primitive admission and downstream reuse.
+- [`file_battery`](../rsi_metaforge_core.py): file-world hidden A/B evaluations.
+- [`forge_battery`](../rsi_metaforge_core.py): self-forge primitive admission and downstream reuse.
 - `horizon-scan`: closure certificate generation through the final CLI dispatch.
-- [`cfs_battery`](../rsi_levels_metaforge_unified%20%283%29.py#L13077): continuous functional substrate tests and propagation checks.
-- [`expansion_battery`](../rsi_levels_metaforge_unified%20%283%29.py#L13580): residue-driven extension tests.
-- [`grammar_battery`](../rsi_levels_metaforge_unified%20%283%29.py#L13883): depth-1 grammar feature expansion.
-- [`grammar2_battery`](../rsi_levels_metaforge_unified%20%283%29.py#L14219): depth-2 grammar feature expansion beyond depth 1.
+- [`cfs_battery`](../rsi_metaforge_core.py): continuous functional substrate tests and propagation checks.
+- [`expansion_battery`](../rsi_metaforge_core.py): residue-driven extension tests.
+- [`grammar_battery`](../rsi_metaforge_core.py): depth-1 grammar feature expansion.
+- [`grammar2_battery`](../rsi_metaforge_core.py): depth-2 grammar feature expansion beyond depth 1.
 
 ## Pytest and Built-In Test Outputs
 
 The repository uses a built-in test harness invoked through:
 
 ```bash
-python "rsi_levels_metaforge_unified (3).py" --mode test
+python "rsi_metaforge_core.py" --mode test
 ```
 
 [Full Evidence](../.github/workflows/full-evidence.yml) records this output to `reports/evidence/full_test.log` and checks for:
 
 ```text
-RESULT: 116 passed, 0 failed
+RESULT: 192 passed, 0 failed
 ALL TESTS PASSED
 ```
 
@@ -69,11 +69,11 @@ That string is an expected workflow condition. Reviewers should confirm it in th
 The runtime exposes demonstration and comparison commands:
 
 ```bash
-python "rsi_levels_metaforge_unified (3).py" --mode demo
-python "rsi_levels_metaforge_unified (3).py" --mode counterfactual
-python "rsi_levels_metaforge_unified (3).py" --mode run-adaptive --save adaptive.json
-python "rsi_levels_metaforge_unified (3).py" --mode run-frozen --save frozen.json
-python "rsi_levels_metaforge_unified (3).py" --mode cf-report --adaptive-json adaptive.json --frozen-json frozen.json
+python "rsi_metaforge_core.py" --mode demo
+python "rsi_metaforge_core.py" --mode counterfactual
+python "rsi_metaforge_core.py" --mode run-adaptive --save adaptive.json
+python "rsi_metaforge_core.py" --mode run-frozen --save frozen.json
+python "rsi_metaforge_core.py" --mode cf-report --adaptive-json adaptive.json --frozen-json frozen.json
 ```
 
 Demo output is useful for orientation but is weaker than a clean evidence run with saved artifacts, logs, and commit identity.
@@ -84,8 +84,8 @@ Accepted modifications are reflected in:
 
 - `RunState.adopted_tokens`, `adopted_wave`, and `adopted_searcher_version`.
 - `META_ACCEPT` events and `gate_records`.
-- [`lineage_report`](../rsi_levels_metaforge_unified%20%283%29.py#L1966).
-- [`runstate_summary`](../rsi_levels_metaforge_unified%20%283%29.py#L2033).
+- [`lineage_report`](../rsi_metaforge_core.py).
+- [`runstate_summary`](../rsi_metaforge_core.py).
 - Battery-specific result JSON files when generated.
 
 ## Rejected Modifications
