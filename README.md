@@ -18,29 +18,24 @@ repository. For the claim boundary and validation record, see
 
 ## What this repository integrates
 
-This runtime is the consolidation of four source files into two coherent,
-runnable artifacts. The mapping is explicit so that nothing is silently
-dropped:
+All four source files are consolidated into a single runnable runtime. The
+mapping is explicit so that nothing is silently dropped:
 
 | Source file (input)            | Where it lives now |
 | ------------------------------ | ------------------ |
-| `asi_unified_core.py`          | `asi_unified_core.py` (kept as the distilled core) |
-| `asi_architecture_core.py`     | folded into `asi_unified_core.py` (byte-identical code; only its header docstring differed) |
-| `asi_guarded.py`               | folded into `asi_unified_core.py` as the Socratic-guarded layer (it cannot run stand-alone; here it runs) |
-| `rsi_metaforge_core_v15.py`    | `rsi_metaforge_core.py` (the full 20-section monolith / comprehensive runtime) |
+| `rsi_metaforge_core_v15.py`    | `rsi_metaforge_core.py` — the consolidated single-file runtime (the full monolith) |
+| `asi_unified_core.py`          | already contained inline (the 8 ASI/RSI layers; modes `asi-integrated` … `asi-guarded`) |
+| `asi_architecture_core.py`     | byte-identical to the unified core; the same inline layers |
+| `asi_guarded.py`               | the Socratic-guarded layer (modes `asi-guarded` / `asi-guarded-test`) |
 
-The result is two files:
+The result is a single runnable file, **`rsi_metaforge_core.py`**, which
+contains all 8 ASI/RSI layers inline plus the broader RSI machinery: a stack-VM
+substrate, file-world artifact tasks, self-forge primitive admission, continuous
+functional substrate probes, grammar-mediated feature expansion, and the
+cross-domain **general-domain meta-gate** self-improvement test. A small helper,
+`verify_rsi.py`, runs the two self-improvement gates against it.
 
-- **`asi_unified_core.py`** — a single, self-contained core that implements the
-  8 RSI layers and ships a focused 49-test suite (runs in roughly a minute).
-  This is the fast, readable, fully-green verification surface.
-- **`rsi_metaforge_core.py`** — the comprehensive runtime (the monolith). It
-  contains the same 8 ASI/RSI layers plus the broader RSI machinery: a stack-VM
-  substrate, file-world artifact tasks, self-forge primitive admission,
-  continuous functional substrate probes, grammar-mediated feature expansion,
-  and the cross-domain **general-domain meta-gate** self-improvement test.
-
-## The 8 layers (both files)
+## The 8 layers
 
 1. Immutable, hash-pinned **kernel** (per-substrate fingerprint) — the single
    root of trust: it evaluates, checks equivalence, and replays. It is never
@@ -68,11 +63,13 @@ A single command runs both independent, measured demonstrations:
 python verify_rsi.py
 ```
 
-- **Gate 1 — distilled-core suite:** runs `asi_unified_core.py test` (49 tests
-  across 8 layers). The RSI-specific tests assert that learning lowers search
-  cost vs. a no-learning control, that cumulative abstraction reaches lineage
-  depth ≥ 3, that the solved library compresses below its expanded size, that a
-  derived operator reduces future search cost, and that the Socratic gate
+- **Gate 1 — per-layer suites:** runs the runtime's own per-layer test modes
+  (`asi-integrated-test`, `asi-open-test`, `asi-evolve-test`, `asi-unify-test`,
+  `asi-auto-test`, `asi-search-test`, `asi-socratic-test`, `asi-guarded-test`),
+  covering all 8 layers. The RSI-specific tests assert that learning lowers
+  search cost vs. a no-learning control, that cumulative abstraction reaches
+  lineage depth ≥ 3, that the solved library compresses below its expanded size,
+  that a derived operator reduces future search cost, and that the Socratic gate
   rejects spurious operators while admitting verified ones.
 - **Gate 2 — cross-domain meta-gate:** runs
   `rsi_metaforge_core.py --mode general-domain-test`. The system proposes a
@@ -91,23 +88,23 @@ python verify_rsi.py
 # Recursive self-improvement verification (both gates)
 python verify_rsi.py
 
-# Distilled core: full 49-test suite across 8 layers
-python asi_unified_core.py test
+# Per-layer self-improvement test suites (cover all 8 layers)
+python rsi_metaforge_core.py --mode asi-integrated-test   # also asi-open-test, asi-evolve-test,
+                                                          # asi-unify-test, asi-auto-test, asi-search-test,
+                                                          # asi-socratic-test, asi-guarded-test
 
-# Distilled core: inspect a single layer's demo output
-python asi_unified_core.py demo guarded     # or: integrated, open, evolve, unify, auto, search, socratic
+# Inspect a single layer's demo output
+python rsi_metaforge_core.py --mode asi-guarded           # or: asi-integrated, asi-open, asi-evolve,
+                                                          # asi-unify, asi-auto, asi-search, asi-socratic
 
-# Comprehensive runtime: cross-domain meta-gate self-improvement
+# Cross-domain meta-gate self-improvement
 python rsi_metaforge_core.py --mode general-domain-test
 
-# Comprehensive runtime: per-layer ASI/RSI test suites
-python rsi_metaforge_core.py --mode asi-guarded-test    # also asi-integrated-test, asi-open-test, ...
-
-# Comprehensive runtime: full built-in regression suite
+# Full built-in regression suite
 #   (run the evidence batteries first so artifact-backed tests have their inputs)
 python rsi_metaforge_core.py --mode test
 
-# Comprehensive runtime: all available modes
+# All available modes
 python rsi_metaforge_core.py --help
 ```
 

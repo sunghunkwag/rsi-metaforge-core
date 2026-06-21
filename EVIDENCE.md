@@ -15,16 +15,16 @@ can solve, without leaking hidden answers or weakening gates.
 
 | File | Role |
 | ---- | ---- |
-| `asi_unified_core.py` | Distilled, self-contained 8-layer RSI core with a 49-test suite. |
-| `rsi_metaforge_core.py` | Comprehensive runtime (the full monolith): the 8 layers plus stack-VM substrate, file-world tasks, self-forge admission, continuous functional substrate, grammar expansion, and the cross-domain meta-gate. |
+| `rsi_metaforge_core.py` | The consolidated single-file runtime (the full monolith): all 8 ASI/RSI layers inline plus the broader RSI machinery (stack-VM substrate, file-world tasks, self-forge admission, continuous functional substrate, grammar expansion, and the cross-domain meta-gate). |
 | `verify_rsi.py` | Single-command RSI verification (both gates below). |
 
-This runtime consolidates four source files (`asi_unified_core.py`,
-`asi_architecture_core.py`, `asi_guarded.py`, `rsi_metaforge_core_v15.py`). The
-architecture core was byte-identical to the unified core (only its header
-docstring differed) and the guarded layer was a stand-alone module that could
-not run on its own; both are folded into `asi_unified_core.py`. See the README
-for the full mapping.
+This runtime consolidates four source files (`rsi_metaforge_core_v15.py`,
+`asi_unified_core.py`, `asi_architecture_core.py`, `asi_guarded.py`) into one
+runnable file, `rsi_metaforge_core.py`. The monolith already contains the 8
+ASI/RSI layers of the unified core inline (modes `asi-integrated` …
+`asi-guarded`); the architecture core was byte-identical to the unified core,
+and the guarded layer was a stand-alone module folded in here so it runs. See
+the README for the full mapping.
 
 ## Recursive self-improvement verification
 
@@ -36,15 +36,13 @@ python verify_rsi.py
 
 It passes (exit 0) only when **both** independent, measured gates hold.
 
-### Gate 1 — distilled-core self-improvement suite
+### Gate 1 — per-layer self-improvement suites
 
-`python asi_unified_core.py test` →
-
-```text
-RESULT: 49 passed, 0 failed (of 49 across 8 layers)
-```
-
-The self-improvement claims are backed directly by tests in that suite:
+`verify_rsi.py` runs each layer's built-in suite through the runtime modes
+`asi-integrated-test`, `asi-open-test`, `asi-evolve-test`, `asi-unify-test`,
+`asi-auto-test`, `asi-search-test`, `asi-socratic-test`, and `asi-guarded-test`,
+covering all 8 layers with 0 failures. The self-improvement claims are backed
+directly by tests in those suites:
 
 - `test_aint_learning_lowers_cost` — a learning run solves at least as much as a
   no-learning control while using strictly less total search cost.
@@ -152,8 +150,10 @@ pip install numpy
 # Recursive self-improvement (both gates)
 python verify_rsi.py
 
-# Distilled core suite
-python asi_unified_core.py test
+# Per-layer self-improvement suites (all 8 layers)
+python rsi_metaforge_core.py --mode asi-integrated-test   # and asi-open-test, asi-evolve-test,
+                                                          # asi-unify-test, asi-auto-test, asi-search-test,
+                                                          # asi-socratic-test, asi-guarded-test
 
 # Cross-domain meta-gate
 python rsi_metaforge_core.py --mode general-domain-test

@@ -5,7 +5,6 @@ on:
     branches:
       - main
     paths:
-      - "asi_unified_core.py"
       - "rsi_metaforge_core.py"
       - "verify_rsi.py"
       - "README.md"
@@ -41,10 +40,8 @@ jobs:
       - name: Prepare evidence directory
         run: mkdir -p reports/evidence
 
-      - name: Compile runtimes
-        run: |
-          python -m py_compile asi_unified_core.py
-          python -m py_compile rsi_metaforge_core.py
+      - name: Compile runtime
+        run: python -m py_compile rsi_metaforge_core.py
 
       - name: Verify recursive self-improvement (both gates)
         shell: bash
@@ -52,13 +49,6 @@ jobs:
           set -o pipefail
           python -u verify_rsi.py 2>&1 | tee reports/evidence/verify_rsi.log
           grep -E 'RECURSIVE SELF-IMPROVEMENT VERIFIED' reports/evidence/verify_rsi.log
-
-      - name: Distilled-core suite (asi_unified_core.py)
-        shell: bash
-        run: |
-          set -o pipefail
-          python -u asi_unified_core.py test 2>&1 | tee reports/evidence/unified_core_test.log
-          grep -E '^RESULT: 49 passed, 0 failed' reports/evidence/unified_core_test.log
 
       - name: Run file-world evidence battery
         shell: bash

@@ -4,12 +4,16 @@ verify_rsi.py -- single-command verification that recursive self-improvement
 actually occurs in this repository.
 
 This harness is intentionally narrow and falsifiable. It does NOT assert any
-"AGI/ASI achieved" flag. It runs two independent, measured demonstrations and
-fails loudly if either one does not hold:
+"AGI/ASI achieved" flag. It runs two independent, measured demonstrations
+against the single consolidated runtime (rsi_metaforge_core.py) and fails
+loudly if either one does not hold:
 
-  GATE 1 -- Distilled core self-improvement suite (asi_unified_core.py)
-    Runs the full 49-test suite across the 8 layers of the self-contained core.
-    Among those tests, the self-improvement claims are backed directly:
+  GATE 1 -- Per-layer self-improvement suites
+    Runs every ASI/RSI layer's built-in test suite via the runtime's own modes
+    (asi-integrated-test, asi-open-test, asi-evolve-test, asi-unify-test,
+    asi-auto-test, asi-search-test, asi-socratic-test, asi-guarded-test).
+    Together these cover the 8 layers. Among them the self-improvement claims
+    are backed directly:
       * learning lowers search cost vs. a no-learning control,
       * cumulative abstraction lineage reaches depth >= 3
         (an improvement built on top of a previous improvement),
@@ -19,7 +23,7 @@ fails loudly if either one does not hold:
         (spurious operators are rejected; only verified ones are adopted).
     The immutable, hash-pinned kernel is the judge throughout and never moves.
 
-  GATE 2 -- Cross-domain meta-gate self-improvement (rsi_metaforge_core.py)
+  GATE 2 -- Cross-domain meta-gate self-improvement
     Runs the general-domain self-improvement test. The system proposes a macro
     abstraction from its OWN solved programs, then an A/B meta-gate measures a
     "warm" searcher (with the self-proposed abstraction) against a "cold"
@@ -37,30 +41,60 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PY = sys.executable
-UNIFIED = os.path.join(HERE, "asi_unified_core.py")
 MONOLITH = os.path.join(HERE, "rsi_metaforge_core.py")
+
+# One mode per ASI/RSI layer; together they exercise all 8 layers.
+LAYER_TEST_MODES = [
+    "asi-integrated-test",   # kernel + substrates + Kuramoto + compression curriculum
+    "asi-open-test",         # stack-VM substrate + meta-proposer + transfer
+    "asi-evolve-test",       # operator evolution + cross-substrate transfer
+    "asi-unify-test",        # recursive higher-order operator expansion
+    "asi-auto-test",         # verified normalizer enabling transfer
+    "asi-search-test",       # bottom-up synthesis loop
+    "asi-socratic-test",     # Socratic CEGIS debate
+    "asi-guarded-test",      # Socratic-gated autonomous promotion loop
+]
+
+_RESULT_RE = re.compile(r"RESULT:\s+(\d+)\s+passed,\s+(\d+)\s+failed")
 
 
 def _run(cmd, **kw):
     return subprocess.run(cmd, capture_output=True, text=True, **kw)
 
 
-def gate_distilled_core() -> bool:
+def gate_layer_suites() -> bool:
     print("=" * 78)
-    print("GATE 1: distilled-core self-improvement suite (asi_unified_core.py test)")
+    print("GATE 1: per-layer self-improvement suites (rsi_metaforge_core.py asi-*-test)")
     print("=" * 78)
-    res = _run([PY, UNIFIED, "test"])
-    sys.stdout.write(res.stdout)
-    if res.stderr.strip():
-        sys.stderr.write(res.stderr)
-    ok = res.returncode == 0 and "0 failed" in res.stdout
-    print(f"GATE 1 -> {'PASS' if ok else 'FAIL'} (exit={res.returncode})\n")
+    total_passed = 0
+    total_failed = 0
+    all_ok = True
+    for mode in LAYER_TEST_MODES:
+        res = _run([PY, MONOLITH, "--mode", mode])
+        m = _RESULT_RE.search(res.stdout)
+        passed = int(m.group(1)) if m else 0
+        failed = int(m.group(2)) if m else -1
+        ok = res.returncode == 0 and m is not None and failed == 0
+        total_passed += max(0, passed)
+        total_failed += max(0, failed)
+        print(f"  {mode:<22} -> {passed} passed, {max(0, failed)} failed "
+              f"[{'ok' if ok else 'FAIL'}]")
+        if not ok:
+            all_ok = False
+            sys.stdout.write(res.stdout[-2000:])
+            if res.stderr.strip():
+                sys.stderr.write(res.stderr[-2000:])
+    print(f"GATE 1 total: {total_passed} passed, {total_failed} failed "
+          f"across {len(LAYER_TEST_MODES)} layers")
+    ok = all_ok and total_failed == 0 and total_passed > 0
+    print(f"GATE 1 -> {'PASS' if ok else 'FAIL'}\n")
     return ok
 
 
@@ -105,7 +139,7 @@ def gate_meta_gate() -> bool:
 
 
 def main() -> int:
-    g1 = gate_distilled_core()
+    g1 = gate_layer_suites()
     g2 = gate_meta_gate()
     print("=" * 78)
     if g1 and g2:

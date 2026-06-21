@@ -1,6 +1,6 @@
 # Architecture
 
-The repository is centered on the comprehensive runtime file, [rsi_metaforge_core.py](../rsi_metaforge_core.py), accompanied by a distilled, self-contained core, [asi_unified_core.py](../asi_unified_core.py), that implements the same 8 RSI layers with a focused 49-test suite, plus evidence documentation and GitHub Actions workflows. The architecture is best read as a gated experimental harness rather than a generic wrapper around an external model.
+The repository is centered on a single consolidated runtime file, [rsi_metaforge_core.py](../rsi_metaforge_core.py), which contains all 8 ASI/RSI layers inline, accompanied by a small verification helper, [verify_rsi.py](../verify_rsi.py), plus evidence documentation and GitHub Actions workflows. The architecture is best read as a gated experimental harness rather than a generic wrapper around an external model.
 
 ```mermaid
 flowchart TD
