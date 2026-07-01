@@ -14384,6 +14384,50 @@ TESTS.extend([
 ])
 
 
+# Phase 0 frozen instrument (see docs/make_frozen_holdout_phase0.py). The
+# SHA-256 below was recorded when the instrument was created; the evaluation
+# set is read-only from that point on, and this test is the freeze check.
+FROZEN_HOLDOUT_PHASE0_SHA256 = (
+    "527bb04dd45c010a32637a92eeba5a799024a9a68e944e5c91186d3daa3f4d24")
+
+
+def test_frozen_holdout_phase0_instrument_intact() -> None:
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "docs", "frozen_holdout_phase0.json")
+    _assert(os.path.exists(path),
+            "frozen_holdout_phase0.json missing: instrument not in repo")
+    with open(path, "rb") as fh:
+        raw = fh.read()
+    _assert(hashlib.sha256(raw).hexdigest() == FROZEN_HOLDOUT_PHASE0_SHA256,
+            "frozen_holdout_phase0.json content drifted from freeze hash")
+    doc = json.loads(raw.decode("utf-8"))
+    _assert(doc["meta"]["n_tasks"] == len(ORACLES),
+            "instrument task count differs from designer suite")
+
+    def _pairs(oracle, seed, lengths, trials, valmax):
+        rng = random.Random(seed)
+        out = []
+        for L in lengths:
+            for _ in range(trials):
+                xs = [rng.randint(0, valmax) for _ in range(L)]
+                out.append([xs, int(oracle(list(xs)))])
+        return out
+
+    for i, (name, family, fn) in enumerate(ORACLES):
+        entry = doc["tasks"][f"T{i:02d}"]
+        _assert(entry["name"] == name and entry["family"] == family,
+                f"instrument task T{i:02d} identity mismatch")
+        _assert(entry["holdout"] == _pairs(fn, GATE_SEED, HOLDOUT_LENGTHS,
+                                           GATE_TRIALS, 7),
+                f"instrument holdout pairs diverge from gate stream T{i:02d}")
+        _assert(entry["cf"] == _pairs(fn, CF_GATE_SEED, CF_LENGTHS,
+                                      CF_TRIALS, CF_VALMAX),
+                f"instrument cf pairs diverge from gate stream T{i:02d}")
+
+
+TESTS.append(test_frozen_holdout_phase0_instrument_intact)
+
+
 
 
 # =========================================================================== #
