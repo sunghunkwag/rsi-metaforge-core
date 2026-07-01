@@ -9,7 +9,7 @@ The useful claim is narrower: the runtime exposes verifier and fitness harnesses
 The current runtime file is:
 
 ```text
-rsi_levels_metaforge_unified (3).py
+rsi_levels_metaforge_unified.py
 ```
 
 The current runtime extends the previous public evidence line with:
@@ -32,7 +32,7 @@ The previous public runtime evidence anchor covered an older 99-test runtime. It
 - Historical result: `success`
 - Historical date: `2026-06-16`
 
-For the current runtime, use the newest successful [Full Evidence](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/full-evidence.yml) run on `main` after this file and `rsi_levels_metaforge_unified (3).py` are committed.
+For the current runtime, use the newest successful [Full Evidence](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/full-evidence.yml) run on `main` after this file and `rsi_levels_metaforge_unified.py` are committed.
 
 ## Full Evidence Workflow
 
@@ -155,15 +155,15 @@ Manual workflow dispatch:
 Equivalent local commands, if a reviewer wants to run them outside Actions:
 
 ```bash
-python -m py_compile "rsi_levels_metaforge_unified (3).py"
-python -u "rsi_levels_metaforge_unified (3).py" --mode file-battery
-python -u "rsi_levels_metaforge_unified (3).py" --mode forge-battery
-python -u "rsi_levels_metaforge_unified (3).py" --mode horizon-scan
-python -u "rsi_levels_metaforge_unified (3).py" --mode cfs-battery
-python -u "rsi_levels_metaforge_unified (3).py" --mode expansion-battery
-python -u "rsi_levels_metaforge_unified (3).py" --mode grammar-battery
-python -u "rsi_levels_metaforge_unified (3).py" --mode grammar2-battery
-python -u "rsi_levels_metaforge_unified (3).py" --mode test
+python -m py_compile "rsi_levels_metaforge_unified.py"
+python -u "rsi_levels_metaforge_unified.py" --mode file-battery
+python -u "rsi_levels_metaforge_unified.py" --mode forge-battery
+python -u "rsi_levels_metaforge_unified.py" --mode horizon-scan
+python -u "rsi_levels_metaforge_unified.py" --mode cfs-battery
+python -u "rsi_levels_metaforge_unified.py" --mode expansion-battery
+python -u "rsi_levels_metaforge_unified.py" --mode grammar-battery
+python -u "rsi_levels_metaforge_unified.py" --mode grammar2-battery
+python -u "rsi_levels_metaforge_unified.py" --mode test
 ```
 
 ## Boundary
