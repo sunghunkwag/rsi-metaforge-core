@@ -44,10 +44,9 @@ Results should be interpreted as bounded adaptive improvement within the benchma
 The current runtime file is:
 
 ```text
-rsi_levels_metaforge_unified (3).py
+rsi_levels_metaforge_unified.py
 ```
 
-Because the filename contains spaces and parentheses, shell commands quote it explicitly.
 
 ## Usage
 
@@ -55,34 +54,34 @@ The runtime exposes a `--mode` flag. The default mode is `demo`.
 
 ```bash
 # Run the demonstration procedure
-python "rsi_levels_metaforge_unified (3).py" --mode demo
+python "rsi_levels_metaforge_unified.py" --mode demo
 
 # Run the full built-in test suite
-python "rsi_levels_metaforge_unified (3).py" --mode test
+python "rsi_levels_metaforge_unified.py" --mode test
 
 # Run the adaptive search procedure
-python "rsi_levels_metaforge_unified (3).py" --mode run-adaptive
+python "rsi_levels_metaforge_unified.py" --mode run-adaptive
 
 # Run the frozen baseline for comparison
-python "rsi_levels_metaforge_unified (3).py" --mode run-frozen
+python "rsi_levels_metaforge_unified.py" --mode run-frozen
 ```
 
 Evidence-oriented modes include:
 
 ```bash
-python "rsi_levels_metaforge_unified (3).py" --mode file-battery
-python "rsi_levels_metaforge_unified (3).py" --mode forge-battery
-python "rsi_levels_metaforge_unified (3).py" --mode horizon-scan
-python "rsi_levels_metaforge_unified (3).py" --mode cfs-battery
-python "rsi_levels_metaforge_unified (3).py" --mode expansion-battery
-python "rsi_levels_metaforge_unified (3).py" --mode grammar-battery
-python "rsi_levels_metaforge_unified (3).py" --mode grammar2-battery
+python "rsi_levels_metaforge_unified.py" --mode file-battery
+python "rsi_levels_metaforge_unified.py" --mode forge-battery
+python "rsi_levels_metaforge_unified.py" --mode horizon-scan
+python "rsi_levels_metaforge_unified.py" --mode cfs-battery
+python "rsi_levels_metaforge_unified.py" --mode expansion-battery
+python "rsi_levels_metaforge_unified.py" --mode grammar-battery
+python "rsi_levels_metaforge_unified.py" --mode grammar2-battery
 ```
 
 Additional modes are available via:
 
 ```bash
-python "rsi_levels_metaforge_unified (3).py" --help
+python "rsi_levels_metaforge_unified.py" --help
 ```
 
 ## Evidence Batteries

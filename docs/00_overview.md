@@ -6,7 +6,7 @@ The central question is not whether the system has general intelligence. The cen
 
 The repository should be inspected as a set of connected artifacts:
 
-- Runtime code: [rsi_levels_metaforge_unified (3).py](../rsi_levels_metaforge_unified%20%283%29.py)
+- Runtime code: [rsi_levels_metaforge_unified.py](../rsi_levels_metaforge_unified.py)
 - Claim boundary and historical evidence notes: [EVIDENCE.md](../EVIDENCE.md)
 - Public CI checks: [Quick CI](../.github/workflows/quick-ci.yml) and [Full Evidence](../.github/workflows/full-evidence.yml)
 - Reviewer guide: this `docs/` directory
