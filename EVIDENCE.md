@@ -18,7 +18,8 @@ The current runtime extends the previous public evidence line with:
 - dynamic residue-driven feature expansion through `expansion-battery`
 - depth-1 grammar feature expansion through `grammar-battery`
 - depth-2 grammar feature expansion through `grammar2-battery`
-- a full built-in regression suite expected to report `116 passed, 0 failed`
+- a full built-in regression suite expected to report `147 passed, 0 failed`
+- the Phases 0–I generalization research program: frozen holdout instrument, sealed exploration archive, external anchoring artifacts, stratified offer schedule, and per-phase reports, all committed under `docs/` with SHA-256 pins asserted by tests
 
 The current runtime should be treated as publicly validated only after the **Full Evidence** GitHub Actions workflow succeeds for the commit that contains it.
 
@@ -121,9 +122,11 @@ The grammar primitives are designer-declared. These batteries measure bounded ex
 The current Full Evidence workflow requires the built-in full suite to end with:
 
 ```text
-RESULT: 116 passed, 0 failed
+RESULT: 147 passed, 0 failed
 ALL TESTS PASSED
 ```
+
+The count is pinned exactly on purpose: a suite that silently gains or loses tests should turn the badge red until the pin is updated in the same change that alters the suite. The count history is 99 (pre-rename runtime), 116 (renamed runtime, pre-program), 147 (after the Phases 0–I research program added 31 instrument, isolation, and determinism tests).
 
 Relevant tested properties include:
 
@@ -141,6 +144,9 @@ Relevant tested properties include:
 - speculative adoption rollback
 - deterministic grammar and grammar2 feature expansion
 - honest rejection of targets outside declared grammar closure
+- SHA-256 pins on the frozen research-program artifacts under `docs/` (holdout instrument, exploration archives, anchor reports, ordering spec, final evaluation artifacts)
+- ordering/eligibility isolation: the stratified offer schedule's computation cannot reach designer-task oracles, gates, or adoption records
+- two-run byte-identity for the exploration, transfer, and final-evaluation reconstructions asserted in-suite
 
 ## Reproduction Paths
 
