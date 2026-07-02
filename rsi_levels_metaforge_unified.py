@@ -37966,7 +37966,9 @@ def main() -> None:
         d, g = _solved_split(rs)
         print(json.dumps({"solved": d, "solved_generated": g,
                           "exploration_macros_installed": expl,
-                          "pool_size": len(pool),
+                          "strata_sizes": {s: len(v)
+                                           for s, v in strata.items()},
+                          "reoffers": len(rs.reoffer_log),
                           "digest": adoption_log_digest(rs)}))
     elif args.mode == "anchor-report":
         doc = anchor_load_archive()
