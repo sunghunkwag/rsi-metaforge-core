@@ -119,6 +119,12 @@ CAPACITY_BOUND_MACROS = 96
 # are measured per wave; excess attempts are logged and refused.
 SPECULATION_BUDGET_PER_WAVE = 2
 
+# G2 offer bound (stated up front): at most this many exploration batches
+# (of EXPLORATION_BATCH_SIZE bodies) are measured per wave. 14 batches x 3
+# bodies x 7 gated waves = 294 offers, enough to walk the full widened
+# pool in one run; the pool cursor carries unconsumed offers forward.
+EXPLORATION_BATCHES_PER_WAVE = 14
+
 
 def build_train_inputs(seed: int = DATA_SEED) -> List[List[int]]:
     rng = random.Random(seed)
@@ -621,6 +627,21 @@ def _gen_oracle(spec: Tuple[str, str, str],
             raise ValueError("via_op_requires_runstate")
         t = _macro_transform(rs, int(op[3:]))
         return lambda xs, _fa=fa, _t=t: _fa(_t(list(xs)))
+    if op == "diff":
+        # G3 directed pressure: the residual of the system's own best
+        # failing candidate for task `a`. The candidate is frozen at mint
+        # time as an expanded base-op sequence (spec field b), so replay
+        # is macro-independent; a crash of the candidate scores 0, keeping
+        # the oracle total.
+        prog = tuple(int(x) for x in b.split(","))
+
+        def _diff(xs: List[int], _fa=fa, _p=prog) -> int:
+            try:
+                pv = run_base_program(_p, list(xs))
+            except VMCrash:
+                pv = 0
+            return _fa(list(xs)) - pv
+        return _diff
     raise ValueError(f"unknown_gen_op:{spec}")
 
 
@@ -654,6 +675,35 @@ def propose_mints(rs: "RunState", wave: int) -> List[Tuple[str, str, str]]:
     solved = sorted(rs.adopted_tokens,
                     key=lambda t: (-rs.adopted_wave[t], t))
     cands: List[Tuple[str, str, str]] = []
+    if rs.adaptive:
+        # G3 directed pressure (adaptive arm only, like the S1/S3
+        # channels): one candidate per wave targets the OPEN designer
+        # frontier with the residual of that task's best failing
+        # candidate -- the system's own residue, never an external
+        # program. Rotation over OPEN tids keeps coverage deterministic.
+        open_designer = sorted(
+            t.tid for t in rs.tasks
+            if t.origin == "designer" and t.tid not in rs.adopted_tokens)
+        if open_designer:
+            k = wave % len(open_designer)
+            for tid in open_designer[k:] + open_designer[:k]:
+                best = None
+                for r in rs.residues:
+                    if r.get("tid") == tid and r.get("tokens") \
+                            and r.get("best", 0.0) > 0.0:
+                        key = (r.get("best", 0.0), -int(r.get("wave", 0)))
+                        if best is None or key > best[0]:
+                            best = (key, r)
+                if best is None:
+                    continue
+                try:
+                    exp = expand_tokens(tuple(best[1]["tokens"]),
+                                        rs.searcher.macros)
+                except VMCrash:
+                    continue
+                cands.append(("diff", tid,
+                              ",".join(str(x) for x in exp)))
+                break
     for t in solved[:8]:
         cands.append(("sq", t, ""))
     for t in solved[:4]:
@@ -1821,8 +1871,15 @@ def speculative_meta_gate(rs: "RunState", proposal: ImprovementProposal,
                           wave: int, kind: str) -> Optional[bool]:
     """True = gate-adopted, False = gate-rejected (and rolled back),
     None = not measured (per-wave speculation budget exhausted)."""
-    spent = sum(1 for e in rs.speculation_log if e["wave"] == wave)
-    if spent >= SPECULATION_BUDGET_PER_WAVE:
+    # Rule 3 kinds share the per-wave budget; exploration offers (G2) have
+    # their own stated bound so pool widening cannot starve Rule 3 and
+    # vice versa. Same gates either way.
+    is_expl = kind == "exploration_batch"
+    spent = sum(1 for e in rs.speculation_log if e["wave"] == wave
+                and (e["kind"] == "exploration_batch") == is_expl)
+    budget = (EXPLORATION_BATCHES_PER_WAVE if is_expl
+              else SPECULATION_BUDGET_PER_WAVE)
+    if spent >= budget:
         rs.events.append(f"w{wave} SPECULATION_BUDGET_EXHAUSTED {kind}")
         return None
     ledger = SpeculativeLedger()
@@ -1987,6 +2044,7 @@ class RunState:
     wm_acts: int = 0
     growth_log: List[Dict[str, object]] = field(default_factory=list)
     speculation_log: List[Dict[str, object]] = field(default_factory=list)
+    exploration_offer_cursor: int = 0
 
     def unsolved(self) -> List[SealedTask]:
         return [t for t in self.tasks if t.tid not in self.adopted_tokens]
@@ -2195,23 +2253,11 @@ def run_system(adaptive: bool = True, waves: int = WAVES,
             rs.events.append(f"w{w} GATE_SKIPPED_FINAL_WAVE")
             continue
         if exploration_pool:
-            # E1 transfer anchor: archive elites enter the standard
-            # proposal stream as ordinary candidates (origin tagged);
-            # adoption exclusively via the unchanged gate discipline.
-            eprop = propose_exploration_batch(rs, w, exploration_pool)
-            if eprop is not None:
-                edig = hashlib.sha256(json.dumps({
-                    "m": [list(m.body) for m in eprop.new_macros],
-                    "x": "exploration"},
-                    sort_keys=True).encode()).hexdigest()[:16]
-                if edig in rs.rejected_digests:
-                    rs.events.append(
-                        f"w{w} SKIP_DUPLICATE_EXPLORATION {edig}")
-                else:
-                    eok = speculative_meta_gate(rs, eprop, w,
-                                                "exploration_batch")
-                    if eok is False:
-                        rs.rejected_digests.append(edig)
+            # E1 transfer anchor via the G2 offer schedule: archive elites
+            # enter the standard proposal stream as ordinary candidates
+            # (origin tagged); adoption exclusively via the unchanged gate
+            # discipline; the persistent cursor walks the full pool.
+            offer_exploration_batches(rs, w, exploration_pool)
         if fresh_adopt == 0 and not fresh_frontier:
             rs.events.append(f"w{w} GATE_SKIPPED_NO_FRESH_MATERIAL")
             attempt_capacity_growth(rs, w)   # Rule 2: stagnation -> gated growth
@@ -2368,6 +2414,7 @@ def runstate_summary(rs: RunState) -> Dict[str, object]:
         },
         "growth_log": [dict(g) for g in rs.growth_log],
         "speculation_log": [dict(e) for e in rs.speculation_log],
+        "exploration_offer_cursor": rs.exploration_offer_cursor,
         "generated_report": generated_pressure_report(rs),
         "gate_records": [
             {"wave": r.wave, "accepted": r.accepted,
@@ -2425,6 +2472,8 @@ def restore_runstate(summary: Dict[str, object]) -> RunState:
     rs.searcher = s
     rs.growth_log = [dict(g) for g in summary.get("growth_log", [])]
     rs.speculation_log = [dict(e) for e in summary.get("speculation_log", [])]
+    rs.exploration_offer_cursor = int(
+        summary.get("exploration_offer_cursor", 0))
     rs.adopted_tokens = {t: tuple(v)
                          for t, v in summary["adopted_tokens"].items()}
     rs.adopted_wave = {t: int(v) for t, v in summary["adopted_wave"].items()}
@@ -3571,7 +3620,14 @@ def prm_prefix_features(prefix: Sequence[int], macros: Dict[int, Macro],
             if top == y:
                 top_exact += 1.0
             else:
-                near += 1.0 / (1.0 + math.log1p(abs(top - y)))
+                d = abs(top - y)
+                # VM ints reach INT_CAP = 10**3000, beyond float range;
+                # in-range values keep the exact historical formula, huge
+                # ones use the integer log2 approximation (deterministic,
+                # monotone) instead of overflowing.
+                near += 1.0 / (1.0 + (math.log1p(d) if d < 10 ** 300
+                                      else 0.6931471805599453
+                                      * (1 + d.bit_length())))
     has_macro = 1.0 if any(t >= MACRO_ID_BASE for t in prefix) else 0.0
     feats = (top_exact / n, top_int / n, near / n, depth1 / n, crash / n,
              min(1.0, len(prefix) / MAX_PROGRAM_LEN), has_macro, 1.0)
@@ -15511,10 +15567,11 @@ def exploration_pool_from_archive(doc: Dict[str, object]
 
 
 def propose_exploration_batch(rs: "RunState", wave: int,
-                              pool: Sequence[Tuple[int, ...]]
+                              pool: Sequence[Tuple[int, ...]],
+                              offset: Optional[int] = None
                               ) -> Optional[ImprovementProposal]:
-    batch_bodies = list(pool[wave * EXPLORATION_BATCH_SIZE:
-                             (wave + 1) * EXPLORATION_BATCH_SIZE])
+    start = (wave * EXPLORATION_BATCH_SIZE) if offset is None else offset
+    batch_bodies = list(pool[start:start + EXPLORATION_BATCH_SIZE])
     if not batch_bodies:
         return None
     existing = {m.body for m in rs.searcher.macros.values()}
@@ -15541,6 +15598,98 @@ def propose_exploration_batch(rs: "RunState", wave: int,
     note = f"wave{wave}: exploration_batch +{len(macros)} candidates"
     return ImprovementProposal(wave=wave, new_macros=macros,
                                new_weights=weights, note=note)
+
+
+# ---------------------------------------------------------------------------
+# PHASE G (G2/G4): extended archive and full-pool offer schedule. Frozen
+# instruments untouched; the anchor computations are the pinned Phase E
+# functions applied to the extended archive document.
+# ---------------------------------------------------------------------------
+EXPLORATION_ARCHIVE_PHASEG_SHA256 = (
+    "23dda0d87f33a7e995dc08ef6da4dca7dd11a8434fbda82f8d1e600f28c876b4")
+ANCHOR_REPORT_PHASEG_SHA256 = (
+    "5e44476cd8884e96e72f8016ce787c59b931788a61cea174941fa0fdb18a2689")
+
+
+def anchor_load_archive_g() -> Dict[str, object]:
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "docs", "exploration_archive_phaseG.json")
+    raw = open(path, "rb").read()
+    if hashlib.sha256(raw).hexdigest() != EXPLORATION_ARCHIVE_PHASEG_SHA256:
+        raise RuntimeError("phase G archive drifted from its freeze hash")
+    return json.loads(raw.decode("utf-8"))
+
+
+def _anchor_report_g() -> Dict[str, object]:
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "docs", "anchor_report_phaseG.json")
+    raw = open(path, "rb").read()
+    if hashlib.sha256(raw).hexdigest() != ANCHOR_REPORT_PHASEG_SHA256:
+        raise RuntimeError("phase G anchor report drifted from its freeze hash")
+    return json.loads(raw.decode("utf-8"))
+
+
+def exploration_pool_ordered_g(doc: Dict[str, object],
+                               mdl_report: Dict[str, object]
+                               ) -> List[Tuple[int, ...]]:
+    """G2 widened offer set: the same frozen selection rule as Phase E
+    (halt bucket 8, expanded length 2..EXPLORATION_BODY_MAX, dedup) over
+    the extended archive, ordered by the frozen G2 tie-break: MDL net
+    saving (descending), then frozen elite cost, then lexicographic."""
+    vocab = _archive_vocab(doc)
+    gain = {tuple(d["body"]): int(d["net_saving"])
+            for d in mdl_report["mdl_positive"]}
+    seen: set = set()
+    ranked = []
+    for key in sorted(doc["archive"]):
+        if not key.startswith("h8|"):
+            continue
+        e = doc["archive"][key]
+        toks = tuple(int(t) for t in e["tokens"])
+        try:
+            exp = expand_tokens(toks, vocab)
+        except VMCrash:
+            continue
+        if not (2 <= len(exp) <= EXPLORATION_BODY_MAX) or exp in seen:
+            continue
+        seen.add(exp)
+        ranked.append((-gain.get(exp, 0), len(toks), int(e["cost"][1]),
+                       exp))
+    ranked.sort()
+    return [exp for _, _, _, exp in ranked]
+
+
+def offer_exploration_batches(rs: "RunState", wave: int,
+                              pool: Sequence[Tuple[int, ...]]) -> None:
+    """G2 offer schedule: consume the widened pool through a persistent
+    cursor, up to EXPLORATION_BATCHES_PER_WAVE gate measurements per wave.
+    Wider offers only -- acceptance is the unchanged gate discipline."""
+    measured = 0
+    while measured < EXPLORATION_BATCHES_PER_WAVE:
+        start = rs.exploration_offer_cursor
+        if start >= len(pool):
+            return                          # pool exhausted
+        eprop = propose_exploration_batch(rs, wave, pool, offset=start)
+        if eprop is None:
+            # every body in this slice is a duplicate or capacity-blocked;
+            # skip the slice (offers recorded as consumed)
+            rs.exploration_offer_cursor = start + EXPLORATION_BATCH_SIZE
+            continue
+        edig = hashlib.sha256(json.dumps({
+            "m": [list(m.body) for m in eprop.new_macros],
+            "x": "exploration"}, sort_keys=True).encode()).hexdigest()[:16]
+        if edig in rs.rejected_digests:
+            rs.events.append(f"w{wave} SKIP_DUPLICATE_EXPLORATION {edig}")
+            rs.exploration_offer_cursor = start + EXPLORATION_BATCH_SIZE
+            continue
+        eok = speculative_meta_gate(rs, eprop, wave, "exploration_batch")
+        if eok is None:
+            return                          # wave offer budget exhausted;
+                                            # cursor stays for the next wave
+        rs.exploration_offer_cursor = start + EXPLORATION_BATCH_SIZE
+        measured += 1
+        if eok is False:
+            rs.rejected_digests.append(edig)
 
 
 # ---------------------------------------------------------------------------
@@ -16011,6 +16160,107 @@ def test_capacity_probe_deterministic() -> None:
 TESTS.extend([
     test_probe_sandbox_isolation,
     test_capacity_probe_deterministic,
+])
+
+
+# ---------------------------------------------------------------------------
+# Phase G tests: extended archive append-only property, widened offer
+# schedule, directed generated pressure (GR5 intact).
+# ---------------------------------------------------------------------------
+def test_g_archive_extension_append_only() -> None:
+    d = anchor_load_archive()
+    g = anchor_load_archive_g()
+    _assert(set(d["archive"]) <= set(g["archive"]),
+            "extension must keep every Phase D cell")
+    dc = {c["evals"]: c["cells"] for c in d["coverage_curve"]}
+    gc = {c["evals"]: c["cells"] for c in g["coverage_curve"]}
+    _assert(all(gc.get(k) == v for k, v in dc.items()),
+            "extension must replay the Phase D coverage curve exactly")
+    _assert(g["meta"]["budget"] == 2 * d["meta"]["budget"],
+            "extension budget must be exactly double")
+    for k in d["archive"]:
+        de, ge = d["archive"][k], g["archive"][k]
+        if de["tokens"] != ge["tokens"]:
+            _assert((ge["cost"][0], ge["cost"][1], tuple(ge["tokens"]))
+                    < (de["cost"][0], de["cost"][1], tuple(de["tokens"])),
+                    f"replacement in cell {k} is not strictly cheaper")
+    rep = _anchor_report_g()
+    _assert(len(rep["mdl"]["mdl_positive"]) >= 1
+            and len(rep["properties"]["characterized"]) >= 1,
+            "extended anchor report must be present and non-empty")
+
+
+def test_g2_pool_ordering_and_offer_schedule() -> None:
+    doc = anchor_load_archive_g()
+    mdl = _anchor_report_g()["mdl"]
+    p1 = exploration_pool_ordered_g(doc, mdl)
+    p2 = exploration_pool_ordered_g(doc, mdl)
+    _assert(p1 == p2, "ordered pool must be deterministic")
+    base = set(exploration_pool_from_archive(doc))
+    _assert(set(p1) == base,
+            "ordering must not add or drop pool bodies (full pool)")
+    gain = {tuple(d["body"]): int(d["net_saving"])
+            for d in mdl["mdl_positive"]}
+    gains = [gain.get(b, 0) for b in p1]
+    _assert(gains == sorted(gains, reverse=True),
+            "pool must be ordered by MDL net saving descending")
+    # offer schedule: cursor walks the pool and persists; over-budget
+    # attempts leave the cursor for the next wave
+    rs = RunState(adaptive=True)
+    rs.tasks = [seal_task("T95", "search", _argmax_index)]
+    pool = [(4, 29), (4, 30), (4, 16), (4, 4, 25, 29), (4, 4, 23, 29),
+            (4, 4, 26, 29)]
+    offer_exploration_batches(rs, 0, pool)
+    _assert(rs.exploration_offer_cursor == len(pool),
+            "one wave at these bounds must consume this pool")
+    _assert(sum(1 for e in rs.speculation_log
+                if e["kind"] == "exploration_batch") == 2,
+            "two batches of three must have been measured")
+    rt = restore_runstate(runstate_summary(rs))
+    _assert(rt.exploration_offer_cursor == rs.exploration_offer_cursor,
+            "offer cursor must survive the serialization round-trip")
+
+
+def test_g3_directed_mints_shape_pressure_only() -> None:
+    rs = RunState(adaptive=True)
+    rs.tasks = build_sealed_tasks()
+    rs.residues.append({"wave": 0, "tid": "T18", "family": "conditional",
+                        "best": 0.8, "tokens": [4, 29], "evals": 1})
+    cands = propose_mints(rs, wave=0)
+    _assert(cands and cands[0][0] == "diff" and cands[0][1] == "T18",
+            "directed residual candidate must lead the mint stream")
+    task = mint_task(rs, cands[0])
+    _assert(task.origin == "generated",
+            "directed mints must carry origin='generated' (GR5)")
+    oracle_t18 = _ORACLE_REGISTRY["T18"]
+    for xs in ([1, 2], [3, 1, 4, 1], []):
+        want = int(oracle_t18(list(xs))) - run_base_program((4, 29), list(xs))
+        got = int(_ORACLE_REGISTRY[task.tid](list(xs)))
+        _assert(got == want, "diff oracle must equal task minus candidate")
+    # zero-progress residues never mint (their diff duplicates the task)
+    rs2 = RunState(adaptive=True)
+    rs2.tasks = build_sealed_tasks()
+    rs2.residues.append({"wave": 0, "tid": "T28", "family": "power",
+                         "best": 0.0, "tokens": [4, 29], "evals": 1})
+    c2 = propose_mints(rs2, wave=0)
+    _assert(not any(s[0] == "diff" for s in c2),
+            "zero-score residues must not produce directed mints")
+    # frozen arm gets no directed pressure
+    rs3 = RunState(adaptive=False)
+    rs3.tasks = build_sealed_tasks()
+    rs3.residues.append({"wave": 0, "tid": "T18", "family": "conditional",
+                         "best": 0.8, "tokens": [4, 29], "evals": 1})
+    _assert(not any(s[0] == "diff" for s in propose_mints(rs3, wave=0)),
+            "directed pressure is adaptive-arm only")
+    # determinism of the directed spec
+    _assert(propose_mints(rs, wave=1) == propose_mints(rs, wave=1),
+            "directed mint proposals must be deterministic")
+
+
+TESTS.extend([
+    test_g_archive_extension_append_only,
+    test_g2_pool_ordering_and_offer_schedule,
+    test_g3_directed_mints_shape_pressure_only,
 ])
 
 
@@ -37334,8 +37584,10 @@ def main() -> None:
         print(json.dumps(explore_coverage_report(doc), indent=2,
                          sort_keys=True))
     elif args.mode == "transfer-anchor":
-        doc = anchor_load_archive()
-        pool = exploration_pool_from_archive(doc)
+        # G2: widened offer set from the extended archive under the frozen
+        # MDL-gain ordering; acceptance discipline unchanged.
+        doc = anchor_load_archive_g()
+        pool = exploration_pool_ordered_g(doc, _anchor_report_g()["mdl"])
         rs = run_system(adaptive=True, exploration_pool=pool)
         if args.save:
             save_runstate(rs, args.save)
