@@ -23,7 +23,16 @@ Logs must be reproducible. For current public validation, the most useful artifa
 
 The repository contains a historical evidence summary in [EVIDENCE.md](../EVIDENCE.md), but historical success for an earlier runtime is not automatic validation for later runtime changes. The current runtime should be judged by the newest successful [Full Evidence](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/full-evidence.yml) run for the commit being reviewed.
 
-Generated result JSON files are not checked in. This keeps the repository compact, but it means reviewers need the Actions artifact bundle or a local reproduction run to inspect detailed result records.
+Battery-generated result JSON files are not checked in. This keeps the repository compact, but it means reviewers need the Actions artifact bundle or a local reproduction run to inspect those records. The Phases 0–I research-program artifacts are the exception: they are committed under `docs/` with SHA-256 pins asserted by the test suite.
+
+## Current Measured Frontier
+
+The Phases 0–I program left a concrete, attributed frontier rather than an open-ended claim (see [SEQUENCING_RESULT.md](SEQUENCING_RESULT.md) and [ATTRIBUTION_F.md](ATTRIBUTION_F.md)):
+
+- 26 of 33 designer tasks are solved by the final live configuration on the frozen Phase 0 instrument; 19 of 33 by the frozen baseline.
+- T18, T21, and T22 remain open with a search/vocabulary attribution: the missing vocabulary (length-parity conditionals, index arithmetic, order-statistic-times-aggregate at the current surface bound) does not appear in any offered body.
+- T29–T32 carry closure certificates: they are certified out of reach under the current instruction set rather than merely unsolved.
+- Interventions that did not move the frontier are recorded as nulls with their measurements ([ADVANCE_RESULT.md](ADVANCE_RESULT.md)), and prediction misses are scored against the pre-registered [PREDICTIONS.md](PREDICTIONS.md) rather than reinterpreted.
 
 ## Future Work
 

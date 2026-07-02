@@ -13,15 +13,31 @@ flowchart BT
 
 ## Current Evidence Level
 
-From checked-in files alone, the repository shows code-level self-modification mechanisms, explicit validation gates, expected battery commands, and a historical public evidence summary in [EVIDENCE.md](../EVIDENCE.md).
+From checked-in files alone, the repository shows code-level self-modification mechanisms, explicit validation gates, expected battery commands, a historical public evidence summary in [EVIDENCE.md](../EVIDENCE.md), and — since the Phases 0–I research program — committed, SHA-256-pinned run artifacts with per-phase acceptance reports under `docs/`.
 
-Generated logs and result JSON files are not checked in. The current runtime should therefore be validated against the newest successful [Full Evidence](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/full-evidence.yml) run for the commit under review, or by reproducing the commands locally.
+Battery-generated logs and result JSON files are still not checked in; those are validated against the newest successful [Full Evidence](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/full-evidence.yml) run for the commit under review, or by reproducing the commands locally.
 
 The historical evidence described in [EVIDENCE.md](../EVIDENCE.md) supports bounded held-out improvement for an earlier runtime. It should not be treated as automatic proof that every later runtime revision has the same evidence level.
 
-## Result JSON Files
+## Committed Research-Program Artifacts
 
-No structured result JSON files are currently checked into the repository. [Full Evidence](../.github/workflows/full-evidence.yml) is configured to collect these generated files if the corresponding batteries create them:
+The Phases 0–I program committed its measurement instruments and final run artifacts under `docs/`, each pinned by SHA-256 assertions in the built-in test suite:
+
+| Committed file | Role |
+| --- | --- |
+| [frozen_holdout_phase0.json](frozen_holdout_phase0.json) | Frozen evaluation instrument for all designer-task claims. |
+| [probe_battery_phaseD.json](probe_battery_phaseD.json) | Frozen probe battery for exploration descriptors. |
+| [exploration_archive_phaseD.json](exploration_archive_phaseD.json), [exploration_archive_phaseG.json](exploration_archive_phaseG.json) | Sealed exploration archives (append-only; prefix-replay verified). |
+| [anchor_report_phaseE.json](anchor_report_phaseE.json), [anchor_report_phaseG.json](anchor_report_phaseG.json), [transfer_anchor_phaseE.json](transfer_anchor_phaseE.json) | External anchoring reports (transfer, MDL, properties). |
+| [attribution_probe_phaseF.json](attribution_probe_phaseF.json) | Attribution measurements for open tasks. |
+| [adaptive_g3only_phaseH.json](adaptive_g3only_phaseH.json) | Single-intervention reconstruction used by the ordering attribution. |
+| [final_live_phaseG.json](final_live_phaseG.json), [final_live_phaseI.json](final_live_phaseI.json) | Final live-arm evaluation artifacts (each reproduced twice byte-identically before commit). |
+
+The corresponding evaluation records are [EXPANSION_RESULT.md](EXPANSION_RESULT.md), [ADVANCE_RESULT.md](ADVANCE_RESULT.md), and [SEQUENCING_RESULT.md](SEQUENCING_RESULT.md), with per-phase acceptance outputs in `PHASE*_REPORT.md`.
+
+## Battery Result JSON Files
+
+Battery-generated result JSON files remain generated artifacts. [Full Evidence](../.github/workflows/full-evidence.yml) is configured to collect these generated files if the corresponding batteries create them:
 
 | Generated file | Producer mode | Status |
 | --- | --- | --- |
@@ -33,19 +49,19 @@ No structured result JSON files are currently checked into the repository. [Full
 | `grammar_results.json` | `--mode grammar-battery` | Generated artifact, not checked in. |
 | `grammar2_results.json` | `--mode grammar2-battery` | Generated artifact, not checked in. |
 
-Because these files are not present in the checkout, structured plotting requires cleaner generated result schemas or an artifact bundle from a completed evidence run. This patch intentionally does not add plots or fabricate data.
+Because these battery files are not present in the checkout, inspecting them requires an artifact bundle from a completed evidence run or a local reproduction.
 
 ## Battery Outputs
 
 Evidence-oriented runtime modes include:
 
-- [`file_battery`](../rsi_levels_metaforge_unified.py#L9164): file-world hidden A/B evaluations.
-- [`forge_battery`](../rsi_levels_metaforge_unified.py#L8050): self-forge primitive admission and downstream reuse.
+- [`file_battery`](../rsi_levels_metaforge_unified.py#L9561): file-world hidden A/B evaluations.
+- [`forge_battery`](../rsi_levels_metaforge_unified.py#L8447): self-forge primitive admission and downstream reuse.
 - `horizon-scan`: closure certificate generation through the final CLI dispatch.
-- [`cfs_battery`](../rsi_levels_metaforge_unified.py#L13077): continuous functional substrate tests and propagation checks.
-- [`expansion_battery`](../rsi_levels_metaforge_unified.py#L13580): residue-driven extension tests.
-- [`grammar_battery`](../rsi_levels_metaforge_unified.py#L13883): depth-1 grammar feature expansion.
-- [`grammar2_battery`](../rsi_levels_metaforge_unified.py#L14219): depth-2 grammar feature expansion beyond depth 1.
+- [`cfs_battery`](../rsi_levels_metaforge_unified.py#L13474): continuous functional substrate tests and propagation checks.
+- [`expansion_battery`](../rsi_levels_metaforge_unified.py#L13977): residue-driven extension tests.
+- [`grammar_battery`](../rsi_levels_metaforge_unified.py#L14280): depth-1 grammar feature expansion.
+- [`grammar2_battery`](../rsi_levels_metaforge_unified.py#L14616): depth-2 grammar feature expansion beyond depth 1.
 
 ## Pytest and Built-In Test Outputs
 
@@ -58,7 +74,7 @@ python "rsi_levels_metaforge_unified.py" --mode test
 [Full Evidence](../.github/workflows/full-evidence.yml) records this output to `reports/evidence/full_test.log` and checks for:
 
 ```text
-RESULT: 116 passed, 0 failed
+RESULT: 147 passed, 0 failed
 ALL TESTS PASSED
 ```
 
@@ -84,8 +100,8 @@ Accepted modifications are reflected in:
 
 - `RunState.adopted_tokens`, `adopted_wave`, and `adopted_searcher_version`.
 - `META_ACCEPT` events and `gate_records`.
-- [`lineage_report`](../rsi_levels_metaforge_unified.py#L1966).
-- [`runstate_summary`](../rsi_levels_metaforge_unified.py#L2033).
+- [`lineage_report`](../rsi_levels_metaforge_unified.py#L2301).
+- [`runstate_summary`](../rsi_levels_metaforge_unified.py#L2397).
 - Battery-specific result JSON files when generated.
 
 ## Rejected Modifications

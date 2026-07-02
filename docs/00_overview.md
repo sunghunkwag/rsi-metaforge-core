@@ -10,6 +10,7 @@ The repository should be inspected as a set of connected artifacts:
 - Claim boundary and historical evidence notes: [EVIDENCE.md](../EVIDENCE.md)
 - Public CI checks: [Quick CI](../.github/workflows/quick-ci.yml) and [Full Evidence](../.github/workflows/full-evidence.yml)
 - Reviewer guide: this `docs/` directory
+- Research-program record (Phases 0–I): frozen instruments, registered predictions, per-phase acceptance reports, and final evaluations under `docs/` — start from [SEQUENCING_RESULT.md](SEQUENCING_RESULT.md) and work backwards through [PREDICTIONS.md](PREDICTIONS.md), [ORDERING_SPEC.md](ORDERING_SPEC.md), [DISPLACEMENT_TRACE.md](DISPLACEMENT_TRACE.md), [ATTRIBUTION_F.md](ATTRIBUTION_F.md), and [BASELINE_FRONTIER.md](BASELINE_FRONTIER.md)
 
 The runtime includes candidate synthesis, candidate mutation, gated acceptance, rollback-sensitive admission, lineage tracking, battery modes, and a built-in regression suite. These are evidence for bounded verifier behavior inside the repository's test environments. They are not proof of unrestricted RSI, unbounded capability, or open-ended intelligence explosion.
 
@@ -27,4 +28,4 @@ The runtime includes candidate synthesis, candidate mutation, gated acceptance, 
 
 Start with [EVIDENCE.md](../EVIDENCE.md) for the claim boundary and reproduction commands. Then inspect [01_architecture.md](01_architecture.md), [02_rsi_loop.md](02_rsi_loop.md), [03_validation_gates.md](03_validation_gates.md), and [04_evidence_logs.md](04_evidence_logs.md) alongside the runtime source.
 
-For current public validation, prefer the newest successful [Full Evidence](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/full-evidence.yml) run for the commit under review. The checked-in documentation names the expected commands and artifacts, but generated logs and JSON results are produced by runs rather than stored in this repository.
+For current public validation, prefer the newest successful [Full Evidence](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/full-evidence.yml) run for the commit under review. Battery logs and battery JSON results are produced by runs rather than stored in this repository; the research-program run artifacts (frozen holdout, exploration archives, anchor reports, final evaluation runs) are the exception — they are committed under `docs/` and SHA-256-pinned by the test suite, see [04_evidence_logs.md](04_evidence_logs.md).
