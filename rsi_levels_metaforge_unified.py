@@ -105,6 +105,15 @@ RESTARTS_PER_TASK = 6
 ITERS_PER_RESTART = 550       # candidate evaluations per restart
 METAGATE_MAX_TASKS = 12
 
+# Rule 2 growth bounds for the top core (Phase A). A capacity rung beyond
+# these bounds is never proposed; reaching them is reported as
+# "growth bound reached", not treated as an error.
+CAPACITY_GROWTH_STEP_LEN = 6      # max_program_len grows +6 per adopted rung
+CAPACITY_GROWTH_STEP_MACROS = 24  # max_macros grows +24 per adopted rung
+CAPACITY_BOUND_PROGRAM_LEN = 56   # max_stack doubles per rung up to its bound
+CAPACITY_BOUND_STACK = 128
+CAPACITY_BOUND_MACROS = 96
+
 
 def build_train_inputs(seed: int = DATA_SEED) -> List[List[int]]:
     rng = random.Random(seed)
@@ -166,6 +175,13 @@ def _pop_list(stack: List[object]) -> Tuple[int, ...]:
     return v
 
 
+# Active VM stack bound. Default is the historical MAX_STACK; executors that
+# run under a specific searcher capacity (run_base_program, build_enum_table)
+# set it for the duration of one execution and always restore it. A one-slot
+# list (not rebinding a global) keeps set/restore local and exception-safe.
+_ACTIVE_MAX_STACK: List[int] = [MAX_STACK]
+
+
 def _push(stack: List[object], v: object) -> None:
     if isinstance(v, int):
         if abs(v) > INT_CAP:
@@ -175,7 +191,7 @@ def _push(stack: List[object], v: object) -> None:
             raise VMCrash("list_overflow")
     else:  # pragma: no cover
         raise VMCrash("bad_value_type")
-    if len(stack) >= MAX_STACK:
+    if len(stack) >= _ACTIVE_MAX_STACK[0]:
         raise VMCrash("stack_overflow")
     stack.append(v)
 
@@ -281,15 +297,23 @@ def step_op(stack: List[object], op: int, inp: Tuple[int, ...]) -> None:
         raise VMCrash(f"unknown_op_{op}")
 
 
-def run_base_program(expanded: Sequence[int], xs: Sequence[int]) -> int:
+def run_base_program(expanded: Sequence[int], xs: Sequence[int],
+                     max_stack: Optional[int] = None) -> int:
     """Execute a fully expanded base-op program. Returns the single int left on
-    the stack; anything else is a crash. Total and deterministic."""
+    the stack; anything else is a crash. Total and deterministic. max_stack
+    None keeps the historical MAX_STACK bound; a searcher capacity threads a
+    per-execution bound through here."""
     if len(expanded) > MAX_EXPANDED_LEN:
         raise VMCrash("program_too_long")
     stack: List[object] = []
     inp = tuple(int(v) for v in xs)
-    for op in expanded:
-        step_op(stack, op, inp)
+    prev = _ACTIVE_MAX_STACK[0]
+    _ACTIVE_MAX_STACK[0] = MAX_STACK if max_stack is None else max_stack
+    try:
+        for op in expanded:
+            step_op(stack, op, inp)
+    finally:
+        _ACTIVE_MAX_STACK[0] = prev
     if len(stack) != 1 or not isinstance(stack[0], int):
         raise VMCrash("bad_terminal_state")
     return stack[0]
@@ -309,6 +333,18 @@ class Macro:
     parent_tasks: Tuple[str, ...]  # opaque task ids it was mined from
 
 
+@dataclass(frozen=True)
+class CapacityConfig:
+    """Top-VM/searcher capacity (Phase A). Defaults reproduce the historical
+    module constants exactly; a run whose capacity never grows is
+    behaviorally identical to the pre-CapacityConfig runtime. Capacity is
+    part of SearcherState, so a grown candidate is A/B-compared against the
+    incumbent by the unchanged meta_gate and rolls back with the searcher."""
+    max_program_len: int = MAX_PROGRAM_LEN
+    max_stack: int = MAX_STACK
+    max_macros: int = MAX_MACROS
+
+
 @dataclass
 class SearcherState:
     macros: Dict[int, Macro] = field(default_factory=dict)
@@ -316,6 +352,7 @@ class SearcherState:
     version: int = 0
     history: List[str] = field(default_factory=list)
     extended: Dict[int, str] = field(default_factory=dict)
+    capacity: CapacityConfig = field(default_factory=CapacityConfig)
 
     def clone(self) -> "SearcherState":
         s = SearcherState()
@@ -324,6 +361,7 @@ class SearcherState:
         s.version = self.version
         s.history = list(self.history)
         s.extended = dict(self.extended)
+        s.capacity = self.capacity
         return s
 
     def vocab(self) -> List[int]:
@@ -665,7 +703,8 @@ class SynthResult:
 
 
 def _score_tokens(tokens: Sequence[int], macros: Dict[int, Macro],
-                  pairs: Sequence[Tuple[Tuple[int, ...], int]]) -> float:
+                  pairs: Sequence[Tuple[Tuple[int, ...], int]],
+                  max_stack: Optional[int] = None) -> float:
     """Fraction of train pairs matched; crash on a pair scores that pair 0.
     Early exit: if the first two probe pairs both crash, bail (score 0)."""
     try:
@@ -677,7 +716,7 @@ def _score_tokens(tokens: Sequence[int], macros: Dict[int, Macro],
     crashes_head = 0
     for k, (xs, y) in enumerate(screen):
         try:
-            if run_base_program(expanded, xs) == y:
+            if run_base_program(expanded, xs, max_stack=max_stack) == y:
                 s_hits += 1
         except VMCrash:
             if k < 2:
@@ -691,7 +730,7 @@ def _score_tokens(tokens: Sequence[int], macros: Dict[int, Macro],
     hits = s_hits
     for xs, y in pairs[6:]:
         try:
-            if run_base_program(expanded, xs) == y:
+            if run_base_program(expanded, xs, max_stack=max_stack) == y:
                 hits += 1
         except VMCrash:
             pass
@@ -807,8 +846,8 @@ def _sample_token(rng: random.Random, state: SearcherState) -> int:
 
 
 def _random_tokens(rng: random.Random, state: SearcherState, lo: int = 2,
-                   hi: int = MAX_PROGRAM_LEN) -> List[int]:
-    n = rng.randint(lo, hi)
+                   hi: Optional[int] = None) -> List[int]:
+    n = rng.randint(lo, state.capacity.max_program_len if hi is None else hi)
     return [_sample_token(rng, state) for _ in range(n)]
 
 
@@ -817,7 +856,7 @@ def _mutate(rng: random.Random, state: SearcherState, tokens: List[int]) -> List
     op = rng.random()
     if op < 0.45 and t:
         t[rng.randrange(len(t))] = _sample_token(rng, state)
-    elif op < 0.70 and len(t) < MAX_PROGRAM_LEN:
+    elif op < 0.70 and len(t) < state.capacity.max_program_len:
         t.insert(rng.randrange(len(t) + 1), _sample_token(rng, state))
     elif op < 0.90 and len(t) > 2:
         del t[rng.randrange(len(t))]
@@ -889,7 +928,7 @@ def _mutate_drift(rng: random.Random, state: SearcherState,
         j = min(len(t), i + rng.randint(1, 3))
         t[i:j] = [_sample_token_drift(rng, state)
                   for _ in range(rng.randint(1, 3))]
-    elif op < 0.70 and len(t) < MAX_PROGRAM_LEN - 1:
+    elif op < 0.70 and len(t) < state.capacity.max_program_len - 1:
         i = rng.randrange(len(t) + 1)
         t[i:i] = [_sample_token_drift(rng, state)
                   for _ in range(rng.randint(1, 2))]
@@ -897,7 +936,7 @@ def _mutate_drift(rng: random.Random, state: SearcherState,
         for _ in range(rng.randint(2, 3)):
             if t:
                 t[rng.randrange(len(t))] = _sample_token_drift(rng, state)
-    return t[:MAX_PROGRAM_LEN]
+    return t[:state.capacity.max_program_len]
 
 
 def _grams(tokens: Sequence[int], lo: int = 2, hi: int = 3):
@@ -945,6 +984,27 @@ def build_enum_table(state: SearcherState,
                      keep_frontiers: bool = False,
                      priority_tokens: Optional[Sequence[int]] = None,
                      vocab_override: Optional[Sequence[int]] = None) -> EnumTable:
+    """Thin capacity wrapper: the enumeration executes ops under the
+    searcher's max_stack (so a grown-capacity candidate is judged by the
+    unchanged meta_gate machinery at its own capacity), restored on exit.
+    Enumeration budgets (surface_max, class_cap, ENUM_STACK_DEPTH) are
+    budgets, not capacity, and stay identical across A/B arms."""
+    prev = _ACTIVE_MAX_STACK[0]
+    _ACTIVE_MAX_STACK[0] = state.capacity.max_stack
+    try:
+        return _build_enum_table_inner(state, surface_max, class_cap,
+                                       keep_frontiers, priority_tokens,
+                                       vocab_override)
+    finally:
+        _ACTIVE_MAX_STACK[0] = prev
+
+
+def _build_enum_table_inner(state: SearcherState,
+                            surface_max: int = ENUM_SURFACE_MAX,
+                            class_cap: int = ENUM_CLASS_CAP,
+                            keep_frontiers: bool = False,
+                            priority_tokens: Optional[Sequence[int]] = None,
+                            vocab_override: Optional[Sequence[int]] = None) -> EnumTable:
     """Abstraction-first order: newest macros enumerate before base ops, and a
     reserved admission lane keeps macro-bearing prefixes alive under the class
     cap. Rationale (measured, wave-0 dissection): without the lane, macro
@@ -1143,10 +1203,11 @@ def synthesize(task_train_pairs: Sequence[Tuple[Tuple[int, ...], int]],
                     cur = [_sample_token_drift(rng, state)]
             else:
                 cur = [_sample_token_drift(rng, state)
-                       for _ in range(rng.randint(3, MAX_PROGRAM_LEN))]
+                       for _ in range(rng.randint(3, state.capacity.max_program_len))]
         else:
             cur = _random_tokens(rng, state)
-        cur_score = _score_tokens(cur, state.macros, task_train_pairs)
+        cur_score = _score_tokens(cur, state.macros, task_train_pairs,
+                                  max_stack=state.capacity.max_stack)
         evals += 1
         if is_drift:
             d_evals += 1
@@ -1159,7 +1220,8 @@ def synthesize(task_train_pairs: Sequence[Tuple[Tuple[int, ...], int]],
             if _hits_negative(cand, neg):
                 skips += 1
                 continue
-            s = _score_tokens(cand, state.macros, task_train_pairs)
+            s = _score_tokens(cand, state.macros, task_train_pairs,
+                              max_stack=state.capacity.max_stack)
             evals += 1
             if is_drift:
                 d_evals += 1
@@ -1195,11 +1257,12 @@ def synthesize(task_train_pairs: Sequence[Tuple[Tuple[int, ...], int]],
                        neg_skips=skips, zero_grams=zero_grams)
 
 
-def compile_program(tokens: Sequence[int], macros: Dict[int, Macro]) -> Callable[[List[int]], int]:
+def compile_program(tokens: Sequence[int], macros: Dict[int, Macro],
+                    max_stack: Optional[int] = None) -> Callable[[List[int]], int]:
     expanded = expand_tokens(tokens, macros)
 
     def fn(xs: List[int]) -> int:
-        return run_base_program(expanded, xs)
+        return run_base_program(expanded, xs, max_stack=max_stack)
 
     fn.__rsi_vm_program__ = tuple(expanded)  # marker: this is a synthesized fn
     return fn
@@ -1310,6 +1373,8 @@ class ImprovementProposal:
     new_macros: List[Macro]
     new_weights: Dict[int, float]
     note: str
+    capacity: Optional[CapacityConfig] = None   # Rule 2 growth rider; None
+                                                # for ordinary proposals
 
 
 def mine_macros(adopted: Dict[str, Tuple[int, ...]], state: SearcherState,
@@ -1351,7 +1416,7 @@ def mine_macros(adopted: Dict[str, Tuple[int, ...]], state: SearcherState,
     out: List[Macro] = []
     next_id = max(state.macros.keys(), default=MACRO_ID_BASE - 1) + 1
     for score, sub, tids, depth in scored[:top_k]:
-        if len(state.macros) + len(out) >= MAX_MACROS:
+        if len(state.macros) + len(out) >= state.capacity.max_macros:
             break
         out.append(Macro(mid=next_id, body=sub, depth=depth,
                          wave_discovered=wave, parent_tasks=tids))
@@ -1421,12 +1486,15 @@ class MetaGateRecord:
 
 
 def _apply(incumbent: SearcherState, macros: List[Macro],
-           weights: Optional[Dict[int, float]], note: str) -> SearcherState:
+           weights: Optional[Dict[int, float]], note: str,
+           capacity: Optional[CapacityConfig] = None) -> SearcherState:
     cand = incumbent.clone()
     for m in macros:
         cand.macros[m.mid] = m
     if weights is not None:
         cand.weights = dict(weights)
+    if capacity is not None:
+        cand.capacity = capacity
     cand.version += 1
     cand.history.append(note)
     return cand
@@ -1502,8 +1570,9 @@ def tcci_pre_score(rs: "RunState", m: Macro) -> Dict[str, float]:
 
 
 def _install(rs: "RunState", mset: List[Macro], weights, note: str,
-             table: Optional[EnumTable]) -> None:
-    rs.searcher = _apply(rs.searcher, mset, weights, note)
+             table: Optional[EnumTable],
+             capacity: Optional[CapacityConfig] = None) -> None:
+    rs.searcher = _apply(rs.searcher, mset, weights, note, capacity=capacity)
     if table is None:
         table = build_enum_table(rs.searcher,
                                  surface_max=ENUM_SURFACE_MAX,
@@ -1563,7 +1632,7 @@ def meta_gate(rs: "RunState", proposal: ImprovementProposal,
         rs.tcci_reports[m.mid] = pre
 
     cand = _apply(rs.searcher, ranked, proposal.new_weights,
-                  f"{proposal.note} [bundle]")
+                  f"{proposal.note} [bundle]", capacity=proposal.capacity)
     # Macro-closure screen: ladder-regime solutions are macro-dense by
     # construction, so a tiny vocabulary -- every macro plus the base ops the
     # system itself uses most -- finds them in seconds. Full-table fallback
@@ -1589,7 +1658,8 @@ def meta_gate(rs: "RunState", proposal: ImprovementProposal,
         if toks is None:
             continue
         try:
-            fn = compile_program(toks, cand.macros)
+            fn = compile_program(toks, cand.macros,
+                                 max_stack=cand.capacity.max_stack)
         except VMCrash as e:
             rs.events.append(f"w{wave} CAND_COMPILE_CRASH {task.tid} {e} toks={toks}")
             continue
@@ -1621,7 +1691,8 @@ def meta_gate(rs: "RunState", proposal: ImprovementProposal,
             rep["accepted"] = True
             rep["judged_via"] = "macro_closure_screen"
         _install(rs, keep, proposal.new_weights,
-                 f"{proposal.note} [screen_install]", table=None)
+                 f"{proposal.note} [screen_install]", table=None,
+                 capacity=proposal.capacity)
         rs.events.append(
             f"w{wave} SCREEN_INSTALL dropped_riders={dropped} "
             f"gained={[tid for tid, _ in screen_pairs]}")
@@ -1640,7 +1711,8 @@ def meta_gate(rs: "RunState", proposal: ImprovementProposal,
         if toks is None:
             continue
         try:
-            fn = compile_program(toks, cand.macros)
+            fn = compile_program(toks, cand.macros,
+                                 max_stack=cand.capacity.max_stack)
         except VMCrash as e:
             rs.events.append(f"w{wave} CAND_COMPILE_CRASH {task.tid} {e} toks={toks}")
             continue
@@ -1673,7 +1745,8 @@ def meta_gate(rs: "RunState", proposal: ImprovementProposal,
         keep = [m for m in ranked if m.mid in used_ids]
         dropped = sorted(m.mid for m in ranked if m.mid not in used_ids)
         final = _apply(rs.searcher, keep, proposal.new_weights,
-                       f"{proposal.note} [installed_used_only]")
+                       f"{proposal.note} [installed_used_only]",
+                       capacity=proposal.capacity)
         ok_ids = set(final.macros)
         tab.solutions = {v: t for v, t in tab.solutions.items()
                          if all(tok < MACRO_ID_BASE or tok in ok_ids
@@ -1687,6 +1760,93 @@ def meta_gate(rs: "RunState", proposal: ImprovementProposal,
             f"dropped_riders={dropped} gained={[tid for tid, _ in gained_pairs]} "
             f"classes={tab.classes_per_len} truncated={tab.truncated}")
     return any_accept
+
+
+# ---------------------------------------------------------------------------
+# Rule 2 for the top core (Phase A): stagnation-triggered, gate-approved
+# capacity growth. Trigger = the run's existing no-fresh-material condition
+# (zero adoptions this wave AND no newly minted unreachable frontier task)
+# while designer tasks remain OPEN. The grown-capacity candidate rides an
+# ordinary ImprovementProposal through the UNCHANGED meta_gate; capacity is
+# adopted only when the gate finds >= 1 newly gated previously-unsolved task
+# at identical enumeration budgets. Every attempt is appended to
+# rs.growth_log with its trigger values, old -> new capacity, and the range
+# of gate records the attempt produced. A capacity change without an
+# accepted growth_log entry is a bug (audited by test).
+# ---------------------------------------------------------------------------
+def next_capacity_rung(cap: CapacityConfig) -> Optional[CapacityConfig]:
+    """Deterministic growth ladder; None when the bounds are reached."""
+    nxt = CapacityConfig(
+        max_program_len=min(cap.max_program_len + CAPACITY_GROWTH_STEP_LEN,
+                            CAPACITY_BOUND_PROGRAM_LEN),
+        max_stack=min(cap.max_stack * 2, CAPACITY_BOUND_STACK),
+        max_macros=min(cap.max_macros + CAPACITY_GROWTH_STEP_MACROS,
+                       CAPACITY_BOUND_MACROS))
+    return None if nxt == cap else nxt
+
+
+def attempt_capacity_growth(rs: "RunState", wave: int) -> bool:
+    old = rs.searcher.capacity
+    open_designer = sorted(t.tid for t in rs.unsolved()
+                           if t.tid.startswith("T"))
+    if not open_designer:
+        return False                     # no designer wall: nothing to cross
+    grown = next_capacity_rung(old)
+    if grown is None:
+        rs.events.append(
+            f"w{wave} GROWTH_BOUND_REACHED len={old.max_program_len} "
+            f"stack={old.max_stack} macros={old.max_macros}")
+        return False
+    tmp = rs.searcher.clone()
+    tmp.capacity = grown
+    macros = mine_macros(rs.adopted_tokens, tmp, wave)
+    weights = None
+    if rs.adopted_tokens:
+        weights = derive_weights(rs.adopted_tokens, rs.searcher)
+        for m in macros:
+            weights[m.mid] = 2.5
+    note = (f"wave{wave}: capacity_growth "
+            f"len{old.max_program_len}->{grown.max_program_len} "
+            f"stack{old.max_stack}->{grown.max_stack} "
+            f"macros{old.max_macros}->{grown.max_macros} "
+            f"+{len(macros)} macros")
+    proposal = ImprovementProposal(wave=wave, new_macros=macros,
+                                   new_weights=weights, note=note,
+                                   capacity=grown)
+    pdig = hashlib.sha256(json.dumps({
+        "m": [list(m.body) for m in macros],
+        "w": ({k: round(v, 6) for k, v in sorted(weights.items())}
+              if weights else None),
+        "cap": [grown.max_program_len, grown.max_stack, grown.max_macros],
+    }, sort_keys=True).encode()).hexdigest()[:16]
+    if pdig in rs.rejected_digests:
+        rs.events.append(f"w{wave} SKIP_DUPLICATE_GROWTH {pdig}")
+        return False
+    n_rec = len(rs.gate_records)
+    ok = meta_gate(rs, proposal, wave)
+    if not ok:
+        rs.rejected_digests.append(pdig)
+    rs.growth_log.append({
+        "wave": wave,
+        "trigger": {"fresh_adopt": 0, "fresh_frontier": False,
+                    "open_designer": open_designer},
+        "old": {"max_program_len": old.max_program_len,
+                "max_stack": old.max_stack,
+                "max_macros": old.max_macros},
+        "new": {"max_program_len": grown.max_program_len,
+                "max_stack": grown.max_stack,
+                "max_macros": grown.max_macros},
+        "accepted": bool(ok),
+        "gate_records": [n_rec, len(rs.gate_records)],
+        "proposal_digest": pdig,
+    })
+    rs.events.append(
+        f"w{wave} {'GROWTH_ADOPT' if ok else 'GROWTH_REJECT'} "
+        f"len{old.max_program_len}->{grown.max_program_len} "
+        f"stack{old.max_stack}->{grown.max_stack} "
+        f"macros{old.max_macros}->{grown.max_macros} "
+        f"open={','.join(open_designer)}")
+    return bool(ok)
 
 
 # ---------------------------------------------------------------------------
@@ -1735,6 +1895,7 @@ class RunState:
     wm: Optional[object] = None         # S3 OpSemanticsModel (adaptive only)
     prm_prefix_runs: int = 0
     wm_acts: int = 0
+    growth_log: List[Dict[str, object]] = field(default_factory=list)
 
     def unsolved(self) -> List[SealedTask]:
         return [t for t in self.tasks if t.tid not in self.adopted_tokens]
@@ -1794,7 +1955,8 @@ def run_wave(rs: RunState, wave: int) -> None:
                     f"w{wave} OPEN {task.tid} best={res.best_score:.2f} "
                     f"evals={res.evals_used}")
                 break
-            fn = compile_program(res.tokens, rs.searcher.macros)
+            fn = compile_program(res.tokens, rs.searcher.macros,
+                                 max_stack=rs.searcher.capacity.max_stack)
             if any(fn(list(xs)) != y for xs, y in task.train_pairs):
                 rs.events.append(f"w{wave} TRAIN_REVERIFY_FAIL {task.tid}")
                 continue
@@ -1826,7 +1988,8 @@ def run_wave(rs: RunState, wave: int) -> None:
             rs.channel_stats.setdefault("prm", {"evals": 0, "adoptions": 0})
             rs.channel_stats["prm"]["evals"] += res2.evals_used
             if res2.solved:
-                fn2 = compile_program(res2.tokens, rs.searcher.macros)
+                fn2 = compile_program(res2.tokens, rs.searcher.macros,
+                                      max_stack=rs.searcher.capacity.max_stack)
                 if (all(fn2(list(xs)) == y for xs, y in task.train_pairs)
                         and task.holdout_gate(fn2) and task.cf_gate(fn2)):
                     res, fn, adopted_now = res2, fn2, True
@@ -1940,6 +2103,7 @@ def run_system(adaptive: bool = True, waves: int = WAVES,
             continue
         if fresh_adopt == 0 and not fresh_frontier:
             rs.events.append(f"w{w} GATE_SKIPPED_NO_FRESH_MATERIAL")
+            attempt_capacity_growth(rs, w)   # Rule 2: stagnation -> gated growth
             continue
         proposal = propose_improvement(rs.adopted_tokens, rs.searcher, w,
                                        rewrite_rules=rs.rewrite_rules)
@@ -2047,7 +2211,13 @@ def runstate_summary(rs: RunState) -> Dict[str, object]:
                                      "parents": list(m.parent_tasks)}
                         for m in rs.searcher.macros.values()},
             "weights": {str(k): v for k, v in rs.searcher.weights.items()},
+            "capacity": {
+                "max_program_len": rs.searcher.capacity.max_program_len,
+                "max_stack": rs.searcher.capacity.max_stack,
+                "max_macros": rs.searcher.capacity.max_macros,
+            },
         },
+        "growth_log": [dict(g) for g in rs.growth_log],
         "gate_records": [
             {"wave": r.wave, "accepted": r.accepted,
              "inc_solved": r.inc_solved, "cand_solved": r.cand_solved,
@@ -2094,7 +2264,14 @@ def restore_runstate(summary: Dict[str, object]) -> RunState:
                               parent_tasks=tuple(m["parents"]))
     s.weights = {int(k): float(v)
                  for k, v in summary["searcher"]["weights"].items()}
+    cap = summary["searcher"].get("capacity")
+    if cap:
+        s.capacity = CapacityConfig(
+            max_program_len=int(cap["max_program_len"]),
+            max_stack=int(cap["max_stack"]),
+            max_macros=int(cap["max_macros"]))
     rs.searcher = s
+    rs.growth_log = [dict(g) for g in summary.get("growth_log", [])]
     rs.adopted_tokens = {t: tuple(v)
                          for t, v in summary["adopted_tokens"].items()}
     rs.adopted_wave = {t: int(v) for t, v in summary["adopted_wave"].items()}
@@ -14426,6 +14603,134 @@ def test_frozen_holdout_phase0_instrument_intact() -> None:
 
 
 TESTS.append(test_frozen_holdout_phase0_instrument_intact)
+
+
+# ---------------------------------------------------------------------------
+# Phase A tests: Rule 2 capacity growth for the top core.
+# ---------------------------------------------------------------------------
+def _growth_wall_state(max_stack: int) -> "RunState":
+    """Synthetic capacity wall: at max_stack=1 no two-operand program can
+    execute, so sum+count is unreachable; one stack rung (2) unlocks it."""
+    rs = RunState(adaptive=True)
+    rs.searcher.capacity = CapacityConfig(max_stack=max_stack)
+    rs.tasks = [seal_task("T90", "compose", lambda xs: sum(xs) + len(xs))]
+    return rs
+
+
+def test_capacity_defaults_and_second_namespace_unchanged() -> None:
+    _assert(MAX_PROGRAM_LEN == 14 and MAX_STACK == 32 and MAX_MACROS == 24,
+            "top-VM capacity constants must keep their historical values")
+    c = CapacityConfig()
+    _assert((c.max_program_len, c.max_stack, c.max_macros) == (14, 32, 24),
+            "CapacityConfig defaults must equal the module constants")
+    _assert(_ACTIVE_MAX_STACK[0] == MAX_STACK,
+            "ambient VM stack bound must be the historical default at rest")
+    src = INTEGRATED_SOURCE_ARCHIVE["open_ended_rsi"]
+    _assert("MAX_STACK = 64" in src and "MAX_PROGRAM_LEN = 60" in src,
+            "embedded open_ended_rsi namespace literals must stay unchanged")
+    _assert("MAX_STEPS = 200" in src and "SEED = 42" in src,
+            "embedded open_ended_rsi sibling constants must stay unchanged")
+
+
+def test_capacity_growth_ladder_bounded() -> None:
+    cap = CapacityConfig()
+    rungs = 0
+    while True:
+        nxt = next_capacity_rung(cap)
+        if nxt is None:
+            break
+        _assert(nxt.max_program_len <= CAPACITY_BOUND_PROGRAM_LEN
+                and nxt.max_stack <= CAPACITY_BOUND_STACK
+                and nxt.max_macros <= CAPACITY_BOUND_MACROS,
+                "a rung beyond the growth bounds must never be proposed")
+        _assert(nxt != cap and (nxt.max_program_len >= cap.max_program_len
+                                and nxt.max_stack >= cap.max_stack
+                                and nxt.max_macros >= cap.max_macros),
+                "rungs must grow monotonically")
+        cap = nxt
+        rungs += 1
+        _assert(rungs < 32, "growth ladder must terminate")
+    _assert(cap == CapacityConfig(max_program_len=CAPACITY_BOUND_PROGRAM_LEN,
+                                  max_stack=CAPACITY_BOUND_STACK,
+                                  max_macros=CAPACITY_BOUND_MACROS),
+            "ladder must end exactly at the declared bounds")
+    _assert(next_capacity_rung(cap) is None,
+            "growth at the bounds must report no rung")
+
+
+def test_capacity_growth_fires_under_synthetic_stagnation() -> None:
+    rs = _growth_wall_state(max_stack=1)
+    ok = attempt_capacity_growth(rs, wave=0)
+    _assert(ok is True, "gated growth must be adopted across the stack wall")
+    _assert(rs.searcher.capacity.max_stack == 2,
+            "adopted capacity must be exactly one rung")
+    _assert(len(rs.growth_log) == 1, "exactly one growth event must be logged")
+    g = rs.growth_log[0]
+    _assert(g["accepted"] is True and g["wave"] == 0, "event must record adoption")
+    _assert(g["old"]["max_stack"] == 1 and g["new"]["max_stack"] == 2,
+            "event must record old -> new capacity")
+    _assert(g["trigger"]["open_designer"] == ["T90"],
+            "event must record the trigger frontier")
+    lo, hi = g["gate_records"]
+    _assert(hi > lo and any(r.accepted for r in rs.gate_records[lo:hi]),
+            "a capacity change requires an accepted gate record (A3 audit)")
+    _assert(lookup_solution(rs, task_target_vector(rs.tasks[0])) is not None,
+            "the gate-approved table must now reach the wall task")
+
+
+def test_capacity_growth_never_fires_in_healthy_run() -> None:
+    a, f = build_adaptive(), build_frozen()
+    _assert(getattr(f, "growth_log", []) == []
+            and f.searcher.capacity == CapacityConfig(),
+            "frozen arm must never grow capacity")
+    _assert(getattr(a, "growth_log", []) == [],
+            "baseline adaptive run has fresh material every wave (healthy); "
+            "growth must not even be attempted")
+    _assert(a.searcher.capacity == CapacityConfig(),
+            "healthy-run capacity must remain at the defaults")
+    # audit invariant: any capacity off the default requires an accepted,
+    # contiguous growth chain (a change without one is a bug by definition)
+    cap = CapacityConfig()
+    for g in [g for g in getattr(a, "growth_log", []) if g["accepted"]]:
+        _assert(g["old"] == {"max_program_len": cap.max_program_len,
+                             "max_stack": cap.max_stack,
+                             "max_macros": cap.max_macros},
+                "growth chain must be contiguous from the default capacity")
+        cap = CapacityConfig(**g["new"])
+    _assert(cap == a.searcher.capacity,
+            "accepted growth chain must account for the final capacity")
+    # no designer wall -> no attempt, no log entry, no gate record
+    rs = RunState(adaptive=True)
+    n0 = len(rs.gate_records)
+    _assert(attempt_capacity_growth(rs, wave=0) is False
+            and rs.growth_log == [] and len(rs.gate_records) == n0,
+            "growth must not fire without an OPEN designer task")
+
+
+def test_capacity_growth_log_deterministic() -> None:
+    outs = []
+    for _ in range(2):
+        rs = _growth_wall_state(max_stack=1)
+        attempt_capacity_growth(rs, wave=0)
+        outs.append(json.dumps(rs.growth_log, sort_keys=True))
+    _assert(outs[0] == outs[1],
+            "growth log must be byte-identical across two runs")
+    rs = _growth_wall_state(max_stack=1)
+    attempt_capacity_growth(rs, wave=0)
+    rt = restore_runstate(runstate_summary(rs))
+    _assert(rt.searcher.capacity == rs.searcher.capacity,
+            "capacity must survive the serialization round-trip")
+    _assert(json.dumps(rt.growth_log, sort_keys=True) == outs[0],
+            "growth log must survive the serialization round-trip")
+
+
+TESTS.extend([
+    test_capacity_defaults_and_second_namespace_unchanged,
+    test_capacity_growth_ladder_bounded,
+    test_capacity_growth_fires_under_synthetic_stagnation,
+    test_capacity_growth_never_fires_in_healthy_run,
+    test_capacity_growth_log_deterministic,
+])
 
 
 
