@@ -336,6 +336,8 @@ class Macro:
     depth: int                     # 1 = base ops only; 2 = contains depth-1 macro
     wave_discovered: int
     parent_tasks: Tuple[str, ...]  # opaque task ids it was mined from
+    origin: str = "mined"          # "mined" | "exploration" (Phase E transfer
+                                   # anchor candidates; adoption path identical)
 
 
 @dataclass(frozen=True)
@@ -2171,7 +2173,9 @@ def _orchestrate_drift_and_ngi(rs: RunState, wave: int) -> None:
 
 
 def run_system(adaptive: bool = True, waves: int = WAVES,
-               rs: Optional[RunState] = None, wave_start: int = 0) -> RunState:
+               rs: Optional[RunState] = None, wave_start: int = 0,
+               exploration_pool: Optional[List[Tuple[int, ...]]] = None
+               ) -> RunState:
     if rs is None:
         rs = RunState(adaptive=adaptive)
         rs.tasks = build_sealed_tasks()
@@ -2190,6 +2194,24 @@ def run_system(adaptive: bool = True, waves: int = WAVES,
         if w == WAVES - 1:
             rs.events.append(f"w{w} GATE_SKIPPED_FINAL_WAVE")
             continue
+        if exploration_pool:
+            # E1 transfer anchor: archive elites enter the standard
+            # proposal stream as ordinary candidates (origin tagged);
+            # adoption exclusively via the unchanged gate discipline.
+            eprop = propose_exploration_batch(rs, w, exploration_pool)
+            if eprop is not None:
+                edig = hashlib.sha256(json.dumps({
+                    "m": [list(m.body) for m in eprop.new_macros],
+                    "x": "exploration"},
+                    sort_keys=True).encode()).hexdigest()[:16]
+                if edig in rs.rejected_digests:
+                    rs.events.append(
+                        f"w{w} SKIP_DUPLICATE_EXPLORATION {edig}")
+                else:
+                    eok = speculative_meta_gate(rs, eprop, w,
+                                                "exploration_batch")
+                    if eok is False:
+                        rs.rejected_digests.append(edig)
         if fresh_adopt == 0 and not fresh_frontier:
             rs.events.append(f"w{w} GATE_SKIPPED_NO_FRESH_MATERIAL")
             attempt_capacity_growth(rs, w)   # Rule 2: stagnation -> gated growth
@@ -2334,7 +2356,8 @@ def runstate_summary(rs: RunState) -> Dict[str, object]:
             "version": rs.searcher.version,
             "macros": {str(m.mid): {"body": list(m.body), "depth": m.depth,
                                      "wave": m.wave_discovered,
-                                     "parents": list(m.parent_tasks)}
+                                     "parents": list(m.parent_tasks),
+                                     "origin": m.origin}
                         for m in rs.searcher.macros.values()},
             "weights": {str(k): v for k, v in rs.searcher.weights.items()},
             "capacity": {
@@ -2389,7 +2412,8 @@ def restore_runstate(summary: Dict[str, object]) -> RunState:
         s.macros[mid] = Macro(mid=mid, body=tuple(m["body"]),
                               depth=int(m["depth"]),
                               wave_discovered=int(m["wave"]),
-                              parent_tasks=tuple(m["parents"]))
+                              parent_tasks=tuple(m["parents"]),
+                              origin=str(m.get("origin", "mined")))
     s.weights = {int(k): float(v)
                  for k, v in summary["searcher"]["weights"].items()}
     cap = summary["searcher"].get("capacity")
@@ -15417,6 +15441,404 @@ TESTS.extend([
     test_explore_archive_two_run_byte_identical,
     test_explore_strictly_cheaper_replacement,
     test_explore_sealed_from_task_data,
+])
+
+
+# =========================================================================== #
+# PHASE E: EXTERNAL ANCHORING OF TRACK 2 DISCOVERIES                          #
+#                                                                             #
+# Three channels external to the system's own judgment, each a computation    #
+# anyone can rerun: E1 transfer (archive elites as ordinary macro candidates  #
+# through the UNCHANGED meta_gate on designer tasks), E2 compression          #
+# (docs/mdl_spec_phaseE.md), E3 mathematical properties                       #
+# (docs/property_library_phaseE.md). Elites failing all anchors remain in    #
+# the archive as mapped coverage -- recorded, unclaimed.                      #
+# =========================================================================== #
+EXPLORATION_ARCHIVE_PHASED_SHA256 = (
+    "e107d831ab2fc590b66974d6b0bbfea8d36e9be1d8ca43cfff14224b00bca96e")
+MDL_SPEC_PHASEE_SHA256 = (
+    "7ab1a939729e746b870fdcd94a5851c36f50057077695c193df637d8a513c9b4")
+PROPERTY_LIBRARY_PHASEE_SHA256 = (
+    "fad4acd7697d596a4e51c0d1cab078ac3c2ceb3deb7fc13cf5037f13ae220696")
+ANCHOR_IMPL_SHA256 = (
+    "87ac4da05a1cfcc540b8eca4b1c89d1383046874996fe58a51cc5886fe495a99")
+
+PROPERTY_SEED = 515151
+EXPLORATION_BATCH_SIZE = 3
+EXPLORATION_BODY_MAX = 12
+
+
+def anchor_load_archive() -> Dict[str, object]:
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "docs", "exploration_archive_phaseD.json")
+    raw = open(path, "rb").read()
+    if hashlib.sha256(raw).hexdigest() != EXPLORATION_ARCHIVE_PHASED_SHA256:
+        raise RuntimeError("exploration archive drifted from Phase D freeze")
+    return json.loads(raw.decode("utf-8"))
+
+
+def _archive_vocab(doc: Dict[str, object]) -> Dict[int, Macro]:
+    return {int(k): Macro(mid=int(k), body=tuple(v), depth=1,
+                          wave_discovered=0, parent_tasks=(),
+                          origin="exploration")
+            for k, v in doc["meta"]["vocabulary_macros"].items()}
+
+
+def exploration_pool_from_archive(doc: Dict[str, object]
+                                  ) -> List[Tuple[int, ...]]:
+    """E1 candidate selection (deterministic, frozen policy): completed
+    behavior (halt bucket 8), fully expanded to base ops with expanded
+    length 2..EXPLORATION_BODY_MAX, deduplicated, ordered by the frozen
+    elite order (surface length, steps, lexicographic)."""
+    vocab = _archive_vocab(doc)
+    seen: set = set()
+    ranked = []
+    for key in sorted(doc["archive"]):
+        if not key.startswith("h8|"):
+            continue
+        e = doc["archive"][key]
+        toks = tuple(int(t) for t in e["tokens"])
+        try:
+            exp = expand_tokens(toks, vocab)
+        except VMCrash:
+            continue
+        if not (2 <= len(exp) <= EXPLORATION_BODY_MAX) or exp in seen:
+            continue
+        seen.add(exp)
+        ranked.append((len(toks), int(e["cost"][1]), toks, exp))
+    ranked.sort()
+    return [exp for _, _, _, exp in ranked]
+
+
+def propose_exploration_batch(rs: "RunState", wave: int,
+                              pool: Sequence[Tuple[int, ...]]
+                              ) -> Optional[ImprovementProposal]:
+    batch_bodies = list(pool[wave * EXPLORATION_BATCH_SIZE:
+                             (wave + 1) * EXPLORATION_BATCH_SIZE])
+    if not batch_bodies:
+        return None
+    existing = {m.body for m in rs.searcher.macros.values()}
+    next_id = max(rs.searcher.macros.keys(),
+                  default=MACRO_ID_BASE - 1) + 1
+    macros = []
+    for body in batch_bodies:
+        if body in existing:
+            continue
+        if len(rs.searcher.macros) + len(macros) >= \
+                rs.searcher.capacity.max_macros:
+            break
+        macros.append(Macro(mid=next_id, body=body, depth=1,
+                            wave_discovered=wave, parent_tasks=(),
+                            origin="exploration"))
+        next_id += 1
+    if not macros:
+        return None
+    weights = None
+    if rs.adopted_tokens:
+        weights = derive_weights(rs.adopted_tokens, rs.searcher)
+        for m in macros:
+            weights[m.mid] = 2.5
+    note = f"wave{wave}: exploration_batch +{len(macros)} candidates"
+    return ImprovementProposal(wave=wave, new_macros=macros,
+                               new_weights=weights, note=note)
+
+
+# ---------------------------------------------------------------------------
+# E2: compression anchor (docs/mdl_spec_phaseE.md). Computed, not judged.
+# ---------------------------------------------------------------------------
+def mdl_archive_cost(expansions: Sequence[Tuple[int, ...]],
+                     m: Optional[Tuple[int, ...]]) -> int:
+    if m is None:
+        return sum(len(e) for e in expansions)
+    L = len(m)
+    total = 0
+    for e in expansions:
+        i = 0
+        n = len(e)
+        while i < n:
+            if e[i:i + L] == m:
+                total += 1
+                i += L
+            else:
+                total += 1
+                i += 1
+    return total
+
+
+def mdl_positive_discoveries(doc: Dict[str, object]) -> Dict[str, object]:
+    vocab = _archive_vocab(doc)
+    expansions = []
+    for key in sorted(doc["archive"]):
+        toks = tuple(int(t) for t in doc["archive"][key]["tokens"])
+        try:
+            expansions.append(expand_tokens(toks, vocab))
+        except VMCrash:
+            continue
+    base_cost = mdl_archive_cost(expansions, None)
+    windows: Dict[Tuple[int, ...], set] = {}
+    overlap_counts: Dict[Tuple[int, ...], int] = {}
+    for idx, e in enumerate(expansions):
+        n = len(e)
+        for L in range(2, 9):
+            for i in range(n - L + 1):
+                w = e[i:i + L]
+                windows.setdefault(w, set()).add(idx)
+                overlap_counts[w] = overlap_counts.get(w, 0) + 1
+    positive = []
+    n_cand = 0
+    for w in sorted(windows):
+        if len(windows[w]) < 2:
+            continue
+        n_cand += 1
+        L = len(w)
+        defcost = L + 1
+        # upper bound on saving: every (possibly overlapping) occurrence
+        # saves at most L-1 tokens; prune candidates that cannot win.
+        if overlap_counts[w] * (L - 1) <= defcost:
+            continue
+        cost_with = mdl_archive_cost(expansions, w)
+        net = base_cost - (cost_with + defcost)
+        if net > 0:
+            positive.append({
+                "body": list(w),
+                "distinct_elites": len(windows[w]),
+                "cost_with_macro": cost_with,
+                "defcost": defcost,
+                "net_saving": net,
+            })
+    positive.sort(key=lambda d: (-d["net_saving"], d["body"]))
+    return {"base_cost": base_cost, "n_elites": len(expansions),
+            "n_candidates": n_cand, "mdl_positive": positive}
+
+
+# ---------------------------------------------------------------------------
+# E3: property anchor (docs/property_library_phaseE.md). Ground truth by
+# execution against mathematical definitions.
+# ---------------------------------------------------------------------------
+def _property_domain() -> Dict[str, object]:
+    from itertools import product as _prod
+    exhaustive = [list(v) for n in range(0, 4)
+                  for v in _prod(range(4), repeat=n)]
+    rng = random.Random(PROPERTY_SEED)
+    seeded = [[rng.randint(0, 15) for _ in range(rng.randint(4, 21))]
+              for _ in range(50)]
+    shuffles = []
+    for xs in seeded:
+        vs = []
+        for _ in range(5):
+            v = list(xs)
+            rng.shuffle(v)
+            vs.append(v)
+        shuffles.append(vs)
+    increments = [rng.randrange(len(xs)) for xs in seeded]
+    appends = [[rng.randint(0, 15) for _ in range(5)] for _ in seeded]
+    return {"exhaustive": exhaustive, "seeded": seeded,
+            "shuffles": shuffles, "increments": increments,
+            "appends": appends}
+
+
+def property_check(expanded: Tuple[int, ...],
+                   dom: Optional[Dict[str, object]] = None
+                   ) -> Dict[str, bool]:
+    from itertools import permutations as _perms
+    dom = dom or _property_domain()
+    cache: Dict[Tuple[int, ...], Optional[int]] = {}
+
+    def f(xs: Sequence[int]) -> Optional[int]:
+        k = tuple(xs)
+        if k not in cache:
+            done, out, _, _ = explore_run_program(expanded, list(xs))
+            cache[k] = out if done else None
+        return cache[k]
+
+    exhaustive = dom["exhaustive"]
+    seeded = dom["seeded"]
+    total = all(f(xs) is not None for xs in exhaustive) and \
+        all(f(xs) is not None for xs in seeded)
+    out: Dict[str, bool] = {"total_on_domain": total}
+    if not total:
+        for name in ("permutation_invariant", "value_monotone",
+                     "append_monotone", "concat_additive", "concat_max",
+                     "output_bounded_by_input"):
+            out[name] = False
+        return out
+    perm_ok = all(f(list(p)) == f(xs) for xs in exhaustive
+                  for p in _perms(xs))
+    perm_ok = perm_ok and all(f(v) == f(xs)
+                              for xs, vs in zip(seeded, dom["shuffles"])
+                              for v in vs)
+    out["permutation_invariant"] = perm_ok
+    vm = all(f(xs[:i] + [xs[i] + 1] + xs[i + 1:]) >= f(xs)
+             for xs in exhaustive for i in range(len(xs)))
+    vm = vm and all(f(xs[:i] + [xs[i] + 1] + xs[i + 1:]) >= f(xs)
+                    for xs, i in zip(seeded, dom["increments"]))
+    out["value_monotone"] = vm
+    am = all(f(xs + [v]) >= f(xs) for xs in exhaustive for v in range(4))
+    am = am and all(f(xs + [v]) >= f(xs)
+                    for xs, vs in zip(seeded, dom["appends"]) for v in vs)
+    out["append_monotone"] = am
+    pairs = [(a, b) for a in exhaustive for b in exhaustive
+             if len(a) + len(b) <= 6]
+    spairs = [(seeded[i], seeded[i + 1])
+              for i in range(0, len(seeded) - 1, 2)
+              if len(seeded[i]) + len(seeded[i + 1]) <= 21]
+    ca = all(f(a + b) == f(a) + f(b) for a, b in pairs)
+    ca = ca and all(f(a + b) == f(a) + f(b) for a, b in spairs)
+    out["concat_additive"] = ca
+    cm = all(f(a + b) == max(f(a), f(b)) for a, b in pairs)
+    cm = cm and all(f(a + b) == max(f(a), f(b)) for a, b in spairs)
+    out["concat_max"] = cm
+    ob = all(min(xs) <= f(xs) <= max(xs)
+             for xs in exhaustive + seeded if xs)
+    out["output_bounded_by_input"] = ob
+    return out
+
+
+def characterize_elites(doc: Dict[str, object],
+                        limit: Optional[int] = None) -> Dict[str, object]:
+    vocab = _archive_vocab(doc)
+    dom = _property_domain()
+    keys = sorted(doc["archive"])[:limit]
+    characterized = []
+    excluded = 0
+    failed_all = 0
+    for key in keys:
+        toks = tuple(int(t) for t in doc["archive"][key]["tokens"])
+        try:
+            exp = expand_tokens(toks, vocab)
+        except VMCrash:
+            excluded += 1
+            continue
+        if len(exp) < 2:
+            excluded += 1
+            continue
+        outs = []
+        all_done = True
+        for xs in dom["exhaustive"]:
+            done, out, _, _ = explore_run_program(exp, list(xs))
+            outs.append(out if done else None)
+            if not done:
+                all_done = False
+        if all_done and len(set(outs)) == 1:
+            excluded += 1                      # constant on the domain
+            continue
+        if all_done and all(o == len(xs) for o, xs in
+                            zip(outs, dom["exhaustive"])):
+            excluded += 1                      # degenerate length aggregate
+            continue
+        props = property_check(exp, dom)
+        held = sorted(k for k, v in props.items() if v)
+        if held:
+            characterized.append({
+                "cell": key, "tokens": list(toks),
+                "expanded": list(exp),
+                "properties_held": held,
+                "exhaustive_domain": "len<=3, values 0..3 (85 inputs)",
+                "seeded_domain": "50 seeded vectors len 4..21 + variants",
+            })
+        else:
+            failed_all += 1
+    return {"checked": len(keys), "excluded_trivial": excluded,
+            "failed_all_properties": failed_all,
+            "characterized": characterized}
+
+
+# ---------------------------------------------------------------------------
+# Phase E tests: frozen anchors, origin tagging through the gate path,
+# computation determinism.
+# ---------------------------------------------------------------------------
+def test_anchor_frozen_instruments_intact() -> None:
+    import inspect as _inspect
+    root = os.path.dirname(os.path.abspath(__file__))
+    for fname, want in (("mdl_spec_phaseE.md", MDL_SPEC_PHASEE_SHA256),
+                        ("property_library_phaseE.md",
+                         PROPERTY_LIBRARY_PHASEE_SHA256),
+                        ("exploration_archive_phaseD.json",
+                         EXPLORATION_ARCHIVE_PHASED_SHA256)):
+        with open(os.path.join(root, "docs", fname), "rb") as fh:
+            _assert(hashlib.sha256(fh.read()).hexdigest() == want,
+                    f"{fname} drifted from the Phase E freeze hash")
+    src = "".join(_inspect.getsource(f) for f in (
+        mdl_archive_cost, mdl_positive_discoveries, _property_domain,
+        property_check, characterize_elites, exploration_pool_from_archive))
+    _assert(hashlib.sha256(src.encode("utf-8")).hexdigest()
+            == ANCHOR_IMPL_SHA256,
+            "anchor implementation drifted from the Phase E freeze hash")
+
+
+def test_exploration_origin_tagging_through_gate() -> None:
+    # sum(xs)**5 needs an 8-op base program (addition-chain bound), so it
+    # is unreachable by base enumeration at surface 6; an exploration
+    # candidate with exactly that body must earn adoption via the
+    # unchanged gate on a designer task, carrying origin="exploration".
+    body = (4, 29, 5, 5, 11, 5, 11, 11)
+    rs = RunState(adaptive=True)
+    rs.tasks = [seal_task("T94", "power", lambda xs: sum(xs) ** 5)]
+    ensure_worktable(rs)
+    _assert(lookup_solution(rs, task_target_vector(rs.tasks[0])) is None,
+            "synthetic wall must not be base-reachable at surface 6")
+    prop = propose_exploration_batch(rs, 0, [body])
+    _assert(prop is not None
+            and all(m.origin == "exploration" for m in prop.new_macros),
+            "exploration candidates must carry origin='exploration'")
+    ok = speculative_meta_gate(rs, prop, 0, "exploration_batch")
+    _assert(ok is True, "gate must adopt the reach-extending candidate")
+    installed = [m for m in rs.searcher.macros.values()
+                 if m.origin == "exploration"]
+    _assert(len(installed) == 1 and installed[0].body == body,
+            "adopted exploration macro must be installed verbatim")
+    _assert(lookup_solution(rs, task_target_vector(rs.tasks[0])) is not None,
+            "gate-approved table must now reach the wall task")
+    _assert(all(t.startswith("T") for r in rs.gate_records
+                for t in r.probe_tids),
+            "acceptance statistics must stay designer-only")
+    _assert(rs.speculation_log
+            and rs.speculation_log[-1]["kind"] == "exploration_batch",
+            "transfer adoption must ride the speculation ledger")
+    rt = restore_runstate(runstate_summary(rs))
+    back = [m for m in rt.searcher.macros.values()
+            if m.origin == "exploration"]
+    _assert(len(back) == 1 and back[0].body == body,
+            "origin tag must survive the serialization round-trip")
+
+
+def test_mdl_computation_deterministic() -> None:
+    exps = [(1, 2, 3, 1, 2, 3), (1, 2, 3)]
+    _assert(mdl_archive_cost(exps, None) == 9, "base cost miscomputed")
+    _assert(mdl_archive_cost(exps, (1, 2, 3)) == 3,
+            "greedy longest-match miscomputed")
+    # net saving: 9 - (3 + defcost 4) = 2 > 0
+    doc = anchor_load_archive()
+    a = json.dumps(mdl_positive_discoveries(doc), sort_keys=True)
+    b = json.dumps(mdl_positive_discoveries(doc), sort_keys=True)
+    _assert(a == b, "MDL computation must be deterministic")
+
+
+def test_property_verification_deterministic() -> None:
+    dom = _property_domain()
+    sum_prog = (4, 29)
+    p1 = property_check(sum_prog, dom)
+    p2 = property_check(sum_prog, dom)
+    _assert(p1 == p2, "property check must be deterministic")
+    _assert(p1 == {"total_on_domain": True,
+                   "permutation_invariant": True,
+                   "value_monotone": True,
+                   "append_monotone": True,
+                   "concat_additive": True,
+                   "concat_max": False,
+                   "output_bounded_by_input": False},
+            f"sum program property vector diverged: {p1}")
+    doc = anchor_load_archive()
+    a = json.dumps(characterize_elites(doc, limit=15), sort_keys=True)
+    b = json.dumps(characterize_elites(doc, limit=15), sort_keys=True)
+    _assert(a == b, "characterization must be deterministic")
+
+
+TESTS.extend([
+    test_anchor_frozen_instruments_intact,
+    test_exploration_origin_tagging_through_gate,
+    test_mdl_computation_deterministic,
+    test_property_verification_deterministic,
 ])
 
 
@@ -36643,7 +37065,8 @@ def main() -> None:
                              "ext-battery", "cfs-battery",
                              "expansion-battery", "grammar-battery",
                              "grammar2-battery",
-                             "explore", "explore-report",),
+                             "explore", "explore-report",
+                             "transfer-anchor", "anchor-report",),
                     default="demo")
     ap.add_argument("--save", default="")
     ap.add_argument("--adaptive-json", default="adaptive.json")
@@ -36737,6 +37160,28 @@ def main() -> None:
             doc = json.load(fh)
         print(json.dumps(explore_coverage_report(doc), indent=2,
                          sort_keys=True))
+    elif args.mode == "transfer-anchor":
+        doc = anchor_load_archive()
+        pool = exploration_pool_from_archive(doc)
+        rs = run_system(adaptive=True, exploration_pool=pool)
+        if args.save:
+            save_runstate(rs, args.save)
+        expl = sorted(m.mid for m in rs.searcher.macros.values()
+                      if m.origin == "exploration")
+        d, g = _solved_split(rs)
+        print(json.dumps({"solved": d, "solved_generated": g,
+                          "exploration_macros_installed": expl,
+                          "pool_size": len(pool),
+                          "digest": adoption_log_digest(rs)}))
+    elif args.mode == "anchor-report":
+        doc = anchor_load_archive()
+        rep = {"mdl": mdl_positive_discoveries(doc),
+               "properties": characterize_elites(doc)}
+        text = json.dumps(rep, indent=2, sort_keys=True)
+        if args.save:
+            with open(args.save, "w", encoding="utf-8") as fh:
+                fh.write(text + "\n")
+        print(text)
     elif args.mode == "clash-battery":
         clash_battery()
     elif args.mode == "hdc-battery":
