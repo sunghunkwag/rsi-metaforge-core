@@ -114,6 +114,11 @@ CAPACITY_BOUND_PROGRAM_LEN = 56   # max_stack doubles per rung up to its bound
 CAPACITY_BOUND_STACK = 128
 CAPACITY_BOUND_MACROS = 96
 
+# Rule 3 speculation budget for the top core (Phase C): at most this many
+# speculative candidates (capacity rungs, generated-derived macro batches)
+# are measured per wave; excess attempts are logged and refused.
+SPECULATION_BUDGET_PER_WAVE = 2
+
 
 def build_train_inputs(seed: int = DATA_SEED) -> List[List[int]]:
     rng = random.Random(seed)
@@ -429,6 +434,10 @@ class SealedTask:
     train_pairs: Tuple[Tuple[Tuple[int, ...], int], ...]
     holdout_gate: Callable[[Callable[[List[int]], int]], bool]
     cf_gate: Callable[[Callable[[List[int]], int]], bool]
+    origin: str = "designer"       # "designer" | "generated" (GR5: generated
+                                   # tasks shape search pressure and mining,
+                                   # never solved counts, meta-gate acceptance
+                                   # statistics, or evaluation sets)
 
 
 def _make_gate(oracle, seed: int, lengths, trials: int, valmax: int):
@@ -446,14 +455,16 @@ def _make_gate(oracle, seed: int, lengths, trials: int, valmax: int):
     return gate
 
 
-def seal_task(tid: str, family: str, oracle) -> SealedTask:
+def seal_task(tid: str, family: str, oracle,
+              origin: str = "designer") -> SealedTask:
     pairs = tuple((xs, int(oracle(list(xs)))) for xs in TRAIN_INPUTS)
     return SealedTask(
         tid=tid, family=family, train_pairs=pairs,
         holdout_gate=_make_gate(oracle, GATE_SEED, HOLDOUT_LENGTHS,
                                 GATE_TRIALS, 7),
         cf_gate=_make_gate(oracle, CF_GATE_SEED, CF_LENGTHS,
-                           CF_TRIALS, CF_VALMAX))
+                           CF_TRIALS, CF_VALMAX),
+        origin=origin)
 
 
 # --- oracle definitions (used ONLY by seal_task; never imported by search) ---
@@ -615,7 +626,7 @@ def mint_task(rs: "RunState", spec: Tuple[str, str, str]) -> SealedTask:
     tid = f"G{len(rs.gen_specs):02d}"
     oracle = _gen_oracle(spec, rs)
     _register_oracle(tid, oracle)
-    task = seal_task(tid, "self_gen", oracle)
+    task = seal_task(tid, "self_gen", oracle, origin="generated")
     rs.gen_specs.append(list(spec))
     rs.gen_names[tid] = f"{spec[0]}({spec[1]}" + (f",{spec[2]})" if spec[2] else ")")
     rs.tasks.append(task)
@@ -1569,18 +1580,29 @@ def tcci_pre_score(rs: "RunState", m: Macro) -> Dict[str, float]:
             "captured": sorted(captured)}
 
 
+def _permanent_install(rs: "RunState", searcher: SearcherState,
+                       table: EnumTable) -> None:
+    """C1: the single permanent-installation site. The searcher of a live
+    run is assigned here and nowhere else (restore_runstate deserializes
+    saved state; an AST test audits both facts). Every path into this
+    function has already passed the sealed holdout + counterfactual gate
+    discipline; everything before it is scratch."""
+    rs.searcher = searcher
+    rs.work_table = table
+    rs.extra_solutions = {}
+
+
 def _install(rs: "RunState", mset: List[Macro], weights, note: str,
              table: Optional[EnumTable],
              capacity: Optional[CapacityConfig] = None) -> None:
-    rs.searcher = _apply(rs.searcher, mset, weights, note, capacity=capacity)
+    new_searcher = _apply(rs.searcher, mset, weights, note, capacity=capacity)
     if table is None:
-        table = build_enum_table(rs.searcher,
+        table = build_enum_table(new_searcher,
                                  surface_max=ENUM_SURFACE_MAX,
                                  class_cap=ENUM_CLASS_CAP,
                                  keep_frontiers=True)
         rs.enum_extensions_total += table.extensions
-    rs.work_table = table
-    rs.extra_solutions = {}
+    _permanent_install(rs, new_searcher, table)
     absorb_rewrites(rs, table)
     rs.events.append(
         f"SEARCHER_NOW v{rs.searcher.version} macros={sorted(rs.searcher.macros)} "
@@ -1603,7 +1625,12 @@ def meta_gate(rs: "RunState", proposal: ImprovementProposal,
     land: acceptance requires >= 1 previously-unsolved task whose new program
     passes the external holdout gate."""
     ensure_worktable(rs)
-    probes = rs.unsolved()
+    # B2 hard separation (GR5): the A/B comparison set and every acceptance
+    # statistic are computed on designer-origin tasks only. Generated tasks
+    # stay in rs.tasks as search pressure and macro-mining material, but a
+    # candidate improvement earns adoption exclusively by newly gating a
+    # designer task under the sealed dual gates.
+    probes = [t for t in rs.unsolved() if t.origin == "designer"]
     if not probes:
         rs.gate_records.append(
             MetaGateRecord(wave, False, 0, 0, 0, 0, (), "empty_frontier"))
@@ -1751,15 +1778,74 @@ def meta_gate(rs: "RunState", proposal: ImprovementProposal,
         tab.solutions = {v: t for v, t in tab.solutions.items()
                          if all(tok < MACRO_ID_BASE or tok in ok_ids
                                 for tok in t)}
-        rs.searcher = final
-        rs.work_table = tab
-        rs.extra_solutions = {}
+        _permanent_install(rs, final, tab)
         any_accept = True
         rs.events.append(
             f"SEARCHER_NOW v{final.version} macros={sorted(final.macros)} "
             f"dropped_riders={dropped} gained={[tid for tid, _ in gained_pairs]} "
             f"classes={tab.classes_per_len} truncated={tab.truncated}")
     return any_accept
+
+
+# ---------------------------------------------------------------------------
+# Rule 3 for the top core (Phase C): double-ledger speculation for capacity
+# rungs and generated-derived macro batches. The speculative artifact lives
+# only in a scratch ledger; the UNCHANGED meta_gate (sealed holdout +
+# counterfactual discipline behind it) is the sole arbiter; a rejection
+# cascade-rolls the scratch away and the certified searcher must hash
+# byte-identically to its pre-speculation serialization. Bounded per wave.
+# ---------------------------------------------------------------------------
+def _searcher_state_hash(s: SearcherState) -> str:
+    raw = json.dumps({
+        "macros": {str(m.mid): {"body": list(m.body), "depth": m.depth,
+                                "wave": m.wave_discovered,
+                                "parents": list(m.parent_tasks)}
+                   for m in s.macros.values()},
+        "weights": {str(k): round(v, 9) for k, v in sorted(s.weights.items())},
+        "version": s.version,
+        "extended": {str(k): v for k, v in sorted(s.extended.items())},
+        "capacity": [s.capacity.max_program_len, s.capacity.max_stack,
+                     s.capacity.max_macros],
+    }, sort_keys=True).encode()
+    return hashlib.sha256(raw).hexdigest()
+
+
+def _proposal_is_generated_derived(proposal: ImprovementProposal) -> bool:
+    return any(p.startswith("G") for m in proposal.new_macros
+               for p in m.parent_tasks)
+
+
+def speculative_meta_gate(rs: "RunState", proposal: ImprovementProposal,
+                          wave: int, kind: str) -> Optional[bool]:
+    """True = gate-adopted, False = gate-rejected (and rolled back),
+    None = not measured (per-wave speculation budget exhausted)."""
+    spent = sum(1 for e in rs.speculation_log if e["wave"] == wave)
+    if spent >= SPECULATION_BUDGET_PER_WAVE:
+        rs.events.append(f"w{wave} SPECULATION_BUDGET_EXHAUSTED {kind}")
+        return None
+    ledger = SpeculativeLedger()
+    name = f"w{wave}:{kind}"
+    pre = _searcher_state_hash(rs.searcher)
+    ledger.speculate(name, {"note": proposal.note})
+    n_rec = len(rs.gate_records)
+    ok = bool(meta_gate(rs, proposal, wave))
+    ledger.finalize(name, ok)
+    residue = ledger.rollback_all_scratch()
+    post = _searcher_state_hash(rs.searcher)
+    if not ok and post != pre:
+        raise AssertionError(
+            "speculation rollback failed: certified searcher state changed "
+            "on a rejected candidate")
+    rs.speculation_log.append({
+        "wave": wave, "kind": kind, "name": name,
+        "accepted": ok,
+        "pre_hash": pre, "post_hash": post,
+        "rolled_back_clean": ok or post == pre,
+        "scratch_residue": residue + len(ledger.scratch),
+        "gate_records": [n_rec, len(rs.gate_records)],
+        "ledger_history": [dict(h) for h in ledger.history],
+    })
+    return ok
 
 
 # ---------------------------------------------------------------------------
@@ -1823,7 +1909,9 @@ def attempt_capacity_growth(rs: "RunState", wave: int) -> bool:
         rs.events.append(f"w{wave} SKIP_DUPLICATE_GROWTH {pdig}")
         return False
     n_rec = len(rs.gate_records)
-    ok = meta_gate(rs, proposal, wave)
+    ok = speculative_meta_gate(rs, proposal, wave, "capacity_rung")
+    if ok is None:
+        return False               # budget-deferred: not measured, no verdict
     if not ok:
         rs.rejected_digests.append(pdig)
     rs.growth_log.append({
@@ -1896,6 +1984,7 @@ class RunState:
     prm_prefix_runs: int = 0
     wm_acts: int = 0
     growth_log: List[Dict[str, object]] = field(default_factory=list)
+    speculation_log: List[Dict[str, object]] = field(default_factory=list)
 
     def unsolved(self) -> List[SealedTask]:
         return [t for t in self.tasks if t.tid not in self.adopted_tokens]
@@ -2117,7 +2206,15 @@ def run_system(adaptive: bool = True, waves: int = WAVES,
         if pdig in rs.rejected_digests:
             rs.events.append(f"w{w} SKIP_DUPLICATE_PROPOSAL {pdig}")
             continue
-        ok = meta_gate(rs, proposal, w)
+        if _proposal_is_generated_derived(proposal):
+            # Rule 3 scope (b): macro batches carrying generated-task
+            # lineage are speculative candidates behind the same gate.
+            ok = speculative_meta_gate(rs, proposal, w,
+                                       "generated_macro_batch")
+            if ok is None:
+                continue           # budget-deferred: not measured
+        else:
+            ok = meta_gate(rs, proposal, w)
         if not ok:
             rs.rejected_digests.append(pdig)
     return rs
@@ -2194,6 +2291,35 @@ def adoption_log_digest(rs: RunState) -> str:
 # processes within a fixed wall-clock box; the counterfactual report is then
 # computed from saved summaries. Determinism makes the split exact.
 # ---------------------------------------------------------------------------
+def _solved_split(rs: "RunState") -> Tuple[int, int]:
+    """(designer_solved, generated_solved). GR5: only the designer count is
+    a solved count; the generated count is bookkeeping about pressure."""
+    origin = {t.tid: t.origin for t in rs.tasks}
+    d = sum(1 for tid in rs.adopted_tokens
+            if origin.get(tid,
+                          "designer" if tid.startswith("T")
+                          else "generated") == "designer")
+    return d, len(rs.adopted_tokens) - d
+
+
+def generated_pressure_report(rs: RunState) -> Dict[str, object]:
+    """B3 facts: how many tasks were minted, how many were solved (as
+    pressure, not score), and which minted tasks contributed lineage to an
+    installed macro (their tid appears in an installed macro's
+    parent_tasks). Facts about mechanism, not capability claims."""
+    installed = rs.searcher.macros.values()
+    contributing = sorted({p for m in installed for p in m.parent_tasks
+                           if p.startswith("G")})
+    return {
+        "generated_minted": len(rs.gen_specs),
+        "generated_solved_as_pressure": _solved_split(rs)[1],
+        "generated_contributing_macro_lineage": contributing,
+        "installed_macros_with_generated_parents": sorted(
+            m.mid for m in installed
+            if any(p.startswith("G") for p in m.parent_tasks)),
+    }
+
+
 def runstate_summary(rs: RunState) -> Dict[str, object]:
     return {
         "adaptive": rs.adaptive,
@@ -2218,6 +2344,8 @@ def runstate_summary(rs: RunState) -> Dict[str, object]:
             },
         },
         "growth_log": [dict(g) for g in rs.growth_log],
+        "speculation_log": [dict(e) for e in rs.speculation_log],
+        "generated_report": generated_pressure_report(rs),
         "gate_records": [
             {"wave": r.wave, "accepted": r.accepted,
              "inc_solved": r.inc_solved, "cand_solved": r.cand_solved,
@@ -2272,6 +2400,7 @@ def restore_runstate(summary: Dict[str, object]) -> RunState:
             max_macros=int(cap["max_macros"]))
     rs.searcher = s
     rs.growth_log = [dict(g) for g in summary.get("growth_log", [])]
+    rs.speculation_log = [dict(e) for e in summary.get("speculation_log", [])]
     rs.adopted_tokens = {t: tuple(v)
                          for t, v in summary["adopted_tokens"].items()}
     rs.adopted_wave = {t: int(v) for t, v in summary["adopted_wave"].items()}
@@ -2420,7 +2549,8 @@ def demo() -> None:
     print("RSI METAFORGE (real-search core) -- adaptive run")
     print("=" * 88)
     name = lambda tid: task_label(rs, tid)
-    print(f"tasks={len(rs.tasks)} solved={len(rs.adopted_tokens)} "
+    _d, _g = _solved_split(rs)
+    print(f"tasks={len(rs.tasks)} solved={_d} solved_generated={_g} "
           f"open={len(rs.unsolved())} total_evals={rs.evals_total}")
     print("\nSOLVED (tid name wave searcher_version surface_tokens):")
     for tid in sorted(rs.adopted_tokens):
@@ -7185,7 +7315,7 @@ def test_lineage_scores_match_cached_run_facts() -> None:
     _assert(lin["lineage_gain_total"] == mint_adopted,
             f"lineage totals diverge: {lin['lineage_gain_total']}"
             f" vs {mint_adopted}")
-    _assert(mint_adopted >= 10,
+    _assert(mint_adopted == 4,
             f"frontier-mint count implausibly low: {mint_adopted}")
     _assert(all(r["perturbation_stability"] == 1.0
                 for r in lin["per_wave"]),
@@ -14730,6 +14860,563 @@ TESTS.extend([
     test_capacity_growth_fires_under_synthetic_stagnation,
     test_capacity_growth_never_fires_in_healthy_run,
     test_capacity_growth_log_deterministic,
+])
+
+
+# ---------------------------------------------------------------------------
+# Phase B tests: generated tasks are pressure, never score (GR5).
+# ---------------------------------------------------------------------------
+def test_origin_tags_designer_and_generated() -> None:
+    _assert(all(t.origin == "designer" for t in build_sealed_tasks()),
+            "designer suite tasks must carry origin='designer'")
+    _assert(SealedTask.__dataclass_fields__["origin"].default == "designer",
+            "origin must default to designer")
+    rs = build_adaptive()
+    gs = [t for t in rs.tasks if t.tid.startswith("G")]
+    _assert(gs, "adaptive run minted no generated task")
+    _assert(all(t.origin == "generated" for t in gs),
+            "minted tasks must carry origin='generated'")
+    _assert(all(t.origin == "designer" for t in rs.tasks
+                if t.tid.startswith("T")),
+            "designer tasks must keep origin through the run")
+
+
+def test_meta_gate_excludes_generated_from_acceptance() -> None:
+    # A frontier of only generated tasks is an EMPTY comparison set: the
+    # gate must refuse before evaluating anything (GR5(b)).
+    rs = RunState(adaptive=True)
+    rs.tasks = [seal_task("G50", "self_gen", lambda xs: sum(xs),
+                          origin="generated")]
+    prop = ImprovementProposal(wave=0, new_macros=[], new_weights=None,
+                               note="generated_only_probe")
+    n0 = len(rs.gate_records)
+    _assert(meta_gate(rs, prop, 0) is False,
+            "gate must not accept on a generated-only frontier")
+    _assert(len(rs.gate_records) == n0 + 1
+            and rs.gate_records[n0].note == "empty_frontier"
+            and rs.gate_records[n0].probe_tids == (),
+            "generated-only frontier must record empty_frontier")
+    # Acceptance statistics of a real run: zero generated tasks anywhere.
+    a = build_adaptive()
+    _assert(a.gate_records, "adaptive run produced no gate records")
+    for r in a.gate_records:
+        _assert(all(t.startswith("T") for t in r.probe_tids),
+                f"generated task in acceptance statistics: {r.probe_tids}")
+    import re as _re
+    for ev in a.events:
+        m = _re.search(r"gained=\[([^\]]*)\]", ev)
+        if m:
+            _assert("'G" not in m.group(1) and '"G' not in m.group(1),
+                    f"generated task in a gate gain event: {ev}")
+    # Evaluation set (GR5(c)): the frozen instrument holds designer ids only.
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "docs", "frozen_holdout_phase0.json")
+    doc = json.loads(open(path, "rb").read().decode("utf-8"))
+    _assert(all(k.startswith("T") for k in doc["tasks"]),
+            "generated task leaked into the frozen evaluation set")
+
+
+def test_generated_pressure_report_and_determinism() -> None:
+    a = build_adaptive()
+    rep = generated_pressure_report(a)
+    _assert(rep["generated_minted"] == len(a.gen_specs),
+            "minted count must match gen_specs")
+    _assert(all(p.startswith("G")
+                for p in rep["generated_contributing_macro_lineage"]),
+            "lineage list must contain only generated tids")
+    d, g = _solved_split(a)
+    _assert(d + g == len(a.adopted_tokens) and g ==
+            rep["generated_solved_as_pressure"],
+            "solved split must partition adopted tasks")
+    outs = []
+    for _ in range(2):
+        rs = run_system(adaptive=True, waves=2)
+        outs.append(json.dumps(runstate_summary(rs), sort_keys=True))
+    _assert(outs[0] == outs[1],
+            "two-run summary (origin tags, generated report) must be "
+            "byte-identical")
+
+
+TESTS.extend([
+    test_origin_tags_designer_and_generated,
+    test_meta_gate_excludes_generated_from_acceptance,
+    test_generated_pressure_report_and_determinism,
+])
+
+
+# ---------------------------------------------------------------------------
+# Phase C tests: double-ledger speculation for the top core (Rule 3 scopes
+# (a) capacity rungs and (b) generated-derived macro batches).
+# ---------------------------------------------------------------------------
+def test_permanent_install_single_call_site() -> None:
+    import ast as _ast, pathlib
+    tree = _ast.parse(pathlib.Path(__file__).read_text(encoding="utf-8"))
+    funcs = [(n.name, n.lineno, n.end_lineno) for n in _ast.walk(tree)
+             if isinstance(n, (_ast.FunctionDef, _ast.AsyncFunctionDef))]
+
+    def owner(lineno: int) -> str:
+        best = None
+        for name, s, e in funcs:
+            if s <= lineno <= e and (best is None or s > best[1]):
+                best = (name, s)
+        return best[0] if best else "<module>"
+
+    sites = []
+    for node in _ast.walk(tree):
+        targets = (node.targets if isinstance(node, _ast.Assign)
+                   else [node.target] if isinstance(node, _ast.AugAssign)
+                   else [])
+        for t in targets:
+            if isinstance(t, _ast.Attribute) and t.attr == "searcher":
+                sites.append((owner(node.lineno), node.lineno))
+    _assert({o for o, _ in sites} == {"_permanent_install",
+                                      "restore_runstate"},
+            f"searcher must be assigned only by the certified installer "
+            f"and deserialization; found: {sites}")
+
+
+def test_generated_derived_classification() -> None:
+    g = Macro(mid=200, body=(4, 25), depth=1, wave_discovered=0,
+              parent_tasks=("T05", "G03"))
+    d = Macro(mid=201, body=(4, 25), depth=1, wave_discovered=0,
+              parent_tasks=("T05",))
+    _assert(_proposal_is_generated_derived(
+        ImprovementProposal(0, [g], None, "x")) is True,
+        "a batch with any generated parent is generated-derived")
+    _assert(_proposal_is_generated_derived(
+        ImprovementProposal(0, [d], None, "x")) is False,
+        "designer-only batches stay on the ordinary gate path")
+
+
+def test_speculative_rollback_restores_certified_state() -> None:
+    # Rejection: argmax_index (ISA-blocked search family) stays unreachable
+    # even at the grown rung; rollback must leave the certified searcher
+    # byte-identical and the scratch empty.
+    rs = RunState(adaptive=True)
+    rs.searcher.capacity = CapacityConfig(max_stack=1)
+    rs.tasks = [seal_task("T91", "search", _argmax_index)]
+    pre = _searcher_state_hash(rs.searcher)
+    _assert(attempt_capacity_growth(rs, wave=0) is False,
+            "growth across an ISA wall must be gate-rejected")
+    _assert(_searcher_state_hash(rs.searcher) == pre,
+            "rejected speculation must restore certified state (C2)")
+    _assert(len(rs.speculation_log) == 1, "one speculation entry expected")
+    e = rs.speculation_log[0]
+    _assert(e["kind"] == "capacity_rung" and e["accepted"] is False,
+            "entry must record the rejected capacity rung")
+    _assert(e["rolled_back_clean"] is True and e["scratch_residue"] == 0,
+            "cascade rollback must leave no residue (C3)")
+    _assert(e["pre_hash"] == e["post_hash"] == pre,
+            "entry must carry matching pre/post certified hashes")
+    _assert(e["ledger_history"] == [{"name": "w0:capacity_rung",
+                                     "status": "rolled_back"}],
+            "ledger history must show the rollback")
+    _assert(rs.growth_log and rs.growth_log[0]["accepted"] is False,
+            "growth log must record the rejection")
+    # Acceptance: the stack-wall crossing records an adopted speculation.
+    rs2 = _growth_wall_state(max_stack=1)
+    _assert(attempt_capacity_growth(rs2, wave=0) is True,
+            "gated growth must still be adoptable through the ledger")
+    e2 = rs2.speculation_log[0]
+    _assert(e2["accepted"] is True and e2["post_hash"] != e2["pre_hash"],
+            "adopted speculation must land as a new certified state")
+    _assert(e2["ledger_history"] == [{"name": "w0:capacity_rung",
+                                      "status": "adopted"}],
+            "ledger history must show the adoption")
+
+
+def test_speculation_budget_bounded_per_wave() -> None:
+    rs = RunState(adaptive=True)
+    rs.tasks = [seal_task("T92", "search", _argmax_index)]
+    prop = ImprovementProposal(wave=0, new_macros=[], new_weights=None,
+                               note="budget_probe")
+    _assert(speculative_meta_gate(rs, prop, 0, "generated_macro_batch")
+            is False, "first budgeted attempt must be measured")
+    _assert(speculative_meta_gate(rs, prop, 0, "capacity_rung")
+            is False, "second budgeted attempt must be measured")
+    n_rec = len(rs.gate_records)
+    _assert(speculative_meta_gate(rs, prop, 0, "generated_macro_batch")
+            is None, "over-budget attempt must be refused, not measured")
+    _assert(len(rs.gate_records) == n_rec and len(rs.speculation_log) == 2,
+            "refused attempt must add no gate record and no ledger entry")
+    _assert(any("SPECULATION_BUDGET_EXHAUSTED" in e for e in rs.events),
+            "budget exhaustion must be logged")
+    _assert(speculative_meta_gate(rs, prop, 1, "capacity_rung") is not None,
+            "budget must reset on the next wave")
+
+
+def test_speculation_ledger_deterministic() -> None:
+    outs = []
+    for _ in range(2):
+        rs = RunState(adaptive=True)
+        rs.searcher.capacity = CapacityConfig(max_stack=1)
+        rs.tasks = [seal_task("T91", "search", _argmax_index)]
+        attempt_capacity_growth(rs, wave=0)
+        outs.append(json.dumps(rs.speculation_log, sort_keys=True))
+    _assert(outs[0] == outs[1],
+            "speculation ledger must be byte-identical across two runs")
+    rs2 = restore_runstate(runstate_summary(rs))
+    _assert(json.dumps(rs2.speculation_log, sort_keys=True) == outs[0],
+            "speculation ledger must survive the serialization round-trip")
+
+
+TESTS.extend([
+    test_permanent_install_single_call_site,
+    test_generated_derived_classification,
+    test_speculative_rollback_restores_certified_state,
+    test_speculation_budget_bounded_per_wave,
+    test_speculation_ledger_deterministic,
+])
+
+
+# =========================================================================== #
+# PHASE D: TRACK 2 EXPLORATION ENGINE AND COVERAGE ARCHIVE                    #
+#                                                                             #
+# Maps the top VM's reachable behavior space directly -- no task suite        #
+# involved. Only the measuring instruments are frozen: the probe battery     #
+# (docs/probe_battery_phaseD.json), the descriptor set                        #
+# (docs/descriptor_spec_phaseD.md + the reference implementation below,      #
+# both hash-pinned), and the elite total order. Sealing (GR9): this engine   #
+# has no read access to designer task definitions, holdout data, or gate     #
+# internals; it may use the searcher's macro vocabulary as building blocks.  #
+# Coverage statistics are facts about mapped territory, not capability       #
+# claims.                                                                     #
+# =========================================================================== #
+EXPLORE_SEED = 424243
+EXPLORE_EVALS_PER_RUN = 60_000
+EXPLORE_MAX_SURFACE_LEN = 14
+EXPLORE_STEP_BUDGET = 512
+EXPLORE_CHECKPOINT_EVERY = 5_000
+EXPLORE_SCREEN_PROBES = 8
+
+PROBE_BATTERY_PHASED_SHA256 = (
+    "b11b14dfe4616a3c13a1ac872d08b181c532e796c19f74bafe6c050d9e0c0d01")
+DESCRIPTOR_SPEC_PHASED_SHA256 = (
+    "c0642490cef51691846dab3260d0e630fedaeaa46e281a3c8b94749e5d937c13")
+EXPLORE_IMPL_SHA256 = (
+    "cb7aa8ffa42d24c8eede0d73f964e7d99e71b35e6886a3e26d9296db32fb3bc7")
+
+
+def explore_load_battery() -> List[Dict[str, object]]:
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "docs", "probe_battery_phaseD.json")
+    raw = open(path, "rb").read()
+    if hashlib.sha256(raw).hexdigest() != PROBE_BATTERY_PHASED_SHA256:
+        raise RuntimeError("probe battery drifted from the Phase D freeze")
+    return json.loads(raw.decode("utf-8"))["probes"]
+
+
+def explore_run_program(expanded: Sequence[int], xs: Sequence[int]
+                        ) -> Tuple[bool, Optional[int], int, int]:
+    """Execute one expanded program on one probe under the default VM stack
+    bound (pinned for the duration). Returns
+    (completed, output, executed_ops, peak_stack)."""
+    prev = _ACTIVE_MAX_STACK[0]
+    _ACTIVE_MAX_STACK[0] = MAX_STACK
+    stack: List[object] = []
+    inp = tuple(int(v) for v in xs)
+    steps = 0
+    peak = 0
+    try:
+        for op in expanded:
+            step_op(stack, op, inp)
+            steps += 1
+            if len(stack) > peak:
+                peak = len(stack)
+    except VMCrash:
+        return (False, None, steps, peak)
+    finally:
+        _ACTIVE_MAX_STACK[0] = prev
+    if len(stack) == 1 and isinstance(stack[0], int):
+        return (True, stack[0], steps, peak)
+    return (False, None, steps, peak)
+
+
+def explore_descriptor(tokens: Sequence[int],
+                       vocab_macros: Dict[int, Macro],
+                       battery: List[Dict[str, object]]
+                       ) -> Tuple[tuple, int, int]:
+    """Reference implementation of docs/descriptor_spec_phaseD.md.
+    Returns (cell, total_steps, expanded_len)."""
+    try:
+        exp = expand_tokens(tokens, vocab_macros)
+    except VMCrash:
+        exp = None
+    if exp is None or len(exp) > EXPLORE_STEP_BUDGET:
+        exp_len = EXPLORE_STEP_BUDGET + 1 if exp is None else len(exp)
+        cost_bucket = min(10, max(1, exp_len.bit_length()))
+        return ((0, (0, 0, 0), 0, (0, 0, 0, 0), cost_bucket, 0), 0, exp_len)
+    total_steps = 0
+    res: Dict[str, Tuple[bool, Optional[int], int]] = {}
+    xs_by_pid: Dict[str, List[int]] = {}
+    screened = False
+    for i, probe in enumerate(battery):
+        done, out, steps, peak = explore_run_program(exp, probe["xs"])
+        total_steps += steps
+        res[probe["pid"]] = (done, out, peak)
+        xs_by_pid[probe["pid"]] = probe["xs"]
+        if i == EXPLORE_SCREEN_PROBES - 1 and \
+                not any(r[0] for r in res.values()):
+            screened = True
+            break
+    cost_bucket = min(10, max(1, len(exp).bit_length()))
+    if screened:
+        return ((0, (0, 0, 0), 0, (0, 0, 0, 0), cost_bucket, 0),
+                total_steps, len(exp))
+    completed = [(pid, r[1], r[2]) for pid, r in res.items() if r[0]]
+    n = len(battery)
+    halt_bucket = (8 * len(completed)) // n
+    if completed:
+        outs = [o for _, o, _ in completed]
+        zero_b = min(4, (4 * sum(1 for o in outs if o == 0)) // len(outs))
+        neg_b = min(4, (4 * sum(1 for o in outs if o < 0)) // len(outs))
+        big_b = min(4, (4 * sum(1 for o in outs if abs(o) > 15)) // len(outs))
+        entropy_b = min(4, (4 * len(set(outs))) // len(outs))
+        peak_max = max(p for _, _, p in completed)
+        stack_b = (1 if peak_max <= 1 else 2 if peak_max == 2
+                   else 3 if peak_max <= 4 else 4 if peak_max <= 8
+                   else 5 if peak_max <= 16 else 6)
+        constant = 1 if len(outs) >= 2 and len(set(outs)) == 1 else 0
+        done_out = {pid: o for pid, o, _ in completed}
+        order_s = 0
+        value_s = 0
+        for probe in battery:
+            if probe["kind"] == "base" or probe["base"] not in done_out \
+                    or probe["pid"] not in done_out:
+                continue
+            if done_out[probe["pid"]] != done_out[probe["base"]]:
+                if probe["kind"] == "perm":
+                    order_s = 1
+                elif probe["kind"] == "perturb":
+                    value_s = 1
+        nonempty = [(pid, o) for pid, o, _ in completed
+                    if len(xs_by_pid[pid]) > 0]
+        echo = 0
+        if nonempty:
+            hits = sum(1 for pid, o in nonempty if o in xs_by_pid[pid])
+            echo = 1 if 10 * hits >= 9 * len(nonempty) else 0
+        cell = (halt_bucket, (zero_b, neg_b, big_b), entropy_b,
+                (constant, order_s, value_s, echo), cost_bucket, stack_b)
+    else:
+        cell = (0, (0, 0, 0), 0, (0, 0, 0, 0), cost_bucket, 0)
+    return (cell, total_steps, len(exp))
+
+
+def explore_cell_key(cell: tuple) -> str:
+    h, (z, ng, b), e, (c, o, v, ec), cb, sb = cell
+    return f"h{h}|z{z}n{ng}b{b}|e{e}|d{c}{o}{v}{ec}|c{cb}|s{sb}"
+
+
+def explore_run(seed: int = EXPLORE_SEED,
+                budget: int = EXPLORE_EVALS_PER_RUN,
+                vocab_macros: Optional[Dict[int, Macro]] = None
+                ) -> Dict[str, object]:
+    """Seeded exploration of the VM behavior space against the frozen
+    battery. Insert-if-empty-or-strictly-cheaper under the frozen elite
+    order; every insertion logged with lineage; fixed evaluation budget;
+    deterministic output."""
+    import bisect as _bisect
+    battery = explore_load_battery()
+    macros = dict(vocab_macros or {})
+    vocab = list(range(N_BASE_OPS)) + sorted(macros)
+    rng = random.Random(seed)
+    archive: Dict[str, Dict[str, object]] = {}
+    keys_sorted: List[str] = []
+    log: List[Dict[str, object]] = []
+    curve: List[Dict[str, int]] = []
+    n_prop = {"mutation": 0, "random": 0, "composition": 0}
+    for i in range(budget):
+        r = rng.random()
+        if archive and r < 0.4:
+            k = keys_sorted[rng.randrange(len(keys_sorted))]
+            parent = archive[k]
+            base = list(parent["tokens"])
+            lineage = {"kind": "mutation", "parents": [parent["sha16"]]}
+            pdepth = int(parent["depth"])
+            for _ in range(rng.randint(1, 3)):
+                op = rng.random()
+                if op < 0.4 and base:
+                    base[rng.randrange(len(base))] = \
+                        vocab[rng.randrange(len(vocab))]
+                elif op < 0.7 and len(base) < EXPLORE_MAX_SURFACE_LEN:
+                    base.insert(rng.randrange(len(base) + 1),
+                                vocab[rng.randrange(len(vocab))])
+                elif len(base) > 1:
+                    del base[rng.randrange(len(base))]
+            tokens = tuple(base) if base else (vocab[0],)
+        elif not archive or r < 0.7:
+            tokens = tuple(vocab[rng.randrange(len(vocab))]
+                           for _ in range(rng.randint(
+                               1, EXPLORE_MAX_SURFACE_LEN)))
+            lineage = {"kind": "random", "parents": []}
+            pdepth = 0
+        else:
+            k1 = keys_sorted[rng.randrange(len(keys_sorted))]
+            k2 = keys_sorted[rng.randrange(len(keys_sorted))]
+            p1, p2 = archive[k1], archive[k2]
+            tokens = (tuple(p1["tokens"])
+                      + tuple(p2["tokens"]))[:EXPLORE_MAX_SURFACE_LEN]
+            lineage = {"kind": "composition",
+                       "parents": sorted([p1["sha16"], p2["sha16"]])}
+            pdepth = max(int(p1["depth"]), int(p2["depth"]))
+        n_prop[lineage["kind"]] += 1
+        cell, steps, exp_len = explore_descriptor(tokens, macros, battery)
+        key = explore_cell_key(cell)
+        inc = archive.get(key)
+        cand_key = (len(tokens), steps, tuple(tokens))
+        if inc is None or cand_key < (inc["cost"][0], inc["cost"][1],
+                                      tuple(inc["tokens"])):
+            sha16 = hashlib.sha256(
+                json.dumps(list(tokens)).encode()).hexdigest()[:16]
+            entry = {"tokens": list(tokens), "cost": [len(tokens), steps],
+                     "sha16": sha16, "iter": i, "lineage": lineage,
+                     "depth": pdepth + 1, "expanded_len": exp_len}
+            if inc is None:
+                _bisect.insort(keys_sorted, key)
+            archive[key] = entry
+            log.append({"iter": i, "cell": key,
+                        "cost": [len(tokens), steps], "sha16": sha16,
+                        "lineage": lineage,
+                        "replaced": inc is not None})
+        if (i + 1) % EXPLORE_CHECKPOINT_EVERY == 0:
+            curve.append({"evals": i + 1, "cells": len(archive)})
+    if budget % EXPLORE_CHECKPOINT_EVERY:
+        curve.append({"evals": budget, "cells": len(archive)})
+    return {
+        "meta": {
+            "engine": "explore_run",
+            "seed": seed, "budget": budget,
+            "battery_sha256": PROBE_BATTERY_PHASED_SHA256,
+            "step_budget": EXPLORE_STEP_BUDGET,
+            "max_surface_len": EXPLORE_MAX_SURFACE_LEN,
+            "vocabulary_macros": {str(m.mid): list(m.body)
+                                  for m in macros.values()},
+            "proposal_counts": n_prop,
+        },
+        "archive": {k: archive[k] for k in keys_sorted},
+        "insertion_log": log,
+        "coverage_curve": curve,
+    }
+
+
+def explore_serialize(result: Dict[str, object]) -> str:
+    return json.dumps(result, indent=2, sort_keys=True) + "\n"
+
+
+def explore_coverage_report(result: Dict[str, object]) -> Dict[str, object]:
+    """D3 facts about mapped territory (no capability claims)."""
+    archive = result["archive"]
+    depth_hist: Dict[str, int] = {}
+    for e in archive.values():
+        d = str(e["depth"])
+        depth_hist[d] = depth_hist.get(d, 0) + 1
+    by_halt: Dict[str, str] = {}
+    for k in sorted(archive):
+        hb = k.split("|", 1)[0]
+        if hb not in by_halt:
+            by_halt[hb] = k
+    examples = {hb: {"cell": k, "tokens": archive[k]["tokens"],
+                     "cost": archive[k]["cost"]}
+                for hb, k in sorted(by_halt.items())}
+    return {
+        "cells_filled": len(archive),
+        "insertions": len(result["insertion_log"]),
+        "coverage_curve": result["coverage_curve"],
+        "lineage_depth_distribution": depth_hist,
+        "proposal_counts": result["meta"]["proposal_counts"],
+        "example_elites_per_halt_bucket": examples,
+    }
+
+
+def explore_vocab_from_runstate(path: str) -> Dict[int, Macro]:
+    """Building-block loader (GR9): reads ONLY the searcher macro
+    vocabulary (mid -> body) from a saved runstate summary."""
+    with open(path, "r", encoding="utf-8") as fh:
+        doc = json.load(fh)
+    out: Dict[int, Macro] = {}
+    for mid_s, m in doc["searcher"]["macros"].items():
+        mid = int(mid_s)
+        out[mid] = Macro(mid=mid, body=tuple(m["body"]),
+                         depth=int(m["depth"]), wave_discovered=int(m["wave"]),
+                         parent_tasks=tuple(m["parents"]))
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Phase D tests: frozen instruments, archive determinism, replacement rule,
+# sealing.
+# ---------------------------------------------------------------------------
+def test_explore_frozen_instruments_intact() -> None:
+    import inspect as _inspect
+    root = os.path.dirname(os.path.abspath(__file__))
+    for fname, want in (("probe_battery_phaseD.json",
+                         PROBE_BATTERY_PHASED_SHA256),
+                        ("descriptor_spec_phaseD.md",
+                         DESCRIPTOR_SPEC_PHASED_SHA256)):
+        with open(os.path.join(root, "docs", fname), "rb") as fh:
+            _assert(hashlib.sha256(fh.read()).hexdigest() == want,
+                    f"{fname} drifted from the Phase D freeze hash")
+    src = (_inspect.getsource(explore_run_program)
+           + _inspect.getsource(explore_descriptor)
+           + _inspect.getsource(explore_cell_key))
+    _assert(hashlib.sha256(src.encode("utf-8")).hexdigest()
+            == EXPLORE_IMPL_SHA256,
+            "descriptor implementation drifted from the Phase D freeze hash")
+
+
+def test_explore_archive_two_run_byte_identical() -> None:
+    a = explore_serialize(explore_run(budget=1500))
+    b = explore_serialize(explore_run(budget=1500))
+    _assert(a == b, "exploration archive must be byte-identical across runs")
+    _assert(len(json.loads(a)["archive"]) > 0,
+            "exploration filled no cells at the test budget")
+
+
+def test_explore_strictly_cheaper_replacement() -> None:
+    battery = explore_load_battery()
+    # two behaviorally identical programs in the SAME cost bucket
+    # (expanded lengths 4 and 6 share bit_length 3): INPUT DROP INPUT
+    # RED_ADD vs the same with one more neutral INPUT DROP pair.
+    short = (4, 7, 4, 29)
+    long_ = (4, 7, 4, 7, 4, 29)
+    c_short, s_short, _ = explore_descriptor(short, {}, battery)
+    c_long, s_long, _ = explore_descriptor(long_, {}, battery)
+    _assert(c_short == c_long, "cost-neutral padding must not move the cell")
+    k_short = (len(short), s_short, short)
+    k_long = (len(long_), s_long, long_)
+    _assert(k_short < k_long, "frozen order must prefer the shorter program")
+    # replacement discipline mirrors explore_run's insertion test
+    incumbent = {"cost": [len(long_), s_long], "tokens": list(long_)}
+    _assert((len(short), s_short, short)
+            < (incumbent["cost"][0], incumbent["cost"][1],
+               tuple(incumbent["tokens"])),
+            "strictly-cheaper candidate must replace the incumbent")
+    _assert(not ((len(long_), s_long, long_)
+                 < (len(short), s_short, short)),
+            "costlier candidate must never replace the incumbent")
+
+
+def test_explore_sealed_from_task_data() -> None:
+    import inspect as _inspect
+    forbidden = ("ORACLES", "TRAIN_INPUTS", "_ORACLE_REGISTRY", "seal_task",
+                 "build_sealed_tasks", "holdout_gate", "cf_gate",
+                 "_make_gate", "GATE_SEED", "CF_GATE_SEED",
+                 "task_target_vector", "SealedTask", "mint_task",
+                 "RunState", "adopted_tokens", "meta_gate")
+    src = "".join(_inspect.getsource(f) for f in (
+        explore_load_battery, explore_run_program, explore_descriptor,
+        explore_cell_key, explore_run, explore_serialize,
+        explore_coverage_report, explore_vocab_from_runstate))
+    for name in forbidden:
+        _assert(name not in src,
+                f"exploration code references sealed machinery: {name}")
+
+
+TESTS.extend([
+    test_explore_frozen_instruments_intact,
+    test_explore_archive_two_run_byte_identical,
+    test_explore_strictly_cheaper_replacement,
+    test_explore_sealed_from_task_data,
 ])
 
 
@@ -35955,7 +36642,8 @@ def main() -> None:
                              "forge-battery", "file-battery",
                              "ext-battery", "cfs-battery",
                              "expansion-battery", "grammar-battery",
-                             "grammar2-battery",),
+                             "grammar2-battery",
+                             "explore", "explore-report",),
                     default="demo")
     ap.add_argument("--save", default="")
     ap.add_argument("--adaptive-json", default="adaptive.json")
@@ -35964,6 +36652,10 @@ def main() -> None:
     ap.add_argument("--wave-from", default="0")
     ap.add_argument("--wave-to", default=str(WAVES))
     ap.add_argument("--extract-dir", default="./integrated_sources")
+    ap.add_argument("--vocab-from", default="",
+                    help="runstate JSON whose searcher macro vocabulary "
+                         "seeds exploration building blocks (GR9: "
+                         "vocabulary only)")
     args = ap.parse_args()
     if args.mode == "test":
         run_tests(only=args.only)
@@ -35973,13 +36665,15 @@ def main() -> None:
         rs = run_system(adaptive=True)
         if args.save:
             save_runstate(rs, args.save)
-        print(json.dumps({"solved": len(rs.adopted_tokens),
+        print(json.dumps({"solved": _solved_split(rs)[0],
+                          "solved_generated": _solved_split(rs)[1],
                           "digest": adoption_log_digest(rs)}))
     elif args.mode == "run-frozen":
         rs = run_system(adaptive=False)
         if args.save:
             save_runstate(rs, args.save)
-        print(json.dumps({"solved": len(rs.adopted_tokens),
+        print(json.dumps({"solved": _solved_split(rs)[0],
+                          "solved_generated": _solved_split(rs)[1],
                           "digest": adoption_log_digest(rs)}))
     elif args.mode == "step":
         import os
@@ -35992,7 +36686,8 @@ def main() -> None:
         rs = run_system(adaptive=True, waves=int(args.wave_to),
                         rs=rs, wave_start=start)
         save_runstate(rs, args.save or "adaptive.json")
-        print(json.dumps({"solved": len(rs.adopted_tokens),
+        print(json.dumps({"solved": _solved_split(rs)[0],
+                          "solved_generated": _solved_split(rs)[1],
                           "waves_done": int(args.wave_to),
                           "version": rs.searcher.version,
                           "digest": adoption_log_digest(rs)}))
@@ -36022,6 +36717,26 @@ def main() -> None:
         grammar_battery()
     elif args.mode == "grammar2-battery":
         grammar2_battery()
+    elif args.mode == "explore":
+        vocab = (explore_vocab_from_runstate(args.vocab_from)
+                 if args.vocab_from else None)
+        result = explore_run(vocab_macros=vocab)
+        out_path = args.save or "exploration_archive_phaseD.json"
+        text = explore_serialize(result)
+        with open(out_path, "w", encoding="utf-8") as fh:
+            fh.write(text)
+        print(json.dumps({
+            "cells": len(result["archive"]),
+            "insertions": len(result["insertion_log"]),
+            "archive_sha256": hashlib.sha256(
+                text.encode("utf-8")).hexdigest(),
+            "path": out_path}))
+    elif args.mode == "explore-report":
+        with open(args.save or "exploration_archive_phaseD.json", "r",
+                  encoding="utf-8") as fh:
+            doc = json.load(fh)
+        print(json.dumps(explore_coverage_report(doc), indent=2,
+                         sort_keys=True))
     elif args.mode == "clash-battery":
         clash_battery()
     elif args.mode == "hdc-battery":
