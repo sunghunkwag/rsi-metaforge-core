@@ -1,28 +1,39 @@
-# Phase G Predictions (registered before the final evaluation)
+# Phase I Predictions (registered before the final evaluation)
 
-Committed before any final-evaluation run exists (GR-P). Written from the
-Phase F attribution evidence plus one disclosed development observation
-(see T28). The final live arm is `transfer-anchor` (G2 widened offers +
-G3 directed pressure + G4 extended archive); the frozen incumbent is
-`run-frozen`. Predictions are scored in `docs/ADVANCE_RESULT.md`.
+Committed before any Phase I final-evaluation run exists (GR-P). No
+Phase I live run has been executed at prediction time — every claim
+below derives from Phase H committed evidence plus feedback-free offer
+mechanics (the fresh-offer order is fully determined by the frozen
+strata and rotation; simulating it consults no designer evaluations,
+GR-O). Scored in `docs/SEQUENCING_RESULT.md`.
 
-| Task | F attribution | Intervention(s) applied | Predicted final status | Basis |
-|---|---|---|---|---|
-| T18 length_conditioned_sum | SEARCH/VOCAB | G2 offers, G3 directed diff-mints | **OPEN** | Length-conditional structure; no pool body or diff-residual supplies a conditional-on-parity vocabulary; hill-climb plateaus at 0.8. |
-| T21 last_quartile | SEARCH/VOCAB | G2, G3 | **OPEN** | Needs index arithmetic (3L/4) beyond enumeration depth; plateau 0.85. |
-| T22 sum*second_largest | SEARCH/VOCAB | G2, G3 | **OPEN** | Product-composition twins are vector-duplicate-blocked from minting; pool bodies are aggregate/elementwise, not order-statistic. |
-| T23 sum*range | SEARCH/VOCAB | G2, G3 | **OPEN** | Same argument as T22. |
-| T26 adjacent_difference_energy | SEARCH/VOCAB | G2, G3 | **OPEN** | Needs ZSUB-on-shifted-self vocabulary; not observed in pool bodies. |
-| T28 sum_x32 | SEARCH/VOCAB | G3 (primary), G2 | **SOLVED — known at prediction time** | Disclosed: already observed re-solved in the plain-arm development run of Phase G (wave-2 designer-justified gate record, macro mined from this run's own T27). Counted as a registered observation, **not foresight**. |
-| T29 count_above_threshold | SEARCH/VOCAB | G2, G3, G4 | **OPEN** | Certified ISA wall (no comparison/search primitives). |
-| T30 argmax_index | SEARCH/VOCAB | G2, G3, G4 | **OPEN** | Certified ISA wall. |
-| T31 first_greater_than_previous | SEARCH/VOCAB | G2, G3, G4 | **OPEN** | Certified ISA wall. |
-| T32 longest_increasing_run | SEARCH/VOCAB | G2, G3, G4 | **OPEN** | Certified ISA wall. |
-| T15 alternating_sum (solved at v2 final) | — (retention) | G2 full-pool offer guarantees its enabling body `[INPUT, EVENIDX, RED_ADD]` is offered | **SOLVED (retained)** | Full-pool offering (capacity 294 ≥ pool size); acceptance wave may differ from Phase E. |
+Offer-mechanics facts used (deterministic, from the frozen strata):
+294 of 450 stratified bodies are offered fresh within one run (S1
+132/132, S2 81/195, S3 81/123 — the S2/S3 truncation is stated, bounded,
+and mitigated by re-offers); the x² and x⁴ fragments are both in wave
+0's **first batch** (S1 head, per the H3 dry-run); the T15 enabler
+`[INPUT,EVENIDX,RED_ADD]` is offered at **wave 1** (S2); the terminal
+sum-x⁴ compressor arrives wave 0 in an S2 slot (batch 3), **after** the
+staircase fragments.
 
-**Predicted final designer count: 24/33** (the 23 designer tasks of the
-plain Phase G arm including T28, plus T15 via transfer) — exactly at the
-threshold. Risk disclosed: the combined dynamics of G2 offers and G3
-pressure in one run differ from both development runs; either T15 or T28
-could fail to land, in which case the result is 23/33 and the threshold
-is missed. That outcome would be reported as an honest null.
+## The three union-critical tasks
+
+| Task | Prediction | H-phase evidence | Path / contingency |
+|---|---|---|---|
+| **T27 sum_x16** | **SOLVED** (wave 0–1) | The G3-only genealogy proves the x⁴ macro gates T27 (`M100 M100 ZMUL` → w1 `SCREEN_INSTALL gained=['T27']`); sum x¹⁶ = 6 surface tokens over an x⁴ macro, within `ENUM_SURFACE_MAX`. Under the spec, the x⁴ fragment is offered in wave 0's first batch — as a **pool offer**, not mined, so Mechanism 2 (mining-score inversion) is bypassed for this rung. | Inference from H evidence, not an observation — no Phase I run exists. |
+| **T28 sum_x32** | **SOLVED** (wave 1–3) | **Expected acquisition path: fresh mining, not pool offer.** No list-valued fragment of length ≤ 8 can express x⁸ or deeper (x⁸ needs ≥ 15 ops), so the pool cannot offer the x¹⁶ rung; T28 requires the G3-only genealogy to resume — mine T27's adopted program to obtain the x¹⁶ macro (in G3-only this gram ranked in top-3 and gated T28 at w2). **Mechanism-2 contingency, stated in advance:** if wave-0 terminal installs shorten the corpus so the x¹⁶ gram ranks below `top_k = 3` again, the chain stalls; that outcome is an attributable null pointing at mining policy (v5 scope), and the report must exhibit the skip-digest evidence exactly as H2 did (`751d1479…`-style re-derivation). | Known-at-prediction-time: only the G3-only w2 observation (digest `93338b61e81fe6e1`); the Phase I corpus differs and the risk is real. |
+| **T15 alternating_sum** | **SOLVED** (wave 1–2) | Enabler offered at wave 1 (S2 mechanics above); the same body was gate-accepted in both prior configurations that offered it (v2 final w6; G combined w0) with `gained=['T15']`. | Pool offer; if rider-dropped, re-offer returns it by wave 3. |
+
+## The remaining OPEN tasks (attribution unchanged from Phase F/H)
+
+| Task | Prediction | Basis |
+|---|---|---|
+| T18, T21, T22, T23, T26 | OPEN | SEARCH/VOCAB attribution; no stratified body or fragment supplies the missing vocabulary (conditionals, index arithmetic, order statistics, shifted-difference); unchanged from Phase G outcomes. |
+| T29–T32 | OPEN | Certified ISA walls. |
+
+**Predicted final designer count: 24/33 with {T15, T27, T28}
+simultaneously SOLVED — the threshold exactly met.** Disclosed risks:
+(i) the T28 mining contingency above (null → 23/33, attributable to
+mining policy with skip-digest evidence); (ii) wave-0 batch interactions
+between fragment installs and terminal installs are novel territory —
+any additional displacement will be traced per deliverable point 5.
