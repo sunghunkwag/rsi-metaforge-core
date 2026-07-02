@@ -429,6 +429,10 @@ class SealedTask:
     train_pairs: Tuple[Tuple[Tuple[int, ...], int], ...]
     holdout_gate: Callable[[Callable[[List[int]], int]], bool]
     cf_gate: Callable[[Callable[[List[int]], int]], bool]
+    origin: str = "designer"       # "designer" | "generated" (GR5: generated
+                                   # tasks shape search pressure and mining,
+                                   # never solved counts, meta-gate acceptance
+                                   # statistics, or evaluation sets)
 
 
 def _make_gate(oracle, seed: int, lengths, trials: int, valmax: int):
@@ -446,14 +450,16 @@ def _make_gate(oracle, seed: int, lengths, trials: int, valmax: int):
     return gate
 
 
-def seal_task(tid: str, family: str, oracle) -> SealedTask:
+def seal_task(tid: str, family: str, oracle,
+              origin: str = "designer") -> SealedTask:
     pairs = tuple((xs, int(oracle(list(xs)))) for xs in TRAIN_INPUTS)
     return SealedTask(
         tid=tid, family=family, train_pairs=pairs,
         holdout_gate=_make_gate(oracle, GATE_SEED, HOLDOUT_LENGTHS,
                                 GATE_TRIALS, 7),
         cf_gate=_make_gate(oracle, CF_GATE_SEED, CF_LENGTHS,
-                           CF_TRIALS, CF_VALMAX))
+                           CF_TRIALS, CF_VALMAX),
+        origin=origin)
 
 
 # --- oracle definitions (used ONLY by seal_task; never imported by search) ---
@@ -615,7 +621,7 @@ def mint_task(rs: "RunState", spec: Tuple[str, str, str]) -> SealedTask:
     tid = f"G{len(rs.gen_specs):02d}"
     oracle = _gen_oracle(spec, rs)
     _register_oracle(tid, oracle)
-    task = seal_task(tid, "self_gen", oracle)
+    task = seal_task(tid, "self_gen", oracle, origin="generated")
     rs.gen_specs.append(list(spec))
     rs.gen_names[tid] = f"{spec[0]}({spec[1]}" + (f",{spec[2]})" if spec[2] else ")")
     rs.tasks.append(task)
@@ -1603,7 +1609,12 @@ def meta_gate(rs: "RunState", proposal: ImprovementProposal,
     land: acceptance requires >= 1 previously-unsolved task whose new program
     passes the external holdout gate."""
     ensure_worktable(rs)
-    probes = rs.unsolved()
+    # B2 hard separation (GR5): the A/B comparison set and every acceptance
+    # statistic are computed on designer-origin tasks only. Generated tasks
+    # stay in rs.tasks as search pressure and macro-mining material, but a
+    # candidate improvement earns adoption exclusively by newly gating a
+    # designer task under the sealed dual gates.
+    probes = [t for t in rs.unsolved() if t.origin == "designer"]
     if not probes:
         rs.gate_records.append(
             MetaGateRecord(wave, False, 0, 0, 0, 0, (), "empty_frontier"))
@@ -2194,6 +2205,35 @@ def adoption_log_digest(rs: RunState) -> str:
 # processes within a fixed wall-clock box; the counterfactual report is then
 # computed from saved summaries. Determinism makes the split exact.
 # ---------------------------------------------------------------------------
+def _solved_split(rs: "RunState") -> Tuple[int, int]:
+    """(designer_solved, generated_solved). GR5: only the designer count is
+    a solved count; the generated count is bookkeeping about pressure."""
+    origin = {t.tid: t.origin for t in rs.tasks}
+    d = sum(1 for tid in rs.adopted_tokens
+            if origin.get(tid,
+                          "designer" if tid.startswith("T")
+                          else "generated") == "designer")
+    return d, len(rs.adopted_tokens) - d
+
+
+def generated_pressure_report(rs: RunState) -> Dict[str, object]:
+    """B3 facts: how many tasks were minted, how many were solved (as
+    pressure, not score), and which minted tasks contributed lineage to an
+    installed macro (their tid appears in an installed macro's
+    parent_tasks). Facts about mechanism, not capability claims."""
+    installed = rs.searcher.macros.values()
+    contributing = sorted({p for m in installed for p in m.parent_tasks
+                           if p.startswith("G")})
+    return {
+        "generated_minted": len(rs.gen_specs),
+        "generated_solved_as_pressure": _solved_split(rs)[1],
+        "generated_contributing_macro_lineage": contributing,
+        "installed_macros_with_generated_parents": sorted(
+            m.mid for m in installed
+            if any(p.startswith("G") for p in m.parent_tasks)),
+    }
+
+
 def runstate_summary(rs: RunState) -> Dict[str, object]:
     return {
         "adaptive": rs.adaptive,
@@ -2218,6 +2258,7 @@ def runstate_summary(rs: RunState) -> Dict[str, object]:
             },
         },
         "growth_log": [dict(g) for g in rs.growth_log],
+        "generated_report": generated_pressure_report(rs),
         "gate_records": [
             {"wave": r.wave, "accepted": r.accepted,
              "inc_solved": r.inc_solved, "cand_solved": r.cand_solved,
@@ -2420,7 +2461,8 @@ def demo() -> None:
     print("RSI METAFORGE (real-search core) -- adaptive run")
     print("=" * 88)
     name = lambda tid: task_label(rs, tid)
-    print(f"tasks={len(rs.tasks)} solved={len(rs.adopted_tokens)} "
+    _d, _g = _solved_split(rs)
+    print(f"tasks={len(rs.tasks)} solved={_d} solved_generated={_g} "
           f"open={len(rs.unsolved())} total_evals={rs.evals_total}")
     print("\nSOLVED (tid name wave searcher_version surface_tokens):")
     for tid in sorted(rs.adopted_tokens):
@@ -14730,6 +14772,87 @@ TESTS.extend([
     test_capacity_growth_fires_under_synthetic_stagnation,
     test_capacity_growth_never_fires_in_healthy_run,
     test_capacity_growth_log_deterministic,
+])
+
+
+# ---------------------------------------------------------------------------
+# Phase B tests: generated tasks are pressure, never score (GR5).
+# ---------------------------------------------------------------------------
+def test_origin_tags_designer_and_generated() -> None:
+    _assert(all(t.origin == "designer" for t in build_sealed_tasks()),
+            "designer suite tasks must carry origin='designer'")
+    _assert(SealedTask.__dataclass_fields__["origin"].default == "designer",
+            "origin must default to designer")
+    rs = build_adaptive()
+    gs = [t for t in rs.tasks if t.tid.startswith("G")]
+    _assert(gs, "adaptive run minted no generated task")
+    _assert(all(t.origin == "generated" for t in gs),
+            "minted tasks must carry origin='generated'")
+    _assert(all(t.origin == "designer" for t in rs.tasks
+                if t.tid.startswith("T")),
+            "designer tasks must keep origin through the run")
+
+
+def test_meta_gate_excludes_generated_from_acceptance() -> None:
+    # A frontier of only generated tasks is an EMPTY comparison set: the
+    # gate must refuse before evaluating anything (GR5(b)).
+    rs = RunState(adaptive=True)
+    rs.tasks = [seal_task("G50", "self_gen", lambda xs: sum(xs),
+                          origin="generated")]
+    prop = ImprovementProposal(wave=0, new_macros=[], new_weights=None,
+                               note="generated_only_probe")
+    n0 = len(rs.gate_records)
+    _assert(meta_gate(rs, prop, 0) is False,
+            "gate must not accept on a generated-only frontier")
+    _assert(len(rs.gate_records) == n0 + 1
+            and rs.gate_records[n0].note == "empty_frontier"
+            and rs.gate_records[n0].probe_tids == (),
+            "generated-only frontier must record empty_frontier")
+    # Acceptance statistics of a real run: zero generated tasks anywhere.
+    a = build_adaptive()
+    _assert(a.gate_records, "adaptive run produced no gate records")
+    for r in a.gate_records:
+        _assert(all(t.startswith("T") for t in r.probe_tids),
+                f"generated task in acceptance statistics: {r.probe_tids}")
+    import re as _re
+    for ev in a.events:
+        m = _re.search(r"gained=\[([^\]]*)\]", ev)
+        if m:
+            _assert("'G" not in m.group(1) and '"G' not in m.group(1),
+                    f"generated task in a gate gain event: {ev}")
+    # Evaluation set (GR5(c)): the frozen instrument holds designer ids only.
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "docs", "frozen_holdout_phase0.json")
+    doc = json.loads(open(path, "rb").read().decode("utf-8"))
+    _assert(all(k.startswith("T") for k in doc["tasks"]),
+            "generated task leaked into the frozen evaluation set")
+
+
+def test_generated_pressure_report_and_determinism() -> None:
+    a = build_adaptive()
+    rep = generated_pressure_report(a)
+    _assert(rep["generated_minted"] == len(a.gen_specs),
+            "minted count must match gen_specs")
+    _assert(all(p.startswith("G")
+                for p in rep["generated_contributing_macro_lineage"]),
+            "lineage list must contain only generated tids")
+    d, g = _solved_split(a)
+    _assert(d + g == len(a.adopted_tokens) and g ==
+            rep["generated_solved_as_pressure"],
+            "solved split must partition adopted tasks")
+    outs = []
+    for _ in range(2):
+        rs = run_system(adaptive=True, waves=2)
+        outs.append(json.dumps(runstate_summary(rs), sort_keys=True))
+    _assert(outs[0] == outs[1],
+            "two-run summary (origin tags, generated report) must be "
+            "byte-identical")
+
+
+TESTS.extend([
+    test_origin_tags_designer_and_generated,
+    test_meta_gate_excludes_generated_from_acceptance,
+    test_generated_pressure_report_and_determinism,
 ])
 
 
@@ -35973,13 +36096,15 @@ def main() -> None:
         rs = run_system(adaptive=True)
         if args.save:
             save_runstate(rs, args.save)
-        print(json.dumps({"solved": len(rs.adopted_tokens),
+        print(json.dumps({"solved": _solved_split(rs)[0],
+                          "solved_generated": _solved_split(rs)[1],
                           "digest": adoption_log_digest(rs)}))
     elif args.mode == "run-frozen":
         rs = run_system(adaptive=False)
         if args.save:
             save_runstate(rs, args.save)
-        print(json.dumps({"solved": len(rs.adopted_tokens),
+        print(json.dumps({"solved": _solved_split(rs)[0],
+                          "solved_generated": _solved_split(rs)[1],
                           "digest": adoption_log_digest(rs)}))
     elif args.mode == "step":
         import os
@@ -35992,7 +36117,8 @@ def main() -> None:
         rs = run_system(adaptive=True, waves=int(args.wave_to),
                         rs=rs, wave_start=start)
         save_runstate(rs, args.save or "adaptive.json")
-        print(json.dumps({"solved": len(rs.adopted_tokens),
+        print(json.dumps({"solved": _solved_split(rs)[0],
+                          "solved_generated": _solved_split(rs)[1],
                           "waves_done": int(args.wave_to),
                           "version": rs.searcher.version,
                           "digest": adoption_log_digest(rs)}))
