@@ -114,6 +114,11 @@ CAPACITY_BOUND_PROGRAM_LEN = 56   # max_stack doubles per rung up to its bound
 CAPACITY_BOUND_STACK = 128
 CAPACITY_BOUND_MACROS = 96
 
+# Rule 3 speculation budget for the top core (Phase C): at most this many
+# speculative candidates (capacity rungs, generated-derived macro batches)
+# are measured per wave; excess attempts are logged and refused.
+SPECULATION_BUDGET_PER_WAVE = 2
+
 
 def build_train_inputs(seed: int = DATA_SEED) -> List[List[int]]:
     rng = random.Random(seed)
@@ -1575,18 +1580,29 @@ def tcci_pre_score(rs: "RunState", m: Macro) -> Dict[str, float]:
             "captured": sorted(captured)}
 
 
+def _permanent_install(rs: "RunState", searcher: SearcherState,
+                       table: EnumTable) -> None:
+    """C1: the single permanent-installation site. The searcher of a live
+    run is assigned here and nowhere else (restore_runstate deserializes
+    saved state; an AST test audits both facts). Every path into this
+    function has already passed the sealed holdout + counterfactual gate
+    discipline; everything before it is scratch."""
+    rs.searcher = searcher
+    rs.work_table = table
+    rs.extra_solutions = {}
+
+
 def _install(rs: "RunState", mset: List[Macro], weights, note: str,
              table: Optional[EnumTable],
              capacity: Optional[CapacityConfig] = None) -> None:
-    rs.searcher = _apply(rs.searcher, mset, weights, note, capacity=capacity)
+    new_searcher = _apply(rs.searcher, mset, weights, note, capacity=capacity)
     if table is None:
-        table = build_enum_table(rs.searcher,
+        table = build_enum_table(new_searcher,
                                  surface_max=ENUM_SURFACE_MAX,
                                  class_cap=ENUM_CLASS_CAP,
                                  keep_frontiers=True)
         rs.enum_extensions_total += table.extensions
-    rs.work_table = table
-    rs.extra_solutions = {}
+    _permanent_install(rs, new_searcher, table)
     absorb_rewrites(rs, table)
     rs.events.append(
         f"SEARCHER_NOW v{rs.searcher.version} macros={sorted(rs.searcher.macros)} "
@@ -1762,15 +1778,74 @@ def meta_gate(rs: "RunState", proposal: ImprovementProposal,
         tab.solutions = {v: t for v, t in tab.solutions.items()
                          if all(tok < MACRO_ID_BASE or tok in ok_ids
                                 for tok in t)}
-        rs.searcher = final
-        rs.work_table = tab
-        rs.extra_solutions = {}
+        _permanent_install(rs, final, tab)
         any_accept = True
         rs.events.append(
             f"SEARCHER_NOW v{final.version} macros={sorted(final.macros)} "
             f"dropped_riders={dropped} gained={[tid for tid, _ in gained_pairs]} "
             f"classes={tab.classes_per_len} truncated={tab.truncated}")
     return any_accept
+
+
+# ---------------------------------------------------------------------------
+# Rule 3 for the top core (Phase C): double-ledger speculation for capacity
+# rungs and generated-derived macro batches. The speculative artifact lives
+# only in a scratch ledger; the UNCHANGED meta_gate (sealed holdout +
+# counterfactual discipline behind it) is the sole arbiter; a rejection
+# cascade-rolls the scratch away and the certified searcher must hash
+# byte-identically to its pre-speculation serialization. Bounded per wave.
+# ---------------------------------------------------------------------------
+def _searcher_state_hash(s: SearcherState) -> str:
+    raw = json.dumps({
+        "macros": {str(m.mid): {"body": list(m.body), "depth": m.depth,
+                                "wave": m.wave_discovered,
+                                "parents": list(m.parent_tasks)}
+                   for m in s.macros.values()},
+        "weights": {str(k): round(v, 9) for k, v in sorted(s.weights.items())},
+        "version": s.version,
+        "extended": {str(k): v for k, v in sorted(s.extended.items())},
+        "capacity": [s.capacity.max_program_len, s.capacity.max_stack,
+                     s.capacity.max_macros],
+    }, sort_keys=True).encode()
+    return hashlib.sha256(raw).hexdigest()
+
+
+def _proposal_is_generated_derived(proposal: ImprovementProposal) -> bool:
+    return any(p.startswith("G") for m in proposal.new_macros
+               for p in m.parent_tasks)
+
+
+def speculative_meta_gate(rs: "RunState", proposal: ImprovementProposal,
+                          wave: int, kind: str) -> Optional[bool]:
+    """True = gate-adopted, False = gate-rejected (and rolled back),
+    None = not measured (per-wave speculation budget exhausted)."""
+    spent = sum(1 for e in rs.speculation_log if e["wave"] == wave)
+    if spent >= SPECULATION_BUDGET_PER_WAVE:
+        rs.events.append(f"w{wave} SPECULATION_BUDGET_EXHAUSTED {kind}")
+        return None
+    ledger = SpeculativeLedger()
+    name = f"w{wave}:{kind}"
+    pre = _searcher_state_hash(rs.searcher)
+    ledger.speculate(name, {"note": proposal.note})
+    n_rec = len(rs.gate_records)
+    ok = bool(meta_gate(rs, proposal, wave))
+    ledger.finalize(name, ok)
+    residue = ledger.rollback_all_scratch()
+    post = _searcher_state_hash(rs.searcher)
+    if not ok and post != pre:
+        raise AssertionError(
+            "speculation rollback failed: certified searcher state changed "
+            "on a rejected candidate")
+    rs.speculation_log.append({
+        "wave": wave, "kind": kind, "name": name,
+        "accepted": ok,
+        "pre_hash": pre, "post_hash": post,
+        "rolled_back_clean": ok or post == pre,
+        "scratch_residue": residue + len(ledger.scratch),
+        "gate_records": [n_rec, len(rs.gate_records)],
+        "ledger_history": [dict(h) for h in ledger.history],
+    })
+    return ok
 
 
 # ---------------------------------------------------------------------------
@@ -1834,7 +1909,9 @@ def attempt_capacity_growth(rs: "RunState", wave: int) -> bool:
         rs.events.append(f"w{wave} SKIP_DUPLICATE_GROWTH {pdig}")
         return False
     n_rec = len(rs.gate_records)
-    ok = meta_gate(rs, proposal, wave)
+    ok = speculative_meta_gate(rs, proposal, wave, "capacity_rung")
+    if ok is None:
+        return False               # budget-deferred: not measured, no verdict
     if not ok:
         rs.rejected_digests.append(pdig)
     rs.growth_log.append({
@@ -1907,6 +1984,7 @@ class RunState:
     prm_prefix_runs: int = 0
     wm_acts: int = 0
     growth_log: List[Dict[str, object]] = field(default_factory=list)
+    speculation_log: List[Dict[str, object]] = field(default_factory=list)
 
     def unsolved(self) -> List[SealedTask]:
         return [t for t in self.tasks if t.tid not in self.adopted_tokens]
@@ -2128,7 +2206,15 @@ def run_system(adaptive: bool = True, waves: int = WAVES,
         if pdig in rs.rejected_digests:
             rs.events.append(f"w{w} SKIP_DUPLICATE_PROPOSAL {pdig}")
             continue
-        ok = meta_gate(rs, proposal, w)
+        if _proposal_is_generated_derived(proposal):
+            # Rule 3 scope (b): macro batches carrying generated-task
+            # lineage are speculative candidates behind the same gate.
+            ok = speculative_meta_gate(rs, proposal, w,
+                                       "generated_macro_batch")
+            if ok is None:
+                continue           # budget-deferred: not measured
+        else:
+            ok = meta_gate(rs, proposal, w)
         if not ok:
             rs.rejected_digests.append(pdig)
     return rs
@@ -2258,6 +2344,7 @@ def runstate_summary(rs: RunState) -> Dict[str, object]:
             },
         },
         "growth_log": [dict(g) for g in rs.growth_log],
+        "speculation_log": [dict(e) for e in rs.speculation_log],
         "generated_report": generated_pressure_report(rs),
         "gate_records": [
             {"wave": r.wave, "accepted": r.accepted,
@@ -2313,6 +2400,7 @@ def restore_runstate(summary: Dict[str, object]) -> RunState:
             max_macros=int(cap["max_macros"]))
     rs.searcher = s
     rs.growth_log = [dict(g) for g in summary.get("growth_log", [])]
+    rs.speculation_log = [dict(e) for e in summary.get("speculation_log", [])]
     rs.adopted_tokens = {t: tuple(v)
                          for t, v in summary["adopted_tokens"].items()}
     rs.adopted_wave = {t: int(v) for t, v in summary["adopted_wave"].items()}
@@ -14853,6 +14941,131 @@ TESTS.extend([
     test_origin_tags_designer_and_generated,
     test_meta_gate_excludes_generated_from_acceptance,
     test_generated_pressure_report_and_determinism,
+])
+
+
+# ---------------------------------------------------------------------------
+# Phase C tests: double-ledger speculation for the top core (Rule 3 scopes
+# (a) capacity rungs and (b) generated-derived macro batches).
+# ---------------------------------------------------------------------------
+def test_permanent_install_single_call_site() -> None:
+    import ast as _ast, pathlib
+    tree = _ast.parse(pathlib.Path(__file__).read_text(encoding="utf-8"))
+    funcs = [(n.name, n.lineno, n.end_lineno) for n in _ast.walk(tree)
+             if isinstance(n, (_ast.FunctionDef, _ast.AsyncFunctionDef))]
+
+    def owner(lineno: int) -> str:
+        best = None
+        for name, s, e in funcs:
+            if s <= lineno <= e and (best is None or s > best[1]):
+                best = (name, s)
+        return best[0] if best else "<module>"
+
+    sites = []
+    for node in _ast.walk(tree):
+        targets = (node.targets if isinstance(node, _ast.Assign)
+                   else [node.target] if isinstance(node, _ast.AugAssign)
+                   else [])
+        for t in targets:
+            if isinstance(t, _ast.Attribute) and t.attr == "searcher":
+                sites.append((owner(node.lineno), node.lineno))
+    _assert({o for o, _ in sites} == {"_permanent_install",
+                                      "restore_runstate"},
+            f"searcher must be assigned only by the certified installer "
+            f"and deserialization; found: {sites}")
+
+
+def test_generated_derived_classification() -> None:
+    g = Macro(mid=200, body=(4, 25), depth=1, wave_discovered=0,
+              parent_tasks=("T05", "G03"))
+    d = Macro(mid=201, body=(4, 25), depth=1, wave_discovered=0,
+              parent_tasks=("T05",))
+    _assert(_proposal_is_generated_derived(
+        ImprovementProposal(0, [g], None, "x")) is True,
+        "a batch with any generated parent is generated-derived")
+    _assert(_proposal_is_generated_derived(
+        ImprovementProposal(0, [d], None, "x")) is False,
+        "designer-only batches stay on the ordinary gate path")
+
+
+def test_speculative_rollback_restores_certified_state() -> None:
+    # Rejection: argmax_index (ISA-blocked search family) stays unreachable
+    # even at the grown rung; rollback must leave the certified searcher
+    # byte-identical and the scratch empty.
+    rs = RunState(adaptive=True)
+    rs.searcher.capacity = CapacityConfig(max_stack=1)
+    rs.tasks = [seal_task("T91", "search", _argmax_index)]
+    pre = _searcher_state_hash(rs.searcher)
+    _assert(attempt_capacity_growth(rs, wave=0) is False,
+            "growth across an ISA wall must be gate-rejected")
+    _assert(_searcher_state_hash(rs.searcher) == pre,
+            "rejected speculation must restore certified state (C2)")
+    _assert(len(rs.speculation_log) == 1, "one speculation entry expected")
+    e = rs.speculation_log[0]
+    _assert(e["kind"] == "capacity_rung" and e["accepted"] is False,
+            "entry must record the rejected capacity rung")
+    _assert(e["rolled_back_clean"] is True and e["scratch_residue"] == 0,
+            "cascade rollback must leave no residue (C3)")
+    _assert(e["pre_hash"] == e["post_hash"] == pre,
+            "entry must carry matching pre/post certified hashes")
+    _assert(e["ledger_history"] == [{"name": "w0:capacity_rung",
+                                     "status": "rolled_back"}],
+            "ledger history must show the rollback")
+    _assert(rs.growth_log and rs.growth_log[0]["accepted"] is False,
+            "growth log must record the rejection")
+    # Acceptance: the stack-wall crossing records an adopted speculation.
+    rs2 = _growth_wall_state(max_stack=1)
+    _assert(attempt_capacity_growth(rs2, wave=0) is True,
+            "gated growth must still be adoptable through the ledger")
+    e2 = rs2.speculation_log[0]
+    _assert(e2["accepted"] is True and e2["post_hash"] != e2["pre_hash"],
+            "adopted speculation must land as a new certified state")
+    _assert(e2["ledger_history"] == [{"name": "w0:capacity_rung",
+                                      "status": "adopted"}],
+            "ledger history must show the adoption")
+
+
+def test_speculation_budget_bounded_per_wave() -> None:
+    rs = RunState(adaptive=True)
+    rs.tasks = [seal_task("T92", "search", _argmax_index)]
+    prop = ImprovementProposal(wave=0, new_macros=[], new_weights=None,
+                               note="budget_probe")
+    _assert(speculative_meta_gate(rs, prop, 0, "generated_macro_batch")
+            is False, "first budgeted attempt must be measured")
+    _assert(speculative_meta_gate(rs, prop, 0, "capacity_rung")
+            is False, "second budgeted attempt must be measured")
+    n_rec = len(rs.gate_records)
+    _assert(speculative_meta_gate(rs, prop, 0, "generated_macro_batch")
+            is None, "over-budget attempt must be refused, not measured")
+    _assert(len(rs.gate_records) == n_rec and len(rs.speculation_log) == 2,
+            "refused attempt must add no gate record and no ledger entry")
+    _assert(any("SPECULATION_BUDGET_EXHAUSTED" in e for e in rs.events),
+            "budget exhaustion must be logged")
+    _assert(speculative_meta_gate(rs, prop, 1, "capacity_rung") is not None,
+            "budget must reset on the next wave")
+
+
+def test_speculation_ledger_deterministic() -> None:
+    outs = []
+    for _ in range(2):
+        rs = RunState(adaptive=True)
+        rs.searcher.capacity = CapacityConfig(max_stack=1)
+        rs.tasks = [seal_task("T91", "search", _argmax_index)]
+        attempt_capacity_growth(rs, wave=0)
+        outs.append(json.dumps(rs.speculation_log, sort_keys=True))
+    _assert(outs[0] == outs[1],
+            "speculation ledger must be byte-identical across two runs")
+    rs2 = restore_runstate(runstate_summary(rs))
+    _assert(json.dumps(rs2.speculation_log, sort_keys=True) == outs[0],
+            "speculation ledger must survive the serialization round-trip")
+
+
+TESTS.extend([
+    test_permanent_install_single_call_site,
+    test_generated_derived_classification,
+    test_speculative_rollback_restores_certified_state,
+    test_speculation_budget_bounded_per_wave,
+    test_speculation_ledger_deterministic,
 ])
 
 
