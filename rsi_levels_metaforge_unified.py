@@ -2045,6 +2045,8 @@ class RunState:
     growth_log: List[Dict[str, object]] = field(default_factory=list)
     speculation_log: List[Dict[str, object]] = field(default_factory=list)
     exploration_offer_cursor: int = 0
+    offer_state: Dict[str, object] = field(default_factory=dict)
+    reoffer_log: List[Dict[str, object]] = field(default_factory=list)
 
     def unsolved(self) -> List[SealedTask]:
         return [t for t in self.tasks if t.tid not in self.adopted_tokens]
@@ -2253,11 +2255,15 @@ def run_system(adaptive: bool = True, waves: int = WAVES,
             rs.events.append(f"w{w} GATE_SKIPPED_FINAL_WAVE")
             continue
         if exploration_pool:
-            # E1 transfer anchor via the G2 offer schedule: archive elites
-            # enter the standard proposal stream as ordinary candidates
-            # (origin tagged); adoption exclusively via the unchanged gate
-            # discipline; the persistent cursor walks the full pool.
-            offer_exploration_batches(rs, w, exploration_pool)
+            # Transfer anchor offers: archive material enters the standard
+            # proposal stream as ordinary candidates (origin tagged);
+            # adoption exclusively via the unchanged gate discipline.
+            # Dict = Phase I stratified schedule (ORDERING_SPEC.md);
+            # list = the pre-I cursor walk (kept for reproducibility).
+            if isinstance(exploration_pool, dict):
+                offer_stratified_batches(rs, w, exploration_pool)
+            else:
+                offer_exploration_batches(rs, w, exploration_pool)
         if fresh_adopt == 0 and not fresh_frontier:
             rs.events.append(f"w{w} GATE_SKIPPED_NO_FRESH_MATERIAL")
             attempt_capacity_growth(rs, w)   # Rule 2: stagnation -> gated growth
@@ -2415,6 +2421,8 @@ def runstate_summary(rs: RunState) -> Dict[str, object]:
         "growth_log": [dict(g) for g in rs.growth_log],
         "speculation_log": [dict(e) for e in rs.speculation_log],
         "exploration_offer_cursor": rs.exploration_offer_cursor,
+        "offer_state": json.loads(json.dumps(rs.offer_state)),
+        "reoffer_log": [dict(e) for e in rs.reoffer_log],
         "generated_report": generated_pressure_report(rs),
         "gate_records": [
             {"wave": r.wave, "accepted": r.accepted,
@@ -2474,6 +2482,8 @@ def restore_runstate(summary: Dict[str, object]) -> RunState:
     rs.speculation_log = [dict(e) for e in summary.get("speculation_log", [])]
     rs.exploration_offer_cursor = int(
         summary.get("exploration_offer_cursor", 0))
+    rs.offer_state = json.loads(json.dumps(summary.get("offer_state", {})))
+    rs.reoffer_log = [dict(e) for e in summary.get("reoffer_log", [])]
     rs.adopted_tokens = {t: tuple(v)
                          for t, v in summary["adopted_tokens"].items()}
     rs.adopted_wave = {t: int(v) for t, v in summary["adopted_wave"].items()}
@@ -16331,6 +16341,297 @@ def test_ordering_h_instruments_and_reconstruction() -> None:
 
 
 TESTS.append(test_ordering_h_instruments_and_reconstruction)
+
+
+# =========================================================================== #
+# PHASE I: STRATIFIED OFFER SCHEDULE (implements docs/ORDERING_SPEC.md,      #
+# SHA-256 pinned by test_ordering_h_instruments_and_reconstruction).          #
+#                                                                             #
+# GR-O boundary, implemented and tested: ordering KEYS (eligibility, strata, #
+# within-stratum ranks) read only the archive document and the frozen        #
+# anchor report. The re-offer TRIGGER necessarily reads the outcome of the   #
+# exploration batch itself (rejected / rider-dropped) -- mandated by the      #
+# spec's re-offer policy -- but never designer-task identities, scores,      #
+# holdout results, or adoption history.                                       #
+# =========================================================================== #
+OFFER_ROTATION = ("S1", "S1", "S2", "S3")
+REOFFER_COOLDOWN_WAVES = 2
+REOFFER_MAX_PER_BODY = 2
+
+
+def ordering_i_strata(doc: Dict[str, object],
+                      rep: Dict[str, object]
+                      ) -> Dict[str, List[Tuple[int, ...]]]:
+    """Frozen eligibility and strata. S1: list-valued subterm fragments
+    (census), ordered by in-degree desc, MDL gain desc, expanded length
+    asc, lex. S2: characterized whole-elite bodies; S3: remaining
+    whole-elite bodies; both ordered by MDL gain desc, frozen elite cost,
+    lex."""
+    gain = {tuple(d["body"]): int(d["net_saving"])
+            for d in rep["mdl"]["mdl_positive"]}
+    census = ordering_h_fragment_census(doc)
+    s1 = [w for w, _ in sorted(
+        census, key=lambda kv: (-kv[1], -gain.get(kv[0], 0),
+                                len(kv[0]), kv[0]))]
+    vocab = _archive_vocab(doc)
+    seen: set = set()
+    whole: List[Tuple[Tuple[int, ...], int, int]] = []
+    for key in sorted(doc["archive"]):
+        if not key.startswith("h8|"):
+            continue
+        e = doc["archive"][key]
+        toks = tuple(int(t) for t in e["tokens"])
+        try:
+            exp = expand_tokens(toks, vocab)
+        except VMCrash:
+            continue
+        if not (2 <= len(exp) <= EXPLORATION_BODY_MAX) or exp in seen:
+            continue
+        seen.add(exp)
+        whole.append((exp, len(toks), int(e["cost"][1])))
+    char_exp: set = set()
+    for c in rep["properties"]["characterized"]:
+        try:
+            char_exp.add(expand_tokens(tuple(c["tokens"]), vocab))
+        except VMCrash:
+            continue
+    order23 = lambda w: (-gain.get(w[0], 0), w[1], w[2], w[0])
+    s2 = [w[0] for w in sorted((w for w in whole if w[0] in char_exp),
+                               key=order23)]
+    s3 = [w[0] for w in sorted((w for w in whole if w[0] not in char_exp),
+                               key=order23)]
+    return {"S1": s1, "S2": s2, "S3": s3}
+
+
+def _body_sha16(body: Sequence[int]) -> str:
+    return hashlib.sha256(json.dumps(list(body)).encode()).hexdigest()[:16]
+
+
+def _offer_state(rs: "RunState") -> Dict[str, object]:
+    if not rs.offer_state:
+        rs.offer_state = {"pos": {}, "pending": {}, "counts": {}}
+    return rs.offer_state
+
+
+def _draw_stratum_bodies(rs: "RunState", wave: int,
+                         strata: Dict[str, List[Tuple[int, ...]]],
+                         s: str, n: int) -> List[Tuple[int, ...]]:
+    """Up to n bodies from stratum s: fresh queue first, then eligible
+    re-offers (queue tail per the spec). Re-offer draws are counted and
+    logged here."""
+    st = _offer_state(rs)
+    out: List[Tuple[int, ...]] = []
+    pos = int(st["pos"].get(s, 0))
+    fresh = strata[s]
+    while len(out) < n and pos < len(fresh):
+        out.append(tuple(fresh[pos]))
+        pos += 1
+    st["pos"][s] = pos
+    pend = st["pending"].setdefault(s, [])
+    i = 0
+    while len(out) < n and i < len(pend):
+        wave_ok, body, prior = pend[i][0], pend[i][1], pend[i][2]
+        if int(wave_ok) <= wave:
+            pend.pop(i)
+            body_t = tuple(int(x) for x in body)
+            sha = _body_sha16(body_t)
+            st["counts"][sha] = int(st["counts"].get(sha, 0)) + 1
+            rs.reoffer_log.append({
+                "wave": wave, "body_sha16": sha, "tokens": list(body_t),
+                "stratum": s, "reoffer_count": st["counts"][sha],
+                "prior": prior})
+            rs.events.append(
+                f"w{wave} REOFFER {sha} stratum={s} "
+                f"count={st['counts'][sha]} prior={prior['kind']}"
+                f"@w{prior['wave']}")
+            out.append(body_t)
+        else:
+            i += 1
+    return out
+
+
+def _schedule_reoffer(rs: "RunState", wave: int, s: str,
+                      body: Tuple[int, ...], kind: str) -> None:
+    st = _offer_state(rs)
+    sha = _body_sha16(body)
+    if int(st["counts"].get(sha, 0)) >= REOFFER_MAX_PER_BODY:
+        return
+    st["pending"].setdefault(s, []).append(
+        [wave + REOFFER_COOLDOWN_WAVES, list(body),
+         {"kind": kind, "wave": wave}])
+
+
+def offer_stratified_batches(rs: "RunState", wave: int,
+                             strata: Dict[str, List[Tuple[int, ...]]]
+                             ) -> None:
+    """Per-wave schedule: batches drawn round-robin S1,S1,S2,S3 (an
+    exhausted stratum yields its slot); at most EXPLORATION_BATCHES_PER_
+    WAVE measured batches; rejected and rider-dropped bodies re-enter
+    their stratum's tail after the cooldown, at most REOFFER_MAX_PER_BODY
+    times, all logged."""
+    measured = 0
+    rot = 0
+    idle = 0
+    while measured < EXPLORATION_BATCHES_PER_WAVE and idle < len(OFFER_ROTATION):
+        s = OFFER_ROTATION[rot % len(OFFER_ROTATION)]
+        rot += 1
+        bodies = _draw_stratum_bodies(rs, wave, strata, s,
+                                      EXPLORATION_BATCH_SIZE)
+        if not bodies:
+            idle += 1
+            continue
+        idle = 0
+        eprop = propose_exploration_batch(rs, wave, bodies, offset=0)
+        if eprop is None:
+            continue                     # every body duplicate/capacity-bound
+        prop_bodies = {m.mid: m.body for m in eprop.new_macros}
+        # Re-offer batches are digest-salted with their round so the
+        # duplicate guard (an implementation bookkeeping device, not part
+        # of the frozen spec) cannot make the spec's re-offer policy
+        # inert: a re-offered bundle is a distinct proposal, re-judged
+        # under whatever context the intervening waves created.
+        st = _offer_state(rs)
+        salt = max((int(st["counts"].get(_body_sha16(b), 0))
+                    for b in prop_bodies.values()), default=0)
+        edig = hashlib.sha256(json.dumps({
+            "m": [list(m.body) for m in eprop.new_macros],
+            "x": "exploration", "r": salt},
+            sort_keys=True).encode()).hexdigest()[:16]
+        if edig in rs.rejected_digests:
+            rs.events.append(f"w{wave} SKIP_DUPLICATE_EXPLORATION {edig}")
+            continue
+        mids_before = set(rs.searcher.macros)
+        eok = speculative_meta_gate(rs, eprop, wave, "exploration_batch")
+        if eok is None:
+            break                        # defensive; budget is pre-checked
+        measured += 1
+        if eok is False:
+            rs.rejected_digests.append(edig)
+            for b in prop_bodies.values():
+                _schedule_reoffer(rs, wave, s, b, "rejected")
+        else:
+            installed = set(rs.searcher.macros) - mids_before
+            for mid, b in prop_bodies.items():
+                if mid not in installed:
+                    _schedule_reoffer(rs, wave, s, b, "dropped_rider")
+
+
+# ---------------------------------------------------------------------------
+# Phase I tests: spec-exact strata, GR-O isolation, rotation mechanics,
+# re-offer policy, determinism.
+# ---------------------------------------------------------------------------
+def test_i_strata_match_frozen_spec() -> None:
+    doc = anchor_load_archive_g()
+    rep = _anchor_report_g()
+    a = ordering_i_strata(doc, rep)
+    b = ordering_i_strata(doc, rep)
+    _assert(a == b, "strata construction must be deterministic")
+    _assert(len(a["S1"]) == 132 and len(a["S2"]) == 195
+            and len(a["S3"]) == 123,
+            "stratum sizes must match the frozen spec's census")
+    _assert(a["S1"][0] == (4, 4, 25)
+            and a["S1"][1] == (4, 4, 25, 4, 4, 25, 25),
+            "S1 must lead with the x2 then x4 fragments (spec dry-run)")
+    _assert(a["S2"][0] == (4, 4, 25, 4, 4, 25, 25, 29),
+            "S2 must lead with the top-MDL characterized terminal")
+    gain = {tuple(d["body"]): int(d["net_saving"])
+            for d in rep["mdl"]["mdl_positive"]}
+    for s in ("S2", "S3"):
+        gains = [gain.get(w, 0) for w in a[s]]
+        _assert(gains == sorted(gains, reverse=True),
+                f"{s} must be ordered by MDL gain descending")
+    all_bodies = set(a["S1"]) | set(a["S2"]) | set(a["S3"])
+    _assert(set(exploration_pool_from_archive(doc)) <= all_bodies,
+            "every pre-I pool body must remain eligible")
+
+
+def test_i_ordering_gro_isolation() -> None:
+    import inspect as _inspect
+    src = (_inspect.getsource(ordering_i_strata)
+           + _inspect.getsource(ordering_h_fragment_census)
+           + _inspect.getsource(_draw_stratum_bodies)
+           + _inspect.getsource(_schedule_reoffer))
+    forbidden = ("ORACLES", "TRAIN_INPUTS", "_ORACLE_REGISTRY", "seal_task",
+                 "build_sealed_tasks", "holdout_gate", "cf_gate",
+                 "_make_gate", "task_target_vector", "SealedTask",
+                 "adopted_tokens", "gate_records", "adopted_wave",
+                 "best_scores", "residues", "meta_gate", "lookup_solution")
+    for name in forbidden:
+        _assert(name not in src,
+                f"ordering computation references sealed data: {name}")
+
+
+def test_i_rotation_and_reoffer_policy() -> None:
+    # tiny synthetic strata: rotation S1,S1,S2,S3 with yield-on-empty,
+    # rejected bodies re-enter after the cooldown, capped at 2 re-offers,
+    # fully logged, and state survives serialization.
+    strata = {"S1": [(4, 22), (4, 21), (4, 20), (4, 27), (4, 4, 23),
+                     (4, 4, 24)],
+              "S2": [(4, 29, 0, 9), (4, 30, 0, 9), (4, 16, 0, 9)],
+              "S3": [(4, 29, 1, 9), (4, 30, 1, 9), (4, 16, 1, 9)]}
+    rs = RunState(adaptive=True)
+    rs.tasks = [seal_task("T96", "search", _argmax_index)]
+    offer_stratified_batches(rs, 0, strata)
+    ex0 = [e for e in rs.speculation_log if e["wave"] == 0
+           and e["kind"] == "exploration_batch"]
+    _assert(len(ex0) == 4, "wave 0 must measure 4 batches (2xS1, S2, S3)")
+    _assert(rs.offer_state["pos"] == {"S1": 6, "S2": 3, "S3": 3},
+            f"rotation must exhaust the tiny strata: {rs.offer_state['pos']}")
+    pend = rs.offer_state["pending"]
+    _assert(sum(len(v) for v in pend.values()) == 12,
+            "all rejected bodies must be scheduled for re-offer")
+    _assert(all(item[0] == 2 for v in pend.values() for item in v),
+            "cooldown must schedule eligibility at wave 2")
+    # wave 1: nothing eligible (cooldown), nothing fresh
+    offer_stratified_batches(rs, 1, strata)
+    _assert(not [e for e in rs.speculation_log if e["wave"] == 1],
+            "cooldown must keep re-offers out of wave 1")
+    # wave 2: re-offers drawn, logged, counted, and re-measured (the
+    # re-offer round salts the batch digest, so the duplicate guard
+    # cannot silently void the spec's policy)
+    offer_stratified_batches(rs, 2, strata)
+    ex2 = [e for e in rs.speculation_log if e["wave"] == 2
+           and e["kind"] == "exploration_batch"]
+    _assert(len(ex2) == 4, "re-offers must be re-measured at wave 2")
+    _assert(len(rs.reoffer_log) == 12
+            and all(r["reoffer_count"] == 1 and r["prior"]["kind"] ==
+                    "rejected" for r in rs.reoffer_log),
+            "every re-offer must be logged with count and prior record")
+    # waves 3 (cooldown) then 4: second and FINAL re-offer round
+    offer_stratified_batches(rs, 3, strata)
+    offer_stratified_batches(rs, 4, strata)
+    ex4 = [e for e in rs.speculation_log if e["wave"] == 4
+           and e["kind"] == "exploration_batch"]
+    _assert(len(ex4) == 4, "second re-offer round must be re-measured")
+    _assert(len(rs.reoffer_log) == 24
+            and max(rs.offer_state["counts"].values()) == 2,
+            "second round must be drawn, logged, and hit the cap")
+    # wave 6: cap reached and nothing rescheduled -- no further draws
+    offer_stratified_batches(rs, 6, strata)
+    _assert(len(rs.reoffer_log) == 24
+            and not [e for e in rs.speculation_log if e["wave"] == 6],
+            "bodies at the re-offer cap must never re-enter")
+    rt = restore_runstate(runstate_summary(rs))
+    _assert(rt.offer_state == rs.offer_state
+            and rt.reoffer_log == rs.reoffer_log,
+            "offer state and re-offer log must survive serialization")
+    # determinism of the whole mechanics
+    logs = []
+    for _ in range(2):
+        r2 = RunState(adaptive=True)
+        r2.tasks = [seal_task("T96", "search", _argmax_index)]
+        for w in range(5):
+            offer_stratified_batches(r2, w, strata)
+        logs.append(json.dumps({"o": r2.offer_state, "r": r2.reoffer_log,
+                                "s": r2.speculation_log}, sort_keys=True))
+    _assert(logs[0] == logs[1], "schedule must be byte-identical across runs")
+
+
+TESTS.extend([
+    test_i_strata_match_frozen_spec,
+    test_i_ordering_gro_isolation,
+    test_i_rotation_and_reoffer_policy,
+])
 
 
 
@@ -37653,11 +37954,11 @@ def main() -> None:
         print(json.dumps(explore_coverage_report(doc), indent=2,
                          sort_keys=True))
     elif args.mode == "transfer-anchor":
-        # G2: widened offer set from the extended archive under the frozen
-        # MDL-gain ordering; acceptance discipline unchanged.
+        # Phase I: stratified offer schedule per the frozen
+        # docs/ORDERING_SPEC.md; acceptance discipline unchanged.
         doc = anchor_load_archive_g()
-        pool = exploration_pool_ordered_g(doc, _anchor_report_g()["mdl"])
-        rs = run_system(adaptive=True, exploration_pool=pool)
+        strata = ordering_i_strata(doc, _anchor_report_g())
+        rs = run_system(adaptive=True, exploration_pool=strata)
         if args.save:
             save_runstate(rs, args.save)
         expl = sorted(m.mid for m in rs.searcher.macros.values()
@@ -37665,7 +37966,9 @@ def main() -> None:
         d, g = _solved_split(rs)
         print(json.dumps({"solved": d, "solved_generated": g,
                           "exploration_macros_installed": expl,
-                          "pool_size": len(pool),
+                          "strata_sizes": {s: len(v)
+                                           for s, v in strata.items()},
+                          "reoffers": len(rs.reoffer_log),
                           "digest": adoption_log_digest(rs)}))
     elif args.mode == "anchor-report":
         doc = anchor_load_archive()
