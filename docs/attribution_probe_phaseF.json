@@ -1,0 +1,572 @@
+{
+  "capacity_probe": {
+    "classification": {
+      "T18": "SEARCH/VOCAB",
+      "T21": "SEARCH/VOCAB",
+      "T22": "SEARCH/VOCAB",
+      "T23": "SEARCH/VOCAB",
+      "T26": "SEARCH/VOCAB",
+      "T28": "SEARCH/VOCAB",
+      "T29": "SEARCH/VOCAB",
+      "T30": "SEARCH/VOCAB",
+      "T31": "SEARCH/VOCAB",
+      "T32": "SEARCH/VOCAB"
+    },
+    "meta": {
+      "iters": 550,
+      "probe_seed": 909090,
+      "restarts": 24,
+      "rungs": [
+        [
+          20,
+          46,
+          34
+        ],
+        [
+          28,
+          64,
+          48
+        ],
+        [
+          40,
+          91,
+          69
+        ],
+        [
+          56,
+          128,
+          96
+        ]
+      ],
+      "vocabulary_macros": {
+        "100": [
+          4,
+          4,
+          25
+        ],
+        "103": [
+          100,
+          100,
+          25
+        ],
+        "106": [
+          4,
+          31,
+          29
+        ]
+      }
+    },
+    "results": {
+      "T18": [
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            20,
+            46,
+            34
+          ],
+          "seed": 912888,
+          "tid": "T18",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            28,
+            64,
+            48
+          ],
+          "seed": 922895,
+          "tid": "T18",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            40,
+            91,
+            69
+          ],
+          "seed": 932902,
+          "tid": "T18",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.1998,
+          "evals": 53,
+          "rung": [
+            56,
+            128,
+            96
+          ],
+          "seed": 942909,
+          "tid": "T18",
+          "train_exact": false
+        }
+      ],
+      "T21": [
+        {
+          "best_score": 0.1998,
+          "evals": 48,
+          "rung": [
+            20,
+            46,
+            34
+          ],
+          "seed": 913521,
+          "tid": "T21",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            28,
+            64,
+            48
+          ],
+          "seed": 923528,
+          "tid": "T21",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            40,
+            91,
+            69
+          ],
+          "seed": 933535,
+          "tid": "T21",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.05,
+          "evals": 48,
+          "rung": [
+            56,
+            128,
+            96
+          ],
+          "seed": 943542,
+          "tid": "T21",
+          "train_exact": false
+        }
+      ],
+      "T22": [
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            20,
+            46,
+            34
+          ],
+          "seed": 913732,
+          "tid": "T22",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.05,
+          "evals": 42,
+          "rung": [
+            28,
+            64,
+            48
+          ],
+          "seed": 923739,
+          "tid": "T22",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            40,
+            91,
+            69
+          ],
+          "seed": 933746,
+          "tid": "T22",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            56,
+            128,
+            96
+          ],
+          "seed": 943753,
+          "tid": "T22",
+          "train_exact": false
+        }
+      ],
+      "T23": [
+        {
+          "best_score": 0.1998,
+          "evals": 45,
+          "rung": [
+            20,
+            46,
+            34
+          ],
+          "seed": 913943,
+          "tid": "T23",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.0,
+          "evals": 30,
+          "rung": [
+            28,
+            64,
+            48
+          ],
+          "seed": 923950,
+          "tid": "T23",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            40,
+            91,
+            69
+          ],
+          "seed": 933957,
+          "tid": "T23",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            56,
+            128,
+            96
+          ],
+          "seed": 943964,
+          "tid": "T23",
+          "train_exact": false
+        }
+      ],
+      "T26": [
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            20,
+            46,
+            34
+          ],
+          "seed": 914576,
+          "tid": "T26",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.2497,
+          "evals": 53,
+          "rung": [
+            28,
+            64,
+            48
+          ],
+          "seed": 924583,
+          "tid": "T26",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.1998,
+          "evals": 97,
+          "rung": [
+            40,
+            91,
+            69
+          ],
+          "seed": 934590,
+          "tid": "T26",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            56,
+            128,
+            96
+          ],
+          "seed": 944597,
+          "tid": "T26",
+          "train_exact": false
+        }
+      ],
+      "T28": [
+        {
+          "best_score": 0.0,
+          "evals": 121,
+          "rung": [
+            20,
+            46,
+            34
+          ],
+          "seed": 914998,
+          "tid": "T28",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            28,
+            64,
+            48
+          ],
+          "seed": 925005,
+          "tid": "T28",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.0,
+          "evals": 25,
+          "rung": [
+            40,
+            91,
+            69
+          ],
+          "seed": 935012,
+          "tid": "T28",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            56,
+            128,
+            96
+          ],
+          "seed": 945019,
+          "tid": "T28",
+          "train_exact": false
+        }
+      ],
+      "T29": [
+        {
+          "best_score": 0.1498,
+          "evals": 162,
+          "rung": [
+            20,
+            46,
+            34
+          ],
+          "seed": 915209,
+          "tid": "T29",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            28,
+            64,
+            48
+          ],
+          "seed": 925216,
+          "tid": "T29",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            40,
+            91,
+            69
+          ],
+          "seed": 935223,
+          "tid": "T29",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            56,
+            128,
+            96
+          ],
+          "seed": 945230,
+          "tid": "T29",
+          "train_exact": false
+        }
+      ],
+      "T30": [
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            20,
+            46,
+            34
+          ],
+          "seed": 915420,
+          "tid": "T30",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            28,
+            64,
+            48
+          ],
+          "seed": 925427,
+          "tid": "T30",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            40,
+            91,
+            69
+          ],
+          "seed": 935434,
+          "tid": "T30",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.2497,
+          "evals": 38,
+          "rung": [
+            56,
+            128,
+            96
+          ],
+          "seed": 945441,
+          "tid": "T30",
+          "train_exact": false
+        }
+      ],
+      "T31": [
+        {
+          "best_score": 0.0,
+          "evals": 28,
+          "rung": [
+            20,
+            46,
+            34
+          ],
+          "seed": 915631,
+          "tid": "T31",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.05,
+          "evals": 54,
+          "rung": [
+            28,
+            64,
+            48
+          ],
+          "seed": 925638,
+          "tid": "T31",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.05,
+          "evals": 98,
+          "rung": [
+            40,
+            91,
+            69
+          ],
+          "seed": 935645,
+          "tid": "T31",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            56,
+            128,
+            96
+          ],
+          "seed": 945652,
+          "tid": "T31",
+          "train_exact": false
+        }
+      ],
+      "T32": [
+        {
+          "best_score": 0.0,
+          "evals": 25,
+          "rung": [
+            20,
+            46,
+            34
+          ],
+          "seed": 915842,
+          "tid": "T32",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.0,
+          "evals": 24,
+          "rung": [
+            28,
+            64,
+            48
+          ],
+          "seed": 925849,
+          "tid": "T32",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.05,
+          "evals": 33,
+          "rung": [
+            40,
+            91,
+            69
+          ],
+          "seed": 935856,
+          "tid": "T32",
+          "train_exact": false
+        },
+        {
+          "best_score": 0.2497,
+          "evals": 60,
+          "rung": [
+            56,
+            128,
+            96
+          ],
+          "seed": 945863,
+          "tid": "T32",
+          "train_exact": false
+        }
+      ]
+    }
+  },
+  "transfer_coverage": {
+    "archive_elites_total": 246,
+    "characterized_offered": 15,
+    "characterized_total": 134,
+    "mdl_positive_offered": 1,
+    "mdl_positive_total": 773,
+    "offer_rule": "pool[w*3:(w+1)*3] for waves 0..6 in frozen elite order",
+    "offered": 21,
+    "pool_total": 192
+  }
+}
