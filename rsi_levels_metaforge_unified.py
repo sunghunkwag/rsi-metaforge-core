@@ -16264,6 +16264,75 @@ TESTS.extend([
 ])
 
 
+# =========================================================================== #
+# PHASE H: ORDERING ATTRIBUTION (measurement only; zero mechanism changes)   #
+#                                                                             #
+# Reference census for docs/ORDERING_SPEC.md stratum S1: list-valued          #
+# subterm fragments of archive elites. Reads ONLY the archive document       #
+# (GR-O: no designer/gate/adoption data reachable).                           #
+# =========================================================================== #
+ORDERING_SPEC_PHASEH_SHA256 = (
+    "4b42e49951e72a398191cbedb1d6f8e0de7240be7267772744358e69fced0dce")
+G3ONLY_ARTIFACT_PHASEH_DIGEST = "93338b61e81fe6e1"
+
+
+def ordering_h_fragment_census(doc: Dict[str, object]
+                               ) -> List[Tuple[Tuple[int, ...], int]]:
+    """S1 census: contiguous windows (length 2-8) of elite expansions
+    whose static type from the empty stack is exactly one list, occurring
+    in >= 2 distinct elites; returned in the frozen S1 order (subterm
+    in-degree desc, then expanded length asc, then lexicographic)."""
+    vocab = _archive_vocab(doc)
+    sigs = dict(OP_TYPES)
+    sigs.update(EXT_TYPES)
+    frag: Dict[Tuple[int, ...], int] = {}
+    for key in sorted(doc["archive"]):
+        try:
+            exp = expand_tokens(tuple(doc["archive"][key]["tokens"]), vocab)
+        except VMCrash:
+            continue
+        here: set = set()
+        for L in range(2, 9):
+            for i in range(len(exp) - L + 1):
+                w = exp[i:i + L]
+                if w in here:
+                    continue
+                r = _sim_types(w, sigs)
+                if r is not None and len(r) == 1 and r[0] == "l":
+                    here.add(w)
+        for w in here:
+            frag[w] = frag.get(w, 0) + 1
+    out = [(w, c) for w, c in frag.items() if c >= 2]
+    out.sort(key=lambda kv: (-kv[1], len(kv[0]), kv[0]))
+    return out
+
+
+def test_ordering_h_instruments_and_reconstruction() -> None:
+    root = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(root, "docs", "ORDERING_SPEC.md"), "rb") as fh:
+        _assert(hashlib.sha256(fh.read()).hexdigest()
+                == ORDERING_SPEC_PHASEH_SHA256,
+                "ORDERING_SPEC.md drifted from the Phase H freeze hash")
+    with open(os.path.join(root, "docs", "adaptive_g3only_phaseH.json"),
+              "r", encoding="utf-8") as fh:
+        g3 = json.load(fh)
+    _assert(g3["adoption_digest"] == G3ONLY_ARTIFACT_PHASEH_DIGEST,
+            "committed G3-only artifact digest diverged from the citation")
+    T = {t for t in g3["adopted_tokens"] if t.startswith("T")}
+    _assert("T27" in T and "T28" in T and "T15" not in T and len(T) == 23,
+            "G3-only artifact contradicts the union table")
+    doc = anchor_load_archive_g()
+    a = ordering_h_fragment_census(doc)
+    b = ordering_h_fragment_census(doc)
+    _assert(a == b, "fragment census must be deterministic")
+    _assert(len(a) == 132 and a[0] == ((4, 4, 25), 231)
+            and a[1] == ((4, 4, 25, 4, 4, 25, 25), 122),
+            "census must reproduce the frozen spec's stated S1 facts")
+
+
+TESTS.append(test_ordering_h_instruments_and_reconstruction)
+
+
 
 
 # =========================================================================== #
