@@ -71,6 +71,8 @@ only; the live top-VM constants are lines 94–101.
 | `expansion-battery` | `expansion_battery` (13580) | SECTION 24 expansion rules battery (residue-driven growth, speculative adoption + rollback). | `expansion_results.json` |
 | `grammar-battery` | `grammar_battery` (13883) | Depth-1 feature-grammar expansion battery + honest give-up target. | `grammar_results.json` |
 | `grammar2-battery` | `grammar2_battery` (14219) | Depth-2 grammar battery (masked-reduction closes what depth-1 cannot) + give-up target. | `grammar2_results.json` |
+| `explore` | `explore_run` (Phase D) | Track 2 exploration of the VM behavior space against the frozen probe battery; seeded, budgeted, deterministic; `--vocab-from` supplies searcher macros as building blocks (GR9: vocabulary only). | archive JSON at `--save` (default `exploration_archive_phaseD.json`) |
+| `explore-report` | `explore_coverage_report` (Phase D) | Prints coverage facts (cells filled, curve, lineage depths, example elites) from a saved exploration archive at `--save`. | none |
 
 ## Native test harness
 

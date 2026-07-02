@@ -15069,6 +15069,357 @@ TESTS.extend([
 ])
 
 
+# =========================================================================== #
+# PHASE D: TRACK 2 EXPLORATION ENGINE AND COVERAGE ARCHIVE                    #
+#                                                                             #
+# Maps the top VM's reachable behavior space directly -- no task suite        #
+# involved. Only the measuring instruments are frozen: the probe battery     #
+# (docs/probe_battery_phaseD.json), the descriptor set                        #
+# (docs/descriptor_spec_phaseD.md + the reference implementation below,      #
+# both hash-pinned), and the elite total order. Sealing (GR9): this engine   #
+# has no read access to designer task definitions, holdout data, or gate     #
+# internals; it may use the searcher's macro vocabulary as building blocks.  #
+# Coverage statistics are facts about mapped territory, not capability       #
+# claims.                                                                     #
+# =========================================================================== #
+EXPLORE_SEED = 424243
+EXPLORE_EVALS_PER_RUN = 60_000
+EXPLORE_MAX_SURFACE_LEN = 14
+EXPLORE_STEP_BUDGET = 512
+EXPLORE_CHECKPOINT_EVERY = 5_000
+EXPLORE_SCREEN_PROBES = 8
+
+PROBE_BATTERY_PHASED_SHA256 = (
+    "b11b14dfe4616a3c13a1ac872d08b181c532e796c19f74bafe6c050d9e0c0d01")
+DESCRIPTOR_SPEC_PHASED_SHA256 = (
+    "c0642490cef51691846dab3260d0e630fedaeaa46e281a3c8b94749e5d937c13")
+EXPLORE_IMPL_SHA256 = (
+    "cb7aa8ffa42d24c8eede0d73f964e7d99e71b35e6886a3e26d9296db32fb3bc7")
+
+
+def explore_load_battery() -> List[Dict[str, object]]:
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "docs", "probe_battery_phaseD.json")
+    raw = open(path, "rb").read()
+    if hashlib.sha256(raw).hexdigest() != PROBE_BATTERY_PHASED_SHA256:
+        raise RuntimeError("probe battery drifted from the Phase D freeze")
+    return json.loads(raw.decode("utf-8"))["probes"]
+
+
+def explore_run_program(expanded: Sequence[int], xs: Sequence[int]
+                        ) -> Tuple[bool, Optional[int], int, int]:
+    """Execute one expanded program on one probe under the default VM stack
+    bound (pinned for the duration). Returns
+    (completed, output, executed_ops, peak_stack)."""
+    prev = _ACTIVE_MAX_STACK[0]
+    _ACTIVE_MAX_STACK[0] = MAX_STACK
+    stack: List[object] = []
+    inp = tuple(int(v) for v in xs)
+    steps = 0
+    peak = 0
+    try:
+        for op in expanded:
+            step_op(stack, op, inp)
+            steps += 1
+            if len(stack) > peak:
+                peak = len(stack)
+    except VMCrash:
+        return (False, None, steps, peak)
+    finally:
+        _ACTIVE_MAX_STACK[0] = prev
+    if len(stack) == 1 and isinstance(stack[0], int):
+        return (True, stack[0], steps, peak)
+    return (False, None, steps, peak)
+
+
+def explore_descriptor(tokens: Sequence[int],
+                       vocab_macros: Dict[int, Macro],
+                       battery: List[Dict[str, object]]
+                       ) -> Tuple[tuple, int, int]:
+    """Reference implementation of docs/descriptor_spec_phaseD.md.
+    Returns (cell, total_steps, expanded_len)."""
+    try:
+        exp = expand_tokens(tokens, vocab_macros)
+    except VMCrash:
+        exp = None
+    if exp is None or len(exp) > EXPLORE_STEP_BUDGET:
+        exp_len = EXPLORE_STEP_BUDGET + 1 if exp is None else len(exp)
+        cost_bucket = min(10, max(1, exp_len.bit_length()))
+        return ((0, (0, 0, 0), 0, (0, 0, 0, 0), cost_bucket, 0), 0, exp_len)
+    total_steps = 0
+    res: Dict[str, Tuple[bool, Optional[int], int]] = {}
+    xs_by_pid: Dict[str, List[int]] = {}
+    screened = False
+    for i, probe in enumerate(battery):
+        done, out, steps, peak = explore_run_program(exp, probe["xs"])
+        total_steps += steps
+        res[probe["pid"]] = (done, out, peak)
+        xs_by_pid[probe["pid"]] = probe["xs"]
+        if i == EXPLORE_SCREEN_PROBES - 1 and \
+                not any(r[0] for r in res.values()):
+            screened = True
+            break
+    cost_bucket = min(10, max(1, len(exp).bit_length()))
+    if screened:
+        return ((0, (0, 0, 0), 0, (0, 0, 0, 0), cost_bucket, 0),
+                total_steps, len(exp))
+    completed = [(pid, r[1], r[2]) for pid, r in res.items() if r[0]]
+    n = len(battery)
+    halt_bucket = (8 * len(completed)) // n
+    if completed:
+        outs = [o for _, o, _ in completed]
+        zero_b = min(4, (4 * sum(1 for o in outs if o == 0)) // len(outs))
+        neg_b = min(4, (4 * sum(1 for o in outs if o < 0)) // len(outs))
+        big_b = min(4, (4 * sum(1 for o in outs if abs(o) > 15)) // len(outs))
+        entropy_b = min(4, (4 * len(set(outs))) // len(outs))
+        peak_max = max(p for _, _, p in completed)
+        stack_b = (1 if peak_max <= 1 else 2 if peak_max == 2
+                   else 3 if peak_max <= 4 else 4 if peak_max <= 8
+                   else 5 if peak_max <= 16 else 6)
+        constant = 1 if len(outs) >= 2 and len(set(outs)) == 1 else 0
+        done_out = {pid: o for pid, o, _ in completed}
+        order_s = 0
+        value_s = 0
+        for probe in battery:
+            if probe["kind"] == "base" or probe["base"] not in done_out \
+                    or probe["pid"] not in done_out:
+                continue
+            if done_out[probe["pid"]] != done_out[probe["base"]]:
+                if probe["kind"] == "perm":
+                    order_s = 1
+                elif probe["kind"] == "perturb":
+                    value_s = 1
+        nonempty = [(pid, o) for pid, o, _ in completed
+                    if len(xs_by_pid[pid]) > 0]
+        echo = 0
+        if nonempty:
+            hits = sum(1 for pid, o in nonempty if o in xs_by_pid[pid])
+            echo = 1 if 10 * hits >= 9 * len(nonempty) else 0
+        cell = (halt_bucket, (zero_b, neg_b, big_b), entropy_b,
+                (constant, order_s, value_s, echo), cost_bucket, stack_b)
+    else:
+        cell = (0, (0, 0, 0), 0, (0, 0, 0, 0), cost_bucket, 0)
+    return (cell, total_steps, len(exp))
+
+
+def explore_cell_key(cell: tuple) -> str:
+    h, (z, ng, b), e, (c, o, v, ec), cb, sb = cell
+    return f"h{h}|z{z}n{ng}b{b}|e{e}|d{c}{o}{v}{ec}|c{cb}|s{sb}"
+
+
+def explore_run(seed: int = EXPLORE_SEED,
+                budget: int = EXPLORE_EVALS_PER_RUN,
+                vocab_macros: Optional[Dict[int, Macro]] = None
+                ) -> Dict[str, object]:
+    """Seeded exploration of the VM behavior space against the frozen
+    battery. Insert-if-empty-or-strictly-cheaper under the frozen elite
+    order; every insertion logged with lineage; fixed evaluation budget;
+    deterministic output."""
+    import bisect as _bisect
+    battery = explore_load_battery()
+    macros = dict(vocab_macros or {})
+    vocab = list(range(N_BASE_OPS)) + sorted(macros)
+    rng = random.Random(seed)
+    archive: Dict[str, Dict[str, object]] = {}
+    keys_sorted: List[str] = []
+    log: List[Dict[str, object]] = []
+    curve: List[Dict[str, int]] = []
+    n_prop = {"mutation": 0, "random": 0, "composition": 0}
+    for i in range(budget):
+        r = rng.random()
+        if archive and r < 0.4:
+            k = keys_sorted[rng.randrange(len(keys_sorted))]
+            parent = archive[k]
+            base = list(parent["tokens"])
+            lineage = {"kind": "mutation", "parents": [parent["sha16"]]}
+            pdepth = int(parent["depth"])
+            for _ in range(rng.randint(1, 3)):
+                op = rng.random()
+                if op < 0.4 and base:
+                    base[rng.randrange(len(base))] = \
+                        vocab[rng.randrange(len(vocab))]
+                elif op < 0.7 and len(base) < EXPLORE_MAX_SURFACE_LEN:
+                    base.insert(rng.randrange(len(base) + 1),
+                                vocab[rng.randrange(len(vocab))])
+                elif len(base) > 1:
+                    del base[rng.randrange(len(base))]
+            tokens = tuple(base) if base else (vocab[0],)
+        elif not archive or r < 0.7:
+            tokens = tuple(vocab[rng.randrange(len(vocab))]
+                           for _ in range(rng.randint(
+                               1, EXPLORE_MAX_SURFACE_LEN)))
+            lineage = {"kind": "random", "parents": []}
+            pdepth = 0
+        else:
+            k1 = keys_sorted[rng.randrange(len(keys_sorted))]
+            k2 = keys_sorted[rng.randrange(len(keys_sorted))]
+            p1, p2 = archive[k1], archive[k2]
+            tokens = (tuple(p1["tokens"])
+                      + tuple(p2["tokens"]))[:EXPLORE_MAX_SURFACE_LEN]
+            lineage = {"kind": "composition",
+                       "parents": sorted([p1["sha16"], p2["sha16"]])}
+            pdepth = max(int(p1["depth"]), int(p2["depth"]))
+        n_prop[lineage["kind"]] += 1
+        cell, steps, exp_len = explore_descriptor(tokens, macros, battery)
+        key = explore_cell_key(cell)
+        inc = archive.get(key)
+        cand_key = (len(tokens), steps, tuple(tokens))
+        if inc is None or cand_key < (inc["cost"][0], inc["cost"][1],
+                                      tuple(inc["tokens"])):
+            sha16 = hashlib.sha256(
+                json.dumps(list(tokens)).encode()).hexdigest()[:16]
+            entry = {"tokens": list(tokens), "cost": [len(tokens), steps],
+                     "sha16": sha16, "iter": i, "lineage": lineage,
+                     "depth": pdepth + 1, "expanded_len": exp_len}
+            if inc is None:
+                _bisect.insort(keys_sorted, key)
+            archive[key] = entry
+            log.append({"iter": i, "cell": key,
+                        "cost": [len(tokens), steps], "sha16": sha16,
+                        "lineage": lineage,
+                        "replaced": inc is not None})
+        if (i + 1) % EXPLORE_CHECKPOINT_EVERY == 0:
+            curve.append({"evals": i + 1, "cells": len(archive)})
+    if budget % EXPLORE_CHECKPOINT_EVERY:
+        curve.append({"evals": budget, "cells": len(archive)})
+    return {
+        "meta": {
+            "engine": "explore_run",
+            "seed": seed, "budget": budget,
+            "battery_sha256": PROBE_BATTERY_PHASED_SHA256,
+            "step_budget": EXPLORE_STEP_BUDGET,
+            "max_surface_len": EXPLORE_MAX_SURFACE_LEN,
+            "vocabulary_macros": {str(m.mid): list(m.body)
+                                  for m in macros.values()},
+            "proposal_counts": n_prop,
+        },
+        "archive": {k: archive[k] for k in keys_sorted},
+        "insertion_log": log,
+        "coverage_curve": curve,
+    }
+
+
+def explore_serialize(result: Dict[str, object]) -> str:
+    return json.dumps(result, indent=2, sort_keys=True) + "\n"
+
+
+def explore_coverage_report(result: Dict[str, object]) -> Dict[str, object]:
+    """D3 facts about mapped territory (no capability claims)."""
+    archive = result["archive"]
+    depth_hist: Dict[str, int] = {}
+    for e in archive.values():
+        d = str(e["depth"])
+        depth_hist[d] = depth_hist.get(d, 0) + 1
+    by_halt: Dict[str, str] = {}
+    for k in sorted(archive):
+        hb = k.split("|", 1)[0]
+        if hb not in by_halt:
+            by_halt[hb] = k
+    examples = {hb: {"cell": k, "tokens": archive[k]["tokens"],
+                     "cost": archive[k]["cost"]}
+                for hb, k in sorted(by_halt.items())}
+    return {
+        "cells_filled": len(archive),
+        "insertions": len(result["insertion_log"]),
+        "coverage_curve": result["coverage_curve"],
+        "lineage_depth_distribution": depth_hist,
+        "proposal_counts": result["meta"]["proposal_counts"],
+        "example_elites_per_halt_bucket": examples,
+    }
+
+
+def explore_vocab_from_runstate(path: str) -> Dict[int, Macro]:
+    """Building-block loader (GR9): reads ONLY the searcher macro
+    vocabulary (mid -> body) from a saved runstate summary."""
+    with open(path, "r", encoding="utf-8") as fh:
+        doc = json.load(fh)
+    out: Dict[int, Macro] = {}
+    for mid_s, m in doc["searcher"]["macros"].items():
+        mid = int(mid_s)
+        out[mid] = Macro(mid=mid, body=tuple(m["body"]),
+                         depth=int(m["depth"]), wave_discovered=int(m["wave"]),
+                         parent_tasks=tuple(m["parents"]))
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Phase D tests: frozen instruments, archive determinism, replacement rule,
+# sealing.
+# ---------------------------------------------------------------------------
+def test_explore_frozen_instruments_intact() -> None:
+    import inspect as _inspect
+    root = os.path.dirname(os.path.abspath(__file__))
+    for fname, want in (("probe_battery_phaseD.json",
+                         PROBE_BATTERY_PHASED_SHA256),
+                        ("descriptor_spec_phaseD.md",
+                         DESCRIPTOR_SPEC_PHASED_SHA256)):
+        with open(os.path.join(root, "docs", fname), "rb") as fh:
+            _assert(hashlib.sha256(fh.read()).hexdigest() == want,
+                    f"{fname} drifted from the Phase D freeze hash")
+    src = (_inspect.getsource(explore_run_program)
+           + _inspect.getsource(explore_descriptor)
+           + _inspect.getsource(explore_cell_key))
+    _assert(hashlib.sha256(src.encode("utf-8")).hexdigest()
+            == EXPLORE_IMPL_SHA256,
+            "descriptor implementation drifted from the Phase D freeze hash")
+
+
+def test_explore_archive_two_run_byte_identical() -> None:
+    a = explore_serialize(explore_run(budget=1500))
+    b = explore_serialize(explore_run(budget=1500))
+    _assert(a == b, "exploration archive must be byte-identical across runs")
+    _assert(len(json.loads(a)["archive"]) > 0,
+            "exploration filled no cells at the test budget")
+
+
+def test_explore_strictly_cheaper_replacement() -> None:
+    battery = explore_load_battery()
+    # two behaviorally identical programs in the SAME cost bucket
+    # (expanded lengths 4 and 6 share bit_length 3): INPUT DROP INPUT
+    # RED_ADD vs the same with one more neutral INPUT DROP pair.
+    short = (4, 7, 4, 29)
+    long_ = (4, 7, 4, 7, 4, 29)
+    c_short, s_short, _ = explore_descriptor(short, {}, battery)
+    c_long, s_long, _ = explore_descriptor(long_, {}, battery)
+    _assert(c_short == c_long, "cost-neutral padding must not move the cell")
+    k_short = (len(short), s_short, short)
+    k_long = (len(long_), s_long, long_)
+    _assert(k_short < k_long, "frozen order must prefer the shorter program")
+    # replacement discipline mirrors explore_run's insertion test
+    incumbent = {"cost": [len(long_), s_long], "tokens": list(long_)}
+    _assert((len(short), s_short, short)
+            < (incumbent["cost"][0], incumbent["cost"][1],
+               tuple(incumbent["tokens"])),
+            "strictly-cheaper candidate must replace the incumbent")
+    _assert(not ((len(long_), s_long, long_)
+                 < (len(short), s_short, short)),
+            "costlier candidate must never replace the incumbent")
+
+
+def test_explore_sealed_from_task_data() -> None:
+    import inspect as _inspect
+    forbidden = ("ORACLES", "TRAIN_INPUTS", "_ORACLE_REGISTRY", "seal_task",
+                 "build_sealed_tasks", "holdout_gate", "cf_gate",
+                 "_make_gate", "GATE_SEED", "CF_GATE_SEED",
+                 "task_target_vector", "SealedTask", "mint_task",
+                 "RunState", "adopted_tokens", "meta_gate")
+    src = "".join(_inspect.getsource(f) for f in (
+        explore_load_battery, explore_run_program, explore_descriptor,
+        explore_cell_key, explore_run, explore_serialize,
+        explore_coverage_report, explore_vocab_from_runstate))
+    for name in forbidden:
+        _assert(name not in src,
+                f"exploration code references sealed machinery: {name}")
+
+
+TESTS.extend([
+    test_explore_frozen_instruments_intact,
+    test_explore_archive_two_run_byte_identical,
+    test_explore_strictly_cheaper_replacement,
+    test_explore_sealed_from_task_data,
+])
+
+
 
 
 # =========================================================================== #
@@ -36291,7 +36642,8 @@ def main() -> None:
                              "forge-battery", "file-battery",
                              "ext-battery", "cfs-battery",
                              "expansion-battery", "grammar-battery",
-                             "grammar2-battery",),
+                             "grammar2-battery",
+                             "explore", "explore-report",),
                     default="demo")
     ap.add_argument("--save", default="")
     ap.add_argument("--adaptive-json", default="adaptive.json")
@@ -36300,6 +36652,10 @@ def main() -> None:
     ap.add_argument("--wave-from", default="0")
     ap.add_argument("--wave-to", default=str(WAVES))
     ap.add_argument("--extract-dir", default="./integrated_sources")
+    ap.add_argument("--vocab-from", default="",
+                    help="runstate JSON whose searcher macro vocabulary "
+                         "seeds exploration building blocks (GR9: "
+                         "vocabulary only)")
     args = ap.parse_args()
     if args.mode == "test":
         run_tests(only=args.only)
@@ -36361,6 +36717,26 @@ def main() -> None:
         grammar_battery()
     elif args.mode == "grammar2-battery":
         grammar2_battery()
+    elif args.mode == "explore":
+        vocab = (explore_vocab_from_runstate(args.vocab_from)
+                 if args.vocab_from else None)
+        result = explore_run(vocab_macros=vocab)
+        out_path = args.save or "exploration_archive_phaseD.json"
+        text = explore_serialize(result)
+        with open(out_path, "w", encoding="utf-8") as fh:
+            fh.write(text)
+        print(json.dumps({
+            "cells": len(result["archive"]),
+            "insertions": len(result["insertion_log"]),
+            "archive_sha256": hashlib.sha256(
+                text.encode("utf-8")).hexdigest(),
+            "path": out_path}))
+    elif args.mode == "explore-report":
+        with open(args.save or "exploration_archive_phaseD.json", "r",
+                  encoding="utf-8") as fh:
+            doc = json.load(fh)
+        print(json.dumps(explore_coverage_report(doc), indent=2,
+                         sort_keys=True))
     elif args.mode == "clash-battery":
         clash_battery()
     elif args.mode == "hdc-battery":
