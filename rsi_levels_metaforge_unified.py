@@ -15842,6 +15842,178 @@ TESTS.extend([
 ])
 
 
+# =========================================================================== #
+# PHASE F: ATTRIBUTION PROBES (measurement only; GR-F sandbox)                #
+#                                                                             #
+# Diagnostic probes that attribute each OPEN designer task to a blocking     #
+# cause. Probes run against a throwaway SearcherState clone; no program,     #
+# macro, weight, or cached result flows into any live searcher state,        #
+# proposal pool, or adoption path -- only attribution labels leave the        #
+# sandbox (solving programs are reported as hash + length and discarded).    #
+# Zero mechanism changes: nothing here is reachable from run_system,         #
+# run_wave, meta_gate, or any install path.                                   #
+# =========================================================================== #
+PROBE_SEED = 909090
+PROBE_RESTARTS = 24            # per task per rung (4x the live per-wave value)
+PROBE_ITERS = ITERS_PER_RESTART
+# max_program_len rungs fixed by the directive; stack/macros scaled
+# proportionally from the (14, 32, 24) defaults: stack = round(32*L/14)
+# capped at 128, macros = round(24*L/14) capped at 96.
+PROBE_RUNGS = ((20, 46, 34), (28, 64, 48), (40, 91, 69), (56, 128, 96))
+
+
+def probe_capacity_one(task: SealedTask, vocab_macros: Dict[int, Macro],
+                       rung_idx: int,
+                       restarts: int = PROBE_RESTARTS,
+                       iters: int = PROBE_ITERS) -> Dict[str, object]:
+    """One sandboxed capacity probe: existing search machinery (synthesize)
+    on a throwaway searcher at the rung's capacity. Returns measurement
+    data only; any solving program is reduced to hash + lengths."""
+    length, stack, macs = PROBE_RUNGS[rung_idx]
+    sandbox = SearcherState()
+    sandbox.macros = dict(vocab_macros)
+    sandbox.capacity = CapacityConfig(max_program_len=length,
+                                      max_stack=stack, max_macros=macs)
+    seed = PROBE_SEED + rung_idx * 10_007 + int(task.tid[1:]) * 211
+    res = synthesize(task.train_pairs, task.tid, sandbox, seed=seed,
+                     restarts=restarts, iters=iters)
+    out: Dict[str, object] = {
+        "tid": task.tid, "rung": [length, stack, macs],
+        "seed": seed, "evals": res.evals_used,
+        "train_exact": bool(res.solved),
+        "best_score": round(res.best_score, 4),
+    }
+    if res.solved:
+        fn = compile_program(res.tokens, sandbox.macros, max_stack=stack)
+        out["gates_pass"] = bool(task.holdout_gate(fn)
+                                 and task.cf_gate(fn))
+        out["surface_len"] = len(res.tokens)
+        out["expanded_len"] = len(expand_tokens(res.tokens, sandbox.macros))
+        out["program_sha16"] = hashlib.sha256(
+            json.dumps(list(res.tokens)).encode()).hexdigest()[:16]
+        # GR-F: the program itself is discarded here.
+    return out
+
+
+def probe_capacity_attribution(open_tids: Sequence[str],
+                               vocab_macros: Dict[int, Macro],
+                               restarts: int = PROBE_RESTARTS,
+                               iters: int = PROBE_ITERS
+                               ) -> Dict[str, object]:
+    """F1 driver: per OPEN task, walk the rung ladder; stop at the first
+    rung whose solving program passes both sealed gates. Classification:
+    CAPACITY(L) with the exact found surface length, else SEARCH/VOCAB."""
+    by_tid = {t.tid: t for t in build_sealed_tasks()}
+    results: Dict[str, List[Dict[str, object]]] = {}
+    classification: Dict[str, str] = {}
+    for tid in open_tids:
+        task = by_tid[tid]
+        rows: List[Dict[str, object]] = []
+        label = "SEARCH/VOCAB"
+        for ri in range(len(PROBE_RUNGS)):
+            row = probe_capacity_one(task, vocab_macros, ri,
+                                     restarts=restarts, iters=iters)
+            rows.append(row)
+            if row.get("train_exact") and row.get("gates_pass"):
+                label = f"CAPACITY(L={row['surface_len']})"
+                break
+        results[tid] = rows
+        classification[tid] = label
+    return {
+        "meta": {
+            "probe_seed": PROBE_SEED, "restarts": restarts, "iters": iters,
+            "rungs": [list(r) for r in PROBE_RUNGS],
+            "vocabulary_macros": {str(m.mid): list(m.body)
+                                  for m in vocab_macros.values()},
+        },
+        "results": results,
+        "classification": classification,
+    }
+
+
+def probe_transfer_coverage_audit() -> Dict[str, object]:
+    """F2: how much of the anchored discovery sets was actually OFFERED to
+    the gate during transfer. Pure recomputation from committed artifacts;
+    the offer rule is pool[w*B:(w+1)*B] for non-final waves."""
+    doc = anchor_load_archive()
+    pool = exploration_pool_from_archive(doc)
+    offered = pool[:(WAVES - 1) * EXPLORATION_BATCH_SIZE]
+    offered_set = set(offered)
+    root = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(root, "docs", "anchor_report_phaseE.json"),
+              "r", encoding="utf-8") as fh:
+        rep = json.load(fh)
+    mdl_bodies = [tuple(d["body"]) for d in rep["mdl"]["mdl_positive"]]
+    vocab = _archive_vocab(doc)
+    char_expanded = []
+    for c in rep["properties"]["characterized"]:
+        try:
+            char_expanded.append(expand_tokens(tuple(c["tokens"]), vocab))
+        except VMCrash:
+            continue
+    return {
+        "pool_total": len(pool),
+        "offered": len(offered),
+        "offer_rule": (f"pool[w*{EXPLORATION_BATCH_SIZE}:(w+1)*"
+                       f"{EXPLORATION_BATCH_SIZE}] for waves 0..{WAVES-2} "
+                       f"in frozen elite order"),
+        "mdl_positive_total": len(mdl_bodies),
+        "mdl_positive_offered": sum(1 for b in mdl_bodies
+                                    if b in offered_set),
+        "characterized_total": len(rep["properties"]["characterized"]),
+        "characterized_offered": sum(1 for e in char_expanded
+                                     if e in offered_set),
+        "archive_elites_total": len(doc["archive"]),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Phase F tests: sandbox isolation (GR-F) and probe determinism.
+# ---------------------------------------------------------------------------
+def test_probe_sandbox_isolation() -> None:
+    import inspect as _inspect
+    src = (_inspect.getsource(probe_capacity_one)
+           + _inspect.getsource(probe_capacity_attribution)
+           + _inspect.getsource(probe_transfer_coverage_audit))
+    forbidden = ("_permanent_install", "_install(", "speculative_meta_gate",
+                 "meta_gate", "RunState", "adopted_tokens", "mint_task",
+                 "attempt_capacity_growth", "run_wave", "run_system",
+                 "extra_solutions", "work_table")
+    for name in forbidden:
+        _assert(name not in src,
+                f"probe code references live adoption machinery: {name}")
+    vocab = {100: Macro(mid=100, body=(4, 4, 25), depth=1,
+                        wave_discovered=0, parent_tasks=())}
+    before = json.dumps({k: list(v.body) for k, v in vocab.items()},
+                        sort_keys=True)
+    task = seal_task("T88", "reduce", lambda xs: sum(xs))
+    row = probe_capacity_one(task, vocab, 0, restarts=2, iters=60)
+    _assert(json.dumps({k: list(v.body) for k, v in vocab.items()},
+                       sort_keys=True) == before,
+            "probe must not mutate the vocabulary it reads")
+    _assert("tokens" not in row and "program" not in row,
+            "probe output must carry no program artifact (GR-F discard)")
+
+
+def test_capacity_probe_deterministic() -> None:
+    vocab: Dict[int, Macro] = {}
+    outs = []
+    for _ in range(2):
+        rep = probe_capacity_attribution(["T00"], vocab,
+                                         restarts=2, iters=60)
+        outs.append(json.dumps(rep, sort_keys=True))
+    _assert(outs[0] == outs[1], "probe results must be byte-identical")
+    audits = [json.dumps(probe_transfer_coverage_audit(), sort_keys=True)
+              for _ in range(2)]
+    _assert(audits[0] == audits[1], "coverage audit must be deterministic")
+
+
+TESTS.extend([
+    test_probe_sandbox_isolation,
+    test_capacity_probe_deterministic,
+])
+
+
 
 
 # =========================================================================== #
@@ -37066,7 +37238,8 @@ def main() -> None:
                              "expansion-battery", "grammar-battery",
                              "grammar2-battery",
                              "explore", "explore-report",
-                             "transfer-anchor", "anchor-report",),
+                             "transfer-anchor", "anchor-report",
+                             "attribution-probe",),
                     default="demo")
     ap.add_argument("--save", default="")
     ap.add_argument("--adaptive-json", default="adaptive.json")
@@ -37182,6 +37355,22 @@ def main() -> None:
             with open(args.save, "w", encoding="utf-8") as fh:
                 fh.write(text + "\n")
         print(text)
+    elif args.mode == "attribution-probe":
+        vocab = (explore_vocab_from_runstate(args.vocab_from)
+                 if args.vocab_from else {})
+        open_tids = [t for t in (args.only.split(",") if args.only else
+                                 ["T18", "T21", "T22", "T23", "T26", "T28",
+                                  "T29", "T30", "T31", "T32"]) if t]
+        rep = {"capacity_probe": probe_capacity_attribution(open_tids,
+                                                            vocab),
+               "transfer_coverage": probe_transfer_coverage_audit()}
+        text = json.dumps(rep, indent=2, sort_keys=True)
+        if args.save:
+            with open(args.save, "w", encoding="utf-8") as fh:
+                fh.write(text + "\n")
+        print(json.dumps({"classification":
+                          rep["capacity_probe"]["classification"],
+                          "coverage": rep["transfer_coverage"]}))
     elif args.mode == "clash-battery":
         clash_battery()
     elif args.mode == "hdc-battery":
