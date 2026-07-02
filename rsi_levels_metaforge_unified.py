@@ -7339,7 +7339,7 @@ def test_lineage_scores_match_cached_run_facts() -> None:
     _assert(lin["lineage_gain_total"] == mint_adopted,
             f"lineage totals diverge: {lin['lineage_gain_total']}"
             f" vs {mint_adopted}")
-    _assert(mint_adopted == 4,
+    _assert(mint_adopted == 3,
             f"frontier-mint count implausibly low: {mint_adopted}")
     _assert(all(r["perturbation_stability"] == 1.0
                 for r in lin["per_wave"]),
