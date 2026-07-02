@@ -7,8 +7,10 @@ one run, plus two transitions predicted OPEN: T23 (sum*range) and T26
 (adjacent_difference_energy).** All 26 adopted programs pass the frozen
 instrument; both arms are twice byte-identical; GR5/GR-O discipline
 intact throughout; acceptance suites 147 passed, 0 failed on both
-harnesses. Predictions scored 10/12 — both misses are under-predictions
-(tasks solved that were predicted OPEN).
+harnesses. Predictions scored 10/12 on the registered SOLVED/OPEN
+outcomes — both misses are under-predictions (tasks solved that were
+predicted OPEN); 9/12 under a stricter rule that also binds the
+parenthetical wave/path commitments (§2 states both).
 
 ## Arms, reproduction, determinism
 
@@ -46,7 +48,14 @@ byte-identical artifact to run 1: confirmed (CONFIRM_IDENTICAL; SHA-256 matches 
 | T18, T21, T22 | SEARCH/VOCAB | OPEN | OPEN | hits |
 | T29–T32 | certified ISA walls | OPEN | OPEN | hits |
 
-Prediction score: **10/12**. The H attribution "no stratified body
+Prediction score: **10/12 on the registered SOLVED/OPEN outcome per
+task** — the falsifiable claim each row committed to. Stated scoring
+rule: the parenthetical wave windows and acquisition paths are scored
+qualitatively in the table above but do not flip a row; under a stricter
+rule that binds them, T27 becomes a third miss (predicted w0–1 via pool
+offer; actual w2 via mining) and the score is 9/12. Both numbers are
+reported; the discrepant values are printed in the row either way.
+The H attribution "no stratified body
 supplies the missing vocabulary" was wrong for T23/T26: order-statistic
 and shifted-difference vocabulary DID exist among the list-valued
 fragments (SORTL/REVL/TAIL family) — the type-blind pre-I pipeline had
@@ -76,8 +85,10 @@ x⁸ (w1) → enumeration reaches sum x¹⁶ and sum x³² at surface ≤ 6 → 
 and T28 adopt in the same wave (w2). Exactly the H2 genealogy, restarted
 one rung higher by the offer schedule.
 
-Offer/accept statistics: 98 measured exploration batches over 7 waves
-(the stated bound), 6 accepted (3 at w0, 2 at w1, 1 at w4); 36 re-offers
+Offer/accept statistics: 98 measured exploration batches over the 7
+gating waves w0–w6 (14 per wave, the stated bound; the run's 8th and
+final wave iteration skips gating by construction —
+`GATE_SKIPPED_FINAL_WAVE`), 6 accepted (3 at w0, 2 at w1, 1 at w4); 36 re-offers
 drawn and logged (33 prior=rejected, 3 prior=dropped_rider) — none of
 the eventual installs came via re-offer in this run (macro 110 was a
 fresh S1 offer); the re-offer machinery worked as specified and its
