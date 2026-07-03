@@ -18,7 +18,7 @@ The current runtime extends the previous public evidence line with:
 - dynamic residue-driven feature expansion through `expansion-battery`
 - depth-1 grammar feature expansion through `grammar-battery`
 - depth-2 grammar feature expansion through `grammar2-battery`
-- a full built-in regression suite expected to report `147 passed, 0 failed`
+- a full built-in regression suite expected to report `156 passed, 0 failed`
 - the Phases 0–I generalization research program: frozen holdout instrument, sealed exploration archive, external anchoring artifacts, stratified offer schedule, and per-phase reports, all committed under `docs/` with SHA-256 pins asserted by tests
 
 The current runtime should be treated as publicly validated only after the **Full Evidence** GitHub Actions workflow succeeds for the commit that contains it.
@@ -122,11 +122,11 @@ The grammar primitives are designer-declared. These batteries measure bounded ex
 The current Full Evidence workflow requires the built-in full suite to end with:
 
 ```text
-RESULT: 147 passed, 0 failed
+RESULT: 156 passed, 0 failed
 ALL TESTS PASSED
 ```
 
-The count is pinned exactly on purpose: a suite that silently gains or loses tests should turn the badge red until the pin is updated in the same change that alters the suite. The count history is 99 (pre-rename runtime), 116 (renamed runtime, pre-program), 147 (after the Phases 0–I research program added 31 instrument, isolation, and determinism tests).
+The count is pinned exactly on purpose: a suite that silently gains or loses tests should turn the badge red until the pin is updated in the same change that alters the suite. The count history is 99 (pre-rename runtime), 116 (renamed runtime, pre-program), 147 (after the Phases 0–I research program added 31 instrument, isolation, and determinism tests), 156 (after Phase J added 9 extension, re-certification, and determinism tests for the approved ISA extension).
 
 Relevant tested properties include:
 

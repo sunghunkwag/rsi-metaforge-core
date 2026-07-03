@@ -1081,7 +1081,12 @@ def _build_enum_table_inner(state: SearcherState,
     else:
         pri = [t for t in (priority_tokens or []) if t in macros]
         rest = sorted((k for k in macros if k not in set(pri)), reverse=True)
-        vocab = pri + rest + list(range(N_BASE_OPS))
+        # Granted extended ops (Phase J, docs/ISA_EXTENSION_SPEC.md) are part
+        # of this searcher's vocabulary and enumerate abstraction-first like
+        # macros; with no grants this is the exact historical vocabulary.
+        vocab = (pri + rest
+                 + sorted(t for t in state.extended if t in EXT_IMPL)
+                 + list(range(N_BASE_OPS)))
     # Token application plan. Pure-producer macros (consume nothing below,
     # values depend only on the input) are evaluated ONCE per train input and
     # cached; applying them becomes an O(pushes) append instead of replaying
@@ -1176,7 +1181,11 @@ def _build_enum_table_inner(state: SearcherState,
                         if len(rewrites) < 400:
                             rewrites.append((toks + (t,), short))
                         continue                   # sound cross-length prune
-                has_macro = parent_macro or t >= MACRO_ID_BASE
+                # Granted extended ops ride the abstraction lane exactly like
+                # macros: they too must not be priced out by their own
+                # branching cost. Dormant registries leave this unchanged.
+                has_macro = (parent_macro or t >= MACRO_ID_BASE
+                             or (t >= N_BASE_OPS and t in EXT_IMPL))
                 if has_macro:
                     admit = len(nxt) < class_cap
                 else:
@@ -1438,6 +1447,9 @@ class ImprovementProposal:
     note: str
     capacity: Optional[CapacityConfig] = None   # Rule 2 growth rider; None
                                                 # for ordinary proposals
+    grants: Tuple[str, ...] = ()                # Phase J catalog-grant rider
+                                                # (dormant-catalog names);
+                                                # () for ordinary proposals
 
 
 def mine_macros(adopted: Dict[str, Tuple[int, ...]], state: SearcherState,
@@ -1550,7 +1562,8 @@ class MetaGateRecord:
 
 def _apply(incumbent: SearcherState, macros: List[Macro],
            weights: Optional[Dict[int, float]], note: str,
-           capacity: Optional[CapacityConfig] = None) -> SearcherState:
+           capacity: Optional[CapacityConfig] = None,
+           grants: Tuple[str, ...] = ()) -> SearcherState:
     cand = incumbent.clone()
     for m in macros:
         cand.macros[m.mid] = m
@@ -1558,6 +1571,12 @@ def _apply(incumbent: SearcherState, macros: List[Macro],
         cand.weights = dict(weights)
     if capacity is not None:
         cand.capacity = capacity
+    for name in grants:
+        # Phase J catalog-grant rider: the candidate searcher records the
+        # grant; the module registries are managed by the offering channel
+        # (attempt_capability_grant), never here.
+        spec = DORMANT_CAPABILITY_CATALOG[name]
+        cand.extended[spec.ext_id] = spec.name
     cand.version += 1
     cand.history.append(note)
     return cand
@@ -1586,6 +1605,14 @@ def ensure_worktable(rs: "RunState") -> None:
 
 def lookup_solution(rs: "RunState", vec: Tuple[int, ...]) -> Optional[Tuple[int, ...]]:
     hit = rs.extra_solutions.get(vec)
+    if hit is not None:
+        return hit
+    # Phase J: solutions earned at a capability-grant acceptance persist
+    # until adopted (they are pure base+granted-op programs, so they stay
+    # valid while the grant is held); every use still passes the full
+    # train-reverify + dual sealed gate sequence in run_wave. Empty for
+    # every grant-free run.
+    hit = rs.grant_gains.get(vec)
     if hit is not None:
         return hit
     return rs.work_table.solutions.get(vec) if rs.work_table else None
@@ -1646,8 +1673,10 @@ def _permanent_install(rs: "RunState", searcher: SearcherState,
 
 def _install(rs: "RunState", mset: List[Macro], weights, note: str,
              table: Optional[EnumTable],
-             capacity: Optional[CapacityConfig] = None) -> None:
-    new_searcher = _apply(rs.searcher, mset, weights, note, capacity=capacity)
+             capacity: Optional[CapacityConfig] = None,
+             grants: Tuple[str, ...] = ()) -> None:
+    new_searcher = _apply(rs.searcher, mset, weights, note, capacity=capacity,
+                          grants=grants)
     if table is None:
         table = build_enum_table(new_searcher,
                                  surface_max=ENUM_SURFACE_MAX,
@@ -1711,7 +1740,8 @@ def meta_gate(rs: "RunState", proposal: ImprovementProposal,
         rs.tcci_reports[m.mid] = pre
 
     cand = _apply(rs.searcher, ranked, proposal.new_weights,
-                  f"{proposal.note} [bundle]", capacity=proposal.capacity)
+                  f"{proposal.note} [bundle]", capacity=proposal.capacity,
+                  grants=proposal.grants)
     # Macro-closure screen: ladder-regime solutions are macro-dense by
     # construction, so a tiny vocabulary -- every macro plus the base ops the
     # system itself uses most -- finds them in seconds. Full-table fallback
@@ -1771,7 +1801,7 @@ def meta_gate(rs: "RunState", proposal: ImprovementProposal,
             rep["judged_via"] = "macro_closure_screen"
         _install(rs, keep, proposal.new_weights,
                  f"{proposal.note} [screen_install]", table=None,
-                 capacity=proposal.capacity)
+                 capacity=proposal.capacity, grants=proposal.grants)
         rs.events.append(
             f"w{wave} SCREEN_INSTALL dropped_riders={dropped} "
             f"gained={[tid for tid, _ in screen_pairs]}")
@@ -1825,7 +1855,7 @@ def meta_gate(rs: "RunState", proposal: ImprovementProposal,
         dropped = sorted(m.mid for m in ranked if m.mid not in used_ids)
         final = _apply(rs.searcher, keep, proposal.new_weights,
                        f"{proposal.note} [installed_used_only]",
-                       capacity=proposal.capacity)
+                       capacity=proposal.capacity, grants=proposal.grants)
         ok_ids = set(final.macros)
         tab.solutions = {v: t for v, t in tab.solutions.items()
                          if all(tok < MACRO_ID_BASE or tok in ok_ids
@@ -1996,6 +2026,73 @@ def attempt_capacity_growth(rs: "RunState", wave: int) -> bool:
     return bool(ok)
 
 
+def attempt_capability_grant(rs: "RunState", wave: int) -> bool:
+    """Phase J catalog-grant channel (approved docs/ISA_EXTENSION_SPEC.md §6):
+    offer the ungranted dormant-catalog primitives as ONE speculative
+    candidate. Dormant unless rs.capability_channel is set by the evaluation
+    mode -- the default run configuration never offers it, so historical runs
+    are untouched. The trigger is mechanical and oracle-free: the existing
+    residue-driven request locator (propose_capability_requests) must fire
+    for a designer-origin OPEN task. Disposition is exclusively the unchanged
+    gate discipline (speculative_meta_gate -> meta_gate -> _permanent_install
+    on >= 1 newly dual-gated designer task at identical budgets); a rejection
+    restores the extension registries to the certified searcher's grants and
+    the rollback hash check covers the searcher itself."""
+    if not rs.capability_channel:
+        return False
+    ungranted = sorted(n for n, spec in DORMANT_CAPABILITY_CATALOG.items()
+                       if spec.ext_id not in rs.searcher.extended)
+    if not ungranted:
+        return False
+    open_designer = sorted(t.tid for t in rs.unsolved()
+                           if t.origin == "designer")
+    if not open_designer:
+        return False
+    if not propose_capability_requests(rs, open_designer):
+        return False
+    pdig = hashlib.sha256(json.dumps(
+        {"grants": ungranted}, sort_keys=True).encode()).hexdigest()[:16]
+    if pdig in rs.rejected_digests:
+        rs.events.append(f"w{wave} SKIP_DUPLICATE_GRANT {pdig}")
+        return False
+    proposal = ImprovementProposal(
+        wave=wave, new_macros=[], new_weights=None,
+        note=f"wave{wave}: capability_grant {'+'.join(ungranted)}",
+        grants=tuple(ungranted))
+    pre_ids = set(rs.searcher.extended)
+    for name in ungranted:
+        spec = DORMANT_CAPABILITY_CATALOG[name]
+        EXT_IMPL[spec.ext_id] = spec.impl
+        EXT_TYPES[spec.ext_id] = (spec.ins, spec.outs)
+    ok = speculative_meta_gate(rs, proposal, wave, "capability_grant")
+    if not ok:
+        for name in ungranted:
+            spec = DORMANT_CAPABILITY_CATALOG[name]
+            if spec.ext_id not in pre_ids:
+                EXT_IMPL.pop(spec.ext_id, None)
+                EXT_TYPES.pop(spec.ext_id, None)
+    if ok is None:
+        return False               # budget-deferred: not measured, no verdict
+    if not ok:
+        rs.rejected_digests.append(pdig)
+    if ok:
+        # Persist the grant-earned solutions (already dual-gate-verified by
+        # the acceptance) so later same-wave table rebuilds cannot evict
+        # them before run_wave adopts them through the unchanged gates.
+        for t in rs.unsolved():
+            if t.origin != "designer":
+                continue
+            vec = task_target_vector(t)
+            toks = lookup_solution(rs, vec)
+            if toks and any(N_BASE_OPS <= tok < MACRO_ID_BASE
+                            for tok in toks):
+                rs.grant_gains[vec] = tuple(toks)
+    rs.events.append(
+        f"w{wave} {'GRANT_ADOPT' if ok else 'GRANT_REJECT'} "
+        f"{'+'.join(ungranted)} open={','.join(open_designer)}")
+    return bool(ok)
+
+
 # ---------------------------------------------------------------------------
 # Wave loop. `adaptive=True` runs the full self-improvement cycle;
 # `adaptive=False` is the frozen counterfactual arm: same tasks, same budgets,
@@ -2047,6 +2144,14 @@ class RunState:
     exploration_offer_cursor: int = 0
     offer_state: Dict[str, object] = field(default_factory=dict)
     reoffer_log: List[Dict[str, object]] = field(default_factory=list)
+    capability_channel: bool = False    # Phase J grant-offer channel
+                                        # (docs/ISA_EXTENSION_SPEC.md §6);
+                                        # False = historical behavior exactly
+    grant_gains: Dict[Tuple[int, ...], Tuple[int, ...]] = field(
+        default_factory=dict)           # Phase J: gate-verified solutions
+                                        # earned at grant acceptance; consumed
+                                        # by run_wave through the unchanged
+                                        # gate sequence; empty without grants
 
     def unsolved(self) -> List[SealedTask]:
         return [t for t in self.tasks if t.tid not in self.adopted_tokens]
@@ -2254,6 +2359,8 @@ def run_system(adaptive: bool = True, waves: int = WAVES,
         if w == WAVES - 1:
             rs.events.append(f"w{w} GATE_SKIPPED_FINAL_WAVE")
             continue
+        attempt_capability_grant(rs, w)   # Phase J channel; no-op unless
+                                          # rs.capability_channel is set
         if exploration_pool:
             # Transfer anchor offers: archive material enters the standard
             # proposal stream as ordinary candidates (origin tagged);
@@ -2417,7 +2524,16 @@ def runstate_summary(rs: RunState) -> Dict[str, object]:
                 "max_stack": rs.searcher.capacity.max_stack,
                 "max_macros": rs.searcher.capacity.max_macros,
             },
+            # Phase J grants: key present only when non-empty so grant-free
+            # summaries stay byte-identical to the historical format.
+            **({"extended": {str(k): v for k, v in
+                             sorted(rs.searcher.extended.items())}}
+               if rs.searcher.extended else {}),
         },
+        **({"capability_channel": True} if rs.capability_channel else {}),
+        **({"grant_gains": sorted([list(v), list(t)]
+                                  for v, t in rs.grant_gains.items())}
+           if rs.grant_gains else {}),
         "growth_log": [dict(g) for g in rs.growth_log],
         "speculation_log": [dict(e) for e in rs.speculation_log],
         "exploration_offer_cursor": rs.exploration_offer_cursor,
@@ -2477,6 +2593,18 @@ def restore_runstate(summary: Dict[str, object]) -> RunState:
             max_program_len=int(cap["max_program_len"]),
             max_stack=int(cap["max_stack"]),
             max_macros=int(cap["max_macros"]))
+    for k, v in summary["searcher"].get("extended", {}).items():
+        # Phase J grants round-trip; the module registries are re-activated
+        # from the dormant catalog so restored programs can execute.
+        s.extended[int(k)] = str(v)
+    for tok, name in sorted(s.extended.items()):
+        spec = DORMANT_CAPABILITY_CATALOG.get(name)
+        if spec is not None and spec.ext_id == tok:
+            EXT_IMPL[tok] = spec.impl
+            EXT_TYPES[tok] = (spec.ins, spec.outs)
+    rs.capability_channel = bool(summary.get("capability_channel", False))
+    rs.grant_gains = {tuple(int(x) for x in v): tuple(int(x) for x in t)
+                      for v, t in summary.get("grant_gains", [])}
     rs.searcher = s
     rs.growth_log = [dict(g) for g in summary.get("growth_log", [])]
     rs.speculation_log = [dict(e) for e in summary.get("speculation_log", [])]
@@ -3456,7 +3584,12 @@ class OpSemanticsModel:
     # -- prediction (abstains outside coverage) ------------------------------
     def predict_step(self, op: int, pre: Tuple[object, ...],
                      inp: Tuple[int, ...]) -> object:
-        m = self.ops[op]
+        m = self.ops.get(op)
+        if m is None:
+            # Outside modeled coverage (e.g. a granted extended op): abstain,
+            # exactly as for any unfitted case; callers fall back to acting.
+            self.abstained += 1
+            return WM_ABSTAIN
         hit = m.memo.get((pre, inp), WM_ABSTAIN)
         if hit is not WM_ABSTAIN:
             self.predicted += 1
@@ -5878,6 +6011,19 @@ DORMANT_CAPABILITY_CATALOG: Dict[str, CapabilitySpec] = {
         rationale=("signature gap (int,list)->list; constructor lemma: no "
                    "base op creates a list from pure-int stacks except "
                    "INPUT, so constant-list broadcast is inexpressible")),
+    # Phase J (approved, frozen docs/ISA_EXTENSION_SPEC.md): elementwise
+    # strict order indicator, the minimal comparison completion of the zip
+    # family. Same _zip2 combinator as ZADD/ZSUB/ZMUL/ZMAX: pops y (top)
+    # then x, truncates to the shorter operand, crashes on non-lists.
+    "ZGT": CapabilitySpec(
+        name="ZGT", ext_id=EXT_ID_BASE + 1, ins=("l", "l"), outs=("l",),
+        impl=_zip2(lambda a, b: 1 if a > b else 0),
+        rationale=("tier gap (docs/ISA_GAP_J.md): order-selection exists at "
+                   "every tier (MAX2/ZMAX/SCAN_MAX/RED_MAX/SORTL) and the "
+                   "scalar closure holds a compositional order test, but no "
+                   "elementwise order test exists and the constructor lemma "
+                   "blocks its capping-constant idiom; designer-stocked per "
+                   "the approved Phase J specification, stated as such")),
 }
 
 
@@ -6462,6 +6608,378 @@ TESTS.extend([
     test_deep_scan_artifact_certifies_walls,
     test_bcast_certificate_consistent_with_witness,
     test_admission_trial_is_honest_and_revokes,
+])
+
+
+# =========================================================================== #
+# 13J. PHASE J: APPROVED ISA EXTENSION (frozen docs/ISA_EXTENSION_SPEC.md).   #
+# Add-only tests. The extension is DORMANT by default: no default run         #
+# configuration offers or holds a grant; the crossing-anchor evaluation mode  #
+# is the only live path that sets rs.capability_channel.                      #
+# =========================================================================== #
+ISA_EXTENSION_SPEC_SHA256 = (
+    "4820db3938bf451ff0cc814dbe6ab2af683c7b02feddcb93eff4edc70176476c")
+WITNESSES_J_SHA256 = (
+    "ef1b8a7d3bfbcea07ebbe83e8352dd7495533124b56150815051524bbe8da3e1")
+MDL_EXTENSION_J_SHA256 = (
+    "2bbd2a676722ed357b84c65146082b4d5bbf534917cd39a9b8dcbee686a01b7d")
+ISA_GAP_J_SHA256 = (
+    "5d5f4161304d5e563294e23cf703f54fe89bddaa6fc3220241de3bca4db2fb09")
+
+
+def _phasej_doc_sha(rel: str) -> str:
+    root = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(root, "docs", rel), "rb") as fh:
+        return hashlib.sha256(fh.read()).hexdigest()
+
+
+def test_phasej_frozen_docs_intact() -> None:
+    _assert(_phasej_doc_sha("ISA_EXTENSION_SPEC.md")
+            == ISA_EXTENSION_SPEC_SHA256,
+            "ISA_EXTENSION_SPEC.md drifted from the approved freeze hash")
+    _assert(_phasej_doc_sha("ISA_GAP_J.md") == ISA_GAP_J_SHA256,
+            "ISA_GAP_J.md drifted from the Phase J1 freeze hash")
+    _assert(_phasej_doc_sha("witnesses_J.json") == WITNESSES_J_SHA256,
+            "witnesses_J.json drifted from its committed measurement")
+    _assert(_phasej_doc_sha("mdl_extension_J.json") == MDL_EXTENSION_J_SHA256,
+            "mdl_extension_J.json drifted from its committed measurement")
+
+
+def test_zgt_semantics_and_typing_agree() -> None:
+    st = SearcherState()
+    activate_capability(st, "BCAST")
+    activate_capability(st, "ZGT")
+    zid = DORMANT_CAPABILITY_CATALOG["ZGT"].ext_id
+    try:
+        _assert(zid == EXT_ID_BASE + 1, "ZGT id drifted from the spec")
+        _assert(zid in st.vocab(), "granted op missing from vocab")
+        stack: List[object] = [(3, 1, 4), (2, 2, 2)]
+        step_op(stack, zid, (0,))
+        _assert(stack == [(1, 0, 1)], f"ZGT semantics wrong: {stack}")
+        stack = [(5, 5), (1, 2, 3)]                 # truncate to shorter
+        step_op(stack, zid, (0,))
+        _assert(stack == [(1, 1)], f"ZGT truncation wrong: {stack}")
+        stack = [(), ()]                            # empty zips to empty
+        step_op(stack, zid, (0,))
+        _assert(stack == [()], f"ZGT empty-list case wrong: {stack}")
+        try:
+            step_op([(1, 2), 3], zid, (0,))
+            _assert(False, "ZGT accepted a non-list operand")
+        except VMCrash:
+            pass
+        sigs = build_type_sigs({})
+        _assert(static_plausible((4, 5, 3, EXT_ID_BASE, zid, 29), sigs),
+                "typed pipeline rejects a valid BCAST+ZGT program")
+        _assert(_sim_types((4, zid), sigs) is None,
+                "ZGT type-checks with a single list operand")
+        _assert(expand_tokens((4, 4, zid), {}) == (4, 4, zid),
+                "granted op not treated as a terminal token")
+    finally:
+        deactivate_all_capabilities(st)
+    _assert(not EXT_IMPL, "deactivation leaked an active extension")
+
+
+def test_grants_preserve_adopted_programs_byte_identical() -> None:
+    """Spec §5: granting changes nothing for grant-free programs. Every
+    adopted program of the committed Phase I live artifact and every frozen
+    Phase G archive elite evaluates byte-identically with the full grant
+    bundle active vs dormant."""
+    root = os.path.dirname(os.path.abspath(__file__))
+    rs = restore_runstate(load_summary(
+        os.path.join(root, "docs", "final_live_phaseI.json")))
+    doc = anchor_load_archive_g()
+    vocab_macros = {int(k): tuple(v) for k, v in
+                    doc["meta"]["vocabulary_macros"].items()}
+
+    def _expand_elite(tokens):
+        out = []
+        for t in tokens:
+            if t in vocab_macros:
+                out.extend(_expand_elite(vocab_macros[t]))
+            else:
+                out.append(t)
+        return tuple(out)
+
+    def _outputs():
+        prog_out = {}
+        for tid, toks in sorted(rs.adopted_tokens.items()):
+            exp = expand_tokens(toks, rs.searcher.macros)
+            row = []
+            for xs in TRAIN_INPUTS:
+                try:
+                    row.append(run_base_program(exp, list(xs)))
+                except VMCrash as e:
+                    row.append(f"crash:{e}")
+            prog_out[tid] = row
+        for cell, entry in sorted(doc["archive"].items()):
+            exp = _expand_elite(entry["tokens"])
+            row = []
+            for xs in TRAIN_INPUTS:
+                stack: List[object] = []
+                inp = tuple(int(v) for v in xs)
+                try:
+                    for t in exp:
+                        step_op(stack, t, inp)
+                    row.append(repr(stack))
+                except VMCrash as e:
+                    row.append(f"crash:{e}")
+            prog_out[cell] = row
+        return json.dumps(prog_out, sort_keys=True)
+
+    dormant = _outputs()
+    st = SearcherState()
+    activate_capability(st, "BCAST")
+    activate_capability(st, "ZGT")
+    try:
+        granted = _outputs()
+    finally:
+        deactivate_all_capabilities(st)
+    _assert(dormant == granted,
+            "grant bundle changed the behavior of a grant-free program")
+    _assert(len(rs.adopted_tokens) >= 26,
+            "committed Phase I artifact lost adopted programs")
+
+
+def test_extended_certificates_rederived_and_deterministic() -> None:
+    """J3 re-certification: under the approved joint grant the T29 train
+    vector is reachable at expanded length 6 (the qualitative-transition
+    pair with the committed base certificate that pins unreachable <= 7 in
+    the base ISA); T30/T31/T32 remain certified blocked at <= 6 in the
+    extended ISA; the derivation is two-run byte-identical; and the BASE
+    certificates are untouched by the extension's existence."""
+    st = SearcherState()
+    activate_capability(st, "BCAST")
+    activate_capability(st, "ZGT")
+    try:
+        vocab = list(range(N_BASE_OPS)) + [EXT_ID_BASE, EXT_ID_BASE + 1]
+        reports = []
+        for _ in range(2):
+            tab = build_enum_table(SearcherState(), surface_max=CERT_MAX_LEN,
+                                   class_cap=CERT_CLASS_CAP,
+                                   vocab_override=vocab)
+            found = {tid: list(tab.solutions[vec])
+                     for tid, vec in sorted(wall_targets().items())
+                     if vec in tab.solutions}
+            reports.append(json.dumps(
+                {"classes": list(tab.classes_per_len),
+                 "truncated": tab.truncated, "found": found},
+                sort_keys=True))
+        _assert(reports[0] == reports[1],
+                "extended certificate derivation not byte-identical")
+        rep = json.loads(reports[0])
+        _assert(rep["truncated"] is False, "extended certificate truncated")
+        _assert(sorted(rep["found"]) == ["T29"],
+                f"extended <=6 reachability set drifted: {rep['found']}")
+        _assert(len(rep["found"]["T29"]) == 6,
+                f"T29 crossing length drifted: {rep['found']['T29']}")
+        _assert(rep["classes"] == [5, 38, 368, 3157, 34073, 348070],
+                f"extended class counts drifted: {rep['classes']}")
+    finally:
+        deactivate_all_capabilities(st)
+    for t in build_sealed_tasks():
+        if TASK_FAMILY_BY_TID.get(t.tid) != "search":
+            continue
+        c = closure_certificate(t)
+        _assert(c["certified_blocked_le"] == CERT_MAX_LEN,
+                f"base certificate changed by the extension: {t.tid}")
+
+
+def test_capability_channel_dormant_by_default() -> None:
+    _assert(RunState(adaptive=True).capability_channel is False,
+            "capability channel must be off by default")
+    rs = RunState(adaptive=True)
+    rs.tasks = build_sealed_tasks()
+    _assert(attempt_capability_grant(rs, 0) is False,
+            "channel-off run offered a grant")
+    _assert(not EXT_IMPL and not EXT_TYPES,
+            "channel-off offer touched the extension registries")
+    cached = build_adaptive()
+    _assert(all(e.get("kind") != "capability_grant"
+                for e in cached.speculation_log),
+            "default adaptive run offered a capability grant")
+    _assert(not cached.searcher.extended,
+            "default adaptive run holds a grant")
+
+
+def test_capability_grant_rejection_restores_registries() -> None:
+    """When the gate finds no newly dual-gated designer task, the grant is
+    rejected, the certified searcher hash is unchanged (existing rollback
+    check), and the module registries are restored to dormancy."""
+    rs = RunState(adaptive=True)
+    rs.tasks = build_sealed_tasks()
+    rs.capability_channel = True
+    for t in rs.tasks:
+        if TASK_FAMILY_BY_TID.get(t.tid) == "search":
+            rs.adopted_tokens[t.tid] = (4, 16)      # walls out of the probe
+    rs.residues.append({"wave": 0, "tid": "T18", "family": "conditional",
+                        "best": 0.2, "tokens": [4, 16, 29], "evals": 10})
+    pre = _searcher_state_hash(rs.searcher)
+    ok = attempt_capability_grant(rs, 0)
+    _assert(ok is False, "grant accepted without a newly gated designer task")
+    _assert(not EXT_IMPL and not EXT_TYPES,
+            "rejected grant leaked active extension registries")
+    _assert(_searcher_state_hash(rs.searcher) == pre,
+            "rejected grant changed the certified searcher")
+    _assert(any(e.get("kind") == "capability_grant"
+                and e.get("rolled_back_clean")
+                for e in rs.speculation_log),
+            "rejected grant not recorded as a clean rollback")
+    for t in rs.tasks:
+        if TASK_FAMILY_BY_TID.get(t.tid) == "search":
+            rs.adopted_tokens.pop(t.tid, None)
+
+
+def test_capability_grant_adoption_and_roundtrip_two_run_identity() -> None:
+    """Two fresh 2-wave crossing-configuration runs are byte-identical; the
+    grant is adopted through the unchanged gate discipline at wave 0 and the
+    T29 crossing program is adopted by ordinary search at wave 1, passing
+    both sealed gates; serialization round-trips the granted searcher."""
+    digests = []
+    last = None
+    try:
+        for _ in range(2):
+            deactivate_all_capabilities()
+            rs = RunState(adaptive=True)
+            rs.tasks = build_sealed_tasks()
+            rs.capability_channel = True
+            rs = run_system(adaptive=True, waves=2, rs=rs)
+            digests.append(json.dumps(
+                {"adopt": adoption_log_digest(rs),
+                 "spec": [{k: e[k] for k in ("wave", "kind", "accepted")}
+                          for e in rs.speculation_log],
+                 "ext": sorted(rs.searcher.extended.items())},
+                sort_keys=True))
+            last = rs
+        _assert(digests[0] == digests[1],
+                "crossing configuration not two-run byte-identical")
+        _assert(sorted(last.searcher.extended) ==
+                [EXT_ID_BASE, EXT_ID_BASE + 1],
+                f"grant bundle not adopted: {last.searcher.extended}")
+        _assert(any(e.get("kind") == "capability_grant" and e.get("accepted")
+                    for e in last.speculation_log),
+                "no accepted capability_grant speculation entry")
+        _assert("T29" in last.adopted_tokens,
+                "T29 not adopted in the crossing configuration")
+        fn = last.adopted_fns["T29"]
+        task = next(t for t in last.tasks if t.tid == "T29")
+        _assert(task.holdout_gate(fn) and task.cf_gate(fn),
+                "adopted T29 program fails a sealed gate on replay")
+        summ = json.loads(json.dumps(runstate_summary(last)))
+        rs2 = restore_runstate(summ)
+        _assert(_searcher_state_hash(rs2.searcher)
+                == _searcher_state_hash(last.searcher),
+                "granted searcher does not survive serialization")
+        _assert(rs2.adopted_tokens == last.adopted_tokens,
+                "adopted set does not survive serialization")
+    finally:
+        deactivate_all_capabilities()
+    _assert(not EXT_IMPL, "crossing test leaked an active extension")
+
+
+FROZEN_HOLDOUT_EXTJ_SHA256 = (
+    "e28ba073c1e0359a5ed00d4a62ec8cd7063f52a118c13ff5dae45e59f323f4ed")
+
+
+def extj_instrument_load() -> Dict[str, object]:
+    """SHA-verified load of the Phase J4 extended-ISA holdout instrument
+    (docs/frozen_holdout_extJ.json; frozen before any Phase J5 search)."""
+    root = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(root, "docs", "frozen_holdout_extJ.json")
+    with open(path, "rb") as fh:
+        raw = fh.read()
+    got = hashlib.sha256(raw).hexdigest()
+    if got != FROZEN_HOLDOUT_EXTJ_SHA256:
+        raise AssertionError(
+            f"frozen_holdout_extJ.json drifted: {got}")
+    return json.loads(raw.decode("utf-8"))
+
+
+def extj_instrument_verify(fn: Callable[[List[int]], int],
+                           tid: str) -> Dict[str, object]:
+    """Replay a candidate wall program against the frozen Phase J4
+    instrument. Verification only; never consulted by any search path."""
+    doc = extj_instrument_load()
+    task = doc["tasks"][tid]
+    out = {}
+    for stream in ("extj_holdout", "extj_cf"):
+        ok = 0
+        for xs, y in task[stream]:
+            try:
+                if int(fn(list(xs))) == int(y):
+                    ok += 1
+            except Exception:
+                pass
+        out[stream] = {"passed": ok, "total": len(task[stream]),
+                       "all": ok == len(task[stream])}
+    out["verified"] = all(v["all"] for v in out.values()
+                          if isinstance(v, dict))
+    return out
+
+
+def test_extj_instrument_frozen_and_consistent() -> None:
+    doc = extj_instrument_load()
+    _assert(sorted(doc["tasks"]) == ["T29", "T30", "T31", "T32"],
+            "extJ instrument coverage drifted from the wall set")
+    meta = doc["meta"]
+    for i, (name, family, fn) in enumerate(ORACLES):
+        tid = f"T{i:02d}"
+        if tid not in doc["tasks"]:
+            continue
+        entry = doc["tasks"][tid]
+        _assert(entry["name"] == name and entry["family"] == family,
+                f"{tid} identity drifted in the extJ instrument")
+        for stream in ("extj_holdout", "extj_cf"):
+            cfg = meta[stream]
+            rng = random.Random(int(cfg["seed"]))
+            expect = []
+            for L in cfg["lengths"]:
+                for _ in range(int(cfg["trials"])):
+                    xs = [rng.randint(0, int(cfg["valmax"]))
+                          for _ in range(int(L))]
+                    expect.append([xs, int(fn(list(xs)))])
+            _assert(entry[stream] == expect,
+                    f"{tid} {stream} pairs diverge from the declared "
+                    f"generation procedure")
+    lens = set(meta["extj_holdout"]["lengths"]) | set(meta["extj_cf"]["lengths"])
+    _assert(not (lens & set(HOLDOUT_LENGTHS)) and not (lens & set(CF_LENGTHS)),
+            "extJ instrument length grid overlaps the sealed gate grids")
+    _assert(meta["extj_holdout"]["seed"] not in (GATE_SEED, CF_GATE_SEED, SEED)
+            and meta["extj_cf"]["seed"] not in (GATE_SEED, CF_GATE_SEED, SEED),
+            "extJ instrument reuses a sealed gate seed")
+
+
+def test_grant_and_forge_paths_disjoint_and_disclosed() -> None:
+    ids = [spec.ext_id for spec in DORMANT_CAPABILITY_CATALOG.values()]
+    _assert(len(ids) == len(set(ids)), "catalog ext ids collide")
+    _assert(all(EXT_ID_BASE <= i <= EXT_ID_MAX for i in ids),
+            "catalog ext id outside the reserved extension range")
+    _assert(DORMANT_CAPABILITY_CATALOG["ZGT"].ext_id == FORGE_ID_BASE,
+            "spec §1 disclosure pin: ZGT shares the first forge id")
+    import inspect
+    src = inspect.getsource(attempt_capability_grant)
+    for banned in ("forge", "holdout_gate", "cf_gate", "_ORACLE_REGISTRY",
+                   "family", "FAMILY"):
+        _assert(banned not in src,
+                f"capability channel references {banned}")
+    _assert("capability" not in inspect.getsource(forge_admit),
+            "forge registration references the catalog channel")
+    st = SearcherState()
+    activate_capability(st, "ZGT")
+    forge_revoke_all(st)
+    _assert(not EXT_IMPL and not st.extended,
+            "forge_revoke_all does not clear catalog grants")
+
+
+TESTS.extend([
+    test_phasej_frozen_docs_intact,
+    test_zgt_semantics_and_typing_agree,
+    test_grants_preserve_adopted_programs_byte_identical,
+    test_extended_certificates_rederived_and_deterministic,
+    test_capability_channel_dormant_by_default,
+    test_capability_grant_rejection_restores_registries,
+    test_capability_grant_adoption_and_roundtrip_two_run_identity,
+    test_extj_instrument_frozen_and_consistent,
+    test_grant_and_forge_paths_disjoint_and_disclosed,
 ])
 
 
@@ -37859,6 +38377,7 @@ def main() -> None:
                              "grammar2-battery",
                              "explore", "explore-report",
                              "transfer-anchor", "anchor-report",
+                             "crossing-anchor",
                              "attribution-probe",),
                     default="demo")
     ap.add_argument("--save", default="")
@@ -37966,6 +38485,30 @@ def main() -> None:
         d, g = _solved_split(rs)
         print(json.dumps({"solved": d, "solved_generated": g,
                           "exploration_macros_installed": expl,
+                          "strata_sizes": {s: len(v)
+                                           for s, v in strata.items()},
+                          "reoffers": len(rs.reoffer_log),
+                          "digest": adoption_log_digest(rs)}))
+    elif args.mode == "crossing-anchor":
+        # Phase J (approved docs/ISA_EXTENSION_SPEC.md): the Phase I
+        # stratified-schedule live configuration plus the capability-grant
+        # channel. Acceptance discipline, budgets, seeds, and gates are the
+        # transfer-anchor configuration unchanged.
+        doc = anchor_load_archive_g()
+        strata = ordering_i_strata(doc, _anchor_report_g())
+        rs = RunState(adaptive=True)
+        rs.tasks = build_sealed_tasks()
+        rs.capability_channel = True
+        rs = run_system(adaptive=True, rs=rs, exploration_pool=strata)
+        if args.save:
+            save_runstate(rs, args.save)
+        d, g = _solved_split(rs)
+        print(json.dumps({"solved": d, "solved_generated": g,
+                          "grants": {str(k): v for k, v in
+                                     sorted(rs.searcher.extended.items())},
+                          "walls_adopted": sorted(
+                              t for t in rs.adopted_tokens
+                              if TASK_FAMILY_BY_TID.get(t) == "search"),
                           "strata_sizes": {s: len(v)
                                            for s, v in strata.items()},
                           "reoffers": len(rs.reoffer_log),
