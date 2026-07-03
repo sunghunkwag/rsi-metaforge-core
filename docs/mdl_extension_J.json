@@ -1,0 +1,105 @@
+{
+  "archive": {
+    "n_elites_total": 404,
+    "n_excluded_crash_or_nonint": 6,
+    "n_scored": 398
+  },
+  "instrument": {
+    "class_cap": 2500000,
+    "defcost_per_primitive": 2,
+    "surface_max": 6,
+    "train_inputs": 20
+  },
+  "mdl": {
+    "base+BCAST": {
+      "defcost": 2,
+      "elites_improved": 0,
+      "improved_detail": [],
+      "mdl_positive": false,
+      "net": -2,
+      "total_saving_tokens": 0
+    },
+    "base+BCAST+ZGT": {
+      "defcost": 4,
+      "elites_improved": 0,
+      "improved_detail": [],
+      "mdl_positive": false,
+      "net": -4,
+      "total_saving_tokens": 0
+    },
+    "base+ZGT": {
+      "defcost": 2,
+      "elites_improved": 0,
+      "improved_detail": [],
+      "mdl_positive": false,
+      "net": -2,
+      "total_saving_tokens": 0
+    }
+  },
+  "tables": {
+    "base": {
+      "classes_per_len": [
+        5,
+        38,
+        365,
+        3097,
+        33012,
+        332509
+      ],
+      "solutions_count": 8388,
+      "truncated": false,
+      "walls_found": {}
+    },
+    "base+BCAST": {
+      "classes_per_len": [
+        5,
+        38,
+        368,
+        3145,
+        33705,
+        341320
+      ],
+      "solutions_count": 8437,
+      "truncated": false,
+      "walls_found": {}
+    },
+    "base+BCAST+ZGT": {
+      "classes_per_len": [
+        5,
+        38,
+        368,
+        3157,
+        34073,
+        348070
+      ],
+      "solutions_count": 8709,
+      "truncated": false,
+      "walls_found": {
+        "T29": {
+          "length": 6,
+          "tokens": [
+            4,
+            4,
+            3,
+            60,
+            61,
+            29
+          ]
+        }
+      }
+    },
+    "base+ZGT": {
+      "classes_per_len": [
+        5,
+        38,
+        365,
+        3109,
+        33375,
+        339123
+      ],
+      "solutions_count": 8653,
+      "truncated": false,
+      "walls_found": {}
+    }
+  }
+}
