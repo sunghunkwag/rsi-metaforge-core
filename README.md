@@ -35,18 +35,19 @@ flowchart LR
 
 ## 📊 Results at a glance
 
-A staged research program (Phases 0–I) generalized these gated rules to the top-level searcher and measured the result on a **frozen instrument** fixed *before* the runs. Each arm was reproduced twice, byte-for-byte.
+A staged research program (Phases 0–J) generalized these gated rules to the top-level searcher — and then to the instruction set itself — measuring every result on **frozen instruments** fixed *before* the runs. Each arm was reproduced twice, byte-for-byte.
 
 ```
-Adaptive (live)   ██████████████████████████     26 / 33   ← T15 · T27 · T28 solved together
-Frozen baseline   ███████████████████            19 / 33
-                  └──────────────────────────┘
-                   designer tasks solved on the frozen Phase 0 instrument
+Extended ISA (Phase J)  ████████████████████████████   28 / 33   ← T29 · T30 crossed their certificates
+Adaptive (live)         ██████████████████████████     26 / 33   ← T15 · T27 · T28 solved together
+Frozen baseline         ███████████████████            19 / 33
+                        └────────────────────────────┘
+                         designer tasks solved on the frozen Phase 0 instrument
 ```
 
-- **+7 tasks** over the frozen baseline, none lost. Both arms deterministic (two byte-identical runs).
-- **Open, and labeled honestly:** T18 · T21 · T22 remain unsolved (missing vocabulary); T29–T32 carry closure certificates (machine-checked unreachability under the base instruction set).
-- Predictions were **registered before** the final run and scored after — misses included, in [`SEQUENCING_RESULT.md`](docs/SEQUENCING_RESULT.md).
+- **+7 tasks** over the frozen baseline in Phase I, then **+2 certified-infeasible tasks** in Phase J — none lost, every arm deterministic (two byte-identical runs each).
+- **Open, and labeled honestly:** T18 · T21 · T22 remain unsolved (missing vocabulary); T31 · T32 remain certified out of reach at the certified horizon even in the extended ISA; T29 · T30 crossed — each base-ISA impossibility certificate is committed beside its adopted solution.
+- Predictions were **registered before** the final runs and scored after — misses included, in [`SEQUENCING_RESULT.md`](docs/SEQUENCING_RESULT.md) and [`CROSSING_RESULT.md`](docs/CROSSING_RESULT.md).
 
 **Phase J: the certified boundary, crossed.** The closure certificates define where the base ISA ends; Phase J extended it through the same gate discipline and converted two certified-infeasible tasks into gate-adopted, instrument-verified solutions. From the gap analysis ([`ISA_GAP_J.md`](docs/ISA_GAP_J.md)), a two-primitive extension — `BCAST` (constant broadcast, lemma-justified) and `ZGT` (elementwise order test) — was frozen and user-approved in [`ISA_EXTENSION_SPEC.md`](docs/ISA_EXTENSION_SPEC.md); grants stay dormant by default (the incumbent configuration reproduces the committed Phase I artifact byte for byte) and became permanent only through the unchanged A/B + sealed-holdout discipline. Against pre-registered predictions ([`PREDICTIONS_J.md`](docs/PREDICTIONS_J.md)) and instruments frozen before any run, the crossing arm solved **28/33** (digest `1b36ff714b128546`, two byte-identical runs): **T29** fell at wave 1 with the certified-minimal 6-token program, and **T30** fell at wave 2 by composing the granted `ZGT` with an exploration-origin macro mined from the frozen Track 2 archive — a route no designer witness used. T31/T32 remain honest nulls with quantified bands; each crossed task's base-ISA impossibility certificate and its adopted solution are committed side by side. Full record: [`CROSSING_RESULT.md`](docs/CROSSING_RESULT.md).
 
@@ -73,6 +74,7 @@ Single-file runtime, standard library only — no install step.
 python rsi_levels_metaforge_unified.py --mode demo
 
 # Reproduce the headline comparison
+python rsi_levels_metaforge_unified.py --mode crossing-anchor   # extended ISA (Phase J)
 python rsi_levels_metaforge_unified.py --mode transfer-anchor   # adaptive (live)
 python rsi_levels_metaforge_unified.py --mode run-frozen        # frozen baseline
 
@@ -121,7 +123,7 @@ Explore interactively on **[DeepWiki](https://deepwiki.com/sunghunkwag/rsi-metaf
 | [Evidence Logs](docs/04_evidence_logs.md) | What was actually shown? |
 | [Limitations](docs/05_limitations.md) | Where does it stop? |
 
-The Phases 0–I record — frozen instruments, registered predictions, per-phase reports, and final evaluations — lives under [`docs/`](docs/), starting from [`SEQUENCING_RESULT.md`](docs/SEQUENCING_RESULT.md). The Phase J record (certified-boundary crossing) starts from [`ISA_GAP_J.md`](docs/ISA_GAP_J.md) and [`ISA_EXTENSION_SPEC.md`](docs/ISA_EXTENSION_SPEC.md), with the frozen evaluation instrument in [`frozen_holdout_extJ.json`](docs/frozen_holdout_extJ.json) and registered predictions in [`PREDICTIONS_J.md`](docs/PREDICTIONS_J.md).
+The Phases 0–I record — frozen instruments, registered predictions, per-phase reports, and final evaluations — lives under [`docs/`](docs/), starting from [`SEQUENCING_RESULT.md`](docs/SEQUENCING_RESULT.md). The Phase J record (certified-boundary crossing) runs from the gap analysis ([`ISA_GAP_J.md`](docs/ISA_GAP_J.md)) and the frozen, user-approved extension spec ([`ISA_EXTENSION_SPEC.md`](docs/ISA_EXTENSION_SPEC.md)) through the frozen evaluation instrument ([`frozen_holdout_extJ.json`](docs/frozen_holdout_extJ.json)), the pre-registered predictions ([`PREDICTIONS_J.md`](docs/PREDICTIONS_J.md)), and the final result with its committed artifact ([`CROSSING_RESULT.md`](docs/CROSSING_RESULT.md), [`final_live_phaseJ.json`](docs/final_live_phaseJ.json)).
 
 ---
 
