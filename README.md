@@ -74,7 +74,7 @@ python rsi_levels_metaforge_unified.py --mode demo
 python rsi_levels_metaforge_unified.py --mode transfer-anchor   # adaptive (live)
 python rsi_levels_metaforge_unified.py --mode run-frozen        # frozen baseline
 
-# Run the full test suite (147 tests)
+# Run the full test suite (156 tests)
 python rsi_levels_metaforge_unified.py --mode test
 ```
 
@@ -101,7 +101,7 @@ python rsi_levels_metaforge_unified.py --help                   # everything els
 Two workflows keep the claims honest on every change:
 
 - **Quick CI** — compiles the runtime, checks the CLI, runs anti-cheat guards. Fast, on every push.
-- **Full Evidence** — runs every evidence battery plus the full 147-test suite, then uploads the logs and JSON artifacts. Green means the whole record reproduced on a clean machine.
+- **Full Evidence** — runs every evidence battery plus the full 156-test suite, then uploads the logs and JSON artifacts. Green means the whole record reproduced on a clean machine.
 
 ---
 
