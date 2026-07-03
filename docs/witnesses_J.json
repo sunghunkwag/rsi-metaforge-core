@@ -1,0 +1,121 @@
+{
+  "nondegeneracy_le2": {
+    "open_task_hits_at_le2": {},
+    "programs_enumerated": 1332,
+    "vocab_size": 36
+  },
+  "witnesses": {
+    "T29": {
+      "counts_as_solved": false,
+      "designer_supplied": true,
+      "expanded_len": 6,
+      "gates": {
+        "cf": true,
+        "holdout": true,
+        "train": true
+      },
+      "name": "count_above_threshold",
+      "tokens": [
+        4,
+        5,
+        3,
+        60,
+        61,
+        29
+      ],
+      "uses_BCAST": true,
+      "uses_ZGT": true
+    },
+    "T30": {
+      "counts_as_solved": false,
+      "designer_supplied": true,
+      "expanded_len": 8,
+      "gates": {
+        "cf": true,
+        "holdout": true,
+        "train": true
+      },
+      "name": "argmax_index",
+      "tokens": [
+        4,
+        5,
+        30,
+        60,
+        4,
+        27,
+        61,
+        29
+      ],
+      "uses_BCAST": true,
+      "uses_ZGT": true
+    },
+    "T31": {
+      "counts_as_solved": false,
+      "designer_supplied": true,
+      "expanded_len": 18,
+      "gates": {
+        "cf": true,
+        "holdout": true,
+        "train": true
+      },
+      "name": "first_greater_than_previous",
+      "tokens": [
+        4,
+        20,
+        4,
+        61,
+        5,
+        27,
+        29,
+        4,
+        16,
+        6,
+        10,
+        6,
+        0,
+        1,
+        10,
+        6,
+        29,
+        33
+      ],
+      "uses_BCAST": false,
+      "uses_ZGT": true
+    },
+    "T32": {
+      "counts_as_solved": false,
+      "designer_supplied": true,
+      "expanded_len": 20,
+      "gates": {
+        "cf": true,
+        "holdout": true,
+        "train": true
+      },
+      "name": "longest_increasing_run",
+      "tokens": [
+        4,
+        20,
+        4,
+        61,
+        5,
+        5,
+        1,
+        60,
+        6,
+        24,
+        6,
+        28,
+        6,
+        8,
+        25,
+        27,
+        24,
+        30,
+        1,
+        9
+      ],
+      "uses_BCAST": true,
+      "uses_ZGT": true
+    }
+  }
+}
