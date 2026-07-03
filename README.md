@@ -45,8 +45,10 @@ Frozen baseline   ███████████████████     
 ```
 
 - **+7 tasks** over the frozen baseline, none lost. Both arms deterministic (two byte-identical runs).
-- **Open, and labeled honestly:** T18 · T21 · T22 remain unsolved (missing vocabulary); T29–T32 carry closure certificates (out of reach under the current instruction set).
+- **Open, and labeled honestly:** T18 · T21 · T22 remain unsolved (missing vocabulary); T29–T32 carry closure certificates (machine-checked unreachability under the base instruction set).
 - Predictions were **registered before** the final run and scored after — misses included, in [`SEQUENCING_RESULT.md`](docs/SEQUENCING_RESULT.md).
+
+**Phase J (in progress): crossing the certified boundary.** The closure certificates define where the base ISA ends; Phase J extends it through the same gate discipline. The gap analysis ([`ISA_GAP_J.md`](docs/ISA_GAP_J.md)) derives, from the committed proofs, exactly which capability each wall lacks; a two-primitive extension — `BCAST` (constant broadcast, lemma-justified) and `ZGT` (elementwise order test) — is frozen and user-approved in [`ISA_EXTENSION_SPEC.md`](docs/ISA_EXTENSION_SPEC.md), with its measured evidence committed beside it (all four walls gate-expressible at depths 6/8/18/20; T29 reachable at exactly length 6 under the joint grant, and only the joint grant; an honest null on archive-MDL compression, documented as structural). Grants are dormant by default — every historical configuration is byte-identical — and become permanent only through the unchanged A/B + sealed-holdout discipline. The two-arm evaluation runs against instruments frozen first ([`PREDICTIONS_J.md`](docs/PREDICTIONS_J.md) registered before any run); results land in `CROSSING_RESULT.md` either way, crossing or null.
 
 ---
 
@@ -89,6 +91,7 @@ python rsi_levels_metaforge_unified.py --mode cfs-battery       # continuous sub
 python rsi_levels_metaforge_unified.py --mode expansion-battery # residue-driven expansion
 python rsi_levels_metaforge_unified.py --mode grammar-battery   # depth-1 grammar
 python rsi_levels_metaforge_unified.py --mode grammar2-battery  # depth-2 grammar
+python rsi_levels_metaforge_unified.py --mode crossing-anchor   # Phase J: live arm + capability-grant channel
 python rsi_levels_metaforge_unified.py --help                   # everything else
 ```
 
@@ -118,7 +121,7 @@ Explore interactively on **[DeepWiki](https://deepwiki.com/sunghunkwag/rsi-metaf
 | [Evidence Logs](docs/04_evidence_logs.md) | What was actually shown? |
 | [Limitations](docs/05_limitations.md) | Where does it stop? |
 
-The Phases 0–I record — frozen instruments, registered predictions, per-phase reports, and final evaluations — lives under [`docs/`](docs/), starting from [`SEQUENCING_RESULT.md`](docs/SEQUENCING_RESULT.md).
+The Phases 0–I record — frozen instruments, registered predictions, per-phase reports, and final evaluations — lives under [`docs/`](docs/), starting from [`SEQUENCING_RESULT.md`](docs/SEQUENCING_RESULT.md). The Phase J record (certified-boundary crossing) starts from [`ISA_GAP_J.md`](docs/ISA_GAP_J.md) and [`ISA_EXTENSION_SPEC.md`](docs/ISA_EXTENSION_SPEC.md), with the frozen evaluation instrument in [`frozen_holdout_extJ.json`](docs/frozen_holdout_extJ.json) and registered predictions in [`PREDICTIONS_J.md`](docs/PREDICTIONS_J.md).
 
 ---
 
