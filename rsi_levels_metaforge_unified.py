@@ -2791,7 +2791,7 @@ def demo_counterfactual() -> None:
     print("=" * 88)
     rep = counterfactual_report(a, f)
     print(json.dumps(rep, indent=2, sort_keys=True))
-    name = lambda tid: task_label(rs, tid)
+    name = lambda tid: task_label(a, tid)
     only_a = rep["solved_only_by_adaptive"]
     if only_a:
         print("\nTasks reached ONLY via self-improvement:")
@@ -10345,6 +10345,7 @@ class ArtifactFileTask:
     expected_artifact_schema: Dict[str, str]
 
     def provision(self, root: Path) -> Path:
+        import shutil
         work = Path(root) / self.tid
         if work.exists():
             shutil.rmtree(work)
@@ -13306,6 +13307,7 @@ def _self_edit_only_capability_line_changed(before: str, after: str) -> bool:
 def run_self_edit_rsi_loop(save_path: str = "",
                            workdir: str = "",
                            adopt: bool = True) -> int:
+    import shutil
     source_path = Path(__file__).resolve()
     root = Path(workdir) if workdir else Path.cwd() / "work" / "self_edit"
     root.mkdir(parents=True, exist_ok=True)
@@ -13360,6 +13362,7 @@ def run_self_edit_rsi_loop(save_path: str = "",
     candidate_path.write_text(patched_text, encoding="utf-8")
 
     def run_cmd(argv: List[str], timeout: int = 240) -> Dict[str, object]:
+        import time
         start = time.time()
         proc = subprocess.run(argv, cwd=str(Path.cwd()), capture_output=True,
                               text=True, encoding="utf-8", errors="replace",
