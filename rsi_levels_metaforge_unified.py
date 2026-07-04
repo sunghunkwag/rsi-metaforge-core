@@ -38,7 +38,10 @@ Honesty constraints enforced by tests at the bottom of this core:
     pass on the external holdout gate (longer, unseen input lengths).
   * Tasks that search cannot reach stay OPEN and are reported as such.
   * Deterministic: fixed seeds; two runs produce identical adoption logs.
-  * No eval/exec anywhere in the runtime core.
+  * No eval/exec anywhere in the runtime core: the executable AST has zero
+    eval()/exec() calls, enforced by test_no_dynamic_python_evaluator_calls.
+    The eval(/exec( tokens occur only inside INTEGRATED_SOURCE_ARCHIVE string
+    constants (archived module source), not in this file's live code.
 
 
 UNIFIED GENERAL-DOMAIN DIRECTIVE LAYER (this build):
