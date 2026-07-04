@@ -14818,7 +14818,7 @@ def grammar_battery() -> Dict[str, object]:
     # (D) honest give-up target under the grammar
     gv = grammar_extend_until_expressive(grammar_giveup_task(), max_new=2)
 
-    print(f"\n[G1] witness target = count(elements == max)")
+    print("\n[G1] witness target = count(elements == max)")
     print(f"  (A) base cfs_phi      : train_exact={base_train}"
           f" sealed_gates={base_gates}  -> span(phi) wall={base_train and not base_gates}")
     print(f"  (B) fixed bank (S.24) : added={rb['added']}"
@@ -14827,8 +14827,8 @@ def grammar_battery() -> Dict[str, object]:
     print(f"  (C) grammar (S.25)    : added={rg['added']}"
           f" final_gates={rg['final_gates']} dim {CFS_D}->{rg['final_dim']}"
           f"  -> grammar closes={rg['final_gates'] is True}")
-    print(f"\n[G2] give-up target = second-largest value (outside grammar"
-          f" closure)")
+    print("\n[G2] give-up target = second-largest value (outside grammar"
+          " closure)")
     print(f"  grammar           : added={gv['added']}"
           f" final_gates={gv['final_gates']}"
           f"  -> honest give-up (no false adoption)={gv['final_gates'] is False}")
