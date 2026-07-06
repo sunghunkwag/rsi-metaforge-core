@@ -45,11 +45,33 @@ Frozen baseline         ██████████████████�
                          designer tasks solved on the frozen Phase 0 instrument
 ```
 
+**A separate domain — real file tasks.** The same gated discipline runs on CSV / log / config / repo files, scored by sealed hidden A/B on unseen eval seeds (the hidden expectations never touch the workspace):
+
+```
+File-world (csv_normalize · log_aggregate · config_migrate · repo_repair)
+Adaptive         ████████████████████████████   1.000   ← mean over the four families
+Frozen baseline  ██████                          0.204
+```
+
+Per-family breakdown in [EVIDENCE.md](EVIDENCE.md#file-world-evidence-battery).
+
 - **+7 tasks** over the frozen baseline in Phase I, then **+2 certified-infeasible tasks** in Phase J — none lost, every arm deterministic (two byte-identical runs each).
 - **Open, and labeled honestly:** T18 · T21 · T22 remain unsolved (missing vocabulary); T31 · T32 remain certified out of reach at the certified horizon even in the extended ISA; T29 · T30 crossed — each base-ISA impossibility certificate is committed beside its adopted solution.
 - Predictions were **registered before** the final runs and scored after — misses included, in [`SEQUENCING_RESULT.md`](docs/SEQUENCING_RESULT.md) and [`CROSSING_RESULT.md`](docs/CROSSING_RESULT.md).
 
 **Phase J: the certified boundary, crossed.** The closure certificates define where the base ISA ends; Phase J extended it through the same gate discipline and converted two certified-infeasible tasks into gate-adopted, instrument-verified solutions. From the gap analysis ([`ISA_GAP_J.md`](docs/ISA_GAP_J.md)), a two-primitive extension — `BCAST` (constant broadcast, lemma-justified) and `ZGT` (elementwise order test) — was frozen and user-approved in [`ISA_EXTENSION_SPEC.md`](docs/ISA_EXTENSION_SPEC.md); grants stay dormant by default (the incumbent configuration reproduces the committed Phase I artifact byte for byte) and became permanent only through the unchanged A/B + sealed-holdout discipline. Against pre-registered predictions ([`PREDICTIONS_J.md`](docs/PREDICTIONS_J.md)) and instruments frozen before any run, the crossing arm solved **28/33** (digest `1b36ff714b128546`, two byte-identical runs): **T29** fell at wave 1 with the certified-minimal 6-token program, and **T30** fell at wave 2 by composing the granted `ZGT` with an exploration-origin macro mined from the frozen Track 2 archive — a route no designer witness used. T31/T32 remain honest nulls with quantified bands; each crossed task's base-ISA impossibility certificate and its adopted solution are committed side by side. Full record: [`CROSSING_RESULT.md`](docs/CROSSING_RESULT.md).
+
+---
+
+## 🧩 Domains
+
+The same gated loop is measured across several substrates — not only the integer benchmark:
+
+- **Stack VM (33 integer tasks):** the core RSI-loop measurement baseline — synthesis, macros, and the extended ISA (`--mode demo`, `--mode test`).
+- **General-domain — list / string / grid / record** (Section 11): an oracle-scarce debate pipeline with four strategies — S1 a process scorer (`StepScorer`), S2 committee debate with an adversarial distinguisher, S3 a learned world model (`OpSemanticsModel`), and S4 oracle-free meta-learning config selection with a held-out Goodhart audit (`--mode directive-battery`).
+- **File-world — CSV / JSON / log / repo:** real file I/O scored by sealed hidden A/B; skill proposals mined from failure residues and adopted only through a validation gate (`--mode file-battery`).
+- **Self-forge → GD bridge:** system-synthesized fold primitives, admitted through sealed gates, are registered as general-domain feature atoms that extend the vocabulary the debate pipeline searches (`--mode forge-battery`).
+- **Abstract strategic planning — HDC/VSA + Kuramoto oscillators** (Section 14, *"measured, not mystified"*): an illustrative demo (`--mode hdc-rsi`) that encodes a symbolic action plan into hypervectors, performs analogical transfer via VSA bind/unbind, and selects steps by oscillator phase-locking; the measured interference-field battery is `--mode hdc-battery`.
 
 ---
 
@@ -60,6 +82,8 @@ Frozen baseline         ██████████████████�
 | Bounded, validation-gated self-modification | A general-intelligence claim |
 | A reference harness for verifier discipline | Proof of unrestricted recursive self-improvement |
 | Reproducible, gate-checked, artifact-backed | A drop-in production code-evolution system |
+| Multi-domain verifier (list / string / grid / record / file) | A single-domain benchmark |
+| Cross-substrate lesson transfer (VM → general-domain) | Domain-specific tuning |
 
 Full claim boundary and public validation record: **[EVIDENCE.md](EVIDENCE.md)**.
 
@@ -86,13 +110,13 @@ python rsi_levels_metaforge_unified.py --mode test
 <summary>More modes (evidence batteries, help)</summary>
 
 ```bash
-python rsi_levels_metaforge_unified.py --mode file-battery      # hidden A/B file tasks
-python rsi_levels_metaforge_unified.py --mode forge-battery     # self-forge admission
+python rsi_levels_metaforge_unified.py --mode file-battery      # hidden A/B on real file tasks (csv, log, config, repo)
+python rsi_levels_metaforge_unified.py --mode forge-battery     # self-synthesized primitives lifted into the GD pipeline
 python rsi_levels_metaforge_unified.py --mode horizon-scan      # closure certificates
-python rsi_levels_metaforge_unified.py --mode cfs-battery       # continuous substrate
-python rsi_levels_metaforge_unified.py --mode expansion-battery # residue-driven expansion
-python rsi_levels_metaforge_unified.py --mode grammar-battery   # depth-1 grammar
-python rsi_levels_metaforge_unified.py --mode grammar2-battery  # depth-2 grammar
+python rsi_levels_metaforge_unified.py --mode cfs-battery       # continuous functional substrate search
+python rsi_levels_metaforge_unified.py --mode expansion-battery # residue-driven vocabulary expansion
+python rsi_levels_metaforge_unified.py --mode grammar-battery   # depth-1 grammar feature search
+python rsi_levels_metaforge_unified.py --mode grammar2-battery  # depth-2 grammar feature search
 python rsi_levels_metaforge_unified.py --mode crossing-anchor   # Phase J: live arm + capability-grant channel
 python rsi_levels_metaforge_unified.py --help                   # everything else
 ```
@@ -122,6 +146,7 @@ Explore interactively on **[DeepWiki](https://deepwiki.com/sunghunkwag/rsi-metaf
 | [Validation Gates](docs/03_validation_gates.md) | How is cheating prevented? |
 | [Evidence Logs](docs/04_evidence_logs.md) | What was actually shown? |
 | [Limitations](docs/05_limitations.md) | Where does it stop? |
+| [General-Domain RSI](rsi_levels_metaforge_unified.py) | What domains beyond integer tasks are covered? (Section 11, line ~3384) |
 
 The Phases 0–I record — frozen instruments, registered predictions, per-phase reports, and final evaluations — lives under [`docs/`](docs/), starting from [`SEQUENCING_RESULT.md`](docs/SEQUENCING_RESULT.md). The Phase J record (certified-boundary crossing) runs from the gap analysis ([`ISA_GAP_J.md`](docs/ISA_GAP_J.md)) and the frozen, user-approved extension spec ([`ISA_EXTENSION_SPEC.md`](docs/ISA_EXTENSION_SPEC.md)) through the frozen evaluation instrument ([`frozen_holdout_extJ.json`](docs/frozen_holdout_extJ.json)), the pre-registered predictions ([`PREDICTIONS_J.md`](docs/PREDICTIONS_J.md)), and the final result with its committed artifact ([`CROSSING_RESULT.md`](docs/CROSSING_RESULT.md), [`final_live_phaseJ.json`](docs/final_live_phaseJ.json)).
 

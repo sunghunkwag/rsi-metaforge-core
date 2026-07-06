@@ -28,4 +28,6 @@ The runtime includes candidate synthesis, candidate mutation, gated acceptance, 
 
 Start with [EVIDENCE.md](../EVIDENCE.md) for the claim boundary and reproduction commands. Then inspect [01_architecture.md](01_architecture.md), [02_rsi_loop.md](02_rsi_loop.md), [03_validation_gates.md](03_validation_gates.md), and [04_evidence_logs.md](04_evidence_logs.md) alongside the runtime source.
 
+For the general-domain RSI layer (list / string / grid / record / file substrates, the S1–S4 strategies, cross-substrate lesson transfer, and the self-forge bridge), go directly to Section 11 (`GENERAL-DOMAIN RSI DIRECTIVE LAYER`, line ~3384) and Section 16 (`SELF-FORGE`, line ~7953) in the runtime source.
+
 For current public validation, prefer the newest successful [Full Evidence](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/full-evidence.yml) run for the commit under review. Battery logs and battery JSON results are produced by runs rather than stored in this repository; the research-program run artifacts (frozen holdout, exploration archives, anchor reports, final evaluation runs) are the exception — they are committed under `docs/` and SHA-256-pinned by the test suite, see [04_evidence_logs.md](04_evidence_logs.md).
