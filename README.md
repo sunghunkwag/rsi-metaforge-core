@@ -10,7 +10,7 @@ The question this repository is built to answer is not *"can a system look like 
 
 ---
 
-## 🔁 How it works
+## How it works
 
 Every change — a synthesized program, a new macro, a forged primitive — goes through the same loop. Nothing is kept unless it survives **hidden, sealed gates** the search never sees.
 
@@ -33,7 +33,7 @@ flowchart LR
 
 ---
 
-## 📊 Results at a glance
+## Results at a glance
 
 A staged research program (Phases 0–J) generalized these gated rules to the top-level searcher — and then to the instruction set itself — measuring every result on **frozen instruments** fixed *before* the runs. Each arm was reproduced twice, byte-for-byte.
 
@@ -63,7 +63,7 @@ Per-family breakdown in [EVIDENCE.md](EVIDENCE.md#file-world-evidence-battery).
 
 ---
 
-## 🧩 Domains
+## Domains
 
 The same gated loop is measured across several substrates — not only the integer benchmark:
 
@@ -75,9 +75,9 @@ The same gated loop is measured across several substrates — not only the integ
 
 ---
 
-## ⚖️ What this is — and isn't
+## What this is — and isn't
 
-| ✅ It is | ❌ It is not |
+| It is | It is not |
 | --- | --- |
 | Bounded, validation-gated self-modification | A general-intelligence claim |
 | A reference harness for verifier discipline | Proof of unrestricted recursive self-improvement |
@@ -89,7 +89,7 @@ Full claim boundary and public validation record: **[EVIDENCE.md](EVIDENCE.md)**
 
 ---
 
-## 🚀 Quick start
+## Quick start
 
 Single-file runtime, standard library only — no install step.
 
@@ -125,7 +125,7 @@ python rsi_levels_metaforge_unified.py --help                   # everything els
 
 ---
 
-## ✔️ Continuous validation
+## Continuous validation
 
 Two workflows keep the claims honest on every change:
 
@@ -134,7 +134,7 @@ Two workflows keep the claims honest on every change:
 
 ---
 
-## 📚 Learn more
+## Learn more
 
 Explore interactively on **[DeepWiki](https://deepwiki.com/sunghunkwag/rsi-metaforge-core)**, or read the reviewer docs:
 
