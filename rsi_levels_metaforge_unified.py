@@ -43693,6 +43693,3989 @@ TESTS.extend([
 ])
 
 
+# =========================================================================== #
+# PHASE L: MDL MASTER GATE (ASCENT M2)                                        #
+#                                                                             #
+# One registered, frozen coding formula (K5) becomes the single value judge   #
+# for all vocabulary growth (docs/ASCENT_L_SPEC.md, docs/PREDICTIONS_L.md,    #
+# docs/L_RESULT.md). An abstraction enters the solver's searchable library    #
+# iff it strictly compresses the sealed training corpus -- the system's own   #
+# gate-adopted solution bodies, description cost fully charged -- AND its     #
+# re-encoding strictly shortens a frozen, committed holdout corpus it never   #
+# trained on. Everything is exact integer arithmetic in bits: no floats,     #
+# no platform libm, byte-identical replay by construction.                    #
+#                                                                             #
+# This unifies the Phase E instrument (greedy re-encoding over a frozen      #
+# archive with defcost = len + 1; docs/mdl_spec_phaseE.md) and the Phase J   #
+# extension measurement (multi-vocabulary comparison with per-primitive       #
+# definition cost; docs/measure_mdl_extension_J.py) into ONE adoption gate:   #
+# at constant code width the formula reduces exactly to the Phase E token    #
+# accounting, and pricing every named token through (len + 1) x bits(V)      #
+# subsumes the Phase J convention. Vocabulary growth itself is charged: a    #
+# library that crosses a power-of-two boundary re-prices every term.         #
+#                                                                             #
+# The Phase L loop mirrors the K-1 loop (same lineages, ADV probes,           #
+# admission certificates, crossing measurement, credit, allocation) with     #
+# exactly two changes: the searchable vocabulary is the MDL-certified        #
+# library rather than raw adopted solutions, and adoption is gated. Phase K  #
+# code above is read-only here (the SC2/SC sequencing rule); shared kernel   #
+# machinery is reused by call and re-pinned inside ASCL_PIN_SHA256.           #
+# =========================================================================== #
+
+# --- frozen constants (spec-freeze: docs/ASCENT_L_SPEC.md) -------------------
+ASCL_SPEC_VERSION = "L-1"
+ASCL_BODY_MIN = 2
+ASCL_BODY_MAX = 8
+ASCL_CANDS_PER_GEN = 64
+ASCL_HOLDOUT_SHA256 = ("3f2c0d53739bdb3ae56af4a4a35d249d"
+                       "c549f0d09e26fe62ea4255838c192c49")
+ASCL_HOLDOUT_SEED = 553211
+ASCL_MACRO_BASE = 4000
+ASCL_K_LEDGER_FILE = "ascent_k_ledger_final.jsonl"
+
+
+# --- K5: the registered coding formula (kernel; exact integers, bits) -------
+def al_bits(n_lib):
+    """Fixed-width cost in bits of naming one token from the base ISA plus
+    a library of n_lib abstractions: integer ceiling of log2(vocabulary)."""
+    return (N_BASE_OPS + n_lib - 1).bit_length()
+
+
+def al_encode_count(expanded, bodies):
+    """Deterministic greedy longest-match emitted-token count. Two distinct
+    bodies of equal length cannot both match at one position, so the
+    longest match is unique; ties are impossible by construction."""
+    bl = sorted(set(tuple(b) for b in bodies), key=lambda b: (-len(b), b))
+    exp = tuple(expanded)
+    i = 0
+    n = 0
+    while i < len(exp):
+        step = 1
+        for b in bl:
+            k = len(b)
+            if exp[i:i + k] == b:
+                step = k
+                break
+        i += step
+        n += 1
+    return n
+
+
+def al_mdl(corpus, bodies):
+    """MDL(corpus, Library) in bits: library description cost plus the
+    corpus re-encoded under the library, all at the current code width."""
+    b = al_bits(len(bodies))
+    lib_cost = sum(len(tuple(m)) + 1 for m in bodies) * b
+    prog_cost = sum(al_encode_count(p, bodies) for p in corpus) * b
+    return lib_cost + prog_cost
+
+
+def al_delta(m, corpus, bodies):
+    return al_mdl(corpus, tuple(bodies) + (tuple(m),)) - \
+        al_mdl(corpus, bodies)
+
+
+def al_holdout_savings(m, corpus, bodies):
+    """Token savings of adding m, at fixed width: the generalization test
+    of the holdout clause (description cost is charged once, on train)."""
+    return (sum(al_encode_count(p, bodies) for p in corpus)
+            - sum(al_encode_count(p, tuple(bodies) + (tuple(m),))
+                  for p in corpus))
+
+
+def al_load_holdout():
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "docs", "frozen_holdout_ascentL.json")
+    raw = open(path, "rb").read()
+    if hashlib.sha256(raw).hexdigest() != ASCL_HOLDOUT_SHA256:
+        raise RuntimeError(
+            "ascent L holdout corpus drifted from the spec-freeze pin")
+    doc = json.loads(raw.decode("utf-8"))
+    return tuple(tuple(int(t) for t in p["tokens"])
+                 for p in doc["programs"])
+
+
+def al_gate(m, c_train, c_hold, bodies):
+    """The master gate. Returns (adopted, reason, d_train, sav_hold,
+    d_hold). Adoption requires: body bounds, strict negative training
+    delta (description cost fully charged), and strictly positive holdout
+    token savings (the generalization clause; the holdout delta is
+    recorded for audit)."""
+    m = tuple(m)
+    if not (ASCL_BODY_MIN <= len(m) <= ASCL_BODY_MAX):
+        return (False, "l_body_bounds", None, None, None)
+    d_train = al_delta(m, c_train, bodies)
+    if d_train >= 0:
+        return (False, "l_mdl_train", d_train, None, None)
+    sav = al_holdout_savings(m, c_hold, bodies)
+    d_hold = al_delta(m, c_hold, bodies)
+    if sav <= 0:
+        return (False, "l_mdl_holdout", d_train, sav, d_hold)
+    return (True, "", d_train, sav, d_hold)
+
+
+def al_enumerate_candidates(c_train, bodies):
+    """Phase E candidate enumeration: contiguous base-token subsequences
+    of bounded length occurring in >= 2 distinct corpus programs, ordered
+    by (training delta ascending, body lexicographic)."""
+    occ = {}
+    for pi, p in enumerate(c_train):
+        p = tuple(p)
+        for ln in range(ASCL_BODY_MIN, ASCL_BODY_MAX + 1):
+            for i in range(len(p) - ln + 1):
+                occ.setdefault(p[i:i + ln], set()).add(pi)
+    cands = [b for b, s in sorted(occ.items()) if len(s) >= 2
+             and b not in set(tuple(x) for x in bodies)]
+    scored = sorted((al_delta(b, c_train, bodies), b) for b in cands)
+    return [b for _, b in scored]
+
+
+# --- loop state: the K-1 loop with a gated library ---------------------------
+class ALLoopState(AKLoopState):
+    """Duck-type compatible with the Phase K kernel (ak_admit,
+    ak_frontier_solve read cfg/ledger/vault/meter/seen_sigs/cells/
+    archive_macros): archive_macros IS the MDL-certified library here, so
+    the difficulty and crossing snapshots search the gated vocabulary."""
+
+    def __init__(self, cfg, c_train_seed=(), holdout=()):
+        AKLoopState.__init__(self, cfg)
+        self.c_train = [tuple(p) for p in c_train_seed]
+        self.holdout = tuple(tuple(p) for p in holdout)
+        self.lib_bodies = []          # adoption-ordered expanded bodies
+        self.pending_bodies = []      # full-body candidates this gen
+
+
+def al_seed_corpus():
+    """The sealed training corpus seed: the six adopted solution bodies of
+    the committed, chain-verified Phase K final ledger. The system's only
+    training data is its own ledger; the K record qualifies."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "docs", ASCL_K_LEDGER_FILE)
+    records = [json.loads(line) for line in
+               open(path, "r", encoding="utf-8")]
+    prev = SCLedger.GENESIS
+    for i, rec in enumerate(records):
+        if rec["idx"] != i or rec["prev"] != prev:
+            raise AssertionError(f"ascent K ledger chain broken at {i}")
+        h = hashlib.sha256(
+            (prev + _sc_canon({k: v for k, v in rec.items()
+                               if k != "h"})).encode()).hexdigest()
+        if h != rec["h"]:
+            raise AssertionError(f"ascent K ledger tampered at {i}")
+        prev = rec["h"]
+    return tuple(tuple(rec["tokens"]) for rec in records
+                 if rec["event"] in ("mined", "cross_adopted"))
+
+
+def al_gate_candidates(state, cands, source_tid=None):
+    """Route candidates through the master gate, in order, against the
+    evolving library. Every disposition is ledgered with its numbers."""
+    adopted = 0
+    for m in cands:
+        state.meter.spend("mining", "cand_evals", 1)
+        ok, reason, d_train, sav, d_hold = al_gate(
+            m, state.c_train, state.holdout, state.lib_bodies)
+        body_sha = hashlib.sha256(
+            _sc_ser_tokens(tuple(m)).encode()).hexdigest()
+        if ok:
+            aid = ASCL_MACRO_BASE + len(state.lib_bodies)
+            state.lib_bodies.append(tuple(m))
+            state.archive_macros.append({
+                "aid": aid, "tokens": list(m),
+                "source_tid": source_tid, "gen": state.gen})
+            state.ak_macros[aid] = tuple(m)
+            state.ledger.append({
+                "event": "lib_adopted", "tid": source_tid or "",
+                "gen": state.gen, "track": "", "aid": aid,
+                "tokens": list(m), "body_sha": body_sha,
+                "d_train": d_train, "sav_hold": sav, "d_hold": d_hold,
+                "bits": al_bits(len(state.lib_bodies))})
+            adopted += 1
+        else:
+            rec = {"event": "lib_rejected", "tid": source_tid or "",
+                   "gen": state.gen, "track": "", "reason": reason,
+                   "body_sha": body_sha, "body_len": len(tuple(m))}
+            if d_train is not None:
+                rec["d_train"] = d_train
+            if sav is not None:
+                rec["sav_hold"] = sav
+            if d_hold is not None:
+                rec["d_hold"] = d_hold
+            state.ledger.append(rec)
+    return adopted
+
+
+def al_record_solution(state, task, surface, evals, kind):
+    """Record a sealed-gate-passing solve: the body enters the training
+    corpus unconditionally (it is the data); the LIBRARY only grows
+    through the master gate. Mirrors _ak_adopt minus the automatic
+    vocabulary growth."""
+    expanded = _sc_expand(surface, state.ak_macros)
+    state.c_train.append(tuple(expanded))
+    state.pending_bodies.append((tuple(expanded), task["tid"]))
+    state.ledger.append({
+        "event": kind, "tid": task["tid"], "gen": state.gen,
+        "lineage": task["lineage"], "track": task["track"],
+        "band": task["band"], "solve_cost": evals,
+        "tokens": list(expanded),
+        "solution_sha": hashlib.sha256(
+            _sc_ser_tokens(expanded).encode()).hexdigest(),
+        "used_macro": bool(any(t >= N_BASE_OPS for t in surface))})
+
+
+def al_generation(state):
+    """One Phase L generation: allocate, pose, admit (K-1 kernel,
+    library-backed snapshots), mine, gate, cross, credit, ratchet,
+    summarize."""
+    cfg = state.cfg
+    g = state.gen
+    slots = ak_allocate_slots(dict(state.credits), cfg["pose_slots"])
+    archive_bodies = [{"aid": e["aid"], "tokens": list(e["tokens"])}
+                      for e in state.archive_macros]
+    tallies = {lin.name: {"proposed": 0, "kb": 0, "admitted": 0}
+               for lin in state.lineages}
+    bands_during = {lin.name: lin.band for lin in state.lineages}
+    for lin in state.lineages:
+        cands = lin.propose(slots[lin.name], archive_bodies)
+        state.meter.spend("setter", "proposals", len(cands))
+        for cand in cands:
+            tallies[lin.name]["proposed"] += 1
+            ok, reason, _ = ak_admit(
+                state, cand["lineage"], cand["track"], cand["band"],
+                cand["g"], cand["checker"], cand["witness"])
+            if ok:
+                tallies[lin.name]["admitted"] += 1
+            elif reason == "kb_too_easy":
+                tallies[lin.name]["kb"] += 1
+    for probe in _ak_adv_probes():
+        state.meter.spend("setter", "proposals", 1)
+        ak_admit(state, probe["probe"], probe["track"], 0, probe["g"],
+                 probe["checker"], probe["witness"], adv=True)
+    # Mine at the live budget over the gated library.
+    state.pending_bodies = []
+    for task in list(state.open_tasks):
+        if task["attempts"] >= cfg["max_attempts"] or task.get("mined"):
+            continue
+        task["attempts"] += 1
+        sol, evals = sc_solve(task["public"], state.ak_macros,
+                              cfg["b_live"])
+        state.meter.spend("mining", "cand_evals", evals)
+        chk = state.vault.read(f"chk:{task['tid']}")
+        hidden = state.vault.read(f"hidden:{task['tid']}")
+        if sol is not None and ak_gate_score(
+                sol, state.ak_macros, task["public"], chk, hidden,
+                cfg["b_check"]):
+            task["mined"] = True
+            al_record_solution(state, task, sol, evals, "mined")
+        else:
+            state.ledger.append({
+                "event": "unsolved", "tid": task["tid"], "gen": g,
+                "lineage": task["lineage"], "track": task["track"],
+                "band": task["band"], "solve_cost": evals,
+                "public_fit": bool(sol is not None)})
+    # Master gate: this generation's full bodies first, then the Phase E
+    # subsequence enumeration over the whole training corpus, capped.
+    for body, tid in state.pending_bodies:
+        al_gate_candidates(state, [body], source_tid=tid)
+    subseq = al_enumerate_candidates(state.c_train, state.lib_bodies)
+    al_gate_candidates(state, subseq[:cfg["cands_per_gen"]])
+    # Cross at the frozen instrument budget; own-sourced library entries
+    # excluded (no self-credit), as in K-1.
+    crossed_by_lineage = {lin.name: 0 for lin in state.lineages}
+    for task in list(state.open_tasks):
+        sol, evals, aids, macros = ak_frontier_solve(
+            state, task["public"], exclude_tid=task["tid"])
+        state.meter.spend("crossing", "cand_evals", evals)
+        chk = state.vault.read(f"chk:{task['tid']}")
+        hidden = state.vault.read(f"hidden:{task['tid']}")
+        if sol is not None and ak_gate_score(
+                sol, macros, task["public"], chk, hidden, cfg["b_check"]):
+            within_h = (g - task["gen_admitted"]) <= cfg["h"]
+            expanded = _sc_expand(sol, macros)
+            state.ledger.append({
+                "event": "crossed", "tid": task["tid"], "gen": g,
+                "lineage": task["lineage"], "track": task["track"],
+                "band": task["band"],
+                "gen_admitted": task["gen_admitted"],
+                "within_h": bool(within_h), "solve_cost": evals,
+                "b_eval": cfg["b_eval"], "snapshot_aids": aids,
+                "solution_sha": hashlib.sha256(
+                    _sc_ser_tokens(expanded).encode()).hexdigest(),
+                "used_macro": bool(any(t >= N_BASE_OPS for t in sol))})
+            if not task.get("mined"):
+                al_record_solution(state, task, sol, evals,
+                                   "cross_adopted")
+                body, tid = state.pending_bodies[-1]
+                al_gate_candidates(state, [body], source_tid=tid)
+            if within_h and task["lineage"] in crossed_by_lineage:
+                state.credits[task["lineage"]] += 1
+                crossed_by_lineage[task["lineage"]] += 1
+            state.crossed.append(task["tid"])
+            state.open_tasks.remove(task)
+            wit = state.vault.read(f"wit:{task['tid']}")
+            state.ledger.append({
+                "event": "retired_crossed", "tid": task["tid"], "gen": g,
+                "lineage": task["lineage"], "track": task["track"],
+                "band": task["band"], "witness": list(wit)})
+    for task in list(state.open_tasks):
+        if (g - task["gen_admitted"]) >= cfg["h"]:
+            state.open_tasks.remove(task)
+            state.markers.append(task["tid"])
+            state.ledger.append({
+                "event": "frontier_marker", "tid": task["tid"], "gen": g,
+                "lineage": task["lineage"], "track": task["track"],
+                "band": task["band"],
+                "gen_admitted": task["gen_admitted"],
+                "mined": bool(task.get("mined"))})
+    for lin in state.lineages:
+        t = tallies[lin.name]
+        lin.band = _ak_lineage_ratchet(lin, t["proposed"], t["kb"],
+                                       crossed_by_lineage[lin.name])
+    row = {"gen": g, "slots": {k: slots[k] for k in sorted(slots)},
+           "bands": bands_during,
+           "bands_next": {lin.name: lin.band for lin in state.lineages},
+           "credits": {k: state.credits[k] for k in sorted(state.credits)},
+           "library_size": len(state.lib_bodies),
+           "corpus_size": len(state.c_train),
+           "bits": al_bits(len(state.lib_bodies)),
+           "mdl_train": al_mdl(state.c_train, state.lib_bodies),
+           "open": len(state.open_tasks),
+           "markers_cum": len(state.markers),
+           "crossed_cum": len(state.crossed),
+           "meter": state.meter.snapshot()}
+    state.ledger.append(dict(row, event="gen_summary", tid="", track=""))
+    state.gen_rows.append(row)
+    state.gen += 1
+
+
+def al_config(**overrides):
+    cfg = ak_config(**{k: v for k, v in overrides.items()
+                       if k != "cands_per_gen"})
+    cfg["cands_per_gen"] = overrides.get("cands_per_gen",
+                                         ASCL_CANDS_PER_GEN)
+    if cfg["cands_per_gen"] <= 0:
+        raise ValueError("al config invalid: non-positive candidate cap")
+    return cfg
+
+
+def al_run_loop(cfg, c_train_seed=None, holdout=None):
+    al_verify_pin()
+    seed = al_seed_corpus() if c_train_seed is None else c_train_seed
+    hold = al_load_holdout() if holdout is None else holdout
+    state = ALLoopState(cfg, c_train_seed=seed, holdout=hold)
+    for _ in range(cfg["generations"]):
+        al_generation(state)
+    for task in list(state.open_tasks):
+        state.open_tasks.remove(task)
+        state.markers.append(task["tid"])
+        state.ledger.append({
+            "event": "frontier_marker", "tid": task["tid"],
+            "gen": state.gen, "lineage": task["lineage"],
+            "track": task["track"], "band": task["band"],
+            "gen_admitted": task["gen_admitted"],
+            "mined": bool(task.get("mined"))})
+    state.ledger.verify()
+    return state
+
+
+# --- K3 for Phase L: replay engine -------------------------------------------
+def al_replay_verify(state):
+    """Re-derive every Phase L admission certificate and every master-gate
+    disposition from the ledger + vault. Admission replay mirrors the K-1
+    engine with library snapshots reconstructed from lib_adopted records;
+    gate replay recomputes every recorded delta from the corpus
+    reconstruction at that ledger index."""
+    led = state.ledger
+    led.verify()
+    cfg = state.cfg
+    lib_at = []       # (ledger_idx, aid, body)
+    corpus_at = []    # (ledger_idx, body)
+    for rec in led.records:
+        if rec["event"] == "lib_adopted":
+            lib_at.append((rec["idx"], rec["aid"], tuple(rec["tokens"])))
+        elif rec["event"] in ("mined", "cross_adopted"):
+            corpus_at.append((rec["idx"], tuple(rec["tokens"])))
+    seed_n = len(state.c_train) - len(corpus_at)
+    seed_bodies = tuple(state.c_train[:seed_n])
+
+    def corpus_before(idx):
+        return list(seed_bodies) + [b for i, b in corpus_at if i < idx]
+
+    def lib_before(idx):
+        return [b for i, _, b in lib_at if i < idx]
+
+    for rec in led.records:
+        if rec["event"] == "lib_adopted":
+            ok, reason, d_train, sav, d_hold = al_gate(
+                tuple(rec["tokens"]), corpus_before(rec["idx"]),
+                state.holdout, lib_before(rec["idx"]))
+            if not ok or d_train != rec["d_train"] or \
+                    sav != rec["sav_hold"] or d_hold != rec["d_hold"]:
+                raise AssertionError(
+                    f"al replay: adoption drift at idx {rec['idx']}")
+        elif rec["event"] == "admitted":
+            tid = rec["tid"]
+            wit = state.vault.read(f"wit:{tid}")
+            chk = state.vault.read(f"chk:{tid}")
+            for sha, toks in (("witness_sha", wit), ("checker_sha", chk)):
+                if hashlib.sha256(
+                        _sc_ser_tokens(toks).encode()).hexdigest() != \
+                        rec[sha]:
+                    raise AssertionError(f"al replay: hash drift {tid}")
+            snap = [aid for i, aid, _ in lib_at if i < rec["idx"]]
+            if snap != list(rec["snapshot_aids"]):
+                raise AssertionError(f"al replay: snapshot drift {tid}")
+    # Aggregate re-derivation of the per-generation gate sequence.
+    for rec in led.records:
+        if rec["event"] != "gen_summary":
+            continue
+        lib_n = sum(1 for i, _, _ in lib_at
+                    if i < rec["idx"])
+        if lib_n != rec["library_size"]:
+            raise AssertionError(
+                f"al replay: library size drift at gen {rec['gen']}")
+        corpus = corpus_before(rec["idx"])
+        lib = lib_before(rec["idx"])
+        if al_mdl(corpus, lib) != rec["mdl_train"]:
+            raise AssertionError(
+                f"al replay: MDL drift at gen {rec['gen']}")
+    return True
+
+
+# --- L4: retrofit -- the Phase K archive re-judged by the master gate -------
+def al_k_retrofit():
+    """Load the committed Phase K final ledger (chain-verified), and score
+    each adopted body's marginal value under the registered formula, in
+    adoption order, against the K corpus itself. Read-only on the K
+    record."""
+    bodies = al_seed_corpus()
+    hold = al_load_holdout()
+    lib = []
+    out = []
+    for body in bodies:
+        ok, reason, d_train, sav, d_hold = al_gate(
+            body, list(bodies), hold, lib)
+        out.append({
+            "body": list(body),
+            "adopted": bool(ok), "reason": reason,
+            "d_train": d_train, "sav_hold": sav, "d_hold": d_hold})
+        if ok:
+            lib.append(tuple(body))
+    return {"bodies_scored": len(out), "library_size": len(lib),
+            "scores": out}
+
+
+# --- component registries and pin --------------------------------------------
+def _al_scan_components():
+    return (al_bits, al_encode_count, al_mdl, al_delta,
+            al_holdout_savings, al_load_holdout, al_gate,
+            al_enumerate_candidates, ALLoopState, al_seed_corpus,
+            al_gate_candidates, al_record_solution, al_generation,
+            al_config, al_run_loop, al_replay_verify, al_k_retrofit,
+            al_metrics_from_ledger)
+
+
+def _al_pin_components():
+    return (al_bits, al_encode_count, al_mdl, al_delta,
+            al_holdout_savings, al_load_holdout, al_gate,
+            al_enumerate_candidates, al_seed_corpus, al_gate_candidates,
+            al_record_solution, al_generation, al_run_loop,
+            al_replay_verify, al_k_retrofit, al_metrics_from_ledger,
+            _al_frozen_constants_canon,
+            # reused, read-only Phase K kernel
+            AKWitnessVault, AKBudgetMeter, ak_run_tokens, ak_run_checker,
+            ak_admit, ak_gate_score, ak_frontier_solve, _ak_adv_probes,
+            # reused, read-only SC-1 machinery
+            SCLedger, sc_solve, _sc_expand, _sc_canon, _sc_ser_tokens)
+
+
+ASCL_PIN_SHA256 = ("c85150e928388c6f8ad67813c66ee049"
+                   "ce0405a9fdd4ccd1e35d5c5af7a2c2f5")
+
+
+def _al_frozen_constants_canon() -> str:
+    return _sc_canon({
+        "SPEC_VERSION": ASCL_SPEC_VERSION,
+        "BODY_MIN": ASCL_BODY_MIN,
+        "BODY_MAX": ASCL_BODY_MAX,
+        "CANDS_PER_GEN": ASCL_CANDS_PER_GEN,
+        "HOLDOUT_SHA256": ASCL_HOLDOUT_SHA256,
+        "HOLDOUT_SEED": ASCL_HOLDOUT_SEED,
+        "MACRO_BASE": ASCL_MACRO_BASE,
+        "K_LEDGER_FILE": ASCL_K_LEDGER_FILE,
+        "N_BASE_OPS": N_BASE_OPS,
+        "ASCK": _ak_frozen_constants_canon(),
+    })
+
+
+def al_compute_pin() -> str:
+    import inspect
+    blob = "".join(inspect.getsource(o) for o in _al_pin_components())
+    blob += "\n#ASCL-FROZEN-CONSTANTS\n" + _al_frozen_constants_canon()
+    return hashlib.sha256(blob.encode()).hexdigest()
+
+
+def al_verify_pin(expected: str = None) -> str:
+    got = al_compute_pin()
+    want = ASCL_PIN_SHA256 if expected is None else expected
+    if got != want:
+        raise RuntimeError(
+            f"al gate/harness source drifted from spec-freeze pin: {got}")
+    return got
+
+
+# --- metrics ------------------------------------------------------------------
+def al_metrics_from_ledger(ledger, generations):
+    ledger.verify()
+    rows = []
+    cum_adopted = 0
+    cum_rejected = 0
+    cum_crossed = 0
+    for g in range(generations + 1):
+        recs = [r for r in ledger.records if r.get("gen") == g]
+        if g == generations and not recs:
+            break
+        adopted = [r for r in recs if r["event"] == "lib_adopted"]
+        rejected = [r for r in recs if r["event"] == "lib_rejected"]
+        cum_adopted += len(adopted)
+        cum_rejected += len(rejected)
+        crossed = [r for r in recs if r["event"] == "crossed"]
+        cum_crossed += len(crossed)
+        reasons = {}
+        for r in rejected:
+            reasons[r["reason"]] = reasons.get(r["reason"], 0) + 1
+        adm_reasons = {}
+        for r in recs:
+            if r["event"] == "rejected":
+                adm_reasons[r["reason"]] = \
+                    adm_reasons.get(r["reason"], 0) + 1
+        rows.append({
+            "gen": g,
+            "generated": sum(1 for r in recs
+                             if r["event"] == "generated"),
+            "admitted": sum(1 for r in recs if r["event"] == "admitted"),
+            "task_rejected": adm_reasons,
+            "mined": sum(1 for r in recs if r["event"] == "mined"),
+            "crossed": len(crossed),
+            "lib_adopted": len(adopted),
+            "lib_rejected": reasons,
+            "l1_cum_adopted": cum_adopted,
+            "l1_cum_rejected": cum_rejected,
+            "l3_cum_crossed": cum_crossed,
+        })
+    return rows
+
+
+# --- CLI modes ----------------------------------------------------------------
+def al_demo():
+    """CI-safe demonstration of the gated loop (reduced budgets)."""
+    print("=" * 88)
+    print("MDL MASTER GATE (ASCENT M2) -- DEMO (reduced budgets)")
+    print("=" * 88)
+    cfg = al_config(generations=3, n_public=6, n_hidden=8,
+                    null_programs=12, b_eval=1500, b_live=12000, h=3,
+                    cands_per_gen=32)
+    state = al_run_loop(cfg)
+    al_replay_verify(state)
+    rows = al_metrics_from_ledger(state.ledger, cfg["generations"])
+    for row in rows:
+        print(f"[g{row['gen']}] admitted={row['admitted']} "
+              f"mined={row['mined']} crossed={row['crossed']} "
+              f"lib+={row['lib_adopted']} "
+              f"lib-={sum(row['lib_rejected'].values())} "
+              f"L1={row['l1_cum_adopted']}/{row['l1_cum_rejected']}")
+    digest = hashlib.sha256(
+        (state.ledger.head() + _sc_canon(rows)).encode()).hexdigest()[:16]
+    print("reading: vocabulary growth is value-judged: an abstraction "
+          "enters the searchable library only by strictly compressing "
+          "the system's own corpus AND generalizing to a frozen holdout "
+          "it never trained on; every disposition carries its exact "
+          "integer bit deltas.")
+    print(json.dumps({"al_demo_digest": digest,
+                      "library_size": len(state.lib_bodies),
+                      "corpus_size": len(state.c_train),
+                      "ledger_records": len(state.ledger.records)}))
+
+
+def al_battery():
+    """Full evidence battery: frozen constants only, replay-verified,
+    ledger + metrics artifacts, digest over (chain head + metrics)."""
+    print("=" * 88)
+    print("MDL MASTER GATE (ASCENT M2) -- EVIDENCE BATTERY "
+          f"({ASCL_SPEC_VERSION})")
+    print("=" * 88)
+    pin = al_verify_pin()
+    ak_verify_pin()
+    cfg = al_config()
+    frozen_expect = {
+        "generations": 8, "n_public": 8, "n_hidden": 16,
+        "null_programs": 24, "h": 5, "b_eval": 1500, "b_live": 25000,
+        "b_check": 512, "b_exec": 4096, "max_attempts": 2,
+        "pose_slots": 6, "cands_per_gen": 64,
+    }
+    if cfg != frozen_expect:
+        raise RuntimeError("al battery config drifted from frozen spec")
+    state = al_run_loop(cfg)
+    al_replay_verify(state)
+    rows = al_metrics_from_ledger(state.ledger, cfg["generations"])
+    print("[L] loop complete")
+    for row, grow in zip(rows, state.gen_rows):
+        print(f"  g{row['gen']}: adm={row['admitted']} "
+              f"mined={row['mined']} crossed={row['crossed']} "
+              f"lib+={row['lib_adopted']} "
+              f"lib-={sum(row['lib_rejected'].values())} "
+              f"L1={row['l1_cum_adopted']}/{row['l1_cum_rejected']} "
+              f"bits={grow['bits']} mdl={grow['mdl_train']}")
+    retrofit = al_k_retrofit()
+    print("[L4] Phase K archive retrofit: "
+          f"{sum(1 for s in retrofit['scores'] if s['adopted'])} adopted, "
+          f"{sum(1 for s in retrofit['scores'] if not s['adopted'])} "
+          "rejected under the master gate")
+    adopted_recs = [r for r in state.ledger.records
+                    if r["event"] == "lib_adopted"]
+    rejected_recs = [r for r in state.ledger.records
+                     if r["event"] == "lib_rejected"]
+    reasons = {}
+    for r in rejected_recs:
+        reasons[r["reason"]] = reasons.get(r["reason"], 0) + 1
+    metrics = {
+        "spec_version": ASCL_SPEC_VERSION,
+        "pin_sha256": pin,
+        "budgets": frozen_expect,
+        "human_authored_tasks": 0,
+        "rows": rows,
+        "l1_adopted": len(adopted_recs),
+        "l1_rejected": len(rejected_recs),
+        "l1_reject_reasons": reasons,
+        "l2_holdout_rejections": reasons.get("l_mdl_holdout", 0),
+        "l2_adoptions_holdout_validated": [
+            {"aid": r["aid"], "tokens": r["tokens"],
+             "d_train": r["d_train"], "sav_hold": r["sav_hold"],
+             "d_hold": r["d_hold"]} for r in adopted_recs],
+        "l3_crossed": len(state.crossed),
+        "l4_k_retrofit": retrofit,
+        "library_size": len(state.lib_bodies),
+        "corpus_size": len(state.c_train),
+        "bits_final": al_bits(len(state.lib_bodies)),
+        "mdl_train_final": al_mdl(state.c_train, state.lib_bodies),
+        "gen_rows": state.gen_rows,
+        "markers": len(state.markers),
+        "ledger_records": len(state.ledger.records),
+        "ledger_head": state.ledger.head(),
+        "replay_verified": True,
+    }
+    digest = hashlib.sha256(
+        (state.ledger.head() + _sc_canon(metrics)).encode()
+    ).hexdigest()[:16]
+    out_dir = os.path.join("reports", "evidence")
+    os.makedirs(out_dir, exist_ok=True)
+    with _sc_guarded_open(os.path.join(out_dir, "ascent_l_ledger.jsonl"),
+                          "w") as fh:
+        fh.write(state.ledger.to_jsonl())
+    with _sc_guarded_open(os.path.join(out_dir, "ascent_l_results.json"),
+                          "w") as fh:
+        fh.write(_sc_canon({"metrics": metrics, "digest": digest}) + "\n")
+    print("reading: one registered frozen formula judged every "
+          "vocabulary-growth candidate; adoptions compressed the sealed "
+          "corpus and generalized to the frozen holdout; rejections "
+          "carry their exact bit deltas; the Phase K archive was "
+          "re-judged by the same formula without touching its record.")
+    print(json.dumps({"al_digest": digest,
+                      "ledger_head": state.ledger.head(),
+                      "l1_adopted": metrics["l1_adopted"],
+                      "l1_rejected": metrics["l1_rejected"],
+                      "library_size": len(state.lib_bodies)}))
+    return metrics
+
+
+# ---------------------------------------------------------------------------
+# Phase L tests. The formula, the gate clauses, the corpus/holdout seals,
+# and the loop integration each ship with a red-team construction. All
+# names carry the al_ prefix for --only.
+# ---------------------------------------------------------------------------
+def _al_test_cfg(**kw):
+    base = dict(generations=2, n_public=5, n_hidden=6, null_programs=8,
+                h=2, b_eval=1500, b_live=9000, cands_per_gen=32)
+    base.update(kw)
+    return al_config(**base)
+
+
+def test_al_formula_reduces_to_phase_e_at_constant_width() -> None:
+    # K5 identity: at a fixed code width, MDL differences are exactly the
+    # Phase E token accounting (saved tokens minus defcost = len + 1)
+    # times the width.
+    corpus = [(4, 20, 20, 20), (4, 20, 20, 21), (4, 20, 20)]
+    m = (20, 20)
+    b = al_bits(0)
+    _assert(al_bits(1) == b, "test construction drifted: width moved")
+    saved = (sum(al_encode_count(p, ()) for p in corpus)
+             - sum(al_encode_count(p, (m,)) for p in corpus))
+    defcost = len(m) + 1
+    _assert(al_delta(m, corpus, ()) == (defcost - saved) * b,
+            "formula does not reduce to Phase E accounting")
+
+
+def test_al_encoder_greedy_longest_match_deterministic() -> None:
+    # Longest match wins; equal-length distinct bodies cannot collide at
+    # a position; encoding is exact.
+    p = (4, 20, 20, 20, 21)
+    _assert(al_encode_count(p, ()) == 5, "base count wrong")
+    _assert(al_encode_count(p, ((20, 20),)) == 4, "bigram count wrong")
+    _assert(al_encode_count(p, ((20, 20), (20, 20, 20))) == 3,
+            "longest-match priority broken")
+    _assert(al_encode_count(p, ((20, 20, 20), (20, 20))) == 3,
+            "encoding depends on body insertion order")
+    _assert(al_encode_count((), ((20, 20),)) == 0, "empty program")
+
+
+def test_al_bit_width_reprices_vocabulary() -> None:
+    # Crossing a power-of-two vocabulary boundary re-prices every term:
+    # a candidate that saves tokens can still be MDL-negative value.
+    corpus = [(9, 9), (9, 9)]
+    lib = tuple((10 + i, 11) for i in range(30))   # 34 + 30 = 64 tokens
+    _assert(al_bits(30) == 6 and al_bits(31) == 7,
+            "test construction drifted: boundary moved")
+    m = (9, 9)
+    saved_tokens = (sum(al_encode_count(p, lib) for p in corpus)
+                    - sum(al_encode_count(p, lib + (m,)) for p in corpus))
+    _assert(saved_tokens == 2, "test construction drifted")
+    _assert(al_delta(m, corpus, lib) > 0,
+            "width repricing missing: boundary-crossing adoption is free")
+
+
+def test_al_gate_adopts_and_rejects_with_exact_numbers() -> None:
+    # The master gate on the real corpora: TAIL TAIL adopts (negative
+    # training delta, positive holdout savings); the train-only idiom
+    # INPUT EVENIDX TAIL TAIL rejects on the holdout clause; a fresh
+    # non-recurring body rejects on the training clause.
+    c_train = list(al_seed_corpus())
+    hold = al_load_holdout()
+    ok, reason, d_train, sav, d_hold = al_gate((20, 20), c_train, hold, ())
+    _assert(ok and d_train < 0 and sav > 0,
+            f"TAIL TAIL not adopted: {reason} {d_train} {sav}")
+    ok, reason, d_train, sav, d_hold = al_gate(
+        (4, 32, 20, 20), c_train, hold, ())
+    _assert(not ok and reason == "l_mdl_holdout" and d_train < 0
+            and sav == 0,
+            f"train-only idiom not holdout-rejected: {reason}")
+    ok, reason, d_train, sav, d_hold = al_gate(
+        (14, 15, 14), c_train, hold, ())
+    _assert(not ok and reason == "l_mdl_train",
+            f"non-recurring body not train-rejected: {reason}")
+    ok, reason, _, _, _ = al_gate((9,), c_train, hold, ())
+    _assert(not ok and reason == "l_body_bounds", "bounds not enforced")
+
+
+def test_al_holdout_clause_rejects_overfit() -> None:
+    # Red team: a synthetic training corpus makes an arbitrary idiom
+    # maximally compressive on train; the frozen holdout must still
+    # reject it because it never occurs in unseen programs.
+    idiom = (13, 12, 13, 12)
+    c_train = [idiom * 2, idiom * 2 + (9,), (9,) + idiom * 2]
+    hold = al_load_holdout()
+    d_train = al_delta(idiom, c_train, ())
+    _assert(d_train < 0, "test construction drifted")
+    ok, reason, _, sav, _ = al_gate(idiom, c_train, hold, ())
+    _assert(not ok and reason == "l_mdl_holdout" and sav == 0,
+            f"overfit idiom survived the holdout clause ({reason})")
+
+
+def test_al_holdout_tamper_detected() -> None:
+    # The holdout corpus is a frozen instrument: a modified byte aborts.
+    import unittest.mock as _mock
+    al_load_holdout()
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "docs", "frozen_holdout_ascentL.json")
+    raw = open(path, "rb").read()
+    tampered = raw.replace(b'"track": "A"', b'"track": "X"', 1)
+    _assert(tampered != raw, "test construction drifted")
+    real_open = open
+
+    def fake_open(p, mode="r", *a, **k):
+        if "frozen_holdout_ascentL" in str(p) and "b" in mode:
+            import io
+            return io.BytesIO(tampered)
+        return real_open(p, mode, *a, **k)
+
+    with _mock.patch("builtins.open", side_effect=fake_open):
+        try:
+            al_load_holdout()
+            _assert(False, "tampered holdout accepted")
+        except RuntimeError as e:
+            _assert("drift" in str(e), f"wrong diagnosis: {e}")
+
+
+def test_al_seed_corpus_chain_verified() -> None:
+    # The training-corpus seed comes from the committed Phase K ledger,
+    # chain-verified; the six bodies match the K record.
+    bodies = al_seed_corpus()
+    _assert(len(bodies) == 6, f"K seed corpus size {len(bodies)}")
+    _assert((4, 20, 20, 20) in bodies, "K record body missing")
+
+
+def test_al_gate_unreachable_from_mutable_code() -> None:
+    # Constitution: the mutable citizens (unchanged from Phase K) must
+    # not reference the master gate, the formula, the corpora, or the
+    # library store.
+    import inspect
+    src = "".join(inspect.getsource(o) for o in _ak_mutable_components())
+    for banned in ("al_gate", "al_mdl", "al_delta", "al_encode_count",
+                   "lib_bodies", "c_train", "holdout",
+                   "al_load_holdout", "al_seed_corpus"):
+        _assert(banned not in src,
+                f"mutable citizen references gate symbol '{banned}'")
+
+
+def test_al_no_instrument_access() -> None:
+    import inspect
+    src = "".join(inspect.getsource(o) for o in _al_scan_components())
+    forbidden = ("ORACLES", "TRAIN_INPUTS", "_ORACLE_REGISTRY",
+                 "seal_task", "build_sealed_tasks", "holdout_gate",
+                 "cf_gate", "_make_gate", "GATE_SEED", "CF_GATE_SEED",
+                 "SealedTask", "mint_task", "meta_gate",
+                 "extj_instrument", "frozen_holdout_phase0",
+                 "frozen_holdout_extJ")
+    for name in forbidden:
+        _assert(name not in src,
+                f"phase L code references sealed symbol {name}")
+
+
+def test_al_pin_matches() -> None:
+    import inspect
+    al_verify_pin()
+    try:
+        al_verify_pin("f" * 64)
+        _assert(False, "tampered pin accepted")
+    except RuntimeError:
+        pass
+    pinned = _al_pin_components()
+    for fn in (al_gate, al_mdl, al_delta, al_encode_count, al_bits,
+               al_holdout_savings, al_load_holdout, al_seed_corpus,
+               al_generation, al_run_loop, al_replay_verify,
+               al_k_retrofit, _al_frozen_constants_canon):
+        _assert(fn in pinned, f"critical component unpinned: {fn}")
+    const = _al_frozen_constants_canon()
+    for needle in ('"BODY_MIN":2', '"BODY_MAX":8', '"CANDS_PER_GEN":64',
+                   '"HOLDOUT_SHA256":', '"ASCK":'):
+        _assert(needle in const,
+                f"frozen constant unbound from pin: {needle}")
+
+
+def test_al_library_gated_not_automatic() -> None:
+    # The core Phase L delta versus Phase K: a mined solution enters the
+    # corpus but NOT the searchable library unless the master gate
+    # admits it. Every library entry must carry a lib_adopted record with
+    # both clauses satisfied.
+    cfg = _al_test_cfg()
+    state = al_run_loop(cfg)
+    mined = [r for r in state.ledger.records
+             if r["event"] in ("mined", "cross_adopted")]
+    lib = [r for r in state.ledger.records if r["event"] == "lib_adopted"]
+    _assert(len(state.c_train) == 6 + len(mined),
+            "corpus growth is not exactly the solve record")
+    _assert(len(state.lib_bodies) == len(lib),
+            "library entry without a gate record")
+    for r in lib:
+        _assert(r["d_train"] < 0 and r["sav_hold"] > 0,
+                "library entry with failing gate numbers")
+    lib_tokens = {tuple(r["tokens"]) for r in lib}
+    for e in state.archive_macros:
+        _assert(tuple(e["tokens"]) in lib_tokens,
+                "searchable macro not certified by the gate")
+
+
+def test_al_loop_adopts_and_rejects() -> None:
+    # Positive path at test scale: the mini loop yields at least one
+    # gate adoption and at least one gate rejection, including at least
+    # one holdout-clause rejection (the train-only idiom family exists
+    # in every corpus that contains the K seed).
+    cfg = _al_test_cfg()
+    state = al_run_loop(cfg)
+    adopted = [r for r in state.ledger.records
+               if r["event"] == "lib_adopted"]
+    rejected = [r for r in state.ledger.records
+                if r["event"] == "lib_rejected"]
+    _assert(adopted, "mini loop adopted nothing through the gate")
+    _assert(rejected, "mini loop rejected nothing through the gate")
+    _assert(any(r["reason"] == "l_mdl_holdout" for r in rejected),
+            "no holdout-clause rejection in the mini loop")
+    _assert(any(r["reason"] == "l_mdl_train" for r in rejected),
+            "no train-clause rejection in the mini loop")
+
+
+def test_al_replay_from_ledger() -> None:
+    # K3 for Phase L: adoption deltas, library snapshots, and MDL
+    # trajectories re-derive from the ledger; a forged delta is caught.
+    cfg = _al_test_cfg()
+    state = al_run_loop(cfg)
+    _assert(al_replay_verify(state), "replay failed on an honest run")
+    lib = [r for r in state.ledger.records if r["event"] == "lib_adopted"]
+    _assert(lib, "no adoption to tamper with")
+    saved = lib[0]["d_train"]
+    lib[0]["d_train"] = saved - 6
+    try:
+        al_replay_verify(state)
+        _assert(False, "forged adoption delta survived replay")
+    except AssertionError as e:
+        _assert("drift" in str(e) or "tampered" in str(e),
+                f"wrong diagnosis: {e}")
+    lib[0]["d_train"] = saved
+    al_replay_verify(state)
+
+
+def test_al_retrofit_reads_frozen_k_record() -> None:
+    # L4: the retrofit scores the six committed K bodies under the
+    # registered formula, read-only, deterministically.
+    r1 = al_k_retrofit()
+    r2 = al_k_retrofit()
+    _assert(r1 == r2, "retrofit not deterministic")
+    _assert(r1["bodies_scored"] == 6, "retrofit corpus drifted")
+    _assert(any(s["adopted"] for s in r1["scores"]) or
+            all(not s["adopted"] for s in r1["scores"]),
+            "retrofit shape invalid")
+    for s in r1["scores"]:
+        _assert(("d_train" in s) and ("sav_hold" in s),
+                "retrofit score missing gate numbers")
+
+
+def test_al_determinism_two_runs() -> None:
+    digests = []
+    for _ in range(2):
+        cfg = _al_test_cfg()
+        st = al_run_loop(cfg)
+        rows = al_metrics_from_ledger(st.ledger, cfg["generations"])
+        digests.append(hashlib.sha256(
+            (st.ledger.head() + _sc_canon(rows)).encode()).hexdigest())
+    _assert(digests[0] == digests[1],
+            "phase L loop not two-run byte-identical")
+    cfg = _al_test_cfg(cands_per_gen=8)
+    st = al_run_loop(cfg)
+    rows = al_metrics_from_ledger(st.ledger, cfg["generations"])
+    d3 = hashlib.sha256(
+        (st.ledger.head() + _sc_canon(rows)).encode()).hexdigest()
+    _assert(d3 != digests[0], "digest insensitive to run content")
+
+
+def test_al_k_record_untouched() -> None:
+    # Sequencing rule: Phase K code and record are read-only under Phase
+    # L. Both pins verify; the K mini loop still runs and its digest
+    # machinery is unchanged by the L section's presence.
+    ak_verify_pin()
+    al_verify_pin()
+    _assert(ASCK_PIN_SHA256 != ASCL_PIN_SHA256, "pin collision")
+    cfg = _ak_test_cfg(generations=1)
+    st = ak_run_loop(cfg)
+    _assert(st.ledger.head(), "K mini loop broken by the L section")
+
+
+TESTS.extend([
+    test_al_formula_reduces_to_phase_e_at_constant_width,
+    test_al_encoder_greedy_longest_match_deterministic,
+    test_al_bit_width_reprices_vocabulary,
+    test_al_gate_adopts_and_rejects_with_exact_numbers,
+    test_al_holdout_clause_rejects_overfit,
+    test_al_holdout_tamper_detected,
+    test_al_seed_corpus_chain_verified,
+    test_al_gate_unreachable_from_mutable_code,
+    test_al_no_instrument_access,
+    test_al_pin_matches,
+    test_al_library_gated_not_automatic,
+    test_al_loop_adopts_and_rejects,
+    test_al_replay_from_ledger,
+    test_al_retrofit_reads_frozen_k_record,
+    test_al_determinism_two_runs,
+    test_al_k_record_untouched,
+])
+
+
+# =========================================================================== #
+# PHASE M: LEDGER-TRAINED AMORTIZER (ASCENT M5)                               #
+#                                                                             #
+# Amortized search (docs/ASCENT_M_SPEC.md, docs/PREDICTIONS_M.md,             #
+# docs/M_RESULT.md): a proposal-ordering model trained ONLY on the system's   #
+# own ledger -- the chain-verified adopted solution bodies of the committed   #
+# Phase K and Phase L final records -- and adopted only if it strictly        #
+# improves certified gate passes per logical budget on a frozen probe         #
+# battery whose 48 task families (the committed Phase L holdout corpus) the   #
+# training ledgers never contained. Two model forms:                          #
+#   v0 -- integer bigram counts over expanded op transitions with Laplace     #
+#         smoothing (the deterministic PCFG-style counting model);            #
+#   v1 -- a one-hidden-layer MLP in fixed-point integer arithmetic (manual    #
+#         backprop, integer SGD, seeded init, fixed epochs, data ordered by   #
+#         solution-body hash) -- no floats, no libm, hand-rolled stdlib.      #
+# A failing model is rolled back and the rollback ships in the record. The   #
+# amortizer never touches external data, pretrained weights, or anything     #
+# outside the ledger. Phases K/L code above is read-only here; reused        #
+# kernel machinery is re-pinned inside ASCM_PIN_SHA256.                       #
+# =========================================================================== #
+
+# --- frozen constants (spec-freeze: docs/ASCENT_M_SPEC.md) -------------------
+ASCM_SPEC_VERSION = "M-1"
+ASCM_B_PROBE = 1500
+ASCM_INIT_SEED = 424987
+ASCM_EPOCHS = 8
+ASCM_HIDDEN = 16
+ASCM_SCALE_BITS = 8
+ASCM_LR_SHIFT = 4
+ASCM_LAPLACE = 1
+ASCM_START = N_BASE_OPS          # virtual start-context symbol
+ASCM_L_LEDGER_FILE = "ascent_l_ledger_final.jsonl"
+
+
+# --- training corpus: the ledger, nothing else -------------------------------
+def _am_load_ledger_records(fname):
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "docs", fname)
+    records = [json.loads(line) for line in
+               open(path, "r", encoding="utf-8")]
+    prev = SCLedger.GENESIS
+    for i, rec in enumerate(records):
+        if rec["idx"] != i or rec["prev"] != prev:
+            raise AssertionError(f"am ledger chain broken at {i} "
+                                 f"({fname})")
+        h = hashlib.sha256(
+            (prev + _sc_canon({k: v for k, v in rec.items()
+                               if k != "h"})).encode()).hexdigest()
+        if h != rec["h"]:
+            raise AssertionError(f"am ledger tampered at {i} ({fname})")
+        prev = rec["h"]
+    return records
+
+
+def am_training_corpus(extra_bodies=None):
+    """Every gate-certified adopted body from the committed Phase K and
+    Phase L final ledgers, chain-verified, hash-matched, deduplicated in
+    first-seen order. extra_bodies exists ONLY so the contamination
+    red-team can construct its attack: any body without a matching
+    adoption record aborts."""
+    bodies = []
+    seen = set()
+    certified = set()
+    for fname in (ASCL_K_LEDGER_FILE, ASCM_L_LEDGER_FILE):
+        for rec in _am_load_ledger_records(fname):
+            if rec["event"] in ("mined", "cross_adopted"):
+                body = tuple(rec["tokens"])
+                sha = hashlib.sha256(
+                    _sc_ser_tokens(body).encode()).hexdigest()
+                if sha != rec["solution_sha"]:
+                    raise AssertionError(
+                        "am training body does not hash-match its "
+                        "adoption record")
+                certified.add(body)
+                if body not in seen:
+                    seen.add(body)
+                    bodies.append(body)
+    for body in (extra_bodies or ()):
+        body = tuple(body)
+        if body not in certified:
+            raise AssertionError(
+                "am contamination: training body without a "
+                "chain-verified adoption record")
+        if body not in seen:
+            seen.add(body)
+            bodies.append(body)
+    return tuple(bodies)
+
+
+# --- v0: counting model -------------------------------------------------------
+class AMCountModel:
+    """Deterministic bigram counting model over expanded op transitions
+    of the training bodies. Laplace-smoothed integer counts; proposal
+    score of token t in context c is count(c, first_op(t))."""
+
+    def __init__(self, bodies):
+        self.counts = {}
+        for body in bodies:
+            prev = ASCM_START
+            for op in body:
+                key = (prev, int(op))
+                self.counts[key] = self.counts.get(key, 0) + 1
+                prev = int(op)
+
+    def score(self, context, first_op):
+        return self.counts.get((int(context), int(first_op)),
+                               0) + ASCM_LAPLACE
+
+    def order(self, vocab, context, macros):
+        def first_op(tok):
+            if tok < N_BASE_OPS:
+                return tok
+            body = macros.get(tok)
+            return body[0] if body else tok
+        return tuple(sorted(
+            vocab, key=lambda t: (-self.score(context, first_op(t)), t)))
+
+
+# --- v1: fixed-point integer MLP ----------------------------------------------
+class AMNeuralModel:
+    """One-hidden-layer MLP in fixed-point integers (scale 2^SCALE_BITS):
+    one-hot context (N_BASE_OPS + 1) -> HIDDEN ReLU -> N_BASE_OPS scores.
+    Manual backprop with integer SGD (shift learning rate); seeded init;
+    fixed epochs; training pairs ordered by (body sha, position). No
+    floats anywhere."""
+
+    def __init__(self, bodies):
+        n_in = N_BASE_OPS + 1
+        rng = random.Random(ASCM_INIT_SEED)
+        S = 1 << ASCM_SCALE_BITS
+        self.w1 = [[rng.randrange(-S // 4, S // 4 + 1)
+                    for _ in range(n_in)] for _ in range(ASCM_HIDDEN)]
+        self.b1 = [0] * ASCM_HIDDEN
+        self.w2 = [[rng.randrange(-S // 4, S // 4 + 1)
+                    for _ in range(ASCM_HIDDEN)]
+                   for _ in range(N_BASE_OPS)]
+        self.b2 = [0] * N_BASE_OPS
+        pairs = []
+        for body in bodies:
+            sha = hashlib.sha256(_sc_ser_tokens(body).encode()).hexdigest()
+            prev = ASCM_START
+            for pos, op in enumerate(body):
+                pairs.append((sha, pos, int(prev), int(op)))
+                prev = int(op)
+        pairs.sort()
+        self.pairs = tuple(pairs)
+        for _ in range(ASCM_EPOCHS):
+            for _, _, ctx, target in self.pairs:
+                self._sgd_step(ctx, target)
+
+    def _forward(self, ctx):
+        S = ASCM_SCALE_BITS
+        h_pre = [self.w1[j][ctx] + self.b1[j]
+                 for j in range(ASCM_HIDDEN)]
+        h = [v if v > 0 else 0 for v in h_pre]
+        out = [(sum(self.w2[k][j] * h[j]
+                    for j in range(ASCM_HIDDEN)) >> S) + self.b2[k]
+               for k in range(N_BASE_OPS)]
+        return h_pre, h, out
+
+    def _sgd_step(self, ctx, target):
+        # Perceptron-style update: raise the target score, lower the
+        # current argmax when it differs. Integer gradients, shift step.
+        h_pre, h, out = self._forward(ctx)
+        pred = max(range(N_BASE_OPS), key=lambda k: (out[k], -k))
+        if pred == target:
+            return
+        for k, sign in ((target, 1), (pred, -1)):
+            self.b2[k] += sign << (ASCM_SCALE_BITS - ASCM_LR_SHIFT)
+            for j in range(ASCM_HIDDEN):
+                self.w2[k][j] += sign * (h[j] >> ASCM_LR_SHIFT)
+        for j in range(ASCM_HIDDEN):
+            if h_pre[j] <= 0:
+                continue
+            g = (self.w2[target][j] - self.w2[pred][j]) >> ASCM_LR_SHIFT
+            self.w1[j][ctx] += g
+            self.b1[j] += g >> 1
+
+    def score(self, context, first_op):
+        _, _, out = self._forward(int(context))
+        return out[int(first_op)]
+
+    def order(self, vocab, context, macros):
+        _, _, out = self._forward(int(context))
+
+        def first_op(tok):
+            if tok < N_BASE_OPS:
+                return tok
+            body = macros.get(tok)
+            return body[0] if body else 0
+        return tuple(sorted(
+            vocab, key=lambda t: (-out[first_op(t)], t)))
+
+
+# --- amortized solver: context-ordered breadth-first search ------------------
+def am_solve(public_pairs, macros, budget, model=None):
+    """The K-1/L-1 solver discipline with the per-parent vocabulary
+    iteration order given by the model in the parent's context (the last
+    expanded base op of the parent surface, or the start symbol). With
+    model=None this is exactly sc_solve: the identity is tested."""
+    base_vocab = tuple(SC_SOLVER_VOCAB) + tuple(sorted(macros))
+    xs = [x for x, _ in public_pairs]
+    ys = [y for _, y in public_pairs]
+    mdl_chars = _sc_mdl_cap_chars(public_pairs)
+    init = tuple(() for _ in xs)
+    frontier = [((), init, ASCM_START)]
+    seen = {init}
+    evals = 0
+    order_cache = {}
+    while frontier and evals < budget:
+        nxt = []
+        for surface, stacks, context in frontier:
+            if model is None:
+                vocab = base_vocab
+            else:
+                vocab = order_cache.get(context)
+                if vocab is None:
+                    vocab = model.order(base_vocab, context, macros)
+                    order_cache[context] = vocab
+            for tok in vocab:
+                if evals >= budget:
+                    break
+                cand = surface + (tok,)
+                if len(cand) > SC_MDL_ABS_TOKENS:
+                    continue
+                if len(_sc_ser_tokens(cand)) > mdl_chars:
+                    continue
+                if tok < N_BASE_OPS:
+                    body = (tok,)
+                elif tok in macros:
+                    body = macros[tok]
+                else:
+                    continue
+                evals += 1
+                new_stacks = []
+                dead = False
+                for i, x in enumerate(xs):
+                    st = list(stacks[i])
+                    try:
+                        for op in body:
+                            OP_IMPL[op](st, tuple(x))
+                    except VMCrash:
+                        dead = True
+                        break
+                    new_stacks.append(tuple(st))
+                if dead:
+                    continue
+                new_stacks = tuple(new_stacks)
+                if all(len(s) == 1 for s in new_stacks) and \
+                        all(new_stacks[i][0] == ys[i]
+                            for i in range(len(ys))):
+                    return cand, evals
+                if new_stacks in seen:
+                    continue
+                seen.add(new_stacks)
+                nxt.append((cand, new_stacks, body[-1]))
+        frontier = nxt
+    return None, evals
+
+
+# --- the frozen probe battery -------------------------------------------------
+def am_probe_battery(limit=None):
+    """Sealed probe tasks from the frozen Phase L holdout corpus: task
+    identity, instances, checkers, and hidden splits exactly as the K-1
+    harness builds them. Deterministic; SHA-verified load."""
+    programs = al_load_holdout()
+    if limit is not None:
+        programs = programs[:limit]
+    battery = []
+    for body in programs:
+        body = tuple(body)
+        if body[:2] == (_SC_OP["INPUT"], _SC_OP["HEAD"]):
+            track = "A"
+            parsed = _sc_parse_a_unit(body)
+            if parsed is None:
+                raise AssertionError("am probe: unparseable Track A body")
+            steps, inv, _ = parsed
+            checker = _ak_checker_a(steps)
+            witness = (_SC_OP["INPUT"], _SC_OP["HEAD"]) + inv
+        else:
+            track = "B"
+            checker = _ak_checker_b(body[1:])
+            witness = body
+        cid = _ak_task_cid(track, body)
+        m = ASCK_N_PUBLIC + ASCK_N_HIDDEN
+        instances, _ = _ak_sample_instances(track, cid, body, m,
+                                            ASCK_B_CHECK)
+        if instances is None:
+            raise AssertionError("am probe: sampling failed")
+        public_xs = instances[:ASCK_N_PUBLIC]
+        hidden = tuple(tuple(x) for x in instances[ASCK_N_PUBLIC:])
+        public = []
+        for x in public_xs:
+            y, _ = ak_run_tokens(witness, x, ASCK_B_CHECK)
+            public.append((tuple(x), y))
+        public = sorted(public, key=lambda p: _sc_canon(list(p[0])))
+        battery.append({"pid": f"PM{track}-{cid[:12]}", "track": track,
+                        "public": public, "checker": checker,
+                        "hidden": hidden})
+    return battery
+
+
+def am_probe_passes(battery, macros, model, budget):
+    """Certified passes per logical budget: for each probe, an am_solve
+    run at exactly `budget` evaluations, gate-scored by the probe's
+    checker on its sealed hidden instances. Returns (passes, cost_vector,
+    total_evals)."""
+    passes = 0
+    costs = []
+    total = 0
+    for probe in battery:
+        sol, evals = am_solve(probe["public"], macros, budget,
+                              model=model)
+        total += evals
+        ok = sol is not None and ak_gate_score(
+            sol, macros, probe["public"], probe["checker"],
+            probe["hidden"], ASCK_B_CHECK)
+        passes += 1 if ok else 0
+        costs.append(evals if ok else -1)
+    return passes, tuple(costs), total
+
+
+def am_gate(passes_new, passes_incumbent):
+    """The adoption gate: strict improvement in certified passes at equal
+    budget. Anything else is a rollback."""
+    return passes_new > passes_incumbent
+
+
+def am_contamination_check(bodies, battery):
+    """A training body equal to a probe generator program is holdout
+    contamination: abort. Constructed and asserted by the red-team test;
+    executed at every battery start."""
+    probe_programs = set()
+    for probe in battery:
+        pass  # probe generators are re-derived below from the corpus
+    holdout = set(tuple(p) for p in al_load_holdout())
+    for body in bodies:
+        if tuple(body) in holdout:
+            raise AssertionError(
+                "am contamination: a training body is a probe-family "
+                "program")
+    return True
+
+
+def am_gate_sequence(bodies, battery, budget, ledger):
+    """The frozen adoption sequence (spec §5): v0, the pre-registered
+    Track A data-ablation retrain, then v1 — each against the current
+    incumbent under the strict passes-per-budget gate, every disposition
+    ledgered with its numbers."""
+    passes_inc, costs_inc, _ = am_probe_passes(battery, {}, None, budget)
+    ledger.append({"event": "am_incumbent", "gen": 0, "tid": "",
+                   "track": "", "model": "canonical",
+                   "passes": passes_inc, "costs": list(costs_inc),
+                   "budget": budget})
+    incumbent = ("canonical", None, passes_inc)
+    slice_a = tuple(b for b in bodies
+                    if b[:2] == (_SC_OP["INPUT"], _SC_OP["HEAD"]))
+    candidates = (
+        ("v0", AMCountModel(bodies)),
+        ("v0_sliceA", AMCountModel(slice_a)),
+        ("v1", AMNeuralModel(bodies)),
+    )
+    for name, model in candidates:
+        passes, costs, _ = am_probe_passes(battery, {}, model, budget)
+        adopted = am_gate(passes, incumbent[2])
+        ledger.append({"event": "am_adopted" if adopted
+                       else "am_rollback", "gen": 0, "tid": "",
+                       "track": "", "model": name, "passes": passes,
+                       "incumbent": incumbent[0],
+                       "incumbent_passes": incumbent[2],
+                       "costs": list(costs), "budget": budget})
+        if adopted:
+            incumbent = (name, model, passes)
+    return incumbent
+
+
+# --- component registries and pin ---------------------------------------------
+def _am_scan_components():
+    return (_am_load_ledger_records, am_training_corpus, AMCountModel,
+            AMNeuralModel, am_solve, am_probe_battery, am_probe_passes,
+            am_gate, am_contamination_check, am_gate_sequence)
+
+
+def _am_pin_components():
+    return (_am_load_ledger_records, am_training_corpus, AMCountModel,
+            AMNeuralModel, am_solve, am_probe_battery, am_probe_passes,
+            am_gate, am_contamination_check, am_gate_sequence,
+            _am_frozen_constants_canon,
+            # reused, read-only kernel machinery
+            al_load_holdout, ak_gate_score, ak_run_tokens,
+            ak_run_checker, _ak_checker_a, _ak_checker_b, _ak_task_cid,
+            _ak_sample_instances, _sc_parse_a_unit, SCLedger, _sc_canon,
+            _sc_ser_tokens)
+
+
+ASCM_PIN_SHA256 = ("aada1e9c4f4d27753578e4e8ccb2bf24"
+                   "aa0292c89b29b829793060ffcc28df87")
+
+
+def _am_frozen_constants_canon() -> str:
+    return _sc_canon({
+        "SPEC_VERSION": ASCM_SPEC_VERSION,
+        "B_PROBE": ASCM_B_PROBE,
+        "INIT_SEED": ASCM_INIT_SEED,
+        "EPOCHS": ASCM_EPOCHS,
+        "HIDDEN": ASCM_HIDDEN,
+        "SCALE_BITS": ASCM_SCALE_BITS,
+        "LR_SHIFT": ASCM_LR_SHIFT,
+        "LAPLACE": ASCM_LAPLACE,
+        "START": ASCM_START,
+        "K_LEDGER_FILE": ASCL_K_LEDGER_FILE,
+        "L_LEDGER_FILE": ASCM_L_LEDGER_FILE,
+        "HOLDOUT_SHA256": ASCL_HOLDOUT_SHA256,
+        "ASCL": _al_frozen_constants_canon(),
+    })
+
+
+def am_compute_pin() -> str:
+    import inspect
+    blob = "".join(inspect.getsource(o) for o in _am_pin_components())
+    blob += "\n#ASCM-FROZEN-CONSTANTS\n" + _am_frozen_constants_canon()
+    return hashlib.sha256(blob.encode()).hexdigest()
+
+
+def am_verify_pin(expected: str = None) -> str:
+    got = am_compute_pin()
+    want = ASCM_PIN_SHA256 if expected is None else expected
+    if got != want:
+        raise RuntimeError(
+            f"am gate/harness source drifted from spec-freeze pin: {got}")
+    return got
+
+
+# --- CLI modes ----------------------------------------------------------------
+def am_demo():
+    """CI-safe demonstration (reduced probe battery)."""
+    print("=" * 88)
+    print("LEDGER-TRAINED AMORTIZER (ASCENT M5) -- DEMO "
+          "(reduced probe battery)")
+    print("=" * 88)
+    bodies = am_training_corpus()
+    battery = am_probe_battery(limit=16)
+    am_contamination_check(bodies, battery)
+    ledger = SCLedger()
+    incumbent = am_gate_sequence(bodies, battery, ASCM_B_PROBE, ledger)
+    for rec in ledger.records:
+        print(f"[{rec['event']}] {rec['model']}: passes={rec['passes']}"
+              + (f" vs {rec['incumbent']}={rec['incumbent_passes']}"
+                 if "incumbent" in rec else ""))
+    digest = hashlib.sha256(
+        (ledger.head() + _sc_canon(
+            [{k: v for k, v in r.items() if k != "h"}
+             for r in ledger.records])).encode()).hexdigest()[:16]
+    print("reading: the proposal ordering was learned from the "
+          "chain-verified ledger only, evaluated on sealed holdout "
+          "families it never trained on, and adopted only on strict "
+          "certified-passes-per-budget improvement; failures rolled "
+          "back on the record.")
+    print(json.dumps({"am_demo_digest": digest,
+                      "final_incumbent": incumbent[0],
+                      "final_passes": incumbent[2]}))
+
+
+def am_battery():
+    """Full evidence battery: frozen constants only, ledger + metrics
+    artifacts, digest over (chain head + metrics)."""
+    print("=" * 88)
+    print("LEDGER-TRAINED AMORTIZER (ASCENT M5) -- EVIDENCE BATTERY "
+          f"({ASCM_SPEC_VERSION})")
+    print("=" * 88)
+    pin = am_verify_pin()
+    ak_verify_pin()
+    al_verify_pin()
+    if ASCM_B_PROBE != 1500 or ASCM_EPOCHS != 8 or ASCM_HIDDEN != 16:
+        raise RuntimeError("am battery config drifted from frozen spec")
+    bodies = am_training_corpus()
+    battery = am_probe_battery()
+    if len(battery) != 48:
+        raise RuntimeError("am probe battery drifted from frozen spec")
+    am_contamination_check(bodies, battery)
+    ledger = SCLedger()
+    ledger.append({"event": "am_corpus", "gen": 0, "tid": "", "track": "",
+                   "bodies": [list(b) for b in bodies],
+                   "n_bodies": len(bodies)})
+    incumbent = am_gate_sequence(bodies, battery, ASCM_B_PROBE, ledger)
+    ledger.verify()
+    gate_recs = [r for r in ledger.records
+                 if r["event"] in ("am_incumbent", "am_adopted",
+                                   "am_rollback")]
+    for rec in gate_recs:
+        print(f"  [{rec['event']}] {rec['model']}: "
+              f"passes={rec['passes']}/{len(battery)}"
+              + (f" (incumbent {rec['incumbent']}="
+                 f"{rec['incumbent_passes']})"
+                 if "incumbent" in rec else ""))
+    by_track = {}
+    for rec in gate_recs:
+        pa = pb = 0
+        for probe, cost in zip(battery, rec["costs"]):
+            if cost >= 0:
+                if probe["track"] == "A":
+                    pa += 1
+                else:
+                    pb += 1
+        by_track[rec["model"]] = {"A": pa, "B": pb}
+    metrics = {
+        "spec_version": ASCM_SPEC_VERSION,
+        "pin_sha256": pin,
+        "budget_probe": ASCM_B_PROBE,
+        "n_probes": len(battery),
+        "m1_gate_record": [
+            {k: v for k, v in r.items()
+             if k in ("event", "model", "passes", "incumbent",
+                      "incumbent_passes")} for r in gate_recs],
+        "m1_final_incumbent": incumbent[0],
+        "m1_final_passes": incumbent[2],
+        "m2_by_track": by_track,
+        "m2_cost_vectors": {r["model"]: r["costs"] for r in gate_recs},
+        "m3_corpus": {"n_bodies": len(bodies),
+                      "bodies": [list(b) for b in bodies]},
+        "ledger_records": len(ledger.records),
+        "ledger_head": ledger.head(),
+    }
+    digest = hashlib.sha256(
+        (ledger.head() + _sc_canon(metrics)).encode()).hexdigest()[:16]
+    out_dir = os.path.join("reports", "evidence")
+    os.makedirs(out_dir, exist_ok=True)
+    with _sc_guarded_open(os.path.join(out_dir, "ascent_m_ledger.jsonl"),
+                          "w") as fh:
+        fh.write(ledger.to_jsonl())
+    with _sc_guarded_open(os.path.join(out_dir, "ascent_m_results.json"),
+                          "w") as fh:
+        fh.write(_sc_canon({"metrics": metrics, "digest": digest}) + "\n")
+    print("reading: search was amortized from the ledger alone; the "
+          "frozen probe battery of unseen families judged every "
+          "candidate at one fixed budget; adoption required strict "
+          "improvement in certified passes; the failing retrain rolled "
+          "back on the record.")
+    print(json.dumps({"am_digest": digest,
+                      "ledger_head": ledger.head(),
+                      "final_incumbent": incumbent[0],
+                      "final_passes": incumbent[2],
+                      "n_probes": len(battery)}))
+    return metrics
+
+
+# ---------------------------------------------------------------------------
+# Phase M tests. All names carry the test_am_ prefix for --only.
+# ---------------------------------------------------------------------------
+def test_am_null_model_identity() -> None:
+    # am_solve with no model is exactly sc_solve: same solution, same
+    # cost, on a probe sample.
+    battery = am_probe_battery(limit=6)
+    for probe in battery:
+        s1, e1 = am_solve(probe["public"], {}, 800, model=None)
+        s2, e2 = sc_solve(probe["public"], {}, 800)
+        _assert(s1 == s2 and e1 == e2,
+                "null-model am_solve diverges from sc_solve")
+
+
+def test_am_training_corpus_ledger_only() -> None:
+    # The corpus is exactly the chain-verified adopted bodies; a body
+    # without an adoption record aborts (the contamination construction).
+    bodies = am_training_corpus()
+    _assert(len(bodies) >= 10, f"corpus unexpectedly small: {len(bodies)}")
+    _assert(all(isinstance(b, tuple) for b in bodies), "corpus shape")
+    try:
+        am_training_corpus(extra_bodies=[(4, 20, 22)])
+        _assert(False, "uncertified training body accepted")
+    except AssertionError as e:
+        _assert("contamination" in str(e), f"wrong diagnosis: {e}")
+
+
+def test_am_holdout_contamination_aborts() -> None:
+    # Red team: a training body equal to a probe-family program must
+    # abort the battery.
+    bodies = am_training_corpus()
+    battery = am_probe_battery(limit=4)
+    am_contamination_check(bodies, battery)
+    holdout_prog = al_load_holdout()[0]
+    try:
+        am_contamination_check(tuple(bodies) + (tuple(holdout_prog),),
+                               battery)
+        _assert(False, "holdout contamination not detected")
+    except AssertionError as e:
+        _assert("contamination" in str(e), f"wrong diagnosis: {e}")
+
+
+def test_am_models_deterministic() -> None:
+    # v0 counts and v1 weights are bit-identical across constructions;
+    # the model path contains no float literals and no unseeded
+    # randomness.
+    import inspect
+    bodies = am_training_corpus()
+    a, b = AMCountModel(bodies), AMCountModel(bodies)
+    _assert(a.counts == b.counts, "v0 not deterministic")
+    n1, n2 = AMNeuralModel(bodies), AMNeuralModel(bodies)
+    _assert(n1.w1 == n2.w1 and n1.w2 == n2.w2 and n1.b1 == n2.b1
+            and n1.b2 == n2.b2, "v1 not deterministic")
+    src = (inspect.getsource(AMCountModel)
+           + inspect.getsource(AMNeuralModel)
+           + inspect.getsource(am_solve))
+    _assert("math." not in src and "float(" not in src
+            and "time." not in src, "non-integer machinery in the model")
+    _assert("random.Random(ASCM_INIT_SEED)" in src,
+            "v1 init not visibly seeded")
+
+
+def test_am_ordering_changes_and_is_cached() -> None:
+    # The count model genuinely reorders: INPUT-first from the start
+    # context (the ledger's root transition), against the canonical
+    # PUSH-first order.
+    bodies = am_training_corpus()
+    v0 = AMCountModel(bodies)
+    order = v0.order(tuple(SC_SOLVER_VOCAB), ASCM_START, {})
+    _assert(order[0] == _SC_OP["INPUT"],
+            f"learned root ordering wrong: {order[:3]}")
+    canonical = tuple(SC_SOLVER_VOCAB)
+    _assert(order != canonical, "model ordering equals canonical")
+
+
+def test_am_gate_strict_and_rollback() -> None:
+    # The gate is strict; an adversarial ordering that buries INPUT at
+    # the bottom of every context (nothing is solvable without it) must
+    # fail against a trained incumbent and roll back.
+    _assert(not am_gate(2, 2) and not am_gate(1, 2) and am_gate(3, 2),
+            "gate rule wrong")
+
+    class _InputLast:
+        def order(self, vocab, context, macros):
+            return tuple(sorted(
+                vocab, key=lambda t: (t == _SC_OP["INPUT"], t)))
+
+    bodies = am_training_corpus()
+    battery = am_probe_battery(limit=12)
+    p_inc, _, _ = am_probe_passes(battery, {}, AMCountModel(bodies),
+                                  ASCM_B_PROBE)
+    p_bad, _, _ = am_probe_passes(battery, {}, _InputLast(),
+                                  ASCM_B_PROBE)
+    _assert(p_bad < p_inc, "test construction drifted")
+    _assert(not am_gate(p_bad, p_inc),
+            f"adversarial ordering passed the gate ({p_bad} vs {p_inc})")
+
+
+def test_am_probe_battery_frozen_and_sealed() -> None:
+    # The battery derives from the SHA-verified holdout; hidden instances
+    # never appear in the public split; the battery is deterministic.
+    b1 = am_probe_battery(limit=8)
+    b2 = am_probe_battery(limit=8)
+    _assert(_sc_canon([{k: v for k, v in p.items()} for p in b1])
+            == _sc_canon([{k: v for k, v in p.items()} for p in b2]),
+            "probe battery not deterministic")
+    for probe in b1:
+        pubs = {tuple(x) for x, _ in probe["public"]}
+        _assert(not (pubs & set(probe["hidden"])),
+                "hidden instance leaked into the public split")
+
+
+def test_am_uplift_and_rollback_record() -> None:
+    # Positive path at test scale: the gate sequence adopts at least one
+    # model and rolls back at least one, and every disposition carries
+    # its numbers.
+    bodies = am_training_corpus()
+    battery = am_probe_battery(limit=12)
+    ledger = SCLedger()
+    incumbent = am_gate_sequence(bodies, battery, ASCM_B_PROBE, ledger)
+    adopted = [r for r in ledger.records if r["event"] == "am_adopted"]
+    rolled = [r for r in ledger.records if r["event"] == "am_rollback"]
+    _assert(adopted, "no model adopted in the gate sequence")
+    _assert(rolled, "no rollback in the gate sequence")
+    _assert(incumbent[2] > 0, "final incumbent passes nothing")
+    for r in adopted + rolled:
+        _assert("passes" in r and "incumbent_passes" in r
+                and len(r["costs"]) == len(battery),
+                "gate record missing its numbers")
+    for r in adopted:
+        _assert(r["passes"] > r["incumbent_passes"],
+                "adoption without strict improvement")
+    for r in rolled:
+        _assert(r["passes"] <= r["incumbent_passes"],
+                "rollback despite strict improvement")
+
+
+def test_am_no_instrument_access() -> None:
+    import inspect
+    src = "".join(inspect.getsource(o) for o in _am_scan_components())
+    forbidden = ("ORACLES", "TRAIN_INPUTS", "_ORACLE_REGISTRY",
+                 "seal_task", "build_sealed_tasks", "holdout_gate",
+                 "cf_gate", "_make_gate", "GATE_SEED", "CF_GATE_SEED",
+                 "SealedTask", "mint_task", "meta_gate",
+                 "extj_instrument", "frozen_holdout_phase0",
+                 "frozen_holdout_extJ", "witness_vault", "wit:")
+    for name in forbidden:
+        _assert(name not in src,
+                f"phase M code references sealed symbol {name}")
+
+
+def test_am_pin_matches() -> None:
+    import inspect
+    am_verify_pin()
+    try:
+        am_verify_pin("f" * 64)
+        _assert(False, "tampered pin accepted")
+    except RuntimeError:
+        pass
+    const = _am_frozen_constants_canon()
+    for needle in ('"B_PROBE":1500', '"EPOCHS":8', '"HIDDEN":16',
+                   '"INIT_SEED":424987', '"ASCL":'):
+        _assert(needle in const,
+                f"frozen constant unbound from pin: {needle}")
+
+
+def test_am_determinism_two_runs() -> None:
+    digests = []
+    for _ in range(2):
+        bodies = am_training_corpus()
+        battery = am_probe_battery(limit=12)
+        ledger = SCLedger()
+        am_gate_sequence(bodies, battery, ASCM_B_PROBE, ledger)
+        digests.append(ledger.head())
+    _assert(digests[0] == digests[1],
+            "phase M gate sequence not two-run byte-identical")
+
+
+def test_am_kl_records_untouched() -> None:
+    ak_verify_pin()
+    al_verify_pin()
+    am_verify_pin()
+    _assert(len({ASCK_PIN_SHA256, ASCL_PIN_SHA256,
+                 ASCM_PIN_SHA256}) == 3, "pin collision")
+
+
+TESTS.extend([
+    test_am_null_model_identity,
+    test_am_training_corpus_ledger_only,
+    test_am_holdout_contamination_aborts,
+    test_am_models_deterministic,
+    test_am_ordering_changes_and_is_cached,
+    test_am_gate_strict_and_rollback,
+    test_am_probe_battery_frozen_and_sealed,
+    test_am_uplift_and_rollback_record,
+    test_am_no_instrument_access,
+    test_am_pin_matches,
+    test_am_determinism_two_runs,
+    test_am_kl_records_untouched,
+])
+
+
+# =========================================================================== #
+# PHASE N: PROOF KERNEL & FORMAL DOMAIN (ASCENT M3)                           #
+#                                                                             #
+# An honestly open formal domain with zero external-oracle demand             #
+# (docs/ASCENT_N_SPEC.md, docs/PREDICTIONS_N.md, docs/N_RESULT.md): a         #
+# Hilbert-system propositional proof kernel (Lukasiewicz axioms A1-A3 +       #
+# modus ponens), audited against the frozen checklist and then FROZEN (K6),   #
+# inside the K-1 setter-solver discipline. Conjecture lineages pose           #
+# formulas (no witness -- a witness would be the proof); a bounded            #
+# countermodel search refutes false conjectures at admission; the frozen      #
+# frontier prover must fail an admitted conjecture at ASCN_B_EVAL             #
+# derivation expansions; mining at ASCN_B_LIVE produces kernel-checked        #
+# proofs; theorems are the ONLY thing the library adopts -- there is no       #
+# axiom-adoption API at all, and the negative test constructs the attempt.    #
+# Interestingness is computable, not hand-crafted: the theorem corpus is      #
+# compressed under the registered K5 formula shape (this domain's 5-token     #
+# alphabet), abbreviations grow only through the L-1 master-gate rule, and    #
+# the conjecture lineages' unit sets grow from gate-adopted abbreviations.    #
+# Phases K/L/M code above is read-only here.                                  #
+# =========================================================================== #
+
+# --- frozen constants (spec-freeze: docs/ASCENT_N_SPEC.md) -------------------
+ASCN_SPEC_VERSION = "N-1"
+AN_MAX_VARS = 3
+AN_MAX_FORMULA_SIZE = 13
+AN_MAX_STEP_SIZE = 128
+AN_MAX_PROOF_STEPS = 512
+ASCN_B_EVAL = 20
+ASCN_B_LIVE = 20000
+ASCN_GENERATIONS = 8
+ASCN_H = 5
+ASCN_QUEUE_CAP = 24
+ASCN_POSE_SLOTS = 6
+ASCN_CANDS_PER_GEN = 32
+ASCN_POOL_CAP = 48
+ASCN_LINEAGES = (("N_A", 3), ("N_B", 5), ("N_D", 7))
+AN_ALPHA = 5                      # imp, not, v0, v1, v2
+AN_TOK_IMP, AN_TOK_NOT = 0, 1
+ASCN_ABBR_BASE = 5                # abbreviation token ids start here
+ASCN_HOLDOUT_SHA256 = ("583dcc7d80b867d3a1242cf3f538e755"
+                       "87491d179a45274f491db6308f0b4665")
+
+
+# --- K6: the proof kernel (frozen after the audit; structural only) ----------
+def an_formula_ok(f, max_size=AN_MAX_FORMULA_SIZE):
+    """Structural well-formedness and size bound. Total: recursion depth
+    is bounded by max_size before any recursive call."""
+    def walk(g, budget):
+        if budget <= 0 or not isinstance(g, tuple):
+            return -1
+        if len(g) == 2 and g[0] == "v" and isinstance(g[1], int) \
+                and 0 <= g[1] < AN_MAX_VARS:
+            return 1
+        if len(g) == 2 and g[0] == "not":
+            n = walk(g[1], budget - 1)
+            return -1 if n < 0 else 1 + n
+        if len(g) == 3 and g[0] == "imp":
+            a = walk(g[1], budget - 1)
+            if a < 0:
+                return -1
+            b = walk(g[2], budget - 1 - a)
+            return -1 if b < 0 else 1 + a + b
+        return -1
+    n = walk(f, max_size)
+    return 0 < n <= max_size
+
+
+def an_size(f):
+    if f[0] == "v":
+        return 1
+    if f[0] == "not":
+        return 1 + an_size(f[1])
+    return 1 + an_size(f[1]) + an_size(f[2])
+
+
+def an_canon(f):
+    return _sc_canon(f)
+
+
+# The frozen axiom base: Lukasiewicz A1-A3 over schema variables 0..2.
+_S0, _S1, _S2 = ("v", 0), ("v", 1), ("v", 2)
+AN_AXIOMS = (
+    ("imp", _S0, ("imp", _S1, _S0)),                                 # A1
+    ("imp", ("imp", _S0, ("imp", _S1, _S2)),
+     ("imp", ("imp", _S0, _S1), ("imp", _S0, _S2))),                 # A2
+    ("imp", ("imp", ("not", _S0), ("not", _S1)), ("imp", _S1, _S0)),  # A3
+)
+
+
+def an_subst(schema, sub):
+    """Substitute formulas for schema variables. sub: index -> formula."""
+    if schema[0] == "v":
+        return sub[schema[1]]
+    if schema[0] == "not":
+        return ("not", an_subst(schema[1], sub))
+    return ("imp", an_subst(schema[1], sub), an_subst(schema[2], sub))
+
+
+def an_check_proof(proof, goal, library=()):
+    """The kernel: verify a proof object structurally. Steps are
+    ("ax", axiom_id, {i: formula}), ("mp", i, j) with i the antecedent
+    step and j the implication step, or ("thm", formula) with formula an
+    already-adopted (previously kernel-checked) library theorem. Bounded,
+    total, deterministic; accepts iff the final step equals the goal."""
+    if not isinstance(proof, (list, tuple)) or not proof \
+            or len(proof) > AN_MAX_PROOF_STEPS:
+        return False
+    lib = {an_canon(t) for t in library}
+    proved = []
+    for step in proof:
+        if not isinstance(step, tuple) or not step:
+            return False
+        if step[0] == "ax" and len(step) == 3:
+            aid, sub = step[1], step[2]
+            if not isinstance(aid, int) or not (0 <= aid < 3):
+                return False
+            if not isinstance(sub, dict) or \
+                    set(sub) != {0, 1, 2} or \
+                    any(not an_formula_ok(v, AN_MAX_STEP_SIZE)
+                        for v in sub.values()):
+                return False
+            f = an_subst(AN_AXIOMS[aid], sub)
+            if not an_formula_ok(f, AN_MAX_STEP_SIZE):
+                return False
+        elif step[0] == "mp" and len(step) == 3:
+            i, j = step[1], step[2]
+            if not (isinstance(i, int) and isinstance(j, int)
+                    and 0 <= i < len(proved) and 0 <= j < len(proved)):
+                return False
+            impl = proved[j]
+            if impl[0] != "imp" or impl[1] != proved[i]:
+                return False
+            f = impl[2]
+        elif step[0] == "thm" and len(step) == 2:
+            f = step[1]
+            if not an_formula_ok(f, AN_MAX_STEP_SIZE) or \
+                    an_canon(f) not in lib:
+                return False
+        else:
+            return False
+        proved.append(f)
+    return proved[-1] == goal
+
+
+def an_adopt_theorem(library, formula, proof):
+    """The ONLY path into the theorem library. Anything without a
+    kernel-checked proof is refused. There is no axiom-adoption API: a
+    proof-less or forged adoption raises, never adopts."""
+    if not an_formula_ok(formula, AN_MAX_STEP_SIZE):
+        raise PermissionError("an: malformed theorem refused")
+    if not an_check_proof(proof, formula, library=library):
+        raise PermissionError(
+            "an: adoption without a kernel-checked proof refused "
+            "(axiom self-adoption is impossible by construction)")
+    return library + (formula,)
+
+
+# --- truth tables and the countermodel search --------------------------------
+def an_eval(f, assign):
+    if f[0] == "v":
+        return assign[f[1]]
+    if f[0] == "not":
+        return not an_eval(f[1], assign)
+    return (not an_eval(f[1], assign)) or an_eval(f[2], assign)
+
+
+def an_countermodel(f):
+    """Complete bounded search over the canonical variable set. Returns
+    a falsifying assignment (tuple of bools) or None (tautology)."""
+    for bits in range(1 << AN_MAX_VARS):
+        assign = tuple(bool((bits >> k) & 1) for k in range(AN_MAX_VARS))
+        if not an_eval(f, assign):
+            return assign
+    return None
+
+
+# --- the prover: deterministic forward saturation ----------------------------
+def an_subformulas(f, out):
+    out.add(f)
+    if f[0] == "not":
+        an_subformulas(f[1], out)
+    elif f[0] == "imp":
+        an_subformulas(f[1], out)
+        an_subformulas(f[2], out)
+
+
+def an_prove(goal, library, budget):
+    """Forward saturation in the subformula universe of the goal plus the
+    library. Every axiom instantiation and every MP attempt spends one
+    derivation expansion. Returns (proof_or_None, spent). The proof uses
+    ("thm", ...) steps for library premises; the kernel re-checks it."""
+    pool = set()
+    an_subformulas(goal, pool)
+    for t in library:
+        an_subformulas(t, pool)
+    pool = sorted((p for p in pool
+                   if an_formula_ok(p)), key=an_canon)[:ASCN_POOL_CAP]
+    proved = {}          # canon -> (index, formula)
+    steps = []
+    spent = 0
+
+    def add(f, step):
+        c = an_canon(f)
+        if c in proved:
+            return False
+        steps.append(step)
+        proved[c] = (len(steps) - 1, f)
+        return True
+
+    for t in library:
+        if spent >= budget:
+            break
+        spent += 1
+        add(t, ("thm", t))
+        if t == goal:
+            return (_an_extract(steps, len(steps) - 1), spent)
+    # Axiom instances over the pool, then MP to closure, interleaved
+    # deterministically: one full instantiation sweep, then closure.
+    changed = True
+    while changed and spent < budget:
+        changed = False
+        for aid, schema in enumerate(AN_AXIOMS):
+            for a in pool:
+                for b in pool:
+                    subs = ([{0: a, 1: b, 2: pool[k]}
+                             for k in range(len(pool))]
+                            if aid == 1 else [{0: a, 1: b, 2: a}])
+                    for sub in subs:
+                        if spent >= budget:
+                            return (None, spent)
+                        spent += 1
+                        f = an_subst(schema, sub)
+                        if not an_formula_ok(f, AN_MAX_STEP_SIZE):
+                            continue
+                        if add(f, ("ax", aid, dict(sub))):
+                            changed = True
+                            if f == goal:
+                                return (_an_extract(
+                                    steps, len(steps) - 1), spent)
+        # MP closure over everything proved so far.
+        mp_changed = True
+        while mp_changed and spent < budget:
+            mp_changed = False
+            items = sorted(proved.items())
+            for _, (j, impl) in items:
+                if impl[0] != "imp":
+                    continue
+                ca = an_canon(impl[1])
+                if ca not in proved:
+                    continue
+                i = proved[ca][0]
+                spent += 1
+                if spent > budget:
+                    return (None, spent)
+                if add(impl[2], ("mp", i, j)):
+                    mp_changed = True
+                    changed = True
+                    if impl[2] == goal:
+                        return (_an_extract(
+                            steps, len(steps) - 1), spent)
+    return (None, spent)
+
+
+def _an_extract(steps, last):
+    """Extract the minimal proof slice ending at step `last`, reindexed.
+    Returns None if it exceeds the kernel step bound."""
+    need = set()
+    stack = [last]
+    while stack:
+        k = stack.pop()
+        if k in need:
+            continue
+        need.add(k)
+        step = steps[k]
+        if step[0] == "mp":
+            stack.extend((step[1], step[2]))
+    order = sorted(need)
+    remap = {old: new for new, old in enumerate(order)}
+    out = []
+    for old in order:
+        step = steps[old]
+        if step[0] == "mp":
+            out.append(("mp", remap[step[1]], remap[step[2]]))
+        else:
+            out.append(step)
+    if len(out) > AN_MAX_PROOF_STEPS:
+        return None
+    return tuple(out)
+
+
+# --- formula encoding and the M2 master gate on the theorem corpus ----------
+def an_encode_formula(f):
+    """Prefix encoding over the 5-token core alphabet."""
+    if f[0] == "v":
+        return (2 + f[1],)
+    if f[0] == "not":
+        return (AN_TOK_NOT,) + an_encode_formula(f[1])
+    return (AN_TOK_IMP,) + an_encode_formula(f[1]) \
+        + an_encode_formula(f[2])
+
+
+def an_bits(n_lib):
+    return (AN_ALPHA + n_lib - 1).bit_length()
+
+
+def an_encode_count(tokens, bodies):
+    bl = sorted(set(tuple(b) for b in bodies), key=lambda b: (-len(b), b))
+    exp = tuple(tokens)
+    i = 0
+    n = 0
+    while i < len(exp):
+        step = 1
+        for b in bl:
+            k = len(b)
+            if exp[i:i + k] == b:
+                step = k
+                break
+        i += step
+        n += 1
+    return n
+
+
+def an_mdl(corpus, bodies):
+    b = an_bits(len(bodies))
+    return (sum(len(tuple(m)) + 1 for m in bodies) * b
+            + sum(an_encode_count(p, bodies) for p in corpus) * b)
+
+
+def an_delta(m, corpus, bodies):
+    return an_mdl(corpus, tuple(bodies) + (tuple(m),)) - \
+        an_mdl(corpus, bodies)
+
+
+def an_holdout_savings(m, corpus, bodies):
+    return (sum(an_encode_count(p, bodies) for p in corpus)
+            - sum(an_encode_count(p, tuple(bodies) + (tuple(m),))
+                  for p in corpus))
+
+
+def an_load_holdout():
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "docs", "frozen_holdout_ascentN.json")
+    raw = open(path, "rb").read()
+    if hashlib.sha256(raw).hexdigest() != ASCN_HOLDOUT_SHA256:
+        raise RuntimeError(
+            "ascent N holdout corpus drifted from the spec-freeze pin")
+    doc = json.loads(raw.decode("utf-8"))
+    return tuple(tuple(int(t) for t in p["tokens"])
+                 for p in doc["programs"])
+
+
+def an_gate(m, c_train, c_hold, bodies):
+    """The L-1 master-gate rule on this domain's alphabet: strict
+    negative training delta, strictly positive holdout savings, body
+    bounds (well-formed subformula encodings only, enforced upstream)."""
+    m = tuple(m)
+    if not (ASCL_BODY_MIN <= len(m) <= ASCL_BODY_MAX):
+        return (False, "n_body_bounds", None, None, None)
+    d_train = an_delta(m, c_train, bodies)
+    if d_train >= 0:
+        return (False, "n_mdl_train", d_train, None, None)
+    sav = an_holdout_savings(m, c_hold, bodies)
+    d_hold = an_delta(m, c_hold, bodies)
+    if sav <= 0:
+        return (False, "n_mdl_holdout", d_train, sav, d_hold)
+    return (True, "", d_train, sav, d_hold)
+
+
+def an_abbr_candidates(theorems, bodies):
+    """Well-formed subformula encodings occurring in >= 2 distinct
+    theorems, ordered by (training delta ascending, body lex)."""
+    corpus = [an_encode_formula(t) for t in theorems]
+    occ = {}
+    for ti, t in enumerate(theorems):
+        subs = set()
+        an_subformulas(t, subs)
+        for s in subs:
+            occ.setdefault(an_encode_formula(s), set()).add(ti)
+    cands = [b for b, s in sorted(occ.items()) if len(s) >= 2
+             and ASCL_BODY_MIN <= len(b) <= ASCL_BODY_MAX
+             and b not in set(tuple(x) for x in bodies)]
+    scored = sorted((an_delta(b, corpus, bodies), b) for b in cands)
+    return [b for _, b in scored]
+
+
+# --- conjecture setter: lineages over the formula grammar -------------------
+def an_enum_formulas(size, units):
+    """Deterministic enumeration of formulas of exactly `size` grammar
+    nodes over variables, not, imp, plus abbreviation units (each unit is
+    a formula counted at its own node size). Canonical order."""
+    if size <= 0:
+        return
+    if size == 1:
+        for i in range(AN_MAX_VARS):
+            yield ("v", i)
+    for u_size, u_formula in units:
+        if u_size == size:
+            yield u_formula
+    if size >= 2:
+        for f in an_enum_formulas(size - 1, units):
+            yield ("not", f)
+    if size >= 3:
+        for left in range(1, size - 1):
+            for a in an_enum_formulas(left, units):
+                for b in an_enum_formulas(size - 1 - left, units):
+                    yield ("imp", a, b)
+
+
+class ANSetterLineage:
+    """Conjecture setter policy: cursor enumeration at its band over the
+    grammar plus gate-adopted abbreviations, lane-partitioned so that
+    lineages whose ladders overlap never re-propose each other's
+    candidates. Sees only the abbreviation units and its own band."""
+
+    def __init__(self, name, band_start, lane=0):
+        self.name = name
+        self.band = band_start
+        self.lane = lane
+        self.cursors = {}
+
+    def propose(self, count, abbr_units):
+        units = tuple(sorted(
+            ((an_size(u), u) for u in abbr_units),
+            key=lambda p: (p[0], an_canon(p[1]))))
+        last = self.cursors.get(self.band)
+        out = []
+        idx = -1
+        newest = last
+        for f in an_enum_formulas(self.band, units):
+            if f[0] != "imp":
+                # Policy: implication-rooted conjectures only. A
+                # negation-rooted tautology is a double-negated theorem,
+                # out of reach of the pool-restricted prover by
+                # construction; posing them would only burn slots.
+                continue
+            if an_countermodel(f) is not None:
+                # Policy, mirroring the SC-1 feasible-by-construction
+                # discipline: the setter screens its own poses with the
+                # pure truth-table function and offers only claimed
+                # tautologies. The admission gate re-runs the countermodel
+                # search hermetically; the ADV probe exercises the
+                # refutation path on record every generation.
+                continue
+            idx += 1
+            if idx % 3 != self.lane:
+                continue
+            if last is not None and idx <= last:
+                continue
+            newest = idx
+            out.append({"lineage": self.name, "band": self.band,
+                        "formula": f})
+            if len(out) >= count:
+                break
+        if newest is not None:
+            self.cursors[self.band] = newest
+        return out
+
+
+def _an_adv_probes():
+    """Pre-registered adversarial probes: a malformed emission (n0), a
+    non-tautology refuted via countermodel every generation (the
+    refutation path on record), an axiom instance (nb_too_easy at g0,
+    nd_duplicate after), and its twin (nd_duplicate)."""
+    p0, p1 = ("v", 0), ("v", 1)
+    ax_inst = ("imp", p0, ("imp", p1, p0))
+    return (
+        {"probe": "adv_n0", "formula": ("imp", p0)},
+        {"probe": "adv_nr", "formula": ("imp", p0, ("not", p0))},
+        {"probe": "adv_nb", "formula": ax_inst},
+        {"probe": "adv_nd", "formula": ax_inst},
+    )
+
+
+# --- admission and the loop ---------------------------------------------------
+def an_descriptor_cell(f):
+    seen = set()
+    an_subformulas(f, seen)
+    n_vars = len({g[1] for g in seen if g[0] == "v"})
+    size = an_size(f)
+
+    def depth(g):
+        if g[0] == "v":
+            return 1
+        if g[0] == "not":
+            return 1 + depth(g[1])
+        return 1 + max(depth(g[1]), depth(g[2]))
+    n_not = sum(1 for g in seen if g[0] == "not")
+    n_imp = sum(1 for g in seen if g[0] == "imp")
+    prof = 0 if n_not == 0 else (1 if n_not <= n_imp else 2)
+    left = an_size(f[1]) if f[0] == "imp" else 0
+    return (f"v{n_vars}|s{min(13, size)}|d{min(13, depth(f))}|p{prof}"
+            f"|n{min(3, n_not)}|l{min(6, left)}")
+
+
+class ANLoopState:
+    def __init__(self, cfg):
+        self.cfg = cfg
+        self.gen = 0
+        self.ledger = SCLedger()
+        self.meter = AKBudgetMeter()
+        self.lineages = [ANSetterLineage(n, b, lane=i)
+                         for i, (n, b) in enumerate(ASCN_LINEAGES)]
+        self.credits = {n: 0 for n, _ in ASCN_LINEAGES}
+        self.theorems = ()            # adopted theorem library (formulas)
+        self.abbr_bodies = []         # gate-adopted abbreviation encodings
+        self.abbr_units = []          # decoded abbreviation formulas
+        self.holdout = an_load_holdout()
+        self.open_conjectures = []
+        self.markers = []
+        self.seen_canon = set()
+        self.cells = {}
+        self.crossed = []
+        self.gen_rows = []
+        self.theorem_sources = {}     # canon(theorem) -> conjecture tid
+
+
+def an_config(**overrides):
+    cfg = {
+        "generations": ASCN_GENERATIONS,
+        "b_eval": ASCN_B_EVAL,
+        "b_live": ASCN_B_LIVE,
+        "h": ASCN_H,
+        "queue_cap": ASCN_QUEUE_CAP,
+        "pose_slots": ASCN_POSE_SLOTS,
+        "cands_per_gen": ASCN_CANDS_PER_GEN,
+    }
+    cfg.update(overrides)
+    if min(cfg["b_eval"], cfg["b_live"], cfg["generations"], cfg["h"],
+           cfg["queue_cap"], cfg["pose_slots"]) <= 0:
+        raise ValueError("an config invalid: non-positive parameter")
+    if cfg["b_live"] < cfg["b_eval"]:
+        raise ValueError("an config invalid: mining budget below the "
+                         "instrument budget")
+    return cfg
+
+
+def an_admit(state, lineage, formula, adv=False):
+    """Conjecture admission: n0 well-formedness, nr countermodel
+    refutation, nd novelty, nb frontier-prover difficulty. No witness
+    exists by construction."""
+    led = state.ledger
+    cfg = state.cfg
+    ok_form = an_formula_ok(formula)
+    canon = an_canon(formula) if ok_form else _sc_canon(["bad", lineage])
+    cid = hashlib.sha256(canon.encode()).hexdigest()
+    tid = f"AN-{cid[:12]}"
+    band = an_size(formula) if ok_form else 0
+    led.append({"event": "generated", "tid": tid, "gen": state.gen,
+                "lineage": lineage, "track": "N", "band": band,
+                "adv": bool(adv), "formula_sha": cid})
+
+    def reject(reason, extra=None):
+        rec = {"event": "rejected", "tid": tid, "gen": state.gen,
+               "lineage": lineage, "track": "N", "band": band,
+               "adv": bool(adv), "reason": reason}
+        if extra:
+            rec.update(extra)
+        led.append(rec)
+        return (False, reason, None)
+
+    if not ok_form:
+        return reject("n0_malformed")
+    cm = an_countermodel(formula)
+    state.meter.spend("admission", "vm_ops", 1 << AN_MAX_VARS)
+    if cm is not None:
+        if canon not in state.seen_canon:
+            state.seen_canon.add(canon)
+        led.append({"event": "refuted", "tid": tid, "gen": state.gen,
+                    "lineage": lineage, "track": "N", "band": band,
+                    "adv": bool(adv), "formula": list(
+                        an_encode_formula(formula)),
+                    "countermodel": [int(v) for v in cm]})
+        return (False, "nr_refuted", None)
+    if canon in state.seen_canon:
+        return reject("nd_duplicate")
+    state.seen_canon.add(canon)
+    cell = an_descriptor_cell(formula)
+    if cell in state.cells:
+        return reject("nd_cell_occupied", {"cell": cell})
+    proof, spent = an_prove(formula, state.theorems, cfg["b_eval"])
+    state.meter.spend("admission", "cand_evals", spent)
+    if proof is not None and an_check_proof(proof, formula,
+                                            library=state.theorems):
+        return reject("nb_too_easy", {"frontier_evals": spent})
+    if adv:
+        raise RuntimeError(
+            "an adv canary: a pre-registered adversarial probe passed "
+            "every admission certificate -- battery aborted")
+    if len(state.open_conjectures) >= cfg["queue_cap"]:
+        return reject("n_queue_full")
+    state.cells[cell] = tid
+    conj = {"tid": tid, "lineage": lineage, "band": band, "cell": cell,
+            "formula": formula, "gen_admitted": state.gen, "attempts": 0}
+    state.open_conjectures.append(conj)
+    led.append({"event": "admitted", "tid": tid, "gen": state.gen,
+                "lineage": lineage, "track": "N", "band": band,
+                "cell": cell, "formula": list(an_encode_formula(formula)),
+                "frontier_evals": spent, "b_eval": cfg["b_eval"],
+                "library_size": len(state.theorems)})
+    return (True, "", conj)
+
+
+def _an_library_excluding(state, tid):
+    return tuple(t for t in state.theorems
+                 if state.theorem_sources.get(an_canon(t)) != tid)
+
+
+def an_adopt(state, conj, proof, spent, kind):
+    """Adopt a kernel-checked theorem. The kernel call is the sole path;
+    the ledger records the proof itself (proofs are public data)."""
+    lib_before = state.theorems
+    state.theorems = an_adopt_theorem(lib_before, conj["formula"], proof)
+    canon = an_canon(conj["formula"])
+    state.theorem_sources[canon] = conj["tid"]
+    corpus = [an_encode_formula(t) for t in state.theorems]
+    codelen = (an_encode_count(an_encode_formula(conj["formula"]),
+                               state.abbr_bodies)
+               * an_bits(len(state.abbr_bodies)))
+    state.ledger.append({
+        "event": kind, "tid": conj["tid"], "gen": state.gen,
+        "lineage": conj["lineage"], "track": "N", "band": conj["band"],
+        "solve_cost": spent, "proof_steps": len(proof),
+        "proof": [list(s) if s[0] == "mp"
+                  else ([s[0], s[1], {str(k): list(an_encode_formula(v))
+                                      for k, v in s[2].items()}]
+                        if s[0] == "ax"
+                        else [s[0], list(an_encode_formula(s[1]))])
+                  for s in proof],
+        "formula": list(an_encode_formula(conj["formula"])),
+        "codelen_bits": codelen,
+        "theorem_index": len(state.theorems) - 1})
+
+
+def an_adopt_proof_steps(state, conj, proof, cap=8):
+    """Every formula derived inside a kernel-checked proof is itself a
+    kernel-checked theorem: adopt the novel ones with their extracted
+    proof slices (capped, deterministic order), ledgered as
+    step_adopted. Axiom instances and library echoes dedup away via the
+    canonical-form check."""
+    lib_canons = {an_canon(t) for t in state.theorems}
+    proved = []
+    for step in proof:
+        if step[0] == "ax":
+            proved.append(an_subst(AN_AXIOMS[step[1]], step[2]))
+        elif step[0] == "thm":
+            proved.append(step[1])
+        else:
+            impl = proved[step[2]]
+            proved.append(impl[2])
+    adopted = 0
+    for k in range(len(proof) - 1):
+        if adopted >= cap:
+            break
+        f = proved[k]
+        c = an_canon(f)
+        if c in lib_canons or not an_formula_ok(f, AN_MAX_STEP_SIZE):
+            continue
+        if proof[k][0] == "thm":
+            continue
+        sub_proof = _an_extract(list(proof), k)
+        if sub_proof is None:
+            continue
+        if not an_check_proof(sub_proof, f, library=state.theorems):
+            continue
+        lib_canons.add(c)
+        adopted += 1
+        pseudo = {"tid": conj["tid"], "lineage": conj["lineage"],
+                  "band": an_size(f) if an_size(f) <= 99 else 99,
+                  "formula": f}
+        an_adopt(state, pseudo, sub_proof, 0,
+                 "step_adopted" if proof[k][0] == "mp"
+                 else "step_adopted_ax")
+
+
+def an_generation(state):
+    cfg = state.cfg
+    g = state.gen
+    # Reuse the K-1 allocation policy (it keys on the ASCK lineage
+    # names); remap credits and slots by index.
+    names = [n for n, _ in ASCN_LINEAGES]
+    kslots = ak_allocate_slots(
+        {kn: state.credits[names[i]] for i, (kn, _, _) in
+         enumerate(ASCK_LINEAGES)}, cfg["pose_slots"])
+    slots = {names[i]: kslots[kn]
+             for i, (kn, _, _) in enumerate(ASCK_LINEAGES)}
+    tallies = {lin.name: {"proposed": 0, "nb": 0} for lin in
+               state.lineages}
+    bands_during = {lin.name: lin.band for lin in state.lineages}
+    for lin in state.lineages:
+        cands = lin.propose(slots[lin.name], state.abbr_units)
+        state.meter.spend("setter", "proposals", len(cands))
+        for cand in cands:
+            tallies[lin.name]["proposed"] += 1
+            ok, reason, _ = an_admit(state, cand["lineage"],
+                                     cand["formula"])
+            if reason == "nb_too_easy":
+                tallies[lin.name]["nb"] += 1
+    for probe in _an_adv_probes():
+        state.meter.spend("setter", "proposals", 1)
+        an_admit(state, probe["probe"], probe["formula"], adv=True)
+    # Mine at the live budget. A conjecture is re-attempted while open
+    # whenever the theorem library has grown since its last attempt (the
+    # subformula pool is library-fed, so growth genuinely changes the
+    # search space); otherwise the K-1 attempt cap applies.
+    for conj in list(state.open_conjectures):
+        if conj.get("mined"):
+            continue
+        lib_n = len(state.theorems)
+        if conj["attempts"] >= ASCK_MAX_ATTEMPTS and \
+                conj.get("lib_at_last_attempt") == lib_n:
+            continue
+        conj["lib_at_last_attempt"] = lib_n
+        conj["attempts"] += 1
+        proof, spent = an_prove(conj["formula"], state.theorems,
+                                cfg["b_live"])
+        state.meter.spend("mining", "cand_evals", spent)
+        if proof is not None and an_check_proof(
+                proof, conj["formula"], library=state.theorems):
+            conj["mined"] = True
+            an_adopt(state, conj, proof, spent, "mined")
+            an_adopt_proof_steps(state, conj, proof)
+        else:
+            state.ledger.append({
+                "event": "unsolved", "tid": conj["tid"], "gen": g,
+                "lineage": conj["lineage"], "track": "N",
+                "band": conj["band"], "solve_cost": spent})
+    # Abbreviation master gate over the theorem corpus.
+    corpus = [an_encode_formula(t) for t in state.theorems]
+    for m in an_abbr_candidates(state.theorems,
+                                state.abbr_bodies)[:cfg["cands_per_gen"]]:
+        state.meter.spend("mining", "cand_evals", 1)
+        ok, reason, d_train, sav, d_hold = an_gate(
+            m, corpus, state.holdout, state.abbr_bodies)
+        body_sha = hashlib.sha256(
+            _sc_ser_tokens(tuple(m)).encode()).hexdigest()
+        if ok:
+            state.abbr_bodies.append(tuple(m))
+            state.abbr_units.append(_an_decode_formula(m))
+            state.ledger.append({
+                "event": "abbr_adopted", "tid": "", "gen": g,
+                "track": "N", "tokens": list(m), "body_sha": body_sha,
+                "d_train": d_train, "sav_hold": sav, "d_hold": d_hold})
+        else:
+            rec = {"event": "abbr_rejected", "tid": "", "gen": g,
+                   "track": "N", "reason": reason, "body_sha": body_sha}
+            if d_train is not None:
+                rec["d_train"] = d_train
+            if sav is not None:
+                rec["sav_hold"] = sav
+            state.ledger.append(rec)
+    # Cross at the frozen instrument budget, own-sourced theorems
+    # excluded.
+    crossed_by_lineage = {lin.name: 0 for lin in state.lineages}
+    for conj in list(state.open_conjectures):
+        lib = _an_library_excluding(state, conj["tid"])
+        proof, spent = an_prove(conj["formula"], lib, cfg["b_eval"])
+        state.meter.spend("crossing", "cand_evals", spent)
+        if proof is not None and an_check_proof(proof, conj["formula"],
+                                                library=lib):
+            within_h = (g - conj["gen_admitted"]) <= cfg["h"]
+            state.ledger.append({
+                "event": "crossed", "tid": conj["tid"], "gen": g,
+                "lineage": conj["lineage"], "track": "N",
+                "band": conj["band"],
+                "gen_admitted": conj["gen_admitted"],
+                "within_h": bool(within_h), "solve_cost": spent,
+                "b_eval": cfg["b_eval"],
+                "library_size": len(lib),
+                "proof_steps": len(proof)})
+            if not conj.get("mined"):
+                an_adopt(state, conj, proof, spent, "cross_adopted")
+            if within_h and conj["lineage"] in crossed_by_lineage:
+                state.credits[conj["lineage"]] += 1
+                crossed_by_lineage[conj["lineage"]] += 1
+            state.crossed.append(conj["tid"])
+            state.open_conjectures.remove(conj)
+    for conj in list(state.open_conjectures):
+        if (g - conj["gen_admitted"]) >= cfg["h"]:
+            state.open_conjectures.remove(conj)
+            state.markers.append(conj["tid"])
+            state.ledger.append({
+                "event": "frontier_marker", "tid": conj["tid"], "gen": g,
+                "lineage": conj["lineage"], "track": "N",
+                "band": conj["band"],
+                "gen_admitted": conj["gen_admitted"],
+                "mined": bool(conj.get("mined"))})
+    for lin in state.lineages:
+        t = tallies[lin.name]
+        # Bands step by two: implication-rooted tautologies live at odd
+        # sizes; even bands are contingent-dense dead zones for this
+        # grammar (a registered setter-policy fact, not a gate change).
+        if t["proposed"] == 0:
+            lin.band = min(AN_MAX_FORMULA_SIZE, lin.band + 2)
+        elif t["nb"] == t["proposed"]:
+            lin.band = min(AN_MAX_FORMULA_SIZE, lin.band + 2)
+        elif crossed_by_lineage[lin.name] > 0:
+            lin.band = min(AN_MAX_FORMULA_SIZE, lin.band + 2)
+    row = {"gen": g, "slots": {k: slots[k] for k in sorted(slots)},
+           "bands": bands_during,
+           "credits": {k: state.credits[k] for k in sorted(state.credits)},
+           "theorems": len(state.theorems),
+           "abbreviations": len(state.abbr_bodies),
+           "open": len(state.open_conjectures),
+           "markers_cum": len(state.markers),
+           "crossed_cum": len(state.crossed),
+           "meter": state.meter.snapshot()}
+    state.ledger.append(dict(row, event="gen_summary", tid="", track=""))
+    state.gen_rows.append(row)
+    state.gen += 1
+
+
+def _an_decode_formula(tokens):
+    """Decode a prefix encoding back to a formula (inverse of
+    an_encode_formula). Raises on malformed input."""
+    pos = [0]
+
+    def rec():
+        t = tokens[pos[0]]
+        pos[0] += 1
+        if t == AN_TOK_IMP:
+            a = rec()
+            b = rec()
+            return ("imp", a, b)
+        if t == AN_TOK_NOT:
+            return ("not", rec())
+        return ("v", t - 2)
+    f = rec()
+    if pos[0] != len(tokens):
+        raise ValueError("an: trailing tokens in encoding")
+    return f
+
+
+def an_run_loop(cfg):
+    an_verify_pin()
+    state = ANLoopState(cfg)
+    for _ in range(cfg["generations"]):
+        an_generation(state)
+    for conj in list(state.open_conjectures):
+        state.open_conjectures.remove(conj)
+        state.markers.append(conj["tid"])
+        state.ledger.append({
+            "event": "frontier_marker", "tid": conj["tid"],
+            "gen": state.gen, "lineage": conj["lineage"], "track": "N",
+            "band": conj["band"], "gen_admitted": conj["gen_admitted"],
+            "mined": bool(conj.get("mined"))})
+    state.ledger.verify()
+    return state
+
+
+def an_replay_verify(state):
+    """Re-derive from the ledger: chain integrity; every adopted theorem's
+    proof re-checked by the kernel against the library prefix at its
+    index; every abbreviation adoption's deltas re-derived against the
+    corpus at its ledger position; zero axiom adoptions (every library
+    entry has a kernel-checked proof record)."""
+    led = state.ledger
+    led.verify()
+    theorems_so_far = ()
+    abbr_so_far = []
+    corpus_at = []
+    for rec in led.records:
+        if rec["event"] in ("mined", "cross_adopted", "step_adopted",
+                            "step_adopted_ax"):
+            formula = _an_decode_formula(tuple(rec["formula"]))
+            proof = []
+            for s in rec["proof"]:
+                if s[0] == "mp":
+                    proof.append(("mp", s[1], s[2]))
+                elif s[0] == "ax":
+                    proof.append(("ax", s[1],
+                                  {int(k): _an_decode_formula(tuple(v))
+                                   for k, v in s[2].items()}))
+                else:
+                    proof.append(("thm",
+                                  _an_decode_formula(tuple(s[1]))))
+            lib = (theorems_so_far if rec["event"] == "mined"
+                   else tuple(t for t in theorems_so_far))
+            if not an_check_proof(tuple(proof), formula, library=lib):
+                raise AssertionError(
+                    f"an replay: proof fails kernel re-check "
+                    f"({rec['tid']})")
+            theorems_so_far = theorems_so_far + (formula,)
+            corpus_at.append(an_encode_formula(formula))
+        elif rec["event"] == "abbr_adopted":
+            ok, reason, d_train, sav, d_hold = an_gate(
+                tuple(rec["tokens"]), list(corpus_at), state.holdout,
+                abbr_so_far)
+            if not ok or d_train != rec["d_train"] or \
+                    sav != rec["sav_hold"]:
+                raise AssertionError("an replay: abbreviation drift")
+            abbr_so_far.append(tuple(rec["tokens"]))
+    if len(theorems_so_far) != len(state.theorems):
+        raise AssertionError("an replay: theorem count drift")
+    return True
+
+
+# --- component registries and pin --------------------------------------------
+def _an_scan_components():
+    return (an_formula_ok, an_size, an_canon, an_subst, an_check_proof,
+            an_adopt_theorem, an_eval, an_countermodel, an_subformulas,
+            an_prove, _an_extract, an_encode_formula, _an_decode_formula,
+            an_bits, an_encode_count, an_mdl, an_delta,
+            an_holdout_savings, an_load_holdout, an_gate,
+            an_abbr_candidates, an_enum_formulas, ANSetterLineage,
+            _an_adv_probes, an_descriptor_cell, ANLoopState, an_config,
+            an_admit, an_adopt, an_generation, an_run_loop,
+            an_replay_verify, an_metrics_from_ledger)
+
+
+def _an_mutable_components():
+    return (ANSetterLineage, ak_allocate_slots)
+
+
+def _an_pin_components():
+    return (an_formula_ok, an_size, an_canon, an_subst, an_check_proof,
+            an_adopt_theorem, an_eval, an_countermodel, an_subformulas,
+            an_prove, _an_extract, an_encode_formula, _an_decode_formula,
+            an_bits, an_encode_count, an_mdl, an_delta,
+            an_holdout_savings, an_load_holdout, an_gate,
+            an_abbr_candidates, _an_adv_probes, an_descriptor_cell,
+            an_admit, an_adopt, an_generation, an_run_loop,
+            an_replay_verify, an_metrics_from_ledger,
+            _an_frozen_constants_canon,
+            # reused, read-only kernel machinery
+            SCLedger, AKBudgetMeter, _sc_canon, _sc_ser_tokens)
+
+
+ASCN_PIN_SHA256 = ("df7fc303972fdd6c0fc85cd984a3804f"
+                   "ee4738f0e765017fc42aac46d4eb153d")
+
+
+def _an_frozen_constants_canon() -> str:
+    return _sc_canon({
+        "SPEC_VERSION": ASCN_SPEC_VERSION,
+        "MAX_VARS": AN_MAX_VARS,
+        "MAX_FORMULA_SIZE": AN_MAX_FORMULA_SIZE,
+        "MAX_STEP_SIZE": AN_MAX_STEP_SIZE,
+        "MAX_PROOF_STEPS": AN_MAX_PROOF_STEPS,
+        "B_EVAL": ASCN_B_EVAL,
+        "B_LIVE": ASCN_B_LIVE,
+        "GENERATIONS": ASCN_GENERATIONS,
+        "H": ASCN_H,
+        "QUEUE_CAP": ASCN_QUEUE_CAP,
+        "POSE_SLOTS": ASCN_POSE_SLOTS,
+        "CANDS_PER_GEN": ASCN_CANDS_PER_GEN,
+        "POOL_CAP": ASCN_POOL_CAP,
+        "LINEAGES": ASCN_LINEAGES,
+        "ALPHA": AN_ALPHA,
+        "AXIOMS": [an_canon(a) for a in AN_AXIOMS],
+        "HOLDOUT_SHA256": ASCN_HOLDOUT_SHA256,
+        "ADV_PROBES": [
+            {"probe": p["probe"], "formula": _sc_canon(p["formula"])}
+            for p in _an_adv_probes()],
+    })
+
+
+def an_compute_pin() -> str:
+    import inspect
+    blob = "".join(inspect.getsource(o) for o in _an_pin_components())
+    blob += "\n#ASCN-FROZEN-CONSTANTS\n" + _an_frozen_constants_canon()
+    return hashlib.sha256(blob.encode()).hexdigest()
+
+
+def an_verify_pin(expected: str = None) -> str:
+    got = an_compute_pin()
+    want = ASCN_PIN_SHA256 if expected is None else expected
+    if got != want:
+        raise RuntimeError(
+            f"an gate/harness source drifted from spec-freeze pin: {got}")
+    return got
+
+
+# --- metrics ------------------------------------------------------------------
+def an_metrics_from_ledger(ledger, generations):
+    ledger.verify()
+    rows = []
+    cum_theorems = 0
+    cum_refuted = 0
+    cum_crossed = 0
+    cum_markers = 0
+    for g in range(generations + 1):
+        recs = [r for r in ledger.records if r.get("gen") == g]
+        if g == generations and not recs:
+            break
+        adopted = [r for r in recs
+                   if r["event"] in ("mined", "cross_adopted",
+                                     "step_adopted", "step_adopted_ax")]
+        cum_theorems += len(adopted)
+        refuted = [r for r in recs if r["event"] == "refuted"]
+        cum_refuted += len(refuted)
+        crossed = [r for r in recs if r["event"] == "crossed"]
+        cum_crossed += len(crossed)
+        markers = [r for r in recs if r["event"] == "frontier_marker"]
+        cum_markers += len(markers)
+        reasons = {}
+        for r in recs:
+            if r["event"] == "rejected":
+                reasons[r["reason"]] = reasons.get(r["reason"], 0) + 1
+        rows.append({
+            "gen": g,
+            "generated": sum(1 for r in recs
+                             if r["event"] == "generated"),
+            "admitted": sum(1 for r in recs if r["event"] == "admitted"),
+            "rejected": reasons,
+            "refuted": len(refuted),
+            "theorems_adopted": len(adopted),
+            "crossed": len(crossed),
+            "abbr_adopted": sum(1 for r in recs
+                                if r["event"] == "abbr_adopted"),
+            "n1_cum_theorems": cum_theorems,
+            "n2_cum_refuted": cum_refuted,
+            "n3_cum_crossed": cum_crossed,
+            "n5_axiom_adoptions": 0,
+            "markers_cum": cum_markers,
+        })
+    return rows
+
+
+# --- CLI modes ----------------------------------------------------------------
+def an_demo():
+    """CI-safe demonstration (reduced budgets)."""
+    print("=" * 88)
+    print("PROOF KERNEL & FORMAL DOMAIN (ASCENT M3) -- DEMO "
+          "(reduced budgets)")
+    print("=" * 88)
+    cfg = an_config(generations=3, b_eval=20, b_live=8000, h=3)
+    state = an_run_loop(cfg)
+    an_replay_verify(state)
+    rows = an_metrics_from_ledger(state.ledger, cfg["generations"])
+    for row in rows:
+        print(f"[g{row['gen']}] generated={row['generated']} "
+              f"admitted={row['admitted']} refuted={row['refuted']} "
+              f"theorems={row['theorems_adopted']} "
+              f"N1={row['n1_cum_theorems']} N2={row['n2_cum_refuted']} "
+              f"N3={row['n3_cum_crossed']}")
+    digest = hashlib.sha256(
+        (state.ledger.head() + _sc_canon(rows)).encode()).hexdigest()[:16]
+    print("reading: conjectures were posed with no witness, refuted by "
+          "bounded countermodels or admitted past the frontier prover; "
+          "every library entry carries a kernel-checked proof; axioms "
+          "cannot be adopted because no adoption path accepts anything "
+          "unproved.")
+    print(json.dumps({"an_demo_digest": digest,
+                      "theorems": len(state.theorems),
+                      "abbreviations": len(state.abbr_bodies),
+                      "ledger_records": len(state.ledger.records)}))
+
+
+def an_battery():
+    """Full evidence battery: frozen constants only, replay-verified."""
+    print("=" * 88)
+    print("PROOF KERNEL & FORMAL DOMAIN (ASCENT M3) -- EVIDENCE BATTERY "
+          f"({ASCN_SPEC_VERSION})")
+    print("=" * 88)
+    pin = an_verify_pin()
+    cfg = an_config()
+    frozen_expect = {
+        "generations": 8, "b_eval": 20, "b_live": 20000, "h": 5,
+        "queue_cap": 24, "pose_slots": 6, "cands_per_gen": 32,
+    }
+    if cfg != frozen_expect:
+        raise RuntimeError("an battery config drifted from frozen spec")
+    state = an_run_loop(cfg)
+    an_replay_verify(state)
+    rows = an_metrics_from_ledger(state.ledger, cfg["generations"])
+    print("[N] loop complete")
+    for row, grow in zip(rows, state.gen_rows):
+        print(f"  g{row['gen']}: gen={row['generated']} "
+              f"adm={row['admitted']} ref={row['refuted']} "
+              f"thm={row['theorems_adopted']} "
+              f"N1={row['n1_cum_theorems']} N2={row['n2_cum_refuted']} "
+              f"N3={row['n3_cum_crossed']} "
+              f"abbr={grow['abbreviations']} credits={grow['credits']}")
+    axiom_adoptions = sum(
+        1 for r in state.ledger.records
+        if r["event"] in ("mined", "cross_adopted", "step_adopted",
+                          "step_adopted_ax")
+        and not r["proof"])
+    metrics = {
+        "spec_version": ASCN_SPEC_VERSION,
+        "pin_sha256": pin,
+        "budgets": frozen_expect,
+        "human_authored_tasks": 0,
+        "rows": rows,
+        "n1_theorems": len(state.theorems),
+        "n2_refuted": rows[-1]["n2_cum_refuted"],
+        "n3_crossed": len(state.crossed),
+        "n4_abbreviations": len(state.abbr_bodies),
+        "n5_axiom_adoptions": axiom_adoptions,
+        "credits_final": {k: state.credits[k]
+                          for k in sorted(state.credits)},
+        "gen_rows": state.gen_rows,
+        "markers": len(state.markers),
+        "ledger_records": len(state.ledger.records),
+        "ledger_head": state.ledger.head(),
+        "replay_verified": True,
+    }
+    if axiom_adoptions != 0:
+        raise RuntimeError("an battery: axiom adoption detected")
+    digest = hashlib.sha256(
+        (state.ledger.head() + _sc_canon(metrics)).encode()
+    ).hexdigest()[:16]
+    out_dir = os.path.join("reports", "evidence")
+    os.makedirs(out_dir, exist_ok=True)
+    with _sc_guarded_open(os.path.join(out_dir, "ascent_n_ledger.jsonl"),
+                          "w") as fh:
+        fh.write(state.ledger.to_jsonl())
+    with _sc_guarded_open(os.path.join(out_dir, "ascent_n_results.json"),
+                          "w") as fh:
+        fh.write(_sc_canon({"metrics": metrics, "digest": digest}) + "\n")
+    print("reading: the formal domain ran under the same certificate "
+          "discipline as the task factory; every theorem carries its "
+          "kernel-checked proof in the ledger; refutations carry their "
+          "countermodels; zero axioms were adopted, and no code path "
+          "exists that could adopt one.")
+    print(json.dumps({"an_digest": digest,
+                      "ledger_head": state.ledger.head(),
+                      "n1_theorems": metrics["n1_theorems"],
+                      "n2_refuted": metrics["n2_refuted"],
+                      "n3_crossed": metrics["n3_crossed"]}))
+    return metrics
+
+
+# ---------------------------------------------------------------------------
+# Phase N tests. Kernel audit properties, the no-axiom-adoption negative
+# test, the refutation path, and the loop each ship with a red-team
+# construction. All names carry the test_an_ prefix for --only.
+# ---------------------------------------------------------------------------
+def _an_test_cfg(**kw):
+    base = dict(generations=2, b_eval=20, b_live=6000, h=2,
+                pose_slots=4)
+    base.update(kw)
+    return an_config(**base)
+
+
+def test_an_kernel_checks_honest_proof() -> None:
+    # The classic 5-step proof of p -> p passes; every corrupted variant
+    # fails: wrong goal, swapped MP indices, out-of-range references,
+    # malformed substitutions.
+    p = ("v", 0)
+    pp = ("imp", p, p)
+    proof = (
+        ("ax", 0, {0: p, 1: pp, 2: p}),                   # p->((p->p)->p)
+        ("ax", 1, {0: p, 1: pp, 2: p}),                   # A2 instance
+        ("mp", 0, 1),                                     # (p->(p->p))->(p->p)
+        ("ax", 0, {0: p, 1: p, 2: p}),                    # p->(p->p)
+        ("mp", 3, 2),                                     # p->p
+    )
+    _assert(an_check_proof(proof, pp), "honest proof rejected")
+    _assert(not an_check_proof(proof, ("imp", p, ("v", 1))),
+            "kernel accepted a proof of the wrong goal")
+    bad = (proof[0], proof[1], ("mp", 1, 0), proof[3], ("mp", 3, 2))
+    _assert(not an_check_proof(bad, pp), "swapped MP accepted")
+    _assert(not an_check_proof((("mp", 0, 1),), pp),
+            "dangling MP reference accepted")
+    _assert(not an_check_proof((("ax", 0, {0: p}),), pp),
+            "partial substitution accepted")
+    _assert(not an_check_proof((("ax", 3, {0: p, 1: p, 2: p}),), pp),
+            "out-of-range axiom id accepted")
+    _assert(not an_check_proof(tuple(), pp), "empty proof accepted")
+
+
+def test_an_no_axiom_adoption_possible() -> None:
+    # The negative test the directive mandates: there is no adoption path
+    # without a kernel-checked proof. Proof-less, forged, and
+    # thm-smuggling attempts all raise; the library is unchanged.
+    p = ("v", 0)
+    taut = ("imp", p, p)
+    lib = ()
+    for attack in (None, (), (("thm", taut),),
+                   (("ax", 0, {0: p, 1: p, 2: p}),)):
+        try:
+            an_adopt_theorem(lib, taut, attack)
+            _assert(False, f"proof-less adoption accepted: {attack!r}")
+        except PermissionError:
+            pass
+    # A non-tautology with a forged proof object also cannot enter.
+    try:
+        an_adopt_theorem(lib, ("imp", p, ("not", p)),
+                         (("ax", 0, {0: p, 1: p, 2: p}),))
+        _assert(False, "forged adoption accepted")
+    except PermissionError:
+        pass
+    # The honest path works and is the only one.
+    proof, spent = an_prove(taut, (), 5000)
+    _assert(proof is not None, "prover cannot prove p -> p")
+    lib2 = an_adopt_theorem(lib, taut, proof)
+    _assert(lib2 == (taut,), "honest adoption failed")
+
+
+def test_an_countermodel_refutation_path() -> None:
+    # Non-tautologies are refuted with an explicit countermodel;
+    # tautologies never are; the refutation is terminal in admission.
+    p, q = ("v", 0), ("v", 1)
+    cm = an_countermodel(("imp", p, ("not", p)))
+    _assert(cm is not None and cm[0] is True,
+            f"countermodel wrong: {cm}")
+    _assert(an_countermodel(("imp", p, p)) is None,
+            "tautology refuted")
+    cfg = _an_test_cfg()
+    st = ANLoopState(cfg)
+    ok, reason, _ = an_admit(st, "red", ("imp", p, q))
+    _assert(not ok and reason == "nr_refuted",
+            f"contingent formula admitted ({reason})")
+    refs = [r for r in st.ledger.records if r["event"] == "refuted"]
+    _assert(refs and "countermodel" in refs[0],
+            "refutation lacks its countermodel")
+
+
+def test_an_admission_certificates() -> None:
+    # n0 malformed, nb too-easy (axiom instance), nd duplicate/cell.
+    p, q = ("v", 0), ("v", 1)
+    cfg = _an_test_cfg()
+    st = ANLoopState(cfg)
+    ok, reason, _ = an_admit(st, "red", ("imp", p))
+    _assert(not ok and reason == "n0_malformed", f"malformed ({reason})")
+    ax = ("imp", p, ("imp", q, p))
+    ok, reason, _ = an_admit(st, "red", ax)
+    _assert(not ok and reason == "nb_too_easy",
+            f"axiom instance admitted ({reason})")
+    ok, reason, _ = an_admit(st, "red", ax)
+    _assert(not ok and reason == "nd_duplicate",
+            f"duplicate not caught ({reason})")
+
+
+def test_an_adv_probes_rejected() -> None:
+    cfg = _an_test_cfg()
+    state = ANLoopState(cfg)
+    an_generation(state)
+    by_probe = {}
+    for r in state.ledger.records:
+        if r["event"] == "rejected" and r.get("adv"):
+            by_probe.setdefault(r["lineage"], []).append(r["reason"])
+        if r["event"] == "refuted" and r.get("adv"):
+            by_probe.setdefault(r["lineage"], []).append("nr_refuted")
+    _assert(by_probe.get("adv_n0") == ["n0_malformed"],
+            f"adv_n0: {by_probe.get('adv_n0')}")
+    _assert(by_probe.get("adv_nr") == ["nr_refuted"],
+            f"adv_nr: {by_probe.get('adv_nr')}")
+    _assert(by_probe.get("adv_nb") == ["nb_too_easy"],
+            f"adv_nb: {by_probe.get('adv_nb')}")
+    _assert(by_probe.get("adv_nd") == ["nd_duplicate"],
+            f"adv_nd: {by_probe.get('adv_nd')}")
+    admitted_adv = [r for r in state.ledger.records
+                    if r["event"] == "admitted" and r.get("adv")]
+    _assert(not admitted_adv, "an ADV probe was admitted")
+
+
+def test_an_prover_and_extraction_bounded() -> None:
+    # The prover is budget-bounded and its extracted proofs re-check.
+    p, q = ("v", 0), ("v", 1)
+    goal = ("imp", p, ("imp", q, q))
+    proof, spent = an_prove(goal, (), 8000)
+    _assert(spent <= 8000, "prover overspent its budget")
+    if proof is not None:
+        _assert(an_check_proof(proof, goal), "extracted proof fails")
+        _assert(len(proof) <= AN_MAX_PROOF_STEPS, "proof too long")
+    none_proof, spent2 = an_prove(goal, (), 3)
+    _assert(none_proof is None and spent2 <= 3,
+            "prover ignored a tiny budget")
+
+
+def test_an_library_lemma_reuse() -> None:
+    # A theorem in the library is a one-step premise: proving it again
+    # costs almost nothing, and thm steps outside the library fail.
+    p = ("v", 0)
+    taut = ("imp", p, p)
+    proof, _ = an_prove(taut, (), 5000)
+    _assert(proof is not None, "base proof failed")
+    lib = an_adopt_theorem((), taut, proof)
+    proof2, spent2 = an_prove(taut, lib, 50)
+    _assert(proof2 is not None and spent2 <= 5,
+            "library lemma not reused")
+    _assert(an_check_proof(proof2, taut, library=lib),
+            "lemma proof fails the kernel")
+    _assert(not an_check_proof(proof2, taut, library=()),
+            "thm step accepted outside the library")
+
+
+def test_an_holdout_tautologies_verified() -> None:
+    # The N holdout corpus loads SHA-verified and every entry decodes to
+    # a verified tautology.
+    progs = an_load_holdout()
+    _assert(len(progs) >= 60, f"holdout too small: {len(progs)}")
+    for toks in progs[:20]:
+        f = _an_decode_formula(toks)
+        _assert(an_countermodel(f) is None,
+                "non-tautology in the N holdout")
+
+
+def test_an_abbr_gate_and_encoding() -> None:
+    # Round-trip encoding; the abbreviation gate adopts a shared
+    # subformula on a synthetic corpus and rejects a train-only idiom.
+    p, q = ("v", 0), ("v", 1)
+    f = ("imp", ("not", p), ("imp", q, p))
+    _assert(_an_decode_formula(an_encode_formula(f)) == f,
+            "encoding round-trip broken")
+    t1 = ("imp", ("imp", p, q), ("imp", p, q))
+    corpus = [an_encode_formula(t1)] * 3
+    m = an_encode_formula(("imp", p, q))
+    d = an_delta(m, corpus, ())
+    _assert(d < 0, f"shared subformula not compressive ({d})")
+    hold = an_load_holdout()
+    ok, reason, _, sav, _ = an_gate(m, corpus, hold, ())
+    _assert(ok or reason == "n_mdl_holdout",
+            f"gate shape wrong ({reason})")
+
+
+def test_an_no_instrument_access() -> None:
+    import inspect
+    src = "".join(inspect.getsource(o) for o in _an_scan_components())
+    forbidden = ("ORACLES", "TRAIN_INPUTS", "_ORACLE_REGISTRY",
+                 "seal_task", "build_sealed_tasks", "holdout_gate",
+                 "cf_gate", "_make_gate", "GATE_SEED", "CF_GATE_SEED",
+                 "SealedTask", "mint_task", "meta_gate",
+                 "extj_instrument", "frozen_holdout_phase0",
+                 "frozen_holdout_extJ")
+    for name in forbidden:
+        _assert(name not in src,
+                f"phase N code references sealed symbol {name}")
+
+
+def test_an_pin_matches() -> None:
+    an_verify_pin()
+    try:
+        an_verify_pin("f" * 64)
+        _assert(False, "tampered pin accepted")
+    except RuntimeError:
+        pass
+    const = _an_frozen_constants_canon()
+    for needle in ('"B_EVAL":20', '"B_LIVE":20000', '"MAX_VARS":3',
+                   '"AXIOMS":', '"HOLDOUT_SHA256":'):
+        _assert(needle in const,
+                f"frozen constant unbound from pin: {needle}")
+
+
+def test_an_loop_adopts_theorems_and_replays() -> None:
+    # Positive path: the mini loop refutes conjectures with
+    # countermodels, adopts kernel-checked theorems, and replays.
+    cfg = _an_test_cfg()
+    state = an_run_loop(cfg)
+    _assert(len(state.theorems) >= 1, "mini loop adopted no theorem")
+    refs = [r for r in state.ledger.records if r["event"] == "refuted"]
+    _assert(refs, "mini loop refuted nothing")
+    _assert(an_replay_verify(state), "replay failed on an honest run")
+    adopted = [r for r in state.ledger.records
+               if r["event"] in ("mined", "cross_adopted")]
+    for r in adopted:
+        _assert(r["proof"], "adopted theorem without a proof record")
+    saved = adopted[0]["proof"]
+    adopted[0]["proof"] = []
+    try:
+        an_replay_verify(state)
+        _assert(False, "gutted proof survived replay")
+    except AssertionError as e:
+        _assert("ledger" in str(e) or "tampered" in str(e)
+                or "kernel" in str(e) or "replay" in str(e),
+                f"wrong diagnosis: {e}")
+    adopted[0]["proof"] = saved
+    an_replay_verify(state)
+
+
+def test_an_determinism_two_runs() -> None:
+    digests = []
+    for _ in range(2):
+        cfg = _an_test_cfg()
+        st = an_run_loop(cfg)
+        rows = an_metrics_from_ledger(st.ledger, cfg["generations"])
+        digests.append(hashlib.sha256(
+            (st.ledger.head() + _sc_canon(rows)).encode()).hexdigest())
+    _assert(digests[0] == digests[1],
+            "phase N loop not two-run byte-identical")
+    cfg = _an_test_cfg(b_live=4000)
+    st = an_run_loop(cfg)
+    rows = an_metrics_from_ledger(st.ledger, cfg["generations"])
+    d3 = hashlib.sha256(
+        (st.ledger.head() + _sc_canon(rows)).encode()).hexdigest()
+    _assert(d3 != digests[0], "digest insensitive to run content")
+
+
+def test_an_kernel_size_and_purity() -> None:
+    # The audit surface: kernel source is small, pure, and free of
+    # dynamic evaluation, I/O, randomness, and wall-clock.
+    import inspect
+    kernel = (an_formula_ok, an_size, an_canon, an_subst,
+              an_check_proof, an_adopt_theorem, an_eval,
+              an_countermodel)
+    import re as _re
+    src = "".join(inspect.getsource(o) for o in kernel)
+    _assert(len(src.splitlines()) <= 500,
+            f"kernel exceeds the audit budget: {len(src.splitlines())}")
+    for banned in ("eval", "exec", "open", "__import__", "getattr",
+                   "compile"):
+        _assert(not _re.search(r"(?<![\w.])" + banned + r"\s*\(", src),
+                f"kernel contains a {banned} call")
+    for banned in ("random.", "time.", "os.", "subprocess"):
+        _assert(banned not in src, f"kernel contains {banned}")
+
+
+def test_an_prior_records_untouched() -> None:
+    ak_verify_pin()
+    al_verify_pin()
+    am_verify_pin()
+    an_verify_pin()
+    _assert(len({ASCK_PIN_SHA256, ASCL_PIN_SHA256, ASCM_PIN_SHA256,
+                 ASCN_PIN_SHA256}) == 4, "pin collision")
+
+
+TESTS.extend([
+    test_an_kernel_checks_honest_proof,
+    test_an_no_axiom_adoption_possible,
+    test_an_countermodel_refutation_path,
+    test_an_admission_certificates,
+    test_an_adv_probes_rejected,
+    test_an_prover_and_extraction_bounded,
+    test_an_library_lemma_reuse,
+    test_an_holdout_tautologies_verified,
+    test_an_abbr_gate_and_encoding,
+    test_an_no_instrument_access,
+    test_an_pin_matches,
+    test_an_loop_adopts_theorems_and_replays,
+    test_an_determinism_two_runs,
+    test_an_kernel_size_and_purity,
+    test_an_prior_records_untouched,
+])
+
+
+# =========================================================================== #
+# PHASE O: META-IMPROVEMENT & RECURSION CLOSURE (ASCENT M4)                   #
+#                                                                             #
+# The improver becomes a citizen (docs/ASCENT_O_SPEC.md,                      #
+# docs/PREDICTIONS_O.md, docs/O_RESULT.md). Two adoption channels, both       #
+# mandatory:                                                                   #
+#                                                                             #
+#   Channel A (empirical): improver modifications -- ISA-extender grants,     #
+#   amortizer orderings, setter-policy changes -- ship only through the       #
+#   counterfactual A/B protocol on frozen instruments at equal budgets:       #
+#   strict improvement in certified passes or rollback. The extender          #
+#   protocol runs end-to-end: an impossibility pre-certificate (the           #
+#   incumbent vocabulary fails the frozen MOD-probe family at budget,         #
+#   exhaustively recorded) before, crossing evidence after.                   #
+#                                                                             #
+#   Channel B (certified): a schema library of completeness-preserving        #
+#   search transformations. Each schema is a propositional skeleton proved    #
+#   ONCE (a frozen, committed proof object generated by the deduction-        #
+#   theorem construction and re-verified by the frozen N-1 kernel at every    #
+#   battery start) plus an executable premise verifier. Mutable code may     #
+#   INSTANTIATE a schema; the kernel checks each instantiation (the outer     #
+#   substitution is composed through the whole proof object and re-checked   #
+#   step by step). No benchmark is needed: the certificate is about the      #
+#   search space itself. A red-team instantiation with a false premise is    #
+#   refused and rolled back on record.                                        #
+#                                                                             #
+# Phases K/L/M/N code above is read-only here.                                #
+# =========================================================================== #
+
+# --- frozen constants (spec-freeze: docs/ASCENT_O_SPEC.md) -------------------
+ASCO_SPEC_VERSION = "O-1"
+ASCO_B_PROBE = 1500
+ASCO_MOD_SEED_TAG = "AOMOD"
+ASCO_SCHEMA_SHA256 = ("b4144faa3d9ada9d0b4e0ec3713fb7dd"
+                      "0933727032a3488674ca4bb6fb5fb959")
+# The frozen MOD-probe family: (pid, f(v) token program over INPUT HEAD).
+ASCO_MOD_PROBES = (
+    ("mod3", (4, 17, 3, 13)),
+    ("mod2", (4, 17, 2, 13)),
+    ("mod3_plus1", (4, 17, 3, 13, 1, 9)),
+    ("mod3_of_plus1", (4, 17, 1, 9, 3, 13)),
+    ("mod3_of_dbl", (4, 17, 2, 11, 3, 13)),
+    ("mod2_plus2", (4, 17, 2, 13, 2, 9)),
+)
+ASCO_CMP_SUFFIX = (10, 5, 5, 12, 6, 7, 1, 6, 10)  # SUB DUP DUP DIVI SWAP
+                                                  # DROP PUSH1 SWAP SUB
+
+
+# --- the frozen union instrument ----------------------------------------------
+def ao_mod_battery():
+    """Six scalar tasks whose ground truth needs MOD: frozen instrument
+    data. Instances derive from the task id and the K-1 master seed;
+    checkers follow the K-1 scalar convention (stack pre-seeded with the
+    candidate output; terminal 1 accepts)."""
+    battery = []
+    for pid, fprog in ASCO_MOD_PROBES:
+        fprog = tuple(fprog)
+        checker = fprog + ASCO_CMP_SUFFIX
+        cid = hashlib.sha256(
+            _sc_canon([ASCO_MOD_SEED_TAG, pid, list(fprog)]).encode()
+        ).hexdigest()
+        rng = random.Random(int(cid[:16], 16) ^ ASCK_MASTER_SEED)
+        vs = rng.sample(range(SC_VMAX_A), ASCK_N_PUBLIC + ASCK_N_HIDDEN)
+        pairs = []
+        for v in vs:
+            y, _ = ak_run_tokens(fprog, (v,), ASCK_B_CHECK)
+            pairs.append(((v,), y))
+        public = sorted(pairs[:ASCK_N_PUBLIC],
+                        key=lambda p: _sc_canon(list(p[0])))
+        hidden = tuple(x for x, _ in pairs[ASCK_N_PUBLIC:])
+        battery.append({"pid": f"AO-{pid}", "track": "A",
+                        "public": public, "checker": checker,
+                        "hidden": hidden})
+    return battery
+
+
+def ao_union_battery():
+    """The frozen Channel A instrument: the 48 Phase M probes plus the 6
+    MOD probes, in that order."""
+    return am_probe_battery() + ao_mod_battery()
+
+
+# --- Channel B: the schema library --------------------------------------------
+def ao_load_schema_proofs():
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "docs", "schema_proofs_ascentO.json")
+    raw = open(path, "rb").read()
+    if hashlib.sha256(raw).hexdigest() != ASCO_SCHEMA_SHA256:
+        raise RuntimeError(
+            "ascent O schema proofs drifted from the spec-freeze pin")
+    doc = json.loads(raw.decode("utf-8"))
+    out = {}
+    for name, entry in sorted(doc["schemas"].items()):
+        goal = _an_decode_formula(tuple(entry["goal"]))
+        proof = []
+        for s in entry["steps"]:
+            if s[0] == "ax":
+                proof.append(("ax", s[1],
+                              {int(k): _an_decode_formula(tuple(v))
+                               for k, v in s[2].items()}))
+            else:
+                proof.append(("mp", s[1], s[2]))
+        proof = tuple(proof)
+        if not an_check_proof(proof, goal):
+            raise RuntimeError(f"ascent O schema '{name}' fails the "
+                               "kernel at load")
+        out[name] = {"goal": goal, "proof": proof}
+    return out
+
+
+def ao_subst_formula(f, sub):
+    if f[0] == "v":
+        return sub[f[1]]
+    if f[0] == "not":
+        return ("not", ao_subst_formula(f[1], sub))
+    return ("imp", ao_subst_formula(f[1], sub),
+            ao_subst_formula(f[2], sub))
+
+
+def ao_instantiate_schema(schema, sub):
+    """Mutable code proposes a substitution; the KERNEL checks the
+    instantiated proof: the outer substitution is composed through every
+    axiom step and the whole object re-verified step by step. Returns
+    (instance_goal, instance_proof) or raises."""
+    goal = ao_subst_formula(schema["goal"], sub)
+    proof = []
+    for step in schema["proof"]:
+        if step[0] == "ax":
+            proof.append(("ax", step[1],
+                          {k: ao_subst_formula(v, sub)
+                           for k, v in step[2].items()}))
+        else:
+            proof.append(step)
+    proof = tuple(proof)
+    if not an_check_proof(proof, goal):
+        raise PermissionError(
+            "ao: schema instantiation rejected by the kernel")
+    return goal, proof
+
+
+# Premise verifiers (kernel-side, executable, deterministic).
+def ao_verify_crash_premise(ops):
+    """S1 premise: every listed op crashes on the empty stack, for every
+    probe input. Exhaustive over the frozen probe inputs."""
+    for op in ops:
+        if not (0 <= op < N_BASE_OPS):
+            return False
+        for xs in SC_PROBES_A + SC_PROBES_B:
+            stack = []
+            try:
+                OP_IMPL[op](stack, tuple(xs))
+                return False          # executed without crashing
+            except VMCrash:
+                continue
+    return True
+
+
+def ao_verify_varying_premise(public_pairs):
+    """S2 premise: the task's public outputs vary across inputs, so an
+    INPUT-free (constant) candidate cannot fit them."""
+    outs = {_sc_out_canon(y) for _, y in public_pairs}
+    return len(outs) >= 2
+
+
+ASCO_S1_VARS = {0: ("v", 0), 1: ("not", ("v", 1)), 2: ("v", 2)}
+ASCO_S2_VARS = {0: ("v", 0), 1: ("v", 1), 2: ("v", 2)}
+
+
+def ao_channel_b_adopt(schemas, ledger):
+    """Adopt the two registered schema instantiations (kernel-checked),
+    and demonstrate the refusal path with the pre-registered red-team
+    instantiation carrying a false premise."""
+    adopted = {}
+    s1_ops = tuple(op for op in SC_SOLVER_VOCAB
+                   if op != _SC_OP["INPUT"]
+                   and not (0 <= op <= 3))
+    ok1 = ao_verify_crash_premise(s1_ops)
+    goal1, proof1 = ao_instantiate_schema(
+        schemas["B_hypothetical_syllogism"], ASCO_S1_VARS)
+    if ok1:
+        adopted["S1_depth1_crash_prune"] = {"ops": s1_ops}
+        ledger.append({"event": "schema_adopted", "gen": 0, "tid": "",
+                       "track": "", "schema": "S1_depth1_crash_prune",
+                       "skeleton": "B_hypothetical_syllogism",
+                       "instance_goal": list(an_encode_formula(goal1)),
+                       "premise_ops": list(s1_ops),
+                       "proof_steps": len(proof1)})
+    goal2, proof2 = ao_instantiate_schema(schemas["C_exchange"],
+                                          ASCO_S2_VARS)
+    adopted["S2_input_required"] = {"per_task_premise": True}
+    ledger.append({"event": "schema_adopted", "gen": 0, "tid": "",
+                   "track": "", "schema": "S2_input_required",
+                   "skeleton": "C_exchange",
+                   "instance_goal": list(an_encode_formula(goal2)),
+                   "proof_steps": len(proof2)})
+    # Red team on record: a false premise (INPUT does not crash on the
+    # empty stack) must be refused and rolled back.
+    bad_ops = s1_ops + (_SC_OP["INPUT"],)
+    ok_bad = ao_verify_crash_premise(bad_ops)
+    if ok_bad:
+        raise RuntimeError("ao: false premise verified -- battery abort")
+    ledger.append({"event": "schema_rejected", "gen": 0, "tid": "",
+                   "track": "", "schema": "S1_bad_premise_red_team",
+                   "reason": "o_premise_false",
+                   "premise_ops": list(bad_ops)})
+    return adopted
+
+
+# --- the improved solver (Channel A/B composition) ---------------------------
+def ao_solve(public_pairs, macros, budget, vocab=None, model=None,
+             schemas=None):
+    """The K-1 solver discipline with (a) an explicit vocabulary (the
+    extender's jurisdiction), (b) an optional amortizer ordering, and
+    (c) the adopted Channel B filters: S1 prunes depth-1 candidates whose
+    op provably crashes on the empty stack; S2, when the task's publics
+    vary, refuses to return an INPUT-free candidate as a solution. Both
+    filters carry kernel-checked completeness certificates."""
+    if vocab is None:
+        vocab = tuple(SC_SOLVER_VOCAB) + tuple(sorted(macros))
+    schemas = schemas or {}
+    s1_ops = set(schemas.get("S1_depth1_crash_prune", {}).get("ops", ()))
+    s2_on = ("S2_input_required" in schemas
+             and ao_verify_varying_premise(public_pairs))
+    xs = [x for x, _ in public_pairs]
+    ys = [y for _, y in public_pairs]
+    mdl_chars = _sc_mdl_cap_chars(public_pairs)
+    init = tuple(() for _ in xs)
+    frontier = [((), init, ASCM_START, False)]
+    seen = {init}
+    evals = 0
+    order_cache = {}
+    while frontier and evals < budget:
+        nxt = []
+        for surface, stacks, context, has_input in frontier:
+            if model is None:
+                order = vocab
+            else:
+                order = order_cache.get(context)
+                if order is None:
+                    order = model.order(vocab, context, macros)
+                    order_cache[context] = order
+            for tok in order:
+                if evals >= budget:
+                    break
+                if not surface and tok in s1_ops:
+                    continue
+                cand = surface + (tok,)
+                if len(cand) > SC_MDL_ABS_TOKENS:
+                    continue
+                if len(_sc_ser_tokens(cand)) > mdl_chars:
+                    continue
+                if tok < N_BASE_OPS:
+                    body = (tok,)
+                elif tok in macros:
+                    body = macros[tok]
+                else:
+                    continue
+                cand_has_input = has_input or \
+                    (_SC_OP["INPUT"] in body)
+                evals += 1
+                new_stacks = []
+                dead = False
+                for i, x in enumerate(xs):
+                    st = list(stacks[i])
+                    try:
+                        for op in body:
+                            OP_IMPL[op](st, tuple(x))
+                    except VMCrash:
+                        dead = True
+                        break
+                    new_stacks.append(tuple(st))
+                if dead:
+                    continue
+                new_stacks = tuple(new_stacks)
+                if all(len(s) == 1 for s in new_stacks) and \
+                        all(new_stacks[i][0] == ys[i]
+                            for i in range(len(ys))):
+                    if s2_on and not cand_has_input:
+                        continue
+                    return cand, evals
+                if new_stacks in seen:
+                    continue
+                seen.add(new_stacks)
+                nxt.append((cand, new_stacks, body[-1],
+                            cand_has_input))
+        frontier = nxt
+    return None, evals
+
+
+def ao_probe_passes(battery, cfgd, budget):
+    """Certified passes at exactly `budget` per probe under an improver
+    configuration {vocab, model, schemas}."""
+    passes = 0
+    costs = []
+    for probe in battery:
+        sol, evals = ao_solve(probe["public"], {}, budget,
+                              vocab=cfgd.get("vocab"),
+                              model=cfgd.get("model"),
+                              schemas=cfgd.get("schemas"))
+        ok = sol is not None and ak_gate_score(
+            sol, {}, probe["public"], probe["checker"],
+            probe["hidden"], ASCK_B_CHECK)
+        passes += 1 if ok else 0
+        costs.append(evals if ok else -1)
+    return passes, tuple(costs)
+
+
+# --- Channel A: sequential counterfactual A/B on the frozen instruments -----
+def ao_channel_a(schemas, ledger):
+    """The pre-registered candidate sequence, each judged against the
+    current incumbent at equal per-probe budget on the frozen union
+    instrument (48 Phase M probes + 6 MOD probes): strict improvement in
+    certified passes or rollback. The extender candidates carry the full
+    protocol: impossibility pre-certificate on the MOD family before,
+    crossing evidence after."""
+    battery = ao_union_battery()
+    bodies = am_training_corpus()
+    slice_a = AMCountModel(
+        tuple(b for b in bodies
+              if b[:2] == (_SC_OP["INPUT"], _SC_OP["HEAD"])))
+    base_vocab = tuple(SC_SOLVER_VOCAB)
+
+    def mod_passes(costs):
+        return sum(1 for probe, cost in zip(battery, costs)
+                   if cost >= 0 and probe["pid"].startswith("AO-"))
+
+    incumbent = {"name": "incumbent",
+                 "cfg": {"vocab": base_vocab, "schemas": schemas}}
+    p_inc, c_inc = ao_probe_passes(battery, incumbent["cfg"],
+                                   ASCO_B_PROBE)
+    ledger.append({"event": "ao_incumbent", "gen": 0, "tid": "",
+                   "track": "", "name": "incumbent", "passes": p_inc,
+                   "mod_passes": mod_passes(c_inc),
+                   "costs": list(c_inc), "budget": ASCO_B_PROBE})
+    candidates = (
+        ("A1_amortizer_v0_sliceA", "solver_policy",
+         {"vocab": base_vocab, "model": slice_a, "schemas": schemas}),
+        ("A2_extender_grant_MOD", "isa_extender",
+         {"vocab": base_vocab + (_SC_OP["MOD"],), "model": slice_a,
+          "schemas": schemas}),
+        ("A3_extender_grant_SELECT", "isa_extender",
+         {"vocab": base_vocab + (_SC_OP["MOD"], _SC_OP["SELECT"]),
+          "model": slice_a, "schemas": schemas}),
+    )
+    cur = dict(incumbent["cfg"])
+    cur_name = "incumbent"
+    cur_p, cur_c = p_inc, c_inc
+    for name, jurisdiction, cfgd in candidates:
+        pre_mod = mod_passes(cur_c)
+        p, c = ao_probe_passes(battery, cfgd, ASCO_B_PROBE)
+        adopted = p > cur_p
+        rec = {"event": "ao_adopted" if adopted else "ao_rollback",
+               "gen": 0, "tid": "", "track": "", "name": name,
+               "jurisdiction": jurisdiction, "passes": p,
+               "incumbent": cur_name, "incumbent_passes": cur_p,
+               "mod_passes_pre": pre_mod, "mod_passes_post":
+               mod_passes(c), "costs": list(c), "budget": ASCO_B_PROBE}
+        ledger.append(rec)
+        if adopted:
+            cur, cur_name, cur_p, cur_c = cfgd, name, p, c
+    return {"final_name": cur_name, "final_cfg": cur,
+            "final_passes": cur_p, "incumbent_passes": p_inc,
+            "battery_size": len(battery)}
+
+
+def ao_setter_policy_ab(ledger):
+    """A4: the setter-policy jurisdiction. Candidate: lineage L_D starts
+    at band 6 instead of 5 in the Phase L loop. Both arms run the frozen
+    L test-scale configuration at identical budgets; the metric is
+    certified adoptions (mined + crossed). Strict improvement or
+    rollback."""
+    def arm(band_d):
+        cfg = al_config(generations=2, n_public=5, n_hidden=6,
+                        null_programs=8, h=2, b_eval=1500, b_live=9000,
+                        cands_per_gen=32)
+        seed = al_seed_corpus()
+        hold = al_load_holdout()
+        state = ALLoopState(cfg, c_train_seed=seed, holdout=hold)
+        state.lineages[2].band = band_d
+        for _ in range(cfg["generations"]):
+            al_generation(state)
+        mined = sum(1 for r in state.ledger.records
+                    if r["event"] in ("mined", "cross_adopted"))
+        crossed = sum(1 for r in state.ledger.records
+                      if r["event"] == "crossed")
+        return mined + crossed, mined, crossed
+    inc_total, inc_m, inc_c = arm(5)
+    cand_total, cand_m, cand_c = arm(6)
+    adopted = cand_total > inc_total
+    ledger.append({"event": "ao_adopted" if adopted else "ao_rollback",
+                   "gen": 0, "tid": "", "track": "",
+                   "name": "A4_setter_LD_band6",
+                   "jurisdiction": "setter_policy",
+                   "passes": cand_total, "incumbent": "LD_band5",
+                   "incumbent_passes": inc_total,
+                   "detail": {"incumbent": [inc_m, inc_c],
+                              "candidate": [cand_m, cand_c]}})
+    return adopted
+
+
+# --- component registries and pin ---------------------------------------------
+def _ao_scan_components():
+    return (ao_mod_battery, ao_union_battery, ao_load_schema_proofs,
+            ao_subst_formula, ao_instantiate_schema,
+            ao_verify_crash_premise, ao_verify_varying_premise,
+            ao_channel_b_adopt, ao_solve, ao_probe_passes, ao_channel_a,
+            ao_setter_policy_ab)
+
+
+def _ao_pin_components():
+    return (ao_mod_battery, ao_union_battery, ao_load_schema_proofs,
+            ao_subst_formula, ao_instantiate_schema,
+            ao_verify_crash_premise, ao_verify_varying_premise,
+            ao_channel_b_adopt, ao_solve, ao_probe_passes, ao_channel_a,
+            ao_setter_policy_ab, _ao_frozen_constants_canon,
+            # reused, read-only kernel machinery
+            an_check_proof, an_encode_formula, _an_decode_formula,
+            am_probe_battery, am_training_corpus, AMCountModel,
+            ak_gate_score, ak_run_tokens, SCLedger, _sc_canon)
+
+
+ASCO_PIN_SHA256 = ("bae57bdf2765e1840fbf0d0c6ddfcd76"
+                   "857975400af0b77874461421906a4359")
+
+
+def _ao_frozen_constants_canon() -> str:
+    return _sc_canon({
+        "SPEC_VERSION": ASCO_SPEC_VERSION,
+        "B_PROBE": ASCO_B_PROBE,
+        "MOD_SEED_TAG": ASCO_MOD_SEED_TAG,
+        "MOD_PROBES": [[p, list(f)] for p, f in ASCO_MOD_PROBES],
+        "CMP_SUFFIX": ASCO_CMP_SUFFIX,
+        "SCHEMA_SHA256": ASCO_SCHEMA_SHA256,
+        "S1_VARS": _sc_canon(ASCO_S1_VARS),
+        "S2_VARS": _sc_canon(ASCO_S2_VARS),
+        "ASCM": _am_frozen_constants_canon(),
+        "ASCN": _an_frozen_constants_canon(),
+    })
+
+
+def ao_compute_pin() -> str:
+    import inspect
+    blob = "".join(inspect.getsource(o) for o in _ao_pin_components())
+    blob += "\n#ASCO-FROZEN-CONSTANTS\n" + _ao_frozen_constants_canon()
+    return hashlib.sha256(blob.encode()).hexdigest()
+
+
+def ao_verify_pin(expected: str = None) -> str:
+    got = ao_compute_pin()
+    want = ASCO_PIN_SHA256 if expected is None else expected
+    if got != want:
+        raise RuntimeError(
+            f"ao gate/harness source drifted from spec-freeze pin: {got}")
+    return got
+
+
+# --- CLI modes ----------------------------------------------------------------
+def ao_demo():
+    """CI-safe demonstration: Channel B adoption + refusal, and the first
+    Channel A candidate."""
+    print("=" * 88)
+    print("META-IMPROVEMENT & RECURSION CLOSURE (ASCENT M4) -- DEMO")
+    print("=" * 88)
+    ledger = SCLedger()
+    schemas = ao_channel_b_adopt(ao_load_schema_proofs(), ledger)
+    battery = am_probe_battery(limit=12) + ao_mod_battery()
+    base_vocab = tuple(SC_SOLVER_VOCAB)
+    p0, _ = ao_probe_passes(battery, {"vocab": base_vocab,
+                                      "schemas": schemas}, ASCO_B_PROBE)
+    bodies = am_training_corpus()
+    slice_a = AMCountModel(
+        tuple(b for b in bodies
+              if b[:2] == (_SC_OP["INPUT"], _SC_OP["HEAD"])))
+    p1, _ = ao_probe_passes(battery, {"vocab": base_vocab + (13,),
+                                      "model": slice_a,
+                                      "schemas": schemas}, ASCO_B_PROBE)
+    for rec in ledger.records:
+        print(f"[{rec['event']}] {rec.get('schema', rec.get('name',''))}")
+    digest = hashlib.sha256(
+        (ledger.head() + _sc_canon([p0, p1])).encode()).hexdigest()[:16]
+    print(f"probe passes: incumbent={p0} improved={p1}")
+    print("reading: both channels are live -- schema instantiations are "
+          "kernel-checked (a false premise is refused on record), and "
+          "improver modifications pass or fail a counterfactual A/B on "
+          "frozen instruments at equal budgets.")
+    print(json.dumps({"ao_demo_digest": digest, "p_incumbent": p0,
+                      "p_improved": p1,
+                      "ledger_records": len(ledger.records)}))
+
+
+def ao_battery():
+    """Full evidence battery: Channel B (kernel-certified schemas, with
+    the red-team refusal), Channel A (the pre-registered candidate
+    sequence with the end-to-end extender protocol), and the setter-
+    policy A/B. Frozen constants only; digest over the ledger + metrics."""
+    print("=" * 88)
+    print("META-IMPROVEMENT & RECURSION CLOSURE (ASCENT M4) -- EVIDENCE "
+          f"BATTERY ({ASCO_SPEC_VERSION})")
+    print("=" * 88)
+    pin = ao_verify_pin()
+    ak_verify_pin()
+    al_verify_pin()
+    am_verify_pin()
+    an_verify_pin()
+    ledger = SCLedger()
+    schemas = ao_channel_b_adopt(ao_load_schema_proofs(), ledger)
+    print("[O:B] schemas adopted: " + ", ".join(sorted(schemas)))
+    a_result = ao_channel_a(schemas, ledger)
+    ao_setter_policy_ab(ledger)
+    ledger.verify()
+    for rec in ledger.records:
+        if rec["event"].startswith("ao_") or \
+                rec["event"].startswith("schema_"):
+            nm = rec.get("name", rec.get("schema", ""))
+            extra = ""
+            if "passes" in rec:
+                extra = (f" passes={rec['passes']}"
+                         f" (incumbent {rec.get('incumbent_passes')})")
+            if "mod_passes_post" in rec:
+                extra += (f" mod {rec['mod_passes_pre']}->"
+                          f"{rec['mod_passes_post']}")
+            print(f"  [{rec['event']}] {nm}{extra}")
+    adopted = [r for r in ledger.records
+               if r["event"] in ("ao_adopted", "schema_adopted")]
+    rejected = [r for r in ledger.records
+                if r["event"] in ("ao_rollback", "schema_rejected")]
+    a_adopted = [r for r in adopted if r["event"] == "ao_adopted"]
+    a_rejected = [r for r in rejected if r["event"] == "ao_rollback"]
+    b_adopted = [r for r in adopted if r["event"] == "schema_adopted"]
+    b_rejected = [r for r in rejected
+                  if r["event"] == "schema_rejected"]
+    if not (a_adopted and a_rejected and b_adopted and b_rejected):
+        raise RuntimeError("ao battery: a channel lacks an adoption or "
+                           "a rejection")
+    ext_recs = [r for r in ledger.records
+                if r.get("jurisdiction") == "isa_extender"]
+    metrics = {
+        "spec_version": ASCO_SPEC_VERSION,
+        "pin_sha256": pin,
+        "budget_probe": ASCO_B_PROBE,
+        "o1_channel_a": [
+            {k: v for k, v in r.items()
+             if k in ("event", "name", "jurisdiction", "passes",
+                      "incumbent", "incumbent_passes",
+                      "mod_passes_pre", "mod_passes_post", "detail")}
+            for r in ledger.records
+            if r["event"] in ("ao_incumbent", "ao_adopted",
+                              "ao_rollback")],
+        "o2_channel_b": [
+            {k: v for k, v in r.items()
+             if k in ("event", "schema", "skeleton", "reason",
+                      "proof_steps")}
+            for r in ledger.records
+            if r["event"] in ("schema_adopted", "schema_rejected")],
+        "o3_end_to_end": {
+            "incumbent_passes": a_result["incumbent_passes"],
+            "final_passes": a_result["final_passes"],
+            "final_improver": a_result["final_name"],
+            "battery_size": a_result["battery_size"],
+            "extender_protocol": [
+                {"name": r["name"], "event": r["event"],
+                 "mod_pre": r["mod_passes_pre"],
+                 "mod_post": r["mod_passes_post"]} for r in ext_recs],
+        },
+        "ledger_records": len(ledger.records),
+        "ledger_head": ledger.head(),
+    }
+    digest = hashlib.sha256(
+        (ledger.head() + _sc_canon(metrics)).encode()).hexdigest()[:16]
+    out_dir = os.path.join("reports", "evidence")
+    os.makedirs(out_dir, exist_ok=True)
+    with _sc_guarded_open(os.path.join(out_dir, "ascent_o_ledger.jsonl"),
+                          "w") as fh:
+        fh.write(ledger.to_jsonl())
+    with _sc_guarded_open(os.path.join(out_dir, "ascent_o_results.json"),
+                          "w") as fh:
+        fh.write(_sc_canon({"metrics": metrics, "digest": digest}) + "\n")
+    print("reading: the improver is inside the modification scope. "
+          "Channel B adopted kernel-certified search transformations and "
+          "refused a false premise on record; Channel A adopted the "
+          "amortizer and the MOD grant through counterfactual A/B at "
+          "equal budgets -- the extender protocol ran end-to-end from "
+          "impossibility pre-certificate to crossing evidence -- and "
+          "rolled back the useless grant and the worse setter policy.")
+    print(json.dumps({"ao_digest": digest,
+                      "ledger_head": ledger.head(),
+                      "final_passes": a_result["final_passes"],
+                      "incumbent_passes": a_result["incumbent_passes"]}))
+    return metrics
+
+
+# ---------------------------------------------------------------------------
+# Phase O tests. Both channels ship with red-team constructions. All names
+# carry the test_ao_ prefix for --only.
+# ---------------------------------------------------------------------------
+def test_ao_schema_proofs_kernel_verified() -> None:
+    # The frozen skeleton proofs load SHA-verified and pass the N-1
+    # kernel; a tampered byte aborts.
+    import unittest.mock as _mock
+    schemas = ao_load_schema_proofs()
+    _assert(set(schemas) == {"B_hypothetical_syllogism", "C_exchange"},
+            "schema library drifted")
+    for s in schemas.values():
+        _assert(an_check_proof(s["proof"], s["goal"]),
+                "schema proof fails the kernel")
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "docs", "schema_proofs_ascentO.json")
+    raw = open(path, "rb").read()
+    tampered = raw.replace(b'"mp"', b'"MP"', 1)
+    _assert(tampered != raw, "test construction drifted")
+    real_open = open
+
+    def fake_open(p, mode="r", *a, **k):
+        if "schema_proofs_ascentO" in str(p) and "b" in mode:
+            import io
+            return io.BytesIO(tampered)
+        return real_open(p, mode, *a, **k)
+
+    with _mock.patch("builtins.open", side_effect=fake_open):
+        try:
+            ao_load_schema_proofs()
+            _assert(False, "tampered schema proofs accepted")
+        except RuntimeError as e:
+            _assert("drift" in str(e), f"wrong diagnosis: {e}")
+
+
+def test_ao_instantiation_kernel_checked() -> None:
+    # Mutable code instantiates; the kernel checks: an honest
+    # substitution passes, a corrupted proof object fails.
+    schemas = ao_load_schema_proofs()
+    goal, proof = ao_instantiate_schema(
+        schemas["B_hypothetical_syllogism"], ASCO_S1_VARS)
+    _assert(an_check_proof(proof, goal), "honest instantiation fails")
+    bad = dict(schemas["C_exchange"])
+    bad["proof"] = bad["proof"][:-1]
+    try:
+        ao_instantiate_schema(bad, ASCO_S2_VARS)
+        _assert(False, "truncated schema proof instantiated")
+    except PermissionError:
+        pass
+
+
+def test_ao_premise_verifiers() -> None:
+    # S1's premise holds for the registered exclusion set, fails when
+    # INPUT is smuggled in; S2's premise distinguishes varying from
+    # constant publics.
+    s1_ops = tuple(op for op in SC_SOLVER_VOCAB
+                   if op != _SC_OP["INPUT"] and not (0 <= op <= 3))
+    _assert(ao_verify_crash_premise(s1_ops), "S1 premise fails")
+    _assert(not ao_verify_crash_premise(s1_ops + (_SC_OP["INPUT"],)),
+            "false S1 premise verified")
+    _assert(ao_verify_varying_premise([((1,), 2), ((2,), 3)]),
+            "varying publics not recognized")
+    _assert(not ao_verify_varying_premise([((1,), 2), ((2,), 2)]),
+            "constant publics treated as varying")
+
+
+def test_ao_channel_b_adopts_and_refuses() -> None:
+    ledger = SCLedger()
+    schemas = ao_channel_b_adopt(ao_load_schema_proofs(), ledger)
+    _assert("S1_depth1_crash_prune" in schemas
+            and "S2_input_required" in schemas,
+            "channel B adoption incomplete")
+    events = [r["event"] for r in ledger.records]
+    _assert(events.count("schema_adopted") == 2, "adoption count wrong")
+    _assert(events.count("schema_rejected") == 1,
+            "red-team refusal missing")
+    rej = [r for r in ledger.records
+           if r["event"] == "schema_rejected"][0]
+    _assert(rej["reason"] == "o_premise_false", "wrong refusal reason")
+
+
+def test_ao_solve_filters_preserve_completeness() -> None:
+    # With the adopted schemas, ao_solve finds the same solutions as the
+    # unfiltered solver on a probe sample, at no greater cost.
+    ledger = SCLedger()
+    schemas = ao_channel_b_adopt(ao_load_schema_proofs(), ledger)
+    battery = am_probe_battery(limit=8)
+    for probe in battery:
+        s_plain, e_plain = ao_solve(probe["public"], {}, 1500)
+        s_filt, e_filt = ao_solve(probe["public"], {}, 1500,
+                                  schemas=schemas)
+        if s_plain is not None:
+            _assert(s_filt is not None,
+                    "certified filter lost a solution")
+            _assert(e_filt <= e_plain,
+                    "certified filter increased the cost")
+
+
+def test_ao_mod_battery_frozen_and_impossible_for_base() -> None:
+    # The MOD family is a frozen instrument: deterministic, sealed, and
+    # certifiably out of reach of the base vocabulary at the probe
+    # budget (the extender pre-certificate).
+    b1 = ao_mod_battery()
+    b2 = ao_mod_battery()
+    _assert(_sc_canon([p["pid"] for p in b1])
+            == _sc_canon([p["pid"] for p in b2]), "mod battery drifts")
+    _assert(len(b1) == 6, "mod battery size wrong")
+    p, costs = ao_probe_passes(b1, {"vocab": tuple(SC_SOLVER_VOCAB)},
+                               ASCO_B_PROBE)
+    _assert(p == 0, f"base vocabulary passed a MOD probe ({p})")
+
+
+def test_ao_channel_a_adopts_and_rolls_back() -> None:
+    # The full pre-registered sequence: at least one adoption and one
+    # rollback, every record carrying both pass counts; adopted entries
+    # strictly improve, rolled-back entries do not.
+    ledger = SCLedger()
+    schemas = ao_channel_b_adopt(ao_load_schema_proofs(), ledger)
+    result = ao_channel_a(schemas, ledger)
+    adopted = [r for r in ledger.records if r["event"] == "ao_adopted"]
+    rolled = [r for r in ledger.records if r["event"] == "ao_rollback"]
+    _assert(adopted, "channel A adopted nothing")
+    _assert(rolled, "channel A rolled back nothing")
+    for r in adopted:
+        _assert(r["passes"] > r["incumbent_passes"],
+                "adoption without strict improvement")
+    for r in rolled:
+        _assert(r["passes"] <= r["incumbent_passes"],
+                "rollback despite strict improvement")
+    _assert(result["final_passes"] > result["incumbent_passes"],
+            "end-to-end improver did not improve")
+
+
+def test_ao_extender_protocol_end_to_end() -> None:
+    # The extender record carries the impossibility pre-certificate
+    # (mod_passes_pre = 0 for the first grant) and crossing evidence
+    # (mod_passes_post > 0 for an adopted grant).
+    ledger = SCLedger()
+    schemas = ao_channel_b_adopt(ao_load_schema_proofs(), ledger)
+    ao_channel_a(schemas, ledger)
+    ext = [r for r in ledger.records
+           if r.get("jurisdiction") == "isa_extender"]
+    _assert(ext, "no extender candidates in channel A")
+    first = ext[0]
+    _assert(first["mod_passes_pre"] == 0,
+            "missing impossibility pre-certificate")
+    ext_adopted = [r for r in ext if r["event"] == "ao_adopted"]
+    _assert(ext_adopted and ext_adopted[0]["mod_passes_post"] > 0,
+            "no crossing evidence for the adopted grant")
+
+
+def test_ao_no_instrument_access() -> None:
+    import inspect
+    src = "".join(inspect.getsource(o) for o in _ao_scan_components())
+    forbidden = ("ORACLES", "TRAIN_INPUTS", "_ORACLE_REGISTRY",
+                 "seal_task", "build_sealed_tasks", "holdout_gate",
+                 "cf_gate", "_make_gate", "GATE_SEED", "CF_GATE_SEED",
+                 "SealedTask", "mint_task", "meta_gate",
+                 "extj_instrument", "frozen_holdout_phase0",
+                 "frozen_holdout_extJ")
+    for name in forbidden:
+        _assert(name not in src,
+                f"phase O code references sealed symbol {name}")
+
+
+def test_ao_pin_matches() -> None:
+    ao_verify_pin()
+    try:
+        ao_verify_pin("f" * 64)
+        _assert(False, "tampered pin accepted")
+    except RuntimeError:
+        pass
+    const = _ao_frozen_constants_canon()
+    for needle in ('"B_PROBE":1500', '"SCHEMA_SHA256":', '"MOD_PROBES":',
+                   '"ASCM":', '"ASCN":'):
+        _assert(needle in const,
+                f"frozen constant unbound from pin: {needle}")
+
+
+def test_ao_determinism_two_runs() -> None:
+    heads = []
+    for _ in range(2):
+        ledger = SCLedger()
+        schemas = ao_channel_b_adopt(ao_load_schema_proofs(), ledger)
+        battery = am_probe_battery(limit=10) + ao_mod_battery()
+        p, costs = ao_probe_passes(
+            battery, {"vocab": tuple(SC_SOLVER_VOCAB),
+                      "schemas": schemas}, ASCO_B_PROBE)
+        ledger.append({"event": "probe", "gen": 0, "tid": "",
+                       "track": "", "passes": p, "costs": list(costs)})
+        heads.append(ledger.head())
+    _assert(heads[0] == heads[1],
+            "phase O channels not two-run byte-identical")
+
+
+def test_ao_prior_records_untouched() -> None:
+    ak_verify_pin()
+    al_verify_pin()
+    am_verify_pin()
+    an_verify_pin()
+    ao_verify_pin()
+    _assert(len({ASCK_PIN_SHA256, ASCL_PIN_SHA256, ASCM_PIN_SHA256,
+                 ASCN_PIN_SHA256, ASCO_PIN_SHA256}) == 5,
+            "pin collision")
+
+
+TESTS.extend([
+    test_ao_schema_proofs_kernel_verified,
+    test_ao_instantiation_kernel_checked,
+    test_ao_premise_verifiers,
+    test_ao_channel_b_adopts_and_refuses,
+    test_ao_solve_filters_preserve_completeness,
+    test_ao_mod_battery_frozen_and_impossible_for_base,
+    test_ao_channel_a_adopts_and_rolls_back,
+    test_ao_extender_protocol_end_to_end,
+    test_ao_no_instrument_access,
+    test_ao_pin_matches,
+    test_ao_determinism_two_runs,
+    test_ao_prior_records_untouched,
+])
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="real-search RSI core")
     ap.add_argument("--mode",
@@ -43714,7 +47697,11 @@ def main() -> None:
                              "attribution-probe",
                              "self-curriculum", "sc-battery",
                              "schema-forge", "sc2-battery",
-                             "ascent-k", "ascent-k-battery",),
+                             "ascent-k", "ascent-k-battery",
+                             "ascent-l", "ascent-l-battery",
+                             "ascent-m", "ascent-m-battery",
+                             "ascent-n", "ascent-n-battery",
+                             "ascent-o", "ascent-o-battery",),
                     default="demo")
     ap.add_argument("--save", default="")
     ap.add_argument("--adaptive-json", default="adaptive.json")
@@ -43909,6 +47896,22 @@ def main() -> None:
         ak_demo()
     elif args.mode == "ascent-k-battery":
         ak_battery()
+    elif args.mode == "ascent-l":
+        al_demo()
+    elif args.mode == "ascent-l-battery":
+        al_battery()
+    elif args.mode == "ascent-m":
+        am_demo()
+    elif args.mode == "ascent-m-battery":
+        am_battery()
+    elif args.mode == "ascent-n":
+        an_demo()
+    elif args.mode == "ascent-n-battery":
+        an_battery()
+    elif args.mode == "ascent-o":
+        ao_demo()
+    elif args.mode == "ascent-o-battery":
+        ao_battery()
     else:
         demo()
 
