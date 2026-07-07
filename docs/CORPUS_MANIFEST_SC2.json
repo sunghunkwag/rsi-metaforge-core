@@ -1,0 +1,14 @@
+{
+  "meta": {
+    "note": "frozen exploration-side artifacts; public shard supplies distributional task material, sealed shard is final-evaluation only (M7)",
+    "spec": "SC2-1"
+  },
+  "public": {
+    "docs/anchor_report_phaseE.json": "2c214112d48f71209c539493b757c8e6454bbff7f4a7f672d0b647ef489f00f3",
+    "docs/exploration_archive_phaseD.json": "e107d831ab2fc590b66974d6b0bbfea8d36e9be1d8ca43cfff14224b00bca96e"
+  },
+  "sealed": {
+    "docs/anchor_report_phaseG.json": "5e44476cd8884e96e72f8016ce787c59b931788a61cea174941fa0fdb18a2689",
+    "docs/exploration_archive_phaseG.json": "23dda0d87f33a7e995dc08ef6da4dca7dd11a8434fbda82f8d1e600f28c876b4"
+  }
+}

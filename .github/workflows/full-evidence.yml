@@ -98,12 +98,29 @@ jobs:
           cmp reports/evidence/sc_battery_results_run1.json reports/evidence/sc_battery_results.json
           cmp reports/evidence/sc_ledger_run1.jsonl reports/evidence/sc_ledger.jsonl
 
+      - name: Run fence-expansion battery twice and assert digest equality
+        shell: bash
+        run: |
+          set -o pipefail
+          python -u "rsi_levels_metaforge_unified.py" --mode sc2-battery 2>&1 | tee reports/evidence/sc2_battery_run1.log
+          cp reports/evidence/sc2_battery_results.json reports/evidence/sc2_battery_results_run1.json
+          cp reports/evidence/sc2_ledger.jsonl reports/evidence/sc2_ledger_run1.jsonl
+          python -u "rsi_levels_metaforge_unified.py" --mode sc2-battery 2>&1 | tee reports/evidence/sc2_battery_run2.log
+          d1=$(grep -o '"sc2_digest": "[0-9a-f]*"' reports/evidence/sc2_battery_run1.log | head -1)
+          d2=$(grep -o '"sc2_digest": "[0-9a-f]*"' reports/evidence/sc2_battery_run2.log | head -1)
+          echo "run1 ${d1}"
+          echo "run2 ${d2}"
+          test -n "${d1}"
+          [ "${d1}" = "${d2}" ]
+          cmp reports/evidence/sc2_battery_results_run1.json reports/evidence/sc2_battery_results.json
+          cmp reports/evidence/sc2_ledger_run1.jsonl reports/evidence/sc2_ledger.jsonl
+
       - name: Run full test suite after evidence artifacts
         shell: bash
         run: |
           set -o pipefail
           python -u "rsi_levels_metaforge_unified.py" --mode test 2>&1 | tee reports/evidence/full_test.log
-          grep -E '^RESULT: 178 passed, 0 failed$' reports/evidence/full_test.log
+          grep -E '^RESULT: 194 passed, 0 failed$' reports/evidence/full_test.log
           grep -E '^ALL TESTS PASSED$' reports/evidence/full_test.log
 
       - name: Collect generated evidence artifacts

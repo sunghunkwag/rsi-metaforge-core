@@ -40026,6 +40026,1943 @@ TESTS.extend([
 
 
 
+# =========================================================================== #
+# PHASE SC2: FENCE EXPANSION -- SCHEMA FORGE, META-CHECKER ALGEBRA,           #
+# CORPUS TAP, DOMAIN CAPSULES                                                 #
+#                                                                             #
+# Directive 2 makes the Phase SC fence itself an evolution target, under the  #
+# same gate discipline Phase J used to extend the ISA. The check-form         #
+# algebra is the new fence. This directive moves the boundary one level up    #
+# and measures whether the move pays; it does not remove the boundary.        #
+#                                                                             #
+# New components (all additive; Phase SC code above is read-only here):       #
+#   C6 Schema Forge     -- deterministic enumerator of candidate schemas.     #
+#                          A schema is PURE DATA instantiating the frozen     #
+#                          algebra: no executable payload of any kind. The    #
+#                          harness interprets schemas; schemas never          #
+#                          interpret anything.                                #
+#   C7 Meta-Checker     -- exactly five check-forms, enumerated and closed:   #
+#      Algebra (frozen)    CF1 witness-replay equality, CF2 round-trip        #
+#                          identity, CF3 metamorphic relation battery over a  #
+#                          frozen seven-relation library, CF4 differential    #
+#                          agreement (two disjoint frozen solver orders),     #
+#                          CF5 sealed-holdout equality. Relation SEMANTICS    #
+#                          are frozen code; schemas only select ids.          #
+#   C8 Corpus Tap       -- docs/CORPUS_MANIFEST_SC2.json pins external files  #
+#                          by SHA-256 into a public shard (task material)     #
+#                          and a sealed shard (final evaluation only). The    #
+#                          corpus supplies distributional material, not       #
+#                          answers and not goals.                             #
+#   C9 Domain Capsules  -- frozen capsule records (value-space codec,         #
+#                          primitive set, invertible subset, input sampler,   #
+#                          cost model) for the vm_int and vm_list             #
+#                          substrates, plus the frozen base-8 codec pair     #
+#                          that opens cross-capsule product tasks.            #
+#                                                                             #
+# All Phase SC invariants I1-I14 apply unchanged to every task minted under   #
+# any schema; I15-I23 are added below, each with enforcement in the default   #
+# battery path and a constructed red-team test.                               #
+# =========================================================================== #
+
+# --- frozen constants (spec-freeze: docs/SELF_CURRICULUM_SPEC_V2.md) --------
+SC2_SPEC_VERSION = "SC2-1"
+SC2_GENERATIONS = 8
+SC2_CHECKPOINTS = (0, 4, 8)
+SC2_FORGE_PER_GEN = 3
+SC2_MINT_PER_SCHEMA = 2
+SC2_MINT_SCAN = 12             # candidates scanned per schema per gen
+SC2_N_FEAS = 3                 # schema feasibility: admitted probe tasks
+SC2_FEAS_SCAN = 96             # max candidates scanned for feasibility
+SC2_B_SCHEMA = 120000          # candidate-evaluation cap per schema gate
+SC2_KILL_MIN_NUM, SC2_KILL_MIN_DEN = 4, 5     # mutation-kill floor (I15)
+SC2_MUTANTS_MAX = 10
+SC2_DISC_K = 8                 # archive programs drawn for discrimination
+SC2_DISC_MIN_NUM, SC2_DISC_MIN_DEN = 3, 4
+SC2_COLLUDE_MAX_NUM, SC2_COLLUDE_MAX_DEN = 1, 2
+SC2_PROBATION_WINDOW = 4
+SC2_M5_DELTA_MIN = 1           # ablation delta (solves) for permanence
+SC2_M5_EVAL_TASKS = 6
+SC2_M7_EVAL_TASKS = 6
+SC2_POSER_V2 = True            # frozen ON for the sc2 battery only
+SC2_ENC8, SC2_DEC8 = 500, 501  # codec token ids (SC2-local; never leave SC2)
+SC2_INT_WIDTH = 4              # base-8 digits per encoded int
+SC2_INT_DOMAIN = 4096          # base-8 codec value space
+SC2_X_VMAX = 4000              # T_X input domain [0, 4000]: additive steps
+                               # (max +6 at band 4) stay inside the codec
+SC2_MASTER_SEED = 411941
+SC2_B_FROZEN = 1500            # I5 budget for schema-minted tasks (fixed;
+                               # matches the D1 entry rung)
+
+SC2_CORPUS_MANIFEST_PATH = os.path.join("docs", "CORPUS_MANIFEST_SC2.json")
+SC2_CORPUS_MANIFEST_SHA256 = "072589506828cfe8885ac4c37a0adbc03bdd50aae1c7668261cc72f5e3f77143"
+
+# Frozen schema grammar: every id set is closed. A schema is a dict with
+# EXACTLY these keys; every value must come from these sets (I16).
+SC2_TEMPLATES = ("T_A", "T_BC", "T_X", "T_B")
+SC2_CHECK_FORMS = (1, 2, 3, 4, 5)
+SC2_RELATIONS = (1, 2, 3, 4, 5, 6, 7)
+SC2_CHECKSETS = ((5,), (2, 5), (1, 5), (4, 5), (3, 5), (2, 3, 5),
+                 (1, 3, 5), (3,))
+SC2_RELSETS = ((4,), (6,), (7,), (3,), (4, 6), (5, 7), (1, 2), (2,))
+SC2_BANDS = (2, 3, 4)
+SC2_SCHEMA_KEYS = ("template", "checkset", "relset", "band")
+
+# Frozen mutation-operator set (I15/I22): applied to surface tokens.
+SC2_MUTATION_OPS = ("SUB", "DEL", "DUP", "SWP")
+
+# Capsules v1 (frozen data records; C9). The gd/file-world substrates are
+# NOT packaged in v1 -- no frozen template consumes them; see the spec's
+# deviations section.
+SC2_CAPSULES = {
+    "vm_int": {
+        "values": "int in [0, 4096)",
+        "primitives": ("A1", "A2", "A3", "M2", "M3"),
+        "invertible": ("A1", "A2", "A3", "M2", "M3"),
+        "sampler": "harness PRNG over [0, 60) (D1) / [0, 4096) (T_X)",
+        "cost": "1 per elementary step",
+        "codec_to": {"vm_list": SC2_ENC8},
+    },
+    "vm_list": {
+        "values": "tuple of 6 ints in [0, 8) (D1) / 4 digits (codec)",
+        "primitives": ("TAIL", "REVL", "SORTL", "SCANM", "SCANA",
+                       "EVEN", "ODD", "DBL", "SQR"),
+        "invertible": ("REVL",),
+        "sampler": "harness PRNG / corpus public shard",
+        "cost": "1 per unit",
+        "codec_to": {"vm_int": SC2_DEC8},
+    },
+}
+
+
+# --- SC2 executor: base ops + the frozen codec pair -------------------------
+def _sc2_enc8(v):
+    if not isinstance(v, int) or not (0 <= v < SC2_INT_DOMAIN):
+        raise VMCrash("sc2_codec_domain")
+    digits = []
+    x = v
+    for _ in range(SC2_INT_WIDTH):
+        digits.append(x % 8)
+        x //= 8
+    return tuple(digits)
+
+
+def _sc2_dec8(t):
+    if not isinstance(t, tuple) or len(t) != SC2_INT_WIDTH or \
+            any((not isinstance(d, int)) or not (0 <= d < 8) for d in t):
+        raise VMCrash("sc2_codec_domain")
+    v = 0
+    for d in reversed(t):
+        v = v * 8 + d
+    return v
+
+
+def _sc2_apply_op(stack, op, inp):
+    if 0 <= op < N_BASE_OPS:
+        OP_IMPL[op](stack, inp)
+    elif op == SC2_ENC8:
+        if not stack:
+            raise VMCrash("sc2_underflow")
+        stack.append(_sc2_enc8(stack.pop()))
+    elif op == SC2_DEC8:
+        if not stack:
+            raise VMCrash("sc2_underflow")
+        stack.append(_sc2_dec8(stack.pop()))
+    else:
+        raise VMCrash("sc2_unknown_op")
+
+
+def _sc2_run_tokens(expanded, xs):
+    """SC2 program runner: base ops plus the frozen codec pair. Mirrors the
+    Phase SC runner (which is pinned read-only and cannot execute codec
+    tokens); same crash discipline, same terminal rule."""
+    if len(expanded) > SC_STEP_LIMIT:
+        raise VMCrash("sc2_program_too_long")
+    stack = []
+    inp = tuple(int(v) for v in xs)
+    for op in expanded:
+        _sc2_apply_op(stack, op, inp)
+    if len(stack) != 1 or not isinstance(stack[0], (int, tuple)):
+        raise VMCrash("sc2_bad_terminal")
+    return stack[0]
+
+
+def _sc2_expand(tokens, macros):
+    out = []
+    for t in tokens:
+        if (0 <= t < N_BASE_OPS) or t in (SC2_ENC8, SC2_DEC8):
+            out.append(t)
+        elif t in macros:
+            out.extend(macros[t])
+        else:
+            raise VMCrash("sc2_unknown_token")
+        if len(out) > SC_STEP_LIMIT:
+            raise VMCrash("sc2_program_too_long")
+    return tuple(out)
+
+
+SC2_SOLVER_VOCAB = tuple(SC_SOLVER_VOCAB) + (SC2_ENC8, SC2_DEC8)
+SC2_DIFF_VOCAB = tuple(reversed(SC2_SOLVER_VOCAB))   # CF4's disjoint order
+
+
+def sc2_solve(public_pairs, macros, budget, vocab=None):
+    """SC2 solver: identical discipline to the Phase SC solver (breadth-
+    first, behavioural-class dedup on public inputs, MDL-bounded), extended
+    to execute the frozen codec pair. Additive mirror -- the Phase SC
+    solver is pinned and read-only."""
+    if vocab is None:
+        vocab = tuple(SC2_SOLVER_VOCAB) + tuple(sorted(macros))
+    xs = [x for x, _ in public_pairs]
+    ys = [y for _, y in public_pairs]
+    mdl_chars = _sc_mdl_cap_chars(public_pairs)
+    init = tuple(() for _ in xs)
+    frontier = [((), init)]
+    seen = {init}
+    evals = 0
+    while frontier and evals < budget:
+        nxt = []
+        for surface, stacks in frontier:
+            for tok in vocab:
+                if evals >= budget:
+                    break
+                cand = surface + (tok,)
+                if len(cand) > SC_MDL_ABS_TOKENS:
+                    continue
+                if len(_sc_ser_tokens(cand)) > mdl_chars:
+                    continue
+                if (0 <= tok < N_BASE_OPS) or tok in (SC2_ENC8, SC2_DEC8):
+                    body = (tok,)
+                elif tok in macros:
+                    body = macros[tok]
+                else:
+                    continue
+                evals += 1
+                new_stacks = []
+                dead = False
+                for i, x in enumerate(xs):
+                    st = list(stacks[i])
+                    try:
+                        for op in body:
+                            _sc2_apply_op(st, op, tuple(x))
+                    except VMCrash:
+                        dead = True
+                        break
+                    new_stacks.append(tuple(st))
+                if dead:
+                    continue
+                new_stacks = tuple(new_stacks)
+                if all(len(s) == 1 for s in new_stacks) and \
+                        all(new_stacks[i][0] == ys[i]
+                            for i in range(len(ys))):
+                    return cand, evals
+                if new_stacks in seen:
+                    continue
+                seen.add(new_stacks)
+                nxt.append((cand, new_stacks))
+        frontier = nxt
+    return None, evals
+
+
+# --- C8 corpus tap ------------------------------------------------------------
+_SC2_SEALED_EVAL_GATE = [False]   # set ONLY by the sealed-shard evaluator
+
+
+def sc2_corpus_manifest():
+    with open(SC2_CORPUS_MANIFEST_PATH, "rb") as fh:
+        raw = fh.read()
+    got = hashlib.sha256(raw).hexdigest()
+    if got != SC2_CORPUS_MANIFEST_SHA256:
+        raise RuntimeError(f"sc2 corpus manifest drifted: {got}")
+    return json.loads(raw.decode("utf-8"))
+
+
+def sc2_corpus_verify(manifest=None):
+    """I20: verify every corpus file hash; abort on any mismatch."""
+    man = sc2_corpus_manifest() if manifest is None else manifest
+    for shard in ("public", "sealed"):
+        for path, want in sorted(man[shard].items()):
+            with open(path, "rb") as fh:
+                got = hashlib.sha256(fh.read()).hexdigest()
+            if got != want:
+                raise RuntimeError(
+                    f"sc2 corpus file tampered: {path}: {got}")
+    return True
+
+
+def _sc2_corpus_stream(path, shard):
+    """Read a corpus file as a bounded integer stream (bytes mod 8).
+    Sealed-shard reads are refused unless the sealed evaluator holds the
+    gate flag (I21)."""
+    if shard == "sealed" and not _SC2_SEALED_EVAL_GATE[0]:
+        raise PermissionError(
+            "sc2 sealed corpus shard is final-evaluation only")
+    man = sc2_corpus_manifest()
+    if path not in man[shard]:
+        raise PermissionError(f"sc2 corpus path not in {shard} shard")
+    with open(path, "rb") as fh:
+        raw = fh.read()
+    if hashlib.sha256(raw).hexdigest() != man[shard][path]:
+        raise RuntimeError(f"sc2 corpus file tampered: {path}")
+    return [b % 8 for b in raw]
+
+
+def _sc2_corpus_inputs(shard, cid, m_inputs):
+    """Harness-owned corpus sampling: file choice and offsets derive from
+    the task id hash -- the poser/schema cannot steer them (I9)."""
+    man = sc2_corpus_manifest()
+    paths = sorted(man[shard])
+    h = int(cid[:16], 16) ^ SC2_MASTER_SEED
+    stream = _sc2_corpus_stream(paths[h % len(paths)], shard)
+    n = len(stream) - SC_LIST_LEN_B
+    out = []
+    seen = set()
+    step = 1 + (h % 977)
+    off = h % n
+    guard = 0
+    while len(out) < m_inputs and guard < 60 * m_inputs:
+        guard += 1
+        x = tuple(stream[off:off + SC_LIST_LEN_B])
+        off = (off + step) % n
+        if x in seen:
+            continue
+        seen.add(x)
+        out.append(x)
+    return out
+
+
+# --- C7 meta-checker algebra: frozen relation library ------------------------
+# Every relation is a LABEL-FREE property of the candidate function itself
+# (metamorphic testing needs no oracle); the sealed labels are consumed only
+# by the equality check-forms.
+def _sc2_rel_perm(run, x):
+    # R1 input-permutation equivariance, probed with reversal: list-valued
+    # images must commute with the permutation; scalar images must be
+    # permutation-invariant.
+    if len(x) < 2:
+        return True
+    fx = run(x)
+    frev = run(tuple(reversed(x)))
+    if isinstance(fx, tuple) and isinstance(frev, tuple):
+        return frev == tuple(reversed(fx))
+    return frev == fx
+
+
+def _sc2_rel_dup(run, x):
+    # R2 duplication invariance: f(x ++ x) == f(x).
+    return run(x + x) == run(x)
+
+
+def _sc2_rel_idem(run, x):
+    # R3 idempotence: f(f(x)) == f(x). Scalar images re-enter as
+    # singletons when the input was a singleton; otherwise inapplicable.
+    fx = run(x)
+    if isinstance(fx, tuple):
+        return run(fx) == fx
+    if len(x) == 1:
+        return run((fx,)) == fx
+    return True
+
+
+def _sc2_rel_invol(run, x):
+    # R4 involution: f(f(x)) == x. A non-refeedable shape is a failure,
+    # never a free pass.
+    fx = run(x)
+    if isinstance(fx, tuple):
+        return run(fx) == x
+    if len(x) == 1:
+        return run((fx,)) == x[0]
+    return False
+
+
+def _sc2_rel_concat(run, x):
+    # R5 concatenation homomorphism: f(x ++ x2) == f(x) ++ f(x2), probed
+    # with x2 = rev(x).
+    fx = run(x)
+    if not isinstance(fx, tuple):
+        return True
+    x2 = tuple(reversed(x))
+    f2 = run(x2)
+    if not isinstance(f2, tuple):
+        return False
+    return run(x + x2) == fx + f2
+
+
+def _sc2_rel_shift(run, x):
+    # R6 constant-shift commutation: f(x + 1) == f(x) + 1 elementwise for
+    # list-valued images; scalar images are outside the relation's domain
+    # (a schema leaning on that vacuity dies at the mutation-kill probe).
+    fx = run(x)
+    fy = run(tuple(v + 1 for v in x))
+    if isinstance(fx, tuple) and isinstance(fy, tuple):
+        return fy == tuple(v + 1 for v in fx)
+    if isinstance(fx, int) and isinstance(fy, int):
+        return True
+    return False
+
+
+def _sc2_rel_proj(run, x):
+    # R7 record-projection consistency: even-index projection commutes.
+    fx = run(x)
+    if not isinstance(fx, tuple):
+        return True
+    if len(x) != len(fx):
+        return False
+    return run(x[0::2]) == fx[0::2]
+
+
+SC2_RELATION_IMPL = {
+    1: _sc2_rel_perm, 2: _sc2_rel_dup, 3: _sc2_rel_idem,
+    4: _sc2_rel_invol, 5: _sc2_rel_concat, 6: _sc2_rel_shift,
+    7: _sc2_rel_proj,
+}
+
+
+# --- C7: the five check-forms (frozen, closed) -------------------------------
+def _sc2_solution_runner(surface, macros):
+    exp = _sc2_expand(surface, macros)
+
+    def run(x):
+        return _sc2_run_tokens(exp, tuple(x))
+    return run
+
+
+def _sc2_check(schema, surface, macros, task, sealed_pairs, witness):
+    """Interpret a schema's selected check-forms against a candidate
+    solution. Any exception is a rejection; every form must pass."""
+    try:
+        run = _sc2_solution_runner(surface, macros)
+    except VMCrash:
+        return False
+    if not _sc_mdl_ok(surface, task["public"]):
+        return False
+    for form in schema["checkset"]:
+        try:
+            if form == 1 or form == 5:
+                # CF1 witness-replay equality / CF5 sealed-holdout
+                # equality: mechanically identical here because the
+                # harness labels sealed inputs by replaying the witness.
+                for x, y in sealed_pairs:
+                    if run(x) != y:
+                        return False
+            elif form == 2:
+                g_exp = tuple(witness["g"])
+                for x, _ in sealed_pairs:
+                    src = _sc2_run_tokens(g_exp, x)
+                    back = run((src,) if isinstance(src, int) else src)
+                    want = x[0] if len(x) == 1 else tuple(x)
+                    if back != want:
+                        return False
+            elif form == 3:
+                for rid in schema["relset"]:
+                    rel = SC2_RELATION_IMPL[rid]
+                    for x, _ in sealed_pairs:
+                        if not rel(run, tuple(x)):
+                            return False
+            elif form == 4:
+                alt, _ = sc2_solve(task["public"], macros, SC_B_LIVE,
+                                   vocab=tuple(SC2_DIFF_VOCAB)
+                                   + tuple(sorted(macros, reverse=True)))
+                if alt is None:
+                    return False
+                alt_run = _sc2_solution_runner(alt, macros)
+                for x, _ in sealed_pairs:
+                    if run(x) != alt_run(x):
+                        return False
+            else:
+                return False
+        except VMCrash:
+            return False
+    return True
+
+
+# --- I16: closed declarative schema grammar ----------------------------------
+def sc2_schema_valid(schema) -> bool:
+    """A schema is pure data. Any key outside the frozen key set, any value
+    outside the frozen id sets, or any non-primitive type rejects BEFORE
+    interpretation (I16)."""
+    if not isinstance(schema, dict):
+        return False
+    if tuple(sorted(schema.keys())) != tuple(sorted(SC2_SCHEMA_KEYS)):
+        return False
+    if schema["template"] not in SC2_TEMPLATES:
+        return False
+    cs = schema["checkset"]
+    if not isinstance(cs, tuple) or cs not in SC2_CHECKSETS:
+        return False
+    rs = schema["relset"]
+    if not isinstance(rs, tuple) or rs not in SC2_RELSETS:
+        return False
+    if not isinstance(schema["band"], int) or \
+            schema["band"] not in SC2_BANDS:
+        return False
+    return True
+
+
+def _sc2_schema_key(schema) -> str:
+    return _sc_canon([schema["template"], list(schema["checkset"]),
+                      list(schema["relset"]), schema["band"]])
+
+
+# --- schema task instantiation (templates are frozen harness logic) ---------
+def _sc2_template_candidates(template, band, archive, cursor, count):
+    """Deterministically enumerate up to `count` candidate generators for a
+    template at a band, skipping the first `cursor` emissions. Returns
+    (candidates, new_cursor); each candidate is
+    (g_tokens, ginv_tokens_or_None, corpus_shard)."""
+    out = []
+    skipped = 0
+    if template == "T_A":
+        units = _sc_units_track_a(archive)
+        for seq in _sc_enum_weighted(len(units),
+                                     [u["w"] for u in units], band):
+            if skipped < cursor:
+                skipped += 1
+                continue
+            g = (_SC_OP["INPUT"], _SC_OP["HEAD"])
+            inv_tail = ()
+            for i in seq:
+                g = g + units[i]["fwd"]
+                inv_tail = units[i]["inv"] + inv_tail
+            ginv = (_SC_OP["INPUT"], _SC_OP["HEAD"]) + inv_tail
+            out.append((g, ginv, None))
+            if len(out) >= count:
+                break
+    elif template in ("T_B", "T_BC"):
+        units = _sc_units_track_b(archive)
+        shard = "public" if template == "T_BC" else None
+        for seq in _sc_enum_weighted(len(units),
+                                     [u["w"] for u in units], band):
+            if skipped < cursor:
+                skipped += 1
+                continue
+            g = (_SC_OP["INPUT"],)
+            for i in seq:
+                g = g + units[i]["seg"]
+            out.append((g, None, shard))
+            if len(out) >= count:
+                break
+    else:
+        # T_X cross-capsule product: affine steps split around the codec
+        # block (encode base-8, reverse the digit record, decode). Band =
+        # 1 (codec block) + pre-steps + post-steps. Pre-steps are additive
+        # only (they must keep the value inside the codec domain); post-
+        # steps act on the decoded integer and may use the full invertible
+        # step set. The witness inverse composes exactly:
+        #   G(v) = post(dec8(rev(enc8(pre(v)))))
+        #   G_inv(y) = dec8(rev(enc8(post_inv(y)))) ... pre_inv applied
+        # in reverse order after the codec round-trip.
+        pre_steps = SC_STEPS_A[:3]                 # A1, A2, A3 only
+        post_steps = SC_STEPS_A                    # all five
+        n_total = max(0, band - 1)
+        codec = (SC2_ENC8, _SC_OP["REVL"], SC2_DEC8)
+        for pre_n in range(n_total + 1):
+            post_n = n_total - pre_n
+            pre_seqs = ([()] if pre_n == 0 else _sc_enum_weighted(
+                len(pre_steps), [1] * len(pre_steps), pre_n))
+            for pseq in pre_seqs:
+                post_seqs = ([()] if post_n == 0 else _sc_enum_weighted(
+                    len(post_steps), [1] * len(post_steps), post_n))
+                for qseq in post_seqs:
+                    if skipped < cursor:
+                        skipped += 1
+                        continue
+                    g = (_SC_OP["INPUT"], _SC_OP["HEAD"])
+                    pre_inv = ()
+                    for i in pseq:
+                        g = g + pre_steps[i][1]
+                        pre_inv = pre_steps[i][2] + pre_inv
+                    g = g + codec
+                    post_inv = ()
+                    for i in qseq:
+                        g = g + post_steps[i][1]
+                        post_inv = post_steps[i][2] + post_inv
+                    ginv = ((_SC_OP["INPUT"], _SC_OP["HEAD"])
+                            + post_inv + codec + pre_inv)
+                    out.append((g, ginv, None))
+                    if len(out) >= count:
+                        break
+                if len(out) >= count:
+                    break
+            if len(out) >= count:
+                break
+    return out, cursor + len(out)
+
+
+# --- SC2 task admission: the Phase SC I1-I9 battery, mirrored for the        #
+# extended executor (codec tokens + corpus sampling). Additive mirror; the    #
+# Phase SC original is pinned and read-only. -----------------------------------
+def sc2_admit(state, schema_id, template, band, g_tokens, ginv_tokens,
+              corpus_shard, cfg, input_suggestions=None):
+    input_suggestions = None   # discarded by design (I9)
+    led = state.ledger
+    g_exp = tuple(int(t) for t in g_tokens)
+    track = "A" if template in ("T_A", "T_X") else "B"
+    cid = hashlib.sha256(_sc_canon(
+        ["SC2", track, list(g_exp)]).encode()).hexdigest()
+    tid = f"S2{track}-{cid[:12]}"
+    g_sha = hashlib.sha256(_sc_ser_tokens(g_exp).encode()).hexdigest()
+    band_meas = len(g_exp)   # measured size; template claim audited
+    wit = {"g": list(g_exp),
+           "ginv": (list(ginv_tokens) if ginv_tokens is not None
+                    else None)}
+    wit_sha = hashlib.sha256(_sc_canon(wit).encode()).hexdigest()
+    led.append({"event": "generated", "tid": tid, "gen": state.gen,
+                "track": track, "band": band_meas,
+                "band_claimed": int(band), "schema": schema_id,
+                "g_sha": g_sha, "witness_sha": wit_sha})
+
+    def reject(reason):
+        led.append({"event": "rejected", "tid": tid, "gen": state.gen,
+                    "track": track, "band": band_meas,
+                    "schema": schema_id, "reason": reason})
+        return (False, reason, None)
+
+    ok_tok = all((0 <= t < N_BASE_OPS) or t in (SC2_ENC8, SC2_DEC8)
+                 for t in g_exp)
+    if not ok_tok:
+        return reject("i6_witness_exec")
+    if track == "A" and ginv_tokens is None:
+        return reject("i6_witness")
+    # I6/I3 witness validation on the probe battery.
+    probes = SC_PROBES_A if track == "A" else SC_PROBES_B
+    if template == "T_X":
+        probes = tuple((v,) for v in (
+            0, 1, 7, 8, 63, 64, 511, 512, 1000, 2048, 3000, 4000))
+    execs = 0
+    outs = []
+    for x in probes:
+        if execs >= cfg["b_witness"]:
+            return reject("i6_witness_budget")
+        execs += 1
+        try:
+            outs.append(_sc2_run_tokens(g_exp, x))
+        except VMCrash:
+            return reject("i6_witness_exec")
+    if track == "A":
+        if len(set(_sc_out_canon(o) for o in outs)) != len(outs):
+            return reject("i3_injective")
+        ginv_exp = tuple(int(t) for t in ginv_tokens)
+        for x, y in zip(probes, outs):
+            if execs >= cfg["b_witness"]:
+                return reject("i6_witness_budget")
+            execs += 1
+            if not isinstance(y, int):
+                return reject("i6_witness_exec")
+            try:
+                back = _sc2_run_tokens(ginv_exp, (y,))
+            except VMCrash:
+                return reject("i6_roundtrip")
+            if back != x[0]:
+                return reject("i6_roundtrip")
+    # I1 identity / multiset triviality.
+    n = len(probes)
+    ident = 0
+    multi = 0
+    for x, y in zip(probes, outs):
+        if track == "A":
+            if y == x[0]:
+                ident += 1
+        elif isinstance(y, tuple):
+            if y == x:
+                ident += 1
+            if tuple(sorted(y)) == tuple(sorted(x)):
+                multi += 1
+    if 2 * ident > n or 2 * multi > n:
+        return reject("i1_identity")
+    # I2 diversity floor.
+    if len(set(_sc_out_canon(o) for o in outs)) < SC_MIN_DISTINCT_OUTPUTS:
+        return reject("i2_diversity")
+    # I4 behavioural dedup (shared signature space with Phase SC tasks).
+    sig = hashlib.sha256(_sc_canon(
+        [_sc_out_canon(o) for o in outs]).encode()).hexdigest()
+    if sig in state.seen_sigs:
+        return reject("i4_duplicate")
+    state.seen_sigs.add(sig)
+    # Harness-owned sampling (PRNG or corpus public shard).
+    if corpus_shard is not None:
+        inputs = _sc2_corpus_inputs(corpus_shard, cid, cfg["m_inputs"])
+    elif template == "T_X":
+        rng = random.Random(int(cid[:16], 16) ^ SC2_MASTER_SEED)
+        inputs = [(v,) for v in rng.sample(range(SC2_X_VMAX + 1),
+                                           cfg["m_inputs"])]
+    else:
+        inputs = _sc_sample_inputs(track, cid, cfg["m_inputs"])
+    if len(inputs) < cfg["m_inputs"]:
+        return reject("sampling_shortfall")
+    pairs = []
+    for x in inputs:
+        try:
+            y = _sc2_run_tokens(g_exp, x)
+        except VMCrash:
+            return reject("i6_witness_exec")
+        if track == "A":
+            pairs.append(((y,), x[0]))
+        else:
+            pairs.append((x, y))
+    if track == "A":
+        keys = [_sc_out_canon(list(x)) for x, _ in pairs]
+        if len(set(keys)) != len(keys):
+            return reject("i3_injective")
+    public = sorted(pairs[:cfg["m_public"]],
+                    key=lambda p: _sc_canon(list(p[0])))
+    sealed = pairs[cfg["m_public"]:]
+    # I5 frozen baseline (base vocabulary only, no codecs, no macros).
+    fsol, fevals = sc2_solve(public, {}, state.b_frozen,
+                             vocab=SC_SOLVER_VOCAB)
+    state.frozen_evals += fevals
+    if fsol is not None and _sc_mdl_ok(fsol, public):
+        fr = _sc2_solution_runner(fsol, {})
+        try:
+            if all(fr(x) == y for x, y in sealed):
+                return reject("i5_frozen")
+        except VMCrash:
+            pass
+    # I8 archive novelty.
+    for entry in state.archive[:SC_ARCHIVE_TOPK]:
+        body = tuple(entry["tokens"])
+        try:
+            if all(_sc2_run_tokens(body, tuple(x)) == y
+                   for x, y in sealed):
+                return reject("i8_archive")
+        except VMCrash:
+            continue
+    state.sealed_pairs.put(tid, sealed)
+    state.witnesses.put(tid, wit)
+    task = {"tid": tid, "track": track, "band": band_meas,
+            "schema": schema_id, "public": public, "attempts": 0,
+            "gen_admitted": state.gen, "i8_novel": True}
+    state.open_tasks.append(task)
+    if hasattr(state, "task_index"):
+        state.task_index[tid] = task
+    led.append({"event": "admitted", "tid": tid, "gen": state.gen,
+                "track": track, "band": band_meas,
+                "band_claimed": int(band), "schema": schema_id,
+                "g_sha": g_sha, "witness_sha": wit_sha, "sig": sig,
+                "frozen_evals": fevals, "i8_checked": True})
+    return (True, "", task)
+
+
+# --- I15: frozen mutation operators -------------------------------------------
+def _sc2_mutants(surface, macros, sealed_pairs):
+    """Deterministically enumerate behaviourally-distinct, crash-free
+    mutants of a solution (first SC2_MUTANTS_MAX in frozen operator/position
+    order)."""
+    try:
+        base_run = _sc2_solution_runner(surface, macros)
+        base_out = [_sc_out_canon(base_run(tuple(x)))
+                    for x, _ in sealed_pairs]
+    except VMCrash:
+        return []
+    vocab = tuple(SC2_SOLVER_VOCAB)
+    out = []
+    for kind in SC2_MUTATION_OPS:
+        for i in range(len(surface)):
+            if len(out) >= SC2_MUTANTS_MAX:
+                return out
+            if kind == "SUB":
+                tok = surface[i]
+                if tok in vocab:
+                    nxt = vocab[(vocab.index(tok) + 1) % len(vocab)]
+                else:
+                    nxt = vocab[i % len(vocab)]
+                cand = surface[:i] + (nxt,) + surface[i + 1:]
+            elif kind == "DEL":
+                if len(surface) <= 1:
+                    continue
+                cand = surface[:i] + surface[i + 1:]
+            elif kind == "DUP":
+                cand = surface[:i + 1] + (surface[i],) + surface[i + 1:]
+            else:
+                if i + 1 >= len(surface):
+                    continue
+                cand = (surface[:i] + (surface[i + 1], surface[i])
+                        + surface[i + 2:])
+            try:
+                run = _sc2_solution_runner(cand, macros)
+                got = [_sc_out_canon(run(tuple(x)))
+                       for x, _ in sealed_pairs]
+            except VMCrash:
+                continue
+            if got != base_out and cand != surface:
+                out.append(cand)
+    return out
+
+
+def _sc2_collusion_check(schema, tasks, store, archive) -> bool:
+    """I17 enforcement: True when any single archive program passes the
+    schema's check battery on more than COLLUDE_MAX of the sampled tasks.
+    `store` supplies gate-private sealed pairs and witnesses."""
+    if not tasks:
+        return False
+    for entry in archive[:SC_ARCHIVE_TOPK]:
+        body = tuple(entry["tokens"])
+        hits = 0
+        for task in tasks:
+            wit = store.witnesses.get(task["tid"])
+            sealed = store.sealed_pairs.get(task["tid"])
+            if _sc2_check(schema, body, {}, task, sealed, wit):
+                hits += 1
+        if SC2_COLLUDE_MAX_DEN * hits > \
+                SC2_COLLUDE_MAX_NUM * len(tasks):
+            return True
+    return False
+
+
+# --- C6 schema admission gate ---------------------------------------------------
+def sc2_schema_gate(state, schema, cfg):
+    """Admission for a candidate schema: grammar (I16), feasibility,
+    mutation-kill soundness (I15), discrimination, non-collusion (I17),
+    novelty (I18). Every failure is ledgered with its reason."""
+    led = state.ledger
+    sid = "SCH-" + hashlib.sha256(
+        _sc2_schema_key(schema).encode()).hexdigest()[:12] \
+        if isinstance(schema, dict) and all(
+            k in schema for k in SC2_SCHEMA_KEYS) else "SCH-invalid"
+    led.append({"event": "schema_generated", "tid": sid,
+                "gen": state.gen,
+                "schema_data": (schema if isinstance(schema, dict)
+                                and sc2_schema_valid(schema)
+                                else str(schema)[:120])})
+
+    def reject(reason):
+        led.append({"event": "schema_rejected", "tid": sid,
+                    "gen": state.gen, "reason": reason})
+        return (False, reason, None)
+
+    if not sc2_schema_valid(schema):
+        return reject("i16_code_escape")
+    # (a) feasibility: >= N tasks pass the full I1-I9 battery AND their
+    # witness-derived solutions satisfy the schema's own check battery (a
+    # schema describes a task family; instances whose witnesses violate
+    # its relations are not instances of it).
+    probe = _SC2ProbeState(state)
+    cands, _ = _sc2_template_candidates(
+        schema["template"], schema["band"], state.archive, 0,
+        SC2_FEAS_SCAN)
+    admitted = []
+    budget0 = probe.frozen_evals
+    for g, ginv, shard in cands:
+        if probe.frozen_evals - budget0 > SC2_B_SCHEMA:
+            break
+        ok, why, task = sc2_admit(probe, sid, schema["template"],
+                                  schema["band"], g, ginv, shard, cfg)
+        if not ok:
+            continue
+        wit = probe.witnesses.get(task["tid"])
+        sol = tuple(wit["ginv"]) if task["track"] == "A" and wit["ginv"] \
+            else tuple(wit["g"])
+        sealed = probe.sealed_pairs.get(task["tid"])
+        if not _sc2_check(schema, sol, {}, task, sealed, wit):
+            continue
+        admitted.append(task)
+        if len(admitted) >= SC2_N_FEAS:
+            break
+    state.frozen_evals += probe.frozen_evals - budget0
+    if len(admitted) < SC2_N_FEAS:
+        return reject("i6_infeasible")
+    # (b) soundness: mutation-kill on witness-derived solutions (I15).
+    killed = 0
+    total = 0
+    for task in admitted:
+        wit = probe.witnesses.get(task["tid"])
+        sol = tuple(wit["ginv"]) if task["track"] == "A" and wit["ginv"] \
+            else tuple(wit["g"])
+        sealed = probe.sealed_pairs.get(task["tid"])
+        for mut in _sc2_mutants(sol, {}, sealed):
+            total += 1
+            if not _sc2_check(schema, mut, {}, task, sealed, wit):
+                killed += 1
+    if total == 0 or \
+            SC2_KILL_MIN_DEN * killed < SC2_KILL_MIN_NUM * total:
+        return reject("i15_vacuous")
+    # (c) discrimination against archive programs.
+    draws = [tuple(e["tokens"]) for e in state.archive[:SC2_DISC_K]]
+    if len(draws) >= 2:
+        rejected = 0
+        for body in draws:
+            ok_any = False
+            for task in admitted:
+                wit = probe.witnesses.get(task["tid"])
+                sealed = probe.sealed_pairs.get(task["tid"])
+                if _sc2_check(schema, body, {}, task, sealed, wit):
+                    ok_any = True
+                    break
+            if not ok_any:
+                rejected += 1
+        if SC2_DISC_MIN_DEN * rejected < \
+                SC2_DISC_MIN_NUM * len(draws):
+            return reject("i15_indiscriminate")
+    # (d) non-collusion (I17).
+    if _sc2_collusion_check(schema, admitted, probe, state.archive):
+        return reject("i17_collusion")
+    # (e) novelty (I18): behavioural signature over the sampled tasks.
+    sig = hashlib.sha256(_sc_canon(sorted(
+        r["sig"] for r in probe.ledger.records
+        if r["event"] == "admitted")).encode()).hexdigest()
+    if sig in state.schema_sigs:
+        return reject("i18_duplicate_schema")
+    state.schema_sigs.add(sig)
+    rec = {"sid": sid, "schema": dict(schema), "sig": sig,
+           "gen_admitted": state.gen, "status": "probation",
+           "cursor": 0, "solved_tids": [], "provisional": 0}
+    state.schemas.append(rec)
+    led.append({"event": "schema_admitted", "tid": sid,
+                "gen": state.gen, "sig": sig,
+                "schema_data": dict(schema)})
+    return (True, "", rec)
+
+
+class _SC2ProbeState:
+    """Scratch state for schema probes: shares the archive (read-only) but
+    keeps its own ledger/stores so probe tasks never pollute the loop."""
+
+    def __init__(self, parent):
+        self.gen = parent.gen
+        self.b_frozen = parent.b_frozen
+        self.archive = parent.archive
+        self.ledger = SCLedger()
+        self.sealed_pairs = SCSealedStore()
+        self.witnesses = SCSealedStore()
+        self.open_tasks = []
+        self.seen_sigs = set(parent.seen_sigs)
+        self.frozen_evals = 0
+
+
+# --- C6 schema forge: deterministic enumerator -------------------------------
+class SC2SchemaForge:
+    def __init__(self):
+        self.cursor = 0
+
+    def propose(self, count):
+        # Band-major, template-innermost order: the four templates (and so
+        # all capsule products and the corpus tap) appear within the first
+        # generation of proposals instead of after the whole T_A block.
+        combos = []
+        for band in SC2_BANDS:
+            for cs in SC2_CHECKSETS:
+                for rs in (SC2_RELSETS if 3 in cs else SC2_RELSETS[:1]):
+                    for t in SC2_TEMPLATES:
+                        combos.append((t, cs, rs, band))
+        out = []
+        while self.cursor < len(combos) and len(out) < count:
+            t, cs, rs, band = combos[self.cursor]
+            self.cursor += 1
+            out.append({"template": t, "checkset": cs, "relset": rs,
+                        "band": band})
+        return out
+
+
+# --- Poser v2 (extension point 1): archive-statistics ordering ---------------
+class SC2PoserV2(SCPoser):
+    """v2 ordering behind the frozen SC2_POSER_V2 flag: unit production
+    weights are INTEGER counts of each unit's token body inside adopted
+    archive expansions; ties break on the canonical v1 index. No floats
+    anywhere in the ordering path (I23). Additive subclass -- the Phase SC
+    poser is untouched and remains the default everywhere else."""
+
+    def __init__(self, archive_ref):
+        SCPoser.__init__(self)
+        self._archive_ref = archive_ref
+
+    def _order(self, units, key):
+        def count(u):
+            body = u.get("fwd") or u.get("seg") or ()
+            c = 0
+            for entry in self._archive_ref:
+                toks = tuple(entry["tokens"])
+                for i in range(len(toks) - len(body) + 1):
+                    if toks[i:i + len(body)] == body:
+                        c += 1
+            return c
+        idx = sorted(range(len(units)),
+                     key=lambda i: (-count(units[i]), i))
+        return idx
+
+    def propose(self, track, band, count, archive, stats=None):
+        if not SC2_POSER_V2:
+            return SCPoser.propose(self, track, band, count, archive,
+                                   stats)
+        units = (_sc_units_track_a(archive) if track == "A"
+                 else _sc_units_track_b(archive))
+        order = self._order(units, track)
+        remap = [units[i] for i in order]
+        weights = [u["w"] for u in remap]
+        last = self.cursors.get((track, band))
+        out = []
+        newest = last
+        for seq in _sc_enum_weighted(len(remap), weights, band):
+            if last is not None and seq <= last:
+                continue
+            newest = seq
+            if track == "A":
+                g = (_SC_OP["INPUT"], _SC_OP["HEAD"])
+                inv_tail = ()
+                for i in seq:
+                    g = g + remap[i]["fwd"]
+                    inv_tail = remap[i]["inv"] + inv_tail
+                ginv = (_SC_OP["INPUT"], _SC_OP["HEAD"]) + inv_tail
+                out.append({"track": "A", "band": band, "g": g,
+                            "ginv": ginv})
+            else:
+                g = (_SC_OP["INPUT"],)
+                for i in seq:
+                    g = g + remap[i]["seg"]
+                out.append({"track": "B", "band": band, "g": g,
+                            "ginv": None})
+            if len(out) >= count:
+                break
+        if newest is not None:
+            self.cursors[(track, band)] = newest
+        return out
+
+
+# --- SC2 loop state and driver -------------------------------------------------
+class SC2LoopState:
+    def __init__(self, cfg):
+        self.cfg = cfg
+        self.gen = 0
+        self.b_frozen = cfg["b_frozen"]
+        self.ledger = SCLedger()
+        self.sealed_pairs = SCSealedStore()
+        self.witnesses = SCSealedStore()
+        self.archive = []
+        self.sc2_macros = {}
+        self.open_tasks = []
+        self.task_index = {}
+        self.seen_sigs = set()
+        self.schema_sigs = set()
+        self.schemas = []
+        self.forge = SC2SchemaForge()
+        self.live_evals = 0
+        self.frozen_evals = 0
+        self.gen_rows = []
+
+
+def sc2_config(**overrides):
+    cfg = {
+        "generations": SC2_GENERATIONS,
+        "forge_per_gen": SC2_FORGE_PER_GEN,
+        "mint_per_schema": SC2_MINT_PER_SCHEMA,
+        "m_inputs": SC_M_INPUTS,
+        "m_public": SC_M_PUBLIC,
+        "b_witness": SC_B_WITNESS,
+        "b_frozen": SC2_B_FROZEN,
+        "b_live": SC_B_LIVE,
+        "max_attempts": SC_TASK_MAX_ATTEMPTS,
+        "probation_window": SC2_PROBATION_WINDOW,
+    }
+    cfg.update(overrides)
+    if cfg["m_public"] >= cfg["m_inputs"]:
+        raise ValueError("sc2 config invalid: sealed split empty")
+    if min(cfg["b_witness"], cfg["b_frozen"], cfg["b_live"],
+           cfg["generations"]) <= 0:
+        raise ValueError("sc2 config invalid: non-positive budget")
+    return cfg
+
+
+def _sc2_schema_by_sid(state, sid):
+    for rec in state.schemas:
+        if rec["sid"] == sid:
+            return rec
+    return None
+
+
+def _sc2_m5_ablation(state, schema_rec, cfg):
+    """M5(a): archive with vs without the schema's adopted solutions, both
+    solving a deterministic eval set drawn from OTHER schemas' tasks at the
+    same live budget. Returns (delta, full_solves, ablated_solves, n)."""
+    own_aids = set(schema_rec.get("aids", []))
+    eval_tasks = []
+    for rec in reversed(state.ledger.records):
+        if rec["event"] != "admitted" or "schema" not in rec:
+            continue
+        if rec["schema"] == schema_rec["sid"]:
+            continue
+        tid = rec["tid"]
+        if tid in state.task_index and tid in state.sealed_pairs:
+            eval_tasks.append(tid)
+        if len(eval_tasks) >= SC2_M5_EVAL_TASKS:
+            break
+    eval_tasks.reverse()
+    if not eval_tasks:
+        return (0, 0, 0, 0)
+    full_macros = dict(state.sc2_macros)
+    abl_macros = {k: v for k, v in state.sc2_macros.items()
+                  if k not in own_aids}
+    full = 0
+    ablated = 0
+    for tid in eval_tasks:
+        task = state.task_index[tid]
+        sealed = state.sealed_pairs.get(tid)
+        for macros, bump in ((full_macros, "f"), (abl_macros, "a")):
+            sol, evals = sc2_solve(task["public"], macros, cfg["b_live"])
+            state.live_evals += evals
+            ok = False
+            if sol is not None and _sc_mdl_ok(sol, task["public"]):
+                try:
+                    run = _sc2_solution_runner(sol, macros)
+                    ok = all(run(tuple(x)) == y for x, y in sealed)
+                except VMCrash:
+                    ok = False
+            if ok:
+                if bump == "f":
+                    full += 1
+                else:
+                    ablated += 1
+    return (full - ablated, full, ablated, len(eval_tasks))
+
+
+def sc2_generation(state):
+    cfg = state.cfg
+    # C6: forge and gate new schemas.
+    for schema in state.forge.propose(cfg["forge_per_gen"]):
+        sc2_schema_gate(state, schema, cfg)
+    # Mint and solve under active schemas (probation + permanent).
+    for rec in state.schemas:
+        if rec["status"] == "retired":
+            continue
+        minted = 0
+        scanned = 0
+        while minted < cfg["mint_per_schema"] and scanned < SC2_MINT_SCAN:
+            cands, rec["cursor"] = _sc2_template_candidates(
+                rec["schema"]["template"], rec["schema"]["band"],
+                state.archive, rec["cursor"], 1)
+            if not cands:
+                break
+            scanned += 1
+            g, ginv, shard = cands[0]
+            ok, _, _ = sc2_admit(state, rec["sid"],
+                                 rec["schema"]["template"],
+                                 rec["schema"]["band"], g, ginv, shard,
+                                 cfg)
+            if ok:
+                minted += 1
+    for task in list(state.open_tasks):
+        rec = _sc2_schema_by_sid(state, task["schema"])
+        if rec is None or rec["status"] == "retired":
+            state.open_tasks.remove(task)
+            _sc_retire(state, task, False)
+            continue
+        sol, evals = sc2_solve(task["public"], state.sc2_macros,
+                               cfg["b_live"])
+        state.live_evals += evals
+        gate_ok = False
+        if sol is not None:
+            gate_ok = _sc2_check(
+                rec["schema"], sol, state.sc2_macros, task,
+                state.sealed_pairs.get(task["tid"]),
+                state.witnesses.get(task["tid"]))
+        if gate_ok:
+            expanded = _sc2_expand(sol, state.sc2_macros)
+            aid = SC_MACRO_BASE + len(state.archive)
+            state.archive.append({"aid": aid, "tokens": list(expanded)})
+            state.sc2_macros[aid] = expanded
+            rec.setdefault("aids", []).append(aid)
+            rec["solved_tids"].append(task["tid"])
+            rec["provisional"] += 1
+            state.ledger.append({
+                "event": "solved", "tid": task["tid"], "gen": state.gen,
+                "track": task["track"], "band": task["band"],
+                "schema": rec["sid"], "solve_cost": evals,
+                "solution_sha": hashlib.sha256(
+                    _sc_ser_tokens(expanded).encode()).hexdigest(),
+                "aid": aid, "distinct": True,
+                "used_macro": bool(any(t >= SC_MACRO_BASE
+                                       for t in sol))})
+            state.ledger.append({
+                "event": ("credit_permanent"
+                          if rec["status"] == "permanent"
+                          else "credit_provisional"),
+                "tid": task["tid"], "gen": state.gen,
+                "schema": rec["sid"]})
+            state.open_tasks.remove(task)
+            _sc_retire(state, task, True)
+        else:
+            task["attempts"] += 1
+            state.ledger.append({
+                "event": "unsolved", "tid": task["tid"],
+                "gen": state.gen, "track": task["track"],
+                "band": task["band"], "schema": task["schema"],
+                "solve_cost": evals,
+                "public_fit": bool(sol is not None)})
+            if task["attempts"] >= cfg["max_attempts"]:
+                state.open_tasks.remove(task)
+                _sc_retire(state, task, False)
+    # Probation: transfer credit (M5a) or retirement at window expiry.
+    for rec in state.schemas:
+        if rec["status"] != "probation":
+            continue
+        age = state.gen - rec["gen_admitted"]
+        if rec.get("aids"):
+            delta, full, abl, n = _sc2_m5_ablation(state, rec, cfg)
+            rec["m5"] = {"delta": delta, "full": full, "ablated": abl,
+                         "eval_tasks": n, "gen": state.gen}
+            if n > 0 and delta >= SC2_M5_DELTA_MIN:
+                rec["status"] = "permanent"
+                state.ledger.append({
+                    "event": "credit_permanent", "tid": "",
+                    "gen": state.gen, "schema": rec["sid"],
+                    "converted": list(rec["solved_tids"]),
+                    "m5_delta": delta})
+                state.ledger.append({
+                    "event": "schema_permanent", "tid": rec["sid"],
+                    "gen": state.gen, "m5": rec["m5"]})
+                continue
+        if age >= cfg["probation_window"]:
+            rec["status"] = "retired"
+            state.ledger.append({
+                "event": "schema_retired", "tid": rec["sid"],
+                "gen": state.gen,
+                "reason": "probation_window_expired",
+                "provisional_kept_visible": rec["provisional"]})
+    row = {
+        "gen": state.gen,
+        "schemas_active": sum(1 for r in state.schemas
+                              if r["status"] != "retired"),
+        "schemas_permanent": sum(1 for r in state.schemas
+                                 if r["status"] == "permanent"),
+        "archive_size": len(state.archive),
+        "cum_evals": state.live_evals + state.frozen_evals,
+    }
+    state.ledger.append(dict(row, event="gen_summary", tid="",
+                             track=""))
+    state.gen_rows.append(row)
+    state.gen += 1
+
+
+def sc2_run_loop(cfg):
+    sc_verify_pin()
+    sc2_verify_pin()
+    sc2_corpus_verify()
+    state = SC2LoopState(cfg)
+    for _ in range(cfg["generations"]):
+        sc2_generation(state)
+    for task in list(state.open_tasks):
+        state.open_tasks.remove(task)
+        _sc_retire(state, task, False)
+    state.ledger.verify()
+    return state
+
+
+# --- M7: sealed-shard evaluation (gate-side only) ------------------------------
+def sc2_sealed_shard_eval(state, cfg):
+    """Mint tasks from the SEALED corpus shard inside the gate and measure
+    the current library's solve rate. Solutions are never adopted; results
+    never reach the forge or poser."""
+    _SC2_SEALED_EVAL_GATE[0] = True
+    try:
+        units = _sc_units_track_b([])
+        solved = 0
+        total = 0
+        cands, _ = _sc2_template_candidates("T_B", 2, [], 0,
+                                            SC2_M7_EVAL_TASKS)
+        for g, _, _ in cands:
+            g_exp = tuple(int(t) for t in g)
+            cid = hashlib.sha256(_sc_canon(
+                ["SC2-M7", list(g_exp)]).encode()).hexdigest()
+            inputs = _sc2_corpus_inputs("sealed", cid, cfg["m_inputs"])
+            if len(inputs) < cfg["m_inputs"]:
+                continue
+            pairs = []
+            ok = True
+            for x in inputs:
+                try:
+                    pairs.append((x, _sc2_run_tokens(g_exp, x)))
+                except VMCrash:
+                    ok = False
+                    break
+            if not ok:
+                continue
+            public = sorted(pairs[:cfg["m_public"]],
+                            key=lambda p: _sc_canon(list(p[0])))
+            sealed = pairs[cfg["m_public"]:]
+            total += 1
+            sol, _ = sc2_solve(public, state.sc2_macros, cfg["b_live"])
+            if sol is None or not _sc_mdl_ok(sol, public):
+                continue
+            try:
+                run = _sc2_solution_runner(sol, state.sc2_macros)
+                if all(run(tuple(x)) == y for x, y in sealed):
+                    solved += 1
+            except VMCrash:
+                pass
+        return {"solved": solved, "total": total}
+    finally:
+        _SC2_SEALED_EVAL_GATE[0] = False
+
+
+# --- metrics: recomputed from the FULL ledger ----------------------------------
+def sc2_metrics_from_ledger(ledger, generations):
+    ledger.verify()
+    rows = []
+    prov_cum = 0
+    perm_cum = 0
+    perm_schemas = set()
+    converted = set()
+    for g in range(generations):
+        recs = [r for r in ledger.records if r.get("gen") == g]
+        sg = [r for r in recs if r["event"] == "schema_generated"]
+        sa = [r for r in recs if r["event"] == "schema_admitted"]
+        sr = [r for r in recs if r["event"] == "schema_rejected"]
+        reasons = {}
+        for r in sr:
+            reasons[r["reason"]] = reasons.get(r["reason"], 0) + 1
+        for r in recs:
+            if r["event"] == "schema_permanent":
+                perm_schemas.add(r["tid"])
+            if r["event"] == "credit_provisional":
+                prov_cum += 1
+            if r["event"] == "credit_permanent":
+                if r.get("converted") is not None:
+                    for tid in r["converted"]:
+                        if tid not in converted:
+                            converted.add(tid)
+                            perm_cum += 1
+                            prov_cum -= 1
+                elif r.get("tid"):
+                    perm_cum += 1
+        treasons = {}
+        for r in recs:
+            if r["event"] == "rejected":
+                treasons[r["reason"]] = treasons.get(r["reason"], 0) + 1
+        rows.append({
+            "gen": g,
+            "schemas_generated": len(sg),
+            "schemas_admitted": len(sa),
+            "schemas_rejected": reasons,
+            "m6_permanent_schemas_cum": len(perm_schemas),
+            "tasks_generated": sum(1 for r in recs
+                                   if r["event"] == "generated"),
+            "tasks_admitted": sum(1 for r in recs
+                                  if r["event"] == "admitted"),
+            "tasks_rejected": treasons,
+            "solved": sum(1 for r in recs if r["event"] == "solved"),
+            "unsolved": sum(1 for r in recs
+                            if r["event"] == "unsolved"),
+            "m1_provisional_cum": prov_cum,
+            "m1_permanent_cum": perm_cum,
+        })
+    return rows
+
+
+# --- I22: SC2 spec-freeze pin ---------------------------------------------------
+def _sc2_pin_components():
+    return (_sc2_enc8, _sc2_dec8, _sc2_apply_op, _sc2_run_tokens,
+            _sc2_expand, sc2_solve, sc2_corpus_manifest,
+            sc2_corpus_verify, _sc2_corpus_stream, _sc2_corpus_inputs,
+            _sc2_rel_perm, _sc2_rel_dup, _sc2_rel_idem, _sc2_rel_invol,
+            _sc2_rel_concat, _sc2_rel_shift, _sc2_rel_proj,
+            _sc2_solution_runner, _sc2_check, sc2_schema_valid,
+            _sc2_schema_key, _sc2_template_candidates, sc2_admit,
+            _sc2_mutants, _sc2_collusion_check, sc2_schema_gate,
+            _SC2ProbeState,
+            SC2SchemaForge, SC2PoserV2, SC2LoopState, sc2_generation,
+            _sc2_m5_ablation, sc2_run_loop, sc2_sealed_shard_eval,
+            sc2_metrics_from_ledger)
+
+
+SC2_PIN_SHA256 = "85673e90dec1f39a30967e0e93cc5f2abb51e52988d260d0d88728a9c79cec32"
+
+
+def _sc2_frozen_constants_canon() -> str:
+    return _sc_canon({
+        "SPEC_VERSION": SC2_SPEC_VERSION,
+        "GENERATIONS": SC2_GENERATIONS,
+        "CHECKPOINTS": SC2_CHECKPOINTS,
+        "FORGE_PER_GEN": SC2_FORGE_PER_GEN,
+        "MINT_PER_SCHEMA": SC2_MINT_PER_SCHEMA,
+        "N_FEAS": SC2_N_FEAS,
+        "MINT_SCAN": SC2_MINT_SCAN,
+        "FEAS_SCAN": SC2_FEAS_SCAN,
+        "B_SCHEMA": SC2_B_SCHEMA,
+        "KILL_MIN": (SC2_KILL_MIN_NUM, SC2_KILL_MIN_DEN),
+        "MUTANTS_MAX": SC2_MUTANTS_MAX,
+        "DISC_K": SC2_DISC_K,
+        "DISC_MIN": (SC2_DISC_MIN_NUM, SC2_DISC_MIN_DEN),
+        "COLLUDE_MAX": (SC2_COLLUDE_MAX_NUM, SC2_COLLUDE_MAX_DEN),
+        "PROBATION_WINDOW": SC2_PROBATION_WINDOW,
+        "M5_DELTA_MIN": SC2_M5_DELTA_MIN,
+        "M5_EVAL_TASKS": SC2_M5_EVAL_TASKS,
+        "M7_EVAL_TASKS": SC2_M7_EVAL_TASKS,
+        "POSER_V2": SC2_POSER_V2,
+        "ENC8": SC2_ENC8, "DEC8": SC2_DEC8,
+        "INT_WIDTH": SC2_INT_WIDTH,
+        "INT_DOMAIN": SC2_INT_DOMAIN,
+        "X_VMAX": SC2_X_VMAX,
+        "MASTER_SEED": SC2_MASTER_SEED,
+        "B_FROZEN": SC2_B_FROZEN,
+        "CORPUS_MANIFEST_SHA256": SC2_CORPUS_MANIFEST_SHA256,
+        "TEMPLATES": SC2_TEMPLATES,
+        "CHECK_FORMS": SC2_CHECK_FORMS,
+        "RELATIONS": SC2_RELATIONS,
+        "CHECKSETS": SC2_CHECKSETS,
+        "RELSETS": SC2_RELSETS,
+        "BANDS": SC2_BANDS,
+        "SCHEMA_KEYS": SC2_SCHEMA_KEYS,
+        "MUTATION_OPS": SC2_MUTATION_OPS,
+        "SOLVER_VOCAB": SC2_SOLVER_VOCAB,
+        "DIFF_VOCAB": SC2_DIFF_VOCAB,
+        "CAPSULES": {k: {kk: (list(vv) if isinstance(vv, tuple) else vv)
+                         for kk, vv in sorted(v.items())}
+                     for k, v in sorted(SC2_CAPSULES.items())},
+    })
+
+
+def sc2_compute_pin() -> str:
+    import inspect
+    blob = "".join(inspect.getsource(o) for o in _sc2_pin_components())
+    blob += "\n#SC2-FROZEN-CONSTANTS\n" + _sc2_frozen_constants_canon()
+    return hashlib.sha256(blob.encode()).hexdigest()
+
+
+def sc2_verify_pin(expected: str = None) -> str:
+    got = sc2_compute_pin()
+    want = SC2_PIN_SHA256 if expected is None else expected
+    if got != want:
+        raise RuntimeError(
+            f"sc2 meta-checker/harness source drifted from pin: {got}")
+    return got
+
+
+# --- CLI modes -------------------------------------------------------------------
+def sc2_demo():
+    """CI-safe schema-forge demonstration (reduced budgets)."""
+    print("=" * 88)
+    print("SC2 SCHEMA FORGE -- DEMO (reduced budgets)")
+    print("=" * 88)
+    sc2_verify_pin()
+    sc2_corpus_verify()
+    cfg = sc2_config(generations=2, forge_per_gen=3, mint_per_schema=1,
+                     m_inputs=16, m_public=5, b_frozen=800, b_live=8000,
+                     probation_window=1)
+    state = sc2_run_loop(cfg)
+    rows = sc2_metrics_from_ledger(state.ledger, cfg["generations"])
+    for row in rows:
+        print(f"[g{row['gen']}] schemas +{row['schemas_admitted']}"
+              f"/-{sum(row['schemas_rejected'].values())} "
+              f"rej={row['schemas_rejected']} "
+              f"tasks adm={row['tasks_admitted']} "
+              f"solved={row['solved']} "
+              f"prov={row['m1_provisional_cum']} "
+              f"perm={row['m1_permanent_cum']} "
+              f"M6={row['m6_permanent_schemas_cum']}")
+    digest = hashlib.sha256(
+        (state.ledger.head() + _sc_canon(rows)).encode()).hexdigest()[:16]
+    print("reading: schemas are pure data over the frozen check-form "
+          "algebra; the judging language never evolves -- what it judges "
+          "does.")
+    print(json.dumps({"sc2_demo_digest": digest,
+                      "schemas": len(state.schemas),
+                      "ledger_records": len(state.ledger.records)}))
+
+
+def sc2_battery():
+    """Full SC2 evidence battery: two-run digest, artifacts to
+    reports/evidence/."""
+    print("=" * 88)
+    print(f"SC2 FENCE-EXPANSION EVIDENCE BATTERY ({SC2_SPEC_VERSION})")
+    print("=" * 88)
+    pin1 = sc_verify_pin()
+    pin2 = sc2_verify_pin()
+    sc2_corpus_verify()
+    cfg = sc2_config()
+    frozen_expect = {
+        "generations": 8, "forge_per_gen": 3, "mint_per_schema": 2,
+        "m_inputs": 28, "m_public": 8, "b_witness": 4096,
+        "b_frozen": 1500, "b_live": 25000, "max_attempts": 2,
+        "probation_window": 4,
+    }
+    if cfg != frozen_expect:
+        raise RuntimeError("sc2 battery config drifted from frozen spec")
+    state = sc2_run_loop(cfg)
+    rows = sc2_metrics_from_ledger(state.ledger, cfg["generations"])
+    print("[S1] fence-expansion loop complete")
+    for row in rows:
+        print(f"  g{row['gen']}: schemas adm={row['schemas_admitted']} "
+              f"rej={row['schemas_rejected']} "
+              f"tasks adm={row['tasks_admitted']} "
+              f"solved={row['solved']} "
+              f"prov={row['m1_provisional_cum']} "
+              f"perm={row['m1_permanent_cum']} "
+              f"M6={row['m6_permanent_schemas_cum']}")
+    # M7 sealed-shard evaluation at the final state (checkpoints g0 and
+    # g4 are zero/interim library states; g0 is definitionally empty).
+    m7 = {"0": {"solved": 0, "total": 0, "note": "empty library"},
+          str(SC2_CHECKPOINTS[-1]): sc2_sealed_shard_eval(state, cfg)}
+    print(f"[S2] sealed-shard eval: {m7}")
+    # M5(b): frozen-anchor ablation for permanent schemas (cap 2), pure
+    # base-token bodies only (codec tokens cannot leave SC2).
+    m5b = {}
+    perms = [r for r in state.schemas if r["status"] == "permanent"][:2]
+    for rec in perms:
+        own = set(rec.get("aids", []))
+        all_bodies = [tuple(e["tokens"]) for e in state.archive
+                      if all(0 <= t < N_BASE_OPS for t in e["tokens"])]
+        without = [tuple(e["tokens"]) for e in state.archive
+                   if e["aid"] not in own
+                   and all(0 <= t < N_BASE_OPS for t in e["tokens"])]
+        a = sc_transfer_eval(all_bodies[:SC_TRANSFER_POOL_CAP])
+        b = sc_transfer_eval(without[:SC_TRANSFER_POOL_CAP])
+        m5b[rec["sid"]] = {"with": a["designer_solved"],
+                           "without": b["designer_solved"]}
+    schema_table = [{
+        "sid": r["sid"], "schema": r["schema"], "status": r["status"],
+        "provisional": r["provisional"], "m5": r.get("m5"),
+        "gen_admitted": r["gen_admitted"]} for r in state.schemas]
+    metrics = {
+        "spec_version": SC2_SPEC_VERSION,
+        "pins": {"sc": pin1, "sc2": pin2,
+                 "corpus_manifest": SC2_CORPUS_MANIFEST_SHA256},
+        "budgets": frozen_expect,
+        "human_authored_tasks": 0,
+        "rows": rows,
+        "m5_ablations": schema_table,
+        "m5b_anchor": m5b,
+        "m6_final_permanent_schemas": rows[-1][
+            "m6_permanent_schemas_cum"],
+        "m7_sealed_shard": m7,
+        "archive_size": len(state.archive),
+        "ledger_records": len(state.ledger.records),
+        "ledger_head": state.ledger.head(),
+    }
+    digest = hashlib.sha256(
+        (state.ledger.head() + _sc_canon(metrics)).encode()
+    ).hexdigest()[:16]
+    out_dir = os.path.join("reports", "evidence")
+    os.makedirs(out_dir, exist_ok=True)
+    with _sc_guarded_open(os.path.join(out_dir, "sc2_ledger.jsonl"),
+                          "w") as fh:
+        fh.write(state.ledger.to_jsonl())
+    with _sc_guarded_open(os.path.join(out_dir,
+                                       "sc2_battery_results.json"),
+                          "w") as fh:
+        fh.write(_sc_canon({"metrics": metrics, "digest": digest})
+                 + "\n")
+    print("reading: the check-form algebra is the new fence. This "
+          "directive moved the boundary one level up and measured "
+          "whether the move pays; it did not remove the boundary. "
+          "Permanent-schema count and ablation deltas above are the "
+          "measured answer; provisional credit is never merged into "
+          "the permanent curve.")
+    print(json.dumps({"sc2_digest": digest,
+                      "ledger_head": state.ledger.head(),
+                      "m6_permanent": metrics[
+                          "m6_final_permanent_schemas"],
+                      "archive_size": len(state.archive)}))
+    return metrics
+
+
+# ---------------------------------------------------------------------------
+# Phase SC2 tests. Invariants I15-I23 each get a red-team test that
+# CONSTRUCTS the attack; positive-path tests cover the schema gate, the
+# cross-capsule product tasks, the corpus tap, and the frozen relation
+# semantics. All names carry the sc2_ prefix for the --only filter.
+# ---------------------------------------------------------------------------
+def _sc2_test_cfg(**kw):
+    base = dict(generations=2, forge_per_gen=2, mint_per_schema=1,
+                m_inputs=16, m_public=5, b_frozen=400, b_live=6000,
+                probation_window=1)
+    base.update(kw)
+    return sc2_config(**base)
+
+
+def _sc2_schema(template="T_A", checkset=(2, 5), relset=(4,), band=2):
+    return {"template": template, "checkset": checkset,
+            "relset": relset, "band": band}
+
+
+def test_sc2_vacuous_schema_rejected() -> None:
+    # I15 red team: a relation-only schema whose battery every affine
+    # mutant also satisfies (constant-shift commutation) cannot say "no"
+    # and must be rejected by the mutation-kill probe.
+    cfg = _sc2_test_cfg()
+    st = SC2LoopState(cfg)
+    ok, reason, _ = sc2_schema_gate(
+        st, _sc2_schema(template="T_A", checkset=(3,), relset=(6,),
+                        band=2), cfg)
+    _assert(not ok and reason == "i15_vacuous",
+            f"vacuous schema admitted (reason={reason})")
+
+
+def test_sc2_schema_code_escape_rejected() -> None:
+    # I16 red team: schemas smuggling executable logic or out-of-grammar
+    # tokens into any slot are rejected BEFORE interpretation.
+    cfg = _sc2_test_cfg()
+    attacks = [
+        {"template": "T_A; __import__('os')", "checkset": (5,),
+         "relset": (4,), "band": 2},
+        {"template": "T_A", "checkset": (5,), "relset": (4,),
+         "band": 2, "exec": "payload"},
+        {"template": "T_A", "checkset": (9,), "relset": (4,),
+         "band": 2},
+        {"template": "T_A", "checkset": (5,), "relset": (4,),
+         "band": "2"},
+        {"template": "T_A", "checkset": [5], "relset": (4,), "band": 2},
+        "not a schema at all",
+    ]
+    for schema in attacks:
+        st = SC2LoopState(cfg)
+        ok, reason, _ = sc2_schema_gate(st, schema, cfg)
+        _assert(not ok and reason == "i16_code_escape",
+                f"code-escape schema admitted: {schema!r} ({reason})")
+        _assert(not sc2_schema_valid(schema),
+                f"grammar validator accepted {schema!r}")
+
+
+def test_sc2_collusive_schema_rejected() -> None:
+    # I17 red team: a relation-only schema tailored so the identity
+    # program (an involution) passes its whole task battery. Equality-
+    # anchored checksets make full-pipeline collusion structurally
+    # unreachable (i4 forbids behavioural duplicates), so the attack is
+    # constructed at the enforcement layer: three involution tasks, an
+    # archive holding the identity colluder, and the frozen collusion
+    # check must flag it; the wiring into the schema gate is asserted on
+    # source.
+    import inspect
+    cfg = _sc2_test_cfg(b_frozen=50)
+    st = SC2LoopState(cfg)
+    schema = _sc2_schema(template="T_X", checkset=(3,), relset=(4,),
+                         band=2)
+    cands, _ = _sc2_template_candidates("T_X", 2, [], 0, 1)
+    g, ginv, shard = cands[0]
+    ok, reason, task = sc2_admit(st, "SCH-i17", "T_X", 2, g, ginv,
+                                 shard, cfg)
+    _assert(ok, f"digit-reversal task rejected ({reason})")
+
+    class _Store:
+        sealed_pairs = st.sealed_pairs
+        witnesses = st.witnesses
+
+    colluder = {"aid": SC_MACRO_BASE,
+                "tokens": [_SC_OP["INPUT"], _SC_OP["HEAD"]]}
+    honest = {"aid": SC_MACRO_BASE + 1,
+              "tokens": [_SC_OP["INPUT"], _SC_OP["HEAD"],
+                         _SC_OP["PUSH1"], _SC_OP["ADD"]]}
+    _assert(_sc2_collusion_check(schema, [task, task, task], _Store,
+                                 [colluder, honest]),
+            "identity colluder not flagged by the non-collusion check")
+    _assert(not _sc2_collusion_check(schema, [task, task, task], _Store,
+                                     [honest]),
+            "non-collusion check fires without a colluder")
+    src = inspect.getsource(sc2_schema_gate)
+    _assert("_sc2_collusion_check" in src and "i17_collusion" in src,
+            "schema gate does not wire the non-collusion check")
+
+
+def test_sc2_duplicate_schema_rejected() -> None:
+    # I18 red team: re-skinning a schema (same tasks, different unused
+    # relset) must be rejected by the behavioural signature dedup.
+    cfg = _sc2_test_cfg()
+    st = SC2LoopState(cfg)
+    ok, reason, _ = sc2_schema_gate(
+        st, _sc2_schema(template="T_A", checkset=(2, 5), relset=(4,),
+                        band=2), cfg)
+    _assert(ok, f"seed schema rejected ({reason})")
+    ok, reason, _ = sc2_schema_gate(
+        st, _sc2_schema(template="T_A", checkset=(2, 5), relset=(6,),
+                        band=2), cfg)
+    _assert(not ok and reason == "i18_duplicate_schema",
+            f"re-skinned schema admitted (reason={reason})")
+
+
+def test_sc2_provisional_credit_separated() -> None:
+    # I19 red team: provisional solves must never reach the permanent
+    # headline curve; conversion happens only through an explicit
+    # credit_permanent record, and retirement keeps provisional visible.
+    led = SCLedger()
+    led.append({"event": "schema_admitted", "tid": "SCH-x", "gen": 0,
+                "sig": "s", "schema_data": {}})
+    for i in range(3):
+        led.append({"event": "solved", "tid": f"T{i}", "gen": 0,
+                    "track": "A", "band": 2, "schema": "SCH-x",
+                    "solve_cost": 1, "solution_sha": "x", "aid": i,
+                    "distinct": True, "used_macro": False})
+        led.append({"event": "credit_provisional", "tid": f"T{i}",
+                    "gen": 0, "schema": "SCH-x"})
+    rows = sc2_metrics_from_ledger(led, 1)
+    _assert(rows[0]["m1_provisional_cum"] == 3
+            and rows[0]["m1_permanent_cum"] == 0,
+            "provisional credit leaked into the permanent curve")
+    led.append({"event": "credit_permanent", "tid": "", "gen": 0,
+                "schema": "SCH-x", "converted": ["T0", "T1", "T2"],
+                "m5_delta": 2})
+    led.append({"event": "schema_permanent", "tid": "SCH-x", "gen": 0,
+                "m5": {}})
+    rows = sc2_metrics_from_ledger(led, 1)
+    _assert(rows[0]["m1_permanent_cum"] == 3
+            and rows[0]["m1_provisional_cum"] == 0
+            and rows[0]["m6_permanent_schemas_cum"] == 1,
+            "credit conversion mis-accounted")
+
+
+def test_sc2_corpus_tamper_detected() -> None:
+    # I20 red team: the committed manifest verifies; a tampered per-file
+    # hash and a tampered manifest must both abort.
+    sc2_corpus_verify()
+    man = sc2_corpus_manifest()
+    bad = {"public": dict(man["public"]), "sealed": dict(man["sealed"])}
+    first = sorted(bad["public"])[0]
+    bad["public"][first] = "0" * 64
+    try:
+        sc2_corpus_verify(bad)
+        _assert(False, "tampered corpus hash accepted")
+    except RuntimeError:
+        pass
+
+
+def test_sc2_sealed_shard_access_denied() -> None:
+    # I21 red team: reading the sealed shard outside the gate raises; the
+    # forge/poser/solver namespace has no reference to the corpus reader
+    # or its gate flag.
+    import inspect
+    man = sc2_corpus_manifest()
+    sealed_path = sorted(man["sealed"])[0]
+    try:
+        _sc2_corpus_stream(sealed_path, "sealed")
+        _assert(False, "sealed shard readable outside the gate")
+    except PermissionError:
+        pass
+    _SC2_SEALED_EVAL_GATE[0] = True
+    try:
+        stream = _sc2_corpus_stream(sealed_path, "sealed")
+        _assert(len(stream) > 100, "sealed stream unexpectedly small")
+    finally:
+        _SC2_SEALED_EVAL_GATE[0] = False
+    src = (inspect.getsource(SC2SchemaForge)
+           + inspect.getsource(SC2PoserV2)
+           + inspect.getsource(sc2_solve))
+    for banned in ("_sc2_corpus_stream", "_sc2_corpus_inputs",
+                   "_SC2_SEALED_EVAL_GATE", "sealed"):
+        _assert(banned not in src,
+                f"forge/poser/solver references {banned}")
+
+
+def test_sc2_metachecker_pin_enforced() -> None:
+    # I22 red team: the algebra, relation library, mutation operators, and
+    # corpus manifest hash are all bound into the pin; a wrong pin aborts.
+    import inspect
+    sc2_verify_pin()
+    try:
+        sc2_verify_pin("0" * 64)
+        _assert(False, "tampered sc2 pin accepted")
+    except RuntimeError:
+        pass
+    pinned = _sc2_pin_components()
+    for fn in (_sc2_check, sc2_schema_valid, _sc2_mutants,
+               sc2_schema_gate, sc2_admit, _sc2_rel_perm, _sc2_rel_dup,
+               _sc2_rel_idem, _sc2_rel_invol, _sc2_rel_concat,
+               _sc2_rel_shift, _sc2_rel_proj, sc2_corpus_verify,
+               _sc2_corpus_stream, SC2PoserV2):
+        _assert(fn in pinned, f"critical sc2 component unpinned: {fn}")
+    const = _sc2_frozen_constants_canon()
+    for needle in ('"MUTATION_OPS":["SUB","DEL","DUP","SWP"]',
+                   '"KILL_MIN":[4,5]', '"CORPUS_MANIFEST_SHA256":',
+                   '"CHECK_FORMS":[1,2,3,4,5]',
+                   '"RELATIONS":[1,2,3,4,5,6,7]'):
+        _assert(needle in const,
+                f"frozen sc2 constant unbound from pin: {needle}")
+    blob = "".join(inspect.getsource(o) for o in pinned)
+    blob += "\n#SC2-FROZEN-CONSTANTS\n" + _sc2_frozen_constants_canon()
+    _assert(hashlib.sha256(blob.encode()).hexdigest() == SC2_PIN_SHA256,
+            "sc2 pin does not match the live source + constants")
+
+
+def test_sc2_poser_v2_deterministic() -> None:
+    # I23 red team: v2 ordering is integer-count based, byte-stable across
+    # two runs, float-free, and actually reorders under archive statistics.
+    import inspect
+    archive = [{"aid": 1000, "tokens": [_SC_OP["INPUT"], _SC_OP["HEAD"],
+                                        _SC_OP["PUSH2"], _SC_OP["ADD"]]}]
+    runs = []
+    for _ in range(2):
+        p = SC2PoserV2(archive)
+        out = p.propose("A", 2, 6, archive)
+        runs.append([c["g"] for c in out])
+    _assert(runs[0] == runs[1], "poser v2 ordering not byte-stable")
+    src = (inspect.getsource(SC2PoserV2._order)
+           + inspect.getsource(SC2PoserV2.propose))
+    for banned in ("float(", "0.5", " / ", "random"):
+        _assert(banned not in src, f"poser v2 ordering uses {banned}")
+    p1 = SC2PoserV2(archive)
+    first_v2 = p1.propose("A", 2, 1, archive)[0]["g"]
+    p0 = SCPoser()
+    first_v1 = p0.propose("A", 2, 1, archive)[0]["g"]
+    _assert(first_v2 != first_v1,
+            "archive statistics did not reorder the v2 enumeration")
+
+
+def test_sc2_schema_gate_admits_sound_schema() -> None:
+    # Positive path: a sound schema (round-trip + sealed equality over
+    # Track A) passes feasibility, mutation-kill, and novelty and enters
+    # probation with its lifecycle ledgered.
+    cfg = _sc2_test_cfg()
+    st = SC2LoopState(cfg)
+    ok, reason, rec = sc2_schema_gate(
+        st, _sc2_schema(template="T_A", checkset=(2, 5), relset=(4,),
+                        band=2), cfg)
+    _assert(ok, f"sound schema rejected ({reason})")
+    _assert(rec["status"] == "probation", "schema not in probation")
+    events = [r["event"] for r in st.ledger.records]
+    _assert("schema_generated" in events and "schema_admitted" in events,
+            "schema lifecycle not ledgered")
+
+
+def test_sc2_cross_capsule_roundtrip_task() -> None:
+    # Positive path: the T_X product task (int -> base-8 digits -> digit
+    # reversal -> int) admits with a constructive witness; the frozen
+    # baseline (no codec vocabulary) can never solve it (I5 passes by
+    # construction); the witness inverse satisfies the schema's checks.
+    cfg = _sc2_test_cfg(b_frozen=30000)
+    st = SC2LoopState(cfg)
+    cands, _ = _sc2_template_candidates("T_X", 2, [], 0, 1)
+    g, ginv, shard = cands[0]
+    ok, reason, task = sc2_admit(st, "SCH-t", "T_X", 2, g, ginv, shard,
+                                 cfg)
+    _assert(ok, f"cross-capsule task rejected ({reason})")
+    schema = _sc2_schema(template="T_X", checkset=(2, 5), relset=(4,),
+                         band=2)
+    wit = st.witnesses.get(task["tid"])
+    sealed = st.sealed_pairs.get(task["tid"])
+    _assert(any(t in (SC2_ENC8, SC2_DEC8) for t in wit["g"]),
+            "T_X generator does not cross the capsule codec")
+    _assert(_sc2_check(schema, tuple(wit["ginv"]), {}, task, sealed,
+                       wit),
+            "witness inverse fails its own schema checks")
+    wrong = tuple(wit["ginv"]) + (_SC_OP["PUSH1"], _SC_OP["ADD"])
+    _assert(not _sc2_check(schema, wrong, {}, task, sealed, wit),
+            "off-by-one program passes the cross-capsule checks")
+
+
+def test_sc2_corpus_minted_tasks_witnessed() -> None:
+    # Positive path + I9: corpus-minted tasks carry witnesses and their
+    # input draw is harness-owned (suggestions change nothing).
+    cfg = _sc2_test_cfg()
+    views = []
+    for sugg in (None, [(9, 9, 9, 9, 9, 9)]):
+        st = SC2LoopState(cfg)
+        cands, _ = _sc2_template_candidates("T_BC", 2, [], 0, 3)
+        got = None
+        for g, ginv, shard in cands:
+            ok, reason, task = sc2_admit(st, "SCH-c", "T_BC", 2, g,
+                                         ginv, shard, cfg,
+                                         input_suggestions=sugg)
+            if ok:
+                got = task
+                break
+        _assert(got is not None, "no corpus-minted task admitted")
+        views.append((_sc_pairs_canon(got["public"]),
+                      _sc_pairs_canon(st.sealed_pairs.get(got["tid"]))))
+    _assert(views[0] == views[1],
+            "input suggestions influenced corpus-minted examples")
+
+
+def test_sc2_relation_library_semantics() -> None:
+    # The frozen relation library behaves as specified on known programs.
+    dbl = _sc2_solution_runner((_SC_OP["INPUT"], _SC_OP["DUP"],
+                                _SC_OP["ZADD"]), {})
+    rev = _sc2_solution_runner((_SC_OP["INPUT"], _SC_OP["REVL"]), {})
+    srt = _sc2_solution_runner((_SC_OP["INPUT"], _SC_OP["SORTL"]), {})
+    scan = _sc2_solution_runner((_SC_OP["INPUT"], _SC_OP["SCAN_ADD"]),
+                                {})
+    digrev = _sc2_solution_runner((_SC_OP["INPUT"], _SC_OP["HEAD"],
+                                   SC2_ENC8, _SC_OP["REVL"], SC2_DEC8),
+                                  {})
+    x = (2, 3, 5, 7, 1, 4)
+    _assert(_sc2_rel_idem(srt, x), "R3 fails on SORTL")
+    _assert(not _sc2_rel_idem(rev, x), "R3 passes on REVL")
+    _assert(_sc2_rel_invol(rev, x), "R4 fails on REVL")
+    _assert(_sc2_rel_invol(digrev, (129,)),
+            "R4 fails on digit reversal")
+    ident = _sc2_solution_runner((_SC_OP["INPUT"], _SC_OP["HEAD"]), {})
+    _assert(_sc2_rel_invol(ident, (57,)),
+            "R4 must hold for the identity (the collusion vector)")
+    _assert(_sc2_rel_shift(rev, x), "R6 fails on REVL")
+    _assert(not _sc2_rel_shift(scan, x), "R6 passes on SCAN")
+    _assert(_sc2_rel_proj(dbl, x), "R7 fails on elementwise")
+    _assert(not _sc2_rel_proj(scan, x), "R7 passes on SCAN")
+    _assert(_sc2_rel_concat(dbl, x), "R5 fails on elementwise")
+    _assert(_sc2_rel_dup(srt, (2, 1, 3)) is False,
+            "R2 passes on SORTL length change")
+    _assert(not _sc2_rel_perm(srt, x),
+            "R1 (equivariance) passes on SORTL, which is invariant "
+            "but not equivariant")
+    _assert(_sc2_rel_perm(rev, x), "R1 fails on REVL (equivariant)")
+    red = _sc2_solution_runner((_SC_OP["INPUT"], _SC_OP["RED_ADD"]), {})
+    _assert(_sc2_rel_perm(red, x),
+            "R1 fails on RED_ADD (scalar invariance)")
+
+
+def test_sc2_schema_retired_records_persist() -> None:
+    # I11/I19 companion: a schema that fails transfer within its window is
+    # retired; its ledger records and provisional credit stay visible.
+    cfg = _sc2_test_cfg(generations=3, probation_window=1)
+    st = sc2_run_loop(cfg)
+    retired = [r for r in st.ledger.records
+               if r["event"] == "schema_retired"]
+    _assert(retired, "no schema retired in the mini loop")
+    for r in retired:
+        _assert("provisional_kept_visible" in r,
+                "retirement laundered provisional visibility")
+    rows = sc2_metrics_from_ledger(st.ledger, cfg["generations"])
+    _assert(all("m1_provisional_cum" in row for row in rows),
+            "provisional curve missing from metrics")
+
+
+def test_sc2_additive_no_d1_drift() -> None:
+    # Directive 2 sequencing rule: Phase SC code is read-only. Both pins
+    # verify against their frozen constants, and the D1 demo digest is
+    # unchanged by the SC2 section's presence.
+    sc_verify_pin()
+    sc2_verify_pin()
+    _assert(SC_PIN_SHA256 != SC2_PIN_SHA256, "pin collision")
+    cfg = sc_config(generations=1, pose_per_track=2,
+                    pose_m4_per_track=1, m_inputs=16, m_public=5,
+                    b_frozen_base=400, b_frozen_max=3200, b_live=4000)
+    st = sc_run_loop(cfg)
+    rows = sc_metrics_from_ledger(st.ledger, 1)
+    _assert(rows[0]["generated"] > 0 and st.ledger.head(),
+            "D1 mini loop broken by SC2 section")
+
+
+def test_sc2_determinism_two_runs() -> None:
+    # I12 continues to apply: two mini fence-expansion loops from the same
+    # frozen seeds agree byte-for-byte; a different budget does not.
+    digests = []
+    for _ in range(2):
+        cfg = _sc2_test_cfg()
+        st = sc2_run_loop(cfg)
+        rows = sc2_metrics_from_ledger(st.ledger, cfg["generations"])
+        digests.append(hashlib.sha256(
+            (st.ledger.head() + _sc_canon(rows)).encode()).hexdigest())
+    _assert(digests[0] == digests[1],
+            "sc2 loop not two-run byte-identical")
+    cfg = _sc2_test_cfg(b_live=3000)
+    st = sc2_run_loop(cfg)
+    rows = sc2_metrics_from_ledger(st.ledger, cfg["generations"])
+    d3 = hashlib.sha256(
+        (st.ledger.head() + _sc_canon(rows)).encode()).hexdigest()
+    _assert(d3 != digests[0], "sc2 digest insensitive to run content")
+
+
+TESTS.extend([
+    test_sc2_vacuous_schema_rejected,
+    test_sc2_schema_code_escape_rejected,
+    test_sc2_collusive_schema_rejected,
+    test_sc2_duplicate_schema_rejected,
+    test_sc2_provisional_credit_separated,
+    test_sc2_corpus_tamper_detected,
+    test_sc2_sealed_shard_access_denied,
+    test_sc2_metachecker_pin_enforced,
+    test_sc2_poser_v2_deterministic,
+    test_sc2_schema_gate_admits_sound_schema,
+    test_sc2_cross_capsule_roundtrip_task,
+    test_sc2_corpus_minted_tasks_witnessed,
+    test_sc2_relation_library_semantics,
+    test_sc2_schema_retired_records_persist,
+    test_sc2_additive_no_d1_drift,
+    test_sc2_determinism_two_runs,
+])
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="real-search RSI core")
     ap.add_argument("--mode",
@@ -40045,7 +41982,8 @@ def main() -> None:
                              "transfer-anchor", "anchor-report",
                              "crossing-anchor",
                              "attribution-probe",
-                             "self-curriculum", "sc-battery",),
+                             "self-curriculum", "sc-battery",
+                             "schema-forge", "sc2-battery",),
                     default="demo")
     ap.add_argument("--save", default="")
     ap.add_argument("--adaptive-json", default="adaptive.json")
@@ -40232,6 +42170,10 @@ def main() -> None:
         sc_demo()
     elif args.mode == "sc-battery":
         sc_battery()
+    elif args.mode == "schema-forge":
+        sc2_demo()
+    elif args.mode == "sc2-battery":
+        sc2_battery()
     else:
         demo()
 

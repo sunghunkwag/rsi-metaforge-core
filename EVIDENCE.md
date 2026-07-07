@@ -19,7 +19,8 @@ The current runtime extends the previous public evidence line with:
 - depth-1 grammar feature expansion through `grammar-battery`
 - depth-2 grammar feature expansion through `grammar2-battery`
 - a closed self-curriculum compounding loop through `sc-battery` (two-run digest equality asserted in CI)
-- a full built-in regression suite expected to report `178 passed, 0 failed`
+- a fence-expansion loop (schema forge over a frozen meta-checker algebra, corpus tap, domain capsules) through `sc2-battery` (two-run digest equality asserted in CI)
+- a full built-in regression suite expected to report `194 passed, 0 failed`
 - the Phases 0–I generalization research program: frozen holdout instrument, sealed exploration archive, external anchoring artifacts, stratified offer schedule, and per-phase reports, all committed under `docs/` with SHA-256 pins asserted by tests
 
 The current runtime should be treated as publicly validated only after the **Full Evidence** GitHub Actions workflow succeeds for the commit that contains it.
@@ -49,6 +50,7 @@ The Full Evidence workflow runs these stages:
 - Grammar battery
 - Grammar2 battery
 - Self-curriculum battery, run twice with byte-identical `sc_digest` and artifact equality asserted in the workflow
+- Fence-expansion (sc2) battery, run twice with byte-identical `sc2_digest` and artifact equality asserted in the workflow
 - Full built-in test suite after generated evidence artifacts
 - Evidence artifact upload
 
@@ -136,11 +138,11 @@ This is a closed-world compounding measurement with an honest negative external-
 The current Full Evidence workflow requires the built-in full suite to end with:
 
 ```text
-RESULT: 178 passed, 0 failed
+RESULT: 194 passed, 0 failed
 ALL TESTS PASSED
 ```
 
-The count is pinned exactly on purpose: a suite that silently gains or loses tests should turn the badge red until the pin is updated in the same change that alters the suite. The count history is 99 (pre-rename runtime), 116 (renamed runtime, pre-program), 147 (after the Phases 0–I research program added 31 instrument, isolation, and determinism tests), 156 (after Phase J added 9 extension, re-certification, and determinism tests for the approved ISA extension), 178 (after Phase SC added 15 attack-construction tests — one per anti-gaming invariant I1–I14 plus a band-label-fabrication attack — and 7 positive-path tests for the self-curriculum loop).
+The count is pinned exactly on purpose: a suite that silently gains or loses tests should turn the badge red until the pin is updated in the same change that alters the suite. The count history is 99 (pre-rename runtime), 116 (renamed runtime, pre-program), 147 (after the Phases 0–I research program added 31 instrument, isolation, and determinism tests), 156 (after Phase J added 9 extension, re-certification, and determinism tests for the approved ISA extension), 178 (after Phase SC added 15 attack-construction tests — one per anti-gaming invariant I1–I14 plus a band-label-fabrication attack — and 7 positive-path tests for the self-curriculum loop), 194 (after Phase SC2 added 9 red-team tests for the fence-expansion invariants I15–I23 and 7 positive-path tests for the schema forge, meta-checker algebra, corpus tap, and capsule products).
 
 Relevant tested properties include:
 
