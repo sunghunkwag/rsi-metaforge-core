@@ -108,7 +108,7 @@ whether the move pays; it does not remove the boundary.*
 | relsets | ((4,), (6,), (7,), (3,), (4,6), (5,7), (1,2), (2,)) |
 | bands | (2, 3, 4) |
 | `SC2_CORPUS_MANIFEST_SHA256` | `072589506828cfe8885ac4c37a0adbc03bdd50aae1c7668261cc72f5e3f77143` |
-| `SC2_PIN_SHA256` | `2b8e828003a924ff4aa222fe476841c9da877362eb529d4ac5fd04a722d574c2` |
+| `SC2_PIN_SHA256` | `85673e90dec1f39a30967e0e93cc5f2abb51e52988d260d0d88728a9c79cec32` |
 
 The SC2 pin input is the concatenated source of every pinned component
 (codecs, executor, solver, corpus tap, all seven relations, the check-form

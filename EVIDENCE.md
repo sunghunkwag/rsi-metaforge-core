@@ -133,6 +133,18 @@ The official record (two byte-identical runs, digest `f56c6c13a2bf3028`; committ
 
 This is a closed-world compounding measurement with an honest negative external-transfer result — not an autonomy claim.
 
+## Fence-Expansion (SC2) Battery
+
+The fence-expansion battery (`--mode sc2-battery`) measures whether the system can profitably expand its own hunting ground: it invents new task *kinds* (schemas) as pure data over a human-frozen five-form meta-checker algebra, taps hash-pinned external corpus material, and spans capsule products — with schema admission gated by mutation-kill soundness, discrimination, non-collusion, and novelty, and headline credit granted only on measured transfer.
+
+The official record (two byte-identical runs, digest `50e46bc7c135ceaa`; committed artifacts `docs/final_sc2_battery.json`, `docs/sc2_ledger_final.jsonl`):
+
+- 24 schemas generated, 10 admitted into probation, 14 rejected with ledgered reasons; 28 provisionally-credited solves spanning all four templates, including cross-capsule base-8 digit-record tasks the frozen baseline provably cannot enter and corpus-fed tasks under full witness discipline
+- **the permanent-schema count stayed at zero for the whole run** — every M5 ablation delta was exactly 0 (sibling-macro redundancy), every solving schema retired at its probation window, and the permanent credit curve ends at 0; provisional credit is reported separately and never merged
+- the sealed corpus shard scored 6/6 at the final checkpoint with zero adoptions; the check-form algebra, relation library, and mutation operators never moved (hash-pinned, verified at battery start)
+
+The claim boundary, verbatim from the directive: *the check-form algebra is the new fence. This directive moves the boundary one level up and measures whether the move pays; it does not remove the boundary.* Scored register: `docs/PREDICTIONS_SC2.md` → `docs/SC2_RESULT.md`.
+
 ## Full Test Suite
 
 The current Full Evidence workflow requires the built-in full suite to end with:
