@@ -115,12 +115,97 @@ jobs:
           cmp reports/evidence/sc2_battery_results_run1.json reports/evidence/sc2_battery_results.json
           cmp reports/evidence/sc2_ledger_run1.jsonl reports/evidence/sc2_ledger.jsonl
 
+      - name: Run ascent phase K battery twice and assert digest equality
+        shell: bash
+        run: |
+          set -o pipefail
+          python -u "rsi_levels_metaforge_unified.py" --mode ascent-k-battery 2>&1 | tee reports/evidence/ascent_k_run1.log
+          cp reports/evidence/ascent_k_results.json reports/evidence/ascent_k_results_run1.json
+          cp reports/evidence/ascent_k_ledger.jsonl reports/evidence/ascent_k_ledger_run1.jsonl
+          python -u "rsi_levels_metaforge_unified.py" --mode ascent-k-battery 2>&1 | tee reports/evidence/ascent_k_run2.log
+          d1=$(grep -o '"ak_digest": "[0-9a-f]*"' reports/evidence/ascent_k_run1.log | head -1)
+          d2=$(grep -o '"ak_digest": "[0-9a-f]*"' reports/evidence/ascent_k_run2.log | head -1)
+          echo "run1 ${d1}"
+          echo "run2 ${d2}"
+          test -n "${d1}"
+          [ "${d1}" = "${d2}" ]
+          cmp reports/evidence/ascent_k_results_run1.json reports/evidence/ascent_k_results.json
+          cmp reports/evidence/ascent_k_ledger_run1.jsonl reports/evidence/ascent_k_ledger.jsonl
+
+      - name: Run ascent phase L battery twice and assert digest equality
+        shell: bash
+        run: |
+          set -o pipefail
+          python -u "rsi_levels_metaforge_unified.py" --mode ascent-l-battery 2>&1 | tee reports/evidence/ascent_l_run1.log
+          cp reports/evidence/ascent_l_results.json reports/evidence/ascent_l_results_run1.json
+          cp reports/evidence/ascent_l_ledger.jsonl reports/evidence/ascent_l_ledger_run1.jsonl
+          python -u "rsi_levels_metaforge_unified.py" --mode ascent-l-battery 2>&1 | tee reports/evidence/ascent_l_run2.log
+          d1=$(grep -o '"al_digest": "[0-9a-f]*"' reports/evidence/ascent_l_run1.log | head -1)
+          d2=$(grep -o '"al_digest": "[0-9a-f]*"' reports/evidence/ascent_l_run2.log | head -1)
+          echo "run1 ${d1}"
+          echo "run2 ${d2}"
+          test -n "${d1}"
+          [ "${d1}" = "${d2}" ]
+          cmp reports/evidence/ascent_l_results_run1.json reports/evidence/ascent_l_results.json
+          cmp reports/evidence/ascent_l_ledger_run1.jsonl reports/evidence/ascent_l_ledger.jsonl
+
+      - name: Run ascent phase M battery twice and assert digest equality
+        shell: bash
+        run: |
+          set -o pipefail
+          python -u "rsi_levels_metaforge_unified.py" --mode ascent-m-battery 2>&1 | tee reports/evidence/ascent_m_run1.log
+          cp reports/evidence/ascent_m_results.json reports/evidence/ascent_m_results_run1.json
+          cp reports/evidence/ascent_m_ledger.jsonl reports/evidence/ascent_m_ledger_run1.jsonl
+          python -u "rsi_levels_metaforge_unified.py" --mode ascent-m-battery 2>&1 | tee reports/evidence/ascent_m_run2.log
+          d1=$(grep -o '"am_digest": "[0-9a-f]*"' reports/evidence/ascent_m_run1.log | head -1)
+          d2=$(grep -o '"am_digest": "[0-9a-f]*"' reports/evidence/ascent_m_run2.log | head -1)
+          echo "run1 ${d1}"
+          echo "run2 ${d2}"
+          test -n "${d1}"
+          [ "${d1}" = "${d2}" ]
+          cmp reports/evidence/ascent_m_results_run1.json reports/evidence/ascent_m_results.json
+          cmp reports/evidence/ascent_m_ledger_run1.jsonl reports/evidence/ascent_m_ledger.jsonl
+
+      - name: Run ascent phase N battery twice and assert digest equality
+        shell: bash
+        run: |
+          set -o pipefail
+          python -u "rsi_levels_metaforge_unified.py" --mode ascent-n-battery 2>&1 | tee reports/evidence/ascent_n_run1.log
+          cp reports/evidence/ascent_n_results.json reports/evidence/ascent_n_results_run1.json
+          cp reports/evidence/ascent_n_ledger.jsonl reports/evidence/ascent_n_ledger_run1.jsonl
+          python -u "rsi_levels_metaforge_unified.py" --mode ascent-n-battery 2>&1 | tee reports/evidence/ascent_n_run2.log
+          d1=$(grep -o '"an_digest": "[0-9a-f]*"' reports/evidence/ascent_n_run1.log | head -1)
+          d2=$(grep -o '"an_digest": "[0-9a-f]*"' reports/evidence/ascent_n_run2.log | head -1)
+          echo "run1 ${d1}"
+          echo "run2 ${d2}"
+          test -n "${d1}"
+          [ "${d1}" = "${d2}" ]
+          cmp reports/evidence/ascent_n_results_run1.json reports/evidence/ascent_n_results.json
+          cmp reports/evidence/ascent_n_ledger_run1.jsonl reports/evidence/ascent_n_ledger.jsonl
+
+      - name: Run ascent phase O battery twice and assert digest equality
+        shell: bash
+        run: |
+          set -o pipefail
+          python -u "rsi_levels_metaforge_unified.py" --mode ascent-o-battery 2>&1 | tee reports/evidence/ascent_o_run1.log
+          cp reports/evidence/ascent_o_results.json reports/evidence/ascent_o_results_run1.json
+          cp reports/evidence/ascent_o_ledger.jsonl reports/evidence/ascent_o_ledger_run1.jsonl
+          python -u "rsi_levels_metaforge_unified.py" --mode ascent-o-battery 2>&1 | tee reports/evidence/ascent_o_run2.log
+          d1=$(grep -o '"ao_digest": "[0-9a-f]*"' reports/evidence/ascent_o_run1.log | head -1)
+          d2=$(grep -o '"ao_digest": "[0-9a-f]*"' reports/evidence/ascent_o_run2.log | head -1)
+          echo "run1 ${d1}"
+          echo "run2 ${d2}"
+          test -n "${d1}"
+          [ "${d1}" = "${d2}" ]
+          cmp reports/evidence/ascent_o_results_run1.json reports/evidence/ascent_o_results.json
+          cmp reports/evidence/ascent_o_ledger_run1.jsonl reports/evidence/ascent_o_ledger.jsonl
+
       - name: Run full test suite after evidence artifacts
         shell: bash
         run: |
           set -o pipefail
           python -u "rsi_levels_metaforge_unified.py" --mode test 2>&1 | tee reports/evidence/full_test.log
-          grep -E '^RESULT: 194 passed, 0 failed$' reports/evidence/full_test.log
+          grep -E '^RESULT: 270 passed, 0 failed$' reports/evidence/full_test.log
           grep -E '^ALL TESTS PASSED$' reports/evidence/full_test.log
 
       - name: Collect generated evidence artifacts

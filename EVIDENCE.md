@@ -20,7 +20,9 @@ The current runtime extends the previous public evidence line with:
 - depth-2 grammar feature expansion through `grammar2-battery`
 - a closed self-curriculum compounding loop through `sc-battery` (two-run digest equality asserted in CI)
 - a fence-expansion loop (schema forge over a frozen meta-checker algebra, corpus tap, domain capsules) through `sc2-battery` (two-run digest equality asserted in CI)
-- a full built-in regression suite expected to report `194 passed, 0 failed`
+- a witness-sealed setter–solver loop (task triples with program checkers, vault-sealed witnesses, four hermetic admission certificates, frontier crossings at a frozen instrument budget) through `ascent-k-battery` (two-run digest equality asserted in CI)
+- an MDL master gate (one frozen coding formula judging all vocabulary growth, holdout-validated) through `ascent-l-battery`; a ledger-trained amortizer behind a strict passes-per-budget gate through `ascent-m-battery`; a frozen propositional proof kernel with a conjecture setter, countermodel refutations, and zero axiom adoptions through `ascent-n-battery`; and the two-channel meta-improvement protocol (kernel-certified schemas + counterfactual A/B with an end-to-end extender record) through `ascent-o-battery` — each run twice with digest and artifact equality asserted in CI
+- a full built-in regression suite expected to report `270 passed, 0 failed`
 - the Phases 0–I generalization research program: frozen holdout instrument, sealed exploration archive, external anchoring artifacts, stratified offer schedule, and per-phase reports, all committed under `docs/` with SHA-256 pins asserted by tests
 
 The current runtime should be treated as publicly validated only after the **Full Evidence** GitHub Actions workflow succeeds for the commit that contains it.
@@ -51,6 +53,8 @@ The Full Evidence workflow runs these stages:
 - Grammar2 battery
 - Self-curriculum battery, run twice with byte-identical `sc_digest` and artifact equality asserted in the workflow
 - Fence-expansion (sc2) battery, run twice with byte-identical `sc2_digest` and artifact equality asserted in the workflow
+- Ascent phase K battery, run twice with byte-identical `ak_digest` and artifact equality asserted in the workflow
+- Ascent phase L, M, N, and O batteries, each run twice with byte-identical digests (`al_digest`, `am_digest`, `an_digest`, `ao_digest`) and artifact equality asserted in the workflow
 - Full built-in test suite after generated evidence artifacts
 - Evidence artifact upload
 
@@ -145,16 +149,39 @@ The official record (two byte-identical runs, digest `50e46bc7c135ceaa`; committ
 
 The claim boundary, verbatim from the directive: *the check-form algebra is the new fence. This directive moves the boundary one level up and measures whether the move pays; it does not remove the boundary.* Scored register: `docs/PREDICTIONS_SC2.md` → `docs/SC2_RESULT.md`.
 
+## Ascent Phase K Battery (Witness-Sealed Setter–Solver)
+
+The ascent phase K battery (`--mode ascent-k-battery`) measures the oracle factory: the system manufactures its own tasks as `(task_spec, checker, witness)` triples — the checker is a budget-capped VM program that is the task's ground truth, and the witness is sealed into a write-once vault before any admission check runs. A task is admitted only when four hermetic certificates pass on hidden instances (sealed-witness feasibility, strategy-level non-triviality, descriptor-cell novelty, and frozen-frontier difficulty), and the headline event is a *crossing*: a task the admission-time solver snapshot certifiably failed at the frozen instrument budget is later solved at the same budget with the task's own mined macros excluded from the snapshot.
+
+The official record (two byte-identical runs, digest `35080780f0be7293`; committed artifacts `docs/final_ascent_k.json`, `docs/ascent_k_ledger_final.jsonl`):
+
+- 80 setter emissions over 8 generations (including 32 pre-registered adversarial probes), 10 tasks admitted, every rejection ledgered by certificate: `ka_feasibility` 8, `kb_too_easy` 8, `kc_null_battery` 10, `kd_duplicate` 31, `kd_cell_occupied` 13; zero adversarial probes admitted
+- **one certified crossing**: a band-5 pipeline family admitted at generation 0 (frontier snapshot failed all 1500 evaluations, empty archive) crossed at generation 1 (cost 1427 ≤ 1500) using only macros mined from other tasks; the crossing lineage was credited and the pose allocation shifted from 2/2/2 to 1/1/4
+- 9 frontier markers (admitted, never crossed within the horizon), witnesses still sealed; every admission certificate re-derived from the ledger + vault by the replay engine before the digest printed
+
+The flywheel turned exactly once at these budgets, and the measured credit-assignment gap (the reward pays the crossing lineage, not the macro-supplying lineage that enabled it) is recorded as a finding for the later ascent phases. Scored register: `docs/PREDICTIONS_K.md` → `docs/K_RESULT.md`.
+
+## Ascent Phases L–O (MDL Gate, Amortizer, Proof Kernel, Meta-Improvement)
+
+The remaining ascent batteries close the directive's flywheel; each has its own frozen spec, pre-registered predictions with the calibration run disclosed, two byte-identical finals, and committed artifacts:
+
+- **L (MDL master gate, digest `74ec178cd88013e5`)**: one frozen, integer-exact coding formula judges every vocabulary-growth candidate — 2 adoptions that compress the sealed corpus AND generalize to the frozen holdout, 203 rejections with exact bit deltas, and three certified crossings at the K budgets against K's one (including a four-token route shorter than the task's own witness). The K archive retrofit scored zero adoptable raw bodies. `docs/PREDICTIONS_L.md` → `docs/L_RESULT.md`.
+- **M (ledger-trained amortizer, digest `fc8a471de9f6466f`)**: proposal orderings learned ONLY from the chain-verified K/L ledgers, judged on 48 sealed holdout families at one fixed budget: 2 → 4 → 6 certified passes (adopted), neural retrain 3 (rolled back). Holdout contamination is red-teamed with a constructed violation. `docs/PREDICTIONS_M.md` → `docs/M_RESULT.md`.
+- **N (proof kernel & formal domain, digest `63c189f031795d35`)**: a Hilbert-system propositional kernel, audited and frozen; 35 theorems adopted with complete proof objects in the ledger; 8 conjectures refuted with archived countermodels; 3 abbreviations through the master gate; zero axiom adoptions (no code path exists, and the negative test constructs the attempts). Zero crossings, pre-registered as expected at the frozen budget. `docs/PREDICTIONS_N.md` → `docs/N_RESULT.md`.
+- **O (meta-improvement, digest `f064a014d33b3f89`)**: both adoption channels live with adoptions AND rejections — kernel-certified completeness-preserving schemas (a false premise refused on record) and counterfactual A/B at equal budgets (the amortizer and the MOD grant adopted, the extender protocol end-to-end from impossibility 0/6 to crossing 2/6; the useless grant and a worse setter policy rolled back). Union-battery passes 2 → 8. `docs/PREDICTIONS_O.md` → `docs/O_RESULT.md`.
+
+Directive-level scoring, misses included (three literal suite-count misses are scored, not reinterpreted): `docs/ASCENT_RESULT.md`.
+
 ## Full Test Suite
 
 The current Full Evidence workflow requires the built-in full suite to end with:
 
 ```text
-RESULT: 194 passed, 0 failed
+RESULT: 270 passed, 0 failed
 ALL TESTS PASSED
 ```
 
-The count is pinned exactly on purpose: a suite that silently gains or loses tests should turn the badge red until the pin is updated in the same change that alters the suite. The count history is 99 (pre-rename runtime), 116 (renamed runtime, pre-program), 147 (after the Phases 0–I research program added 31 instrument, isolation, and determinism tests), 156 (after Phase J added 9 extension, re-certification, and determinism tests for the approved ISA extension), 178 (after Phase SC added 15 attack-construction tests — one per anti-gaming invariant I1–I14 plus a band-label-fabrication attack — and 7 positive-path tests for the self-curriculum loop), 194 (after Phase SC2 added 9 red-team tests for the fence-expansion invariants I15–I23 and 7 positive-path tests for the schema forge, meta-checker algebra, corpus tap, and capsule products).
+The count is pinned exactly on purpose: a suite that silently gains or loses tests should turn the badge red until the pin is updated in the same change that alters the suite. The count history is 99 (pre-rename runtime), 116 (renamed runtime, pre-program), 147 (after the Phases 0–I research program added 31 instrument, isolation, and determinism tests), 156 (after Phase J added 9 extension, re-certification, and determinism tests for the approved ISA extension), 178 (after Phase SC added 15 attack-construction tests — one per anti-gaming invariant I1–I14 plus a band-label-fabrication attack — and 7 positive-path tests for the self-curriculum loop), 194 (after Phase SC2 added 9 red-team tests for the fence-expansion invariants I15–I23 and 7 positive-path tests for the schema forge, meta-checker algebra, corpus tap, and capsule products), 215 (after Ascent Phase K added 21 tests: red-team constructions for each admission certificate, the vault/meter/no-self-credit constitution clauses, the ADV canary, ledger replay, and positive-path loop coverage), 270 (after Ascent Phases L–O added 55 tests: the MDL formula identities and gate red teams, the amortizer contamination/rollback/determinism battery, the proof-kernel audit properties with the axiom-adoption negative test, and the two-channel meta-improvement red teams).
 
 Relevant tested properties include:
 
