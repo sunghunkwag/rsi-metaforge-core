@@ -200,12 +200,29 @@ jobs:
           cmp reports/evidence/ascent_o_results_run1.json reports/evidence/ascent_o_results.json
           cmp reports/evidence/ascent_o_ledger_run1.jsonl reports/evidence/ascent_o_ledger.jsonl
 
+      - name: Run ascent phase P battery twice and assert digest equality
+        shell: bash
+        run: |
+          set -o pipefail
+          python -u "rsi_levels_metaforge_unified.py" --mode ascent-p-battery 2>&1 | tee reports/evidence/ascent_p_run1.log
+          cp reports/evidence/ascent_p_results.json reports/evidence/ascent_p_results_run1.json
+          cp reports/evidence/ascent_p_ledger.jsonl reports/evidence/ascent_p_ledger_run1.jsonl
+          python -u "rsi_levels_metaforge_unified.py" --mode ascent-p-battery 2>&1 | tee reports/evidence/ascent_p_run2.log
+          d1=$(grep -o '"ap_digest": "[0-9a-f]*"' reports/evidence/ascent_p_run1.log | head -1)
+          d2=$(grep -o '"ap_digest": "[0-9a-f]*"' reports/evidence/ascent_p_run2.log | head -1)
+          echo "run1 ${d1}"
+          echo "run2 ${d2}"
+          test -n "${d1}"
+          [ "${d1}" = "${d2}" ]
+          cmp reports/evidence/ascent_p_results_run1.json reports/evidence/ascent_p_results.json
+          cmp reports/evidence/ascent_p_ledger_run1.jsonl reports/evidence/ascent_p_ledger.jsonl
+
       - name: Run full test suite after evidence artifacts
         shell: bash
         run: |
           set -o pipefail
           python -u "rsi_levels_metaforge_unified.py" --mode test 2>&1 | tee reports/evidence/full_test.log
-          grep -E '^RESULT: 270 passed, 0 failed$' reports/evidence/full_test.log
+          grep -E '^RESULT: 286 passed, 0 failed$' reports/evidence/full_test.log
           grep -E '^ALL TESTS PASSED$' reports/evidence/full_test.log
 
       - name: Collect generated evidence artifacts

@@ -78,5 +78,11 @@ jobs:
       - name: Run ascent phase O demo
         run: python "rsi_levels_metaforge_unified.py" --mode ascent-o
 
+      - name: Run ascent phase P red-team guards
+        run: python "rsi_levels_metaforge_unified.py" --mode test --only test_ap_
+
+      - name: Run ascent phase P demo
+        run: python "rsi_levels_metaforge_unified.py" --mode ascent-p
+
       - name: Run general-domain smoke gate
         run: python "rsi_levels_metaforge_unified.py" --mode general-domain-test

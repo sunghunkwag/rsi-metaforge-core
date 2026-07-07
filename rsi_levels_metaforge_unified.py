@@ -47676,6 +47676,1397 @@ TESTS.extend([
 ])
 
 
+# =========================================================================== #
+# PHASE P: ISA-EXTENSION COUPLING LOOP (ASCENT M6)                            #
+#                                                                             #
+# Phases K/L/M/N/O code above is read-only here (docs/ASCENT_P_SPEC.md,       #
+# docs/PREDICTIONS_P.md, docs/P_RESULT.md).                                   #
+#                                                                             #
+# Phase K proved a witness-sealed setter--solver flywheel turns once and      #
+# then SATURATES on a fixed ISA: the setter can only pose tasks inside the    #
+# fixed instruction set's verifiable-expressible closure, so once the solver  #
+# frontier clears the shallow layers the remaining admitted tasks pile up as  #
+# frontier markers. Budget cannot widen a closure. Phase P builds the one     #
+# mechanism that can: a coupling loop that feeds ISA extension back into the   #
+# task factory. A crossed extension enlarges the closure the setter draws     #
+# from, which lets the setter pose deeper tasks, which trigger the next        #
+# extension. The empirical question -- answered by the certified, byte-       #
+# reproducible K10 trajectory, not by this comment -- is whether the crossing  #
+# trajectory REVIVES when the closure can grow, or SATURATES AGAIN at a        #
+# higher ceiling. Both answers are wins; only a fabricated staircase is a      #
+# loss. The extender never invents primitives; it draws only from the frozen  #
+# DORMANT_CAPABILITY_CATALOG (K9). Sustained ascent, if observed, is bounded   #
+# by that catalog and stated as such.                                          #
+#                                                                             #
+# New frozen-kernel items (constitution amendment, additive to K1-K7):        #
+#   K8  the extension-admission gate: the Phase J speculative-grant discipline #
+#       (dual gate on sealed hidden seeds + frontier-solver-fails + non-       #
+#       triviality + novelty, rollback-on-reject with hash check + rejected-  #
+#       digest) applied to K's own markers. Mutable code may REQUEST an        #
+#       extension; only K8 may admit one. K8 reads the witness vault (K1).     #
+#   K9  the catalog itself: DORMANT_CAPABILITY_CATALOG and every impl are      #
+#       frozen and hash-pinned (ASCP_CATALOG_SHA256). The loop selects from    #
+#       it; it never edits it.                                                 #
+#   K10 the closure-generation ledger: a per-generation, append-only, hash-   #
+#       chained record of (isa_fingerprint, admitted, crossed, markers,        #
+#       ext_requested, ext_admitted, cum_crossed) -- the instrument the        #
+#       sustained-ascent question is read off, frozen and byte-reproducible.   #
+#                                                                             #
+# The base ISA is the floor; extensions are append-only within a run; the     #
+# per-evaluation budget b_eval is frozen and identical across the compared     #
+# arms (base-ISA-frozen vs coupling-live). The base executor ak_run_tokens is  #
+# UNTOUCHED and remains the executor of the frozen comparison arm; the         #
+# extended executor ak_run_tokens_ext with isa == AP_BASE_ISA is provably      #
+# equivalent to it (equivalence test). Extended dispatch reads the FROZEN K9   #
+# catalog, never the mutable EXT_IMPL registry, so Phase P execution is a      #
+# pure function of (frozen catalog, isa) and never perturbs the module-global  #
+# registries whose dormant-inertness the J/K invariants pin.                   #
+# =========================================================================== #
+
+# --- frozen constants (spec-freeze: docs/ASCENT_P_SPEC.md) -------------------
+ASCP_SPEC_VERSION = "P-1"
+ASCP_MASTER_SEED = ASCK_MASTER_SEED       # the K-1 seed stream discipline
+# The frozen per-evaluation instrument budget, IDENTICAL across the compared
+# arms (frozen-ISA vs coupling-live). It is set ABOVE the search reach of an
+# admitted extension's crossing (the control crosses a genuine extension-
+# requiring task at ~3000 evals), so a closed-loop re-saturation, if observed,
+# is a genuine closure-SHAPE result -- K's setter produces no extension-shaped
+# marker -- not an artifact of a budget too small to express a crossing at all.
+# Only b_total (mining, b_live) is self-allocated.
+ASCP_B_EVAL = 4000
+ASCP_GENERATIONS = 6                       # coupling generations, P battery
+ASCP_B_LIVE = 15000                        # b_total (mining), P battery
+ASCP_RESIDUE_BUDGET = 400                  # bounded, oracle-free residue probe
+ASCP_LADDER_BLIVE = (9000, 15000, 25000)   # b_total ladder (mining), b_eval fixed
+
+
+# --- K9: the frozen catalog, hash-pinned, and the extended dispatch view -----
+def _ap_catalog_meta():
+    """The catalog's frozen surface: names, ids, type signatures, rationale.
+    Ordered, deterministic; hashed into ASCP_CATALOG_SHA256."""
+    return [{"name": spec.name, "ext_id": spec.ext_id,
+             "ins": list(spec.ins), "outs": list(spec.outs),
+             "rationale": spec.rationale}
+            for name, spec in sorted(DORMANT_CAPABILITY_CATALOG.items())]
+
+
+# Fixed stack batteries that exercise every catalog impl's SEMANTICS (not its
+# source text), so the pin certifies behaviour: constant broadcast and the
+# elementwise order indicator both fire on these.
+_AP_EXT_PROBE_STACKS = (
+    ((1, 2, 3), 5), ((0, 0, 0, 0), 7), ((3,), 0), ((), 4),
+    ((2, 5, 1, 4), 9), ((7, 6), 2),
+    ((1, 2, 3), (3, 2, 1)), ((4, 4), (1, 9)), ((0,), (0,)),
+    ((5, 1, 3, 2), (2, 3, 1, 5)),
+)
+
+
+def _ap_ext_behavior_sig(spec):
+    """Behavioural fingerprint of one catalog impl over the fixed probe
+    stacks. A single-arg impl (list->list) and a two-arg impl (list,int or
+    list,list -> list) are both exercised; a crash is recorded as such."""
+    outs = []
+    for a, b in _AP_EXT_PROBE_STACKS:
+        for seed in (list(a) + [b], list(a) + list(b) if isinstance(b, tuple)
+                     else [b] + list(a)):
+            st = list(seed)
+            try:
+                spec.impl(st, (0,))
+                outs.append(_sc_canon(
+                    [v if isinstance(v, int) else list(v) for v in st]))
+            except VMCrash as e:
+                outs.append("CRASH:" + str(e))
+            except Exception:            # pragma: no cover - arity mismatch
+                outs.append("ARITY")
+    return outs
+
+
+def _ap_catalog_fingerprint():
+    payload = {"meta": _ap_catalog_meta(),
+               "behavior": {name: _ap_ext_behavior_sig(spec)
+                            for name, spec in
+                            sorted(DORMANT_CAPABILITY_CATALOG.items())}}
+    return hashlib.sha256(_sc_canon(payload).encode()).hexdigest()
+
+
+ASCP_CATALOG_SHA256 = ("c663b68001327b83c551a0fc13bfc0b6"
+                       "135b7b27ff0418104712e61c3cea1269")
+
+
+# The extended dispatch view of the FROZEN catalog: a pure read of K9, never
+# the mutable EXT_IMPL. AP_BASE_ISA is the floor (no extensions).
+_AP_EXT_IMPL = {spec.ext_id: spec.impl
+                for spec in DORMANT_CAPABILITY_CATALOG.values()}
+_AP_EXT_TYPES = {spec.ext_id: (spec.ins, spec.outs)
+                 for spec in DORMANT_CAPABILITY_CATALOG.values()}
+AP_BASE_ISA = frozenset()
+
+
+def _ap_ext_name(ext_id):
+    return ext_op_name(ext_id)
+
+
+def _ap_isa_hash(isa):
+    """The rollback hash of an ISA: the sorted extension ids. Byte-exact
+    restoration on a rejected request is verified against this (J convention)."""
+    return hashlib.sha256(
+        _sc_canon(sorted(int(t) for t in isa)).encode()).hexdigest()
+
+
+def _ap_isa_fingerprint(isa):
+    """The K10 ISA fingerprint: the sorted extension NAMES over the frozen
+    catalog. The base ISA fingerprints to the empty set."""
+    return hashlib.sha256(_sc_canon(
+        sorted(_ap_ext_name(t) for t in isa)).encode()).hexdigest()[:16]
+
+
+# --- P3: the extended K executor (the opening in the wall) -------------------
+def ak_run_tokens_ext(expanded, xs, max_ops, isa):
+    """Run an expanded program of base tokens AND admitted extension ids (isa)
+    on one input tuple under an op budget. Extended ids dispatch through the
+    frozen K9 catalog view. With isa == AP_BASE_ISA this is byte-equivalent to
+    ak_run_tokens (equivalence test required); extension is strictly additive.
+    The base executor ak_run_tokens is not modified and remains the executor of
+    the frozen comparison arm."""
+    if len(expanded) > SC_STEP_LIMIT:
+        raise VMCrash("ak_program_too_long")
+    stack = []
+    inp = tuple(int(v) for v in xs)
+    ops = 0
+    for op in expanded:
+        if 0 <= op < N_BASE_OPS:
+            impl = OP_IMPL[op]
+        elif op in isa:
+            impl = _AP_EXT_IMPL[op]
+        else:
+            raise VMCrash("ak_non_base_token")
+        if ops >= max_ops:
+            raise VMCrash("ak_op_budget")
+        ops += 1
+        impl(stack, inp)
+    if len(stack) != 1 or not isinstance(stack[0], (int, tuple)):
+        raise VMCrash("ak_bad_terminal")
+    return stack[0], ops
+
+
+def ak_run_checker_ext(checker_exp, x, y, max_ops, isa):
+    """The frozen checker calling convention threaded with isa: the stack is
+    pre-seeded with candidate y, INPUT pushes x, terminal 1 accepts. Extended
+    ids execute through the frozen catalog view (an extension-requiring task's
+    checker recomputes G with the granted op). With isa == AP_BASE_ISA this is
+    byte-equivalent to ak_run_checker."""
+    if len(checker_exp) > SC_STEP_LIMIT:
+        return (False, 0)
+    stack = []
+    inp = tuple(int(v) for v in x)
+    ops = 0
+    try:
+        _push(stack, y)
+        for op in checker_exp:
+            if 0 <= op < N_BASE_OPS:
+                impl = OP_IMPL[op]
+            elif op in isa:
+                impl = _AP_EXT_IMPL[op]
+            else:
+                raise VMCrash("ak_non_base_token")
+            if ops >= max_ops:
+                raise VMCrash("ak_checker_budget")
+            ops += 1
+            impl(stack, inp)
+    except VMCrash:
+        return (False, ops)
+    if len(stack) != 1 or not isinstance(stack[0], int):
+        return (False, ops)
+    return (stack[0] == 1, ops)
+
+
+def _ap_expand(tokens, macros, isa):
+    """Expand SC macro tokens to base ops, leaving admitted extension ids as
+    single tokens. With isa == AP_BASE_ISA and base+macro tokens this equals
+    _sc_expand."""
+    out = []
+    for t in tokens:
+        if (0 <= t < N_BASE_OPS) or t in isa:
+            out.append(t)
+        elif t in macros:
+            out.extend(macros[t])
+        else:
+            raise VMCrash("sc_unknown_token")
+        if len(out) > SC_STEP_LIMIT:
+            raise VMCrash("sc_program_too_long")
+    return tuple(out)
+
+
+def ap_solve(public_pairs, macros, budget, isa, vocab=None):
+    """The frozen frontier solver threaded with isa: sc_solve over the base
+    vocabulary, admitted extension ids, and archive macros, at exactly
+    `budget` candidate evaluations. Extended ids execute through the frozen
+    catalog view. With isa == AP_BASE_ISA and vocab is None it searches
+    exactly SC_SOLVER_VOCAB + sorted(macros) and is equivalent to sc_solve."""
+    if vocab is None:
+        vocab = (tuple(SC_SOLVER_VOCAB) + tuple(sorted(isa))
+                 + tuple(sorted(macros)))
+    xs = [x for x, _ in public_pairs]
+    ys = [y for _, y in public_pairs]
+    mdl_chars = _sc_mdl_cap_chars(public_pairs)
+    init = tuple(() for _ in xs)
+    frontier = [((), init)]
+    seen = {init}
+    evals = 0
+    while frontier and evals < budget:
+        nxt = []
+        for surface, stacks in frontier:
+            for tok in vocab:
+                if evals >= budget:
+                    break
+                cand = surface + (tok,)
+                if len(cand) > SC_MDL_ABS_TOKENS:
+                    continue
+                if len(_sc_ser_tokens(cand)) > mdl_chars:
+                    continue
+                if tok < N_BASE_OPS or tok in isa:
+                    body = (tok,)
+                elif tok in macros:
+                    body = macros[tok]
+                else:
+                    continue
+                evals += 1
+                new_stacks = []
+                dead = False
+                for i, x in enumerate(xs):
+                    st = list(stacks[i])
+                    try:
+                        for op in body:
+                            if 0 <= op < N_BASE_OPS:
+                                OP_IMPL[op](st, tuple(x))
+                            elif op in isa:
+                                _AP_EXT_IMPL[op](st, tuple(x))
+                            else:
+                                raise VMCrash("ap_op_not_in_isa")
+                    except VMCrash:
+                        dead = True
+                        break
+                    new_stacks.append(tuple(st))
+                if dead:
+                    continue
+                new_stacks = tuple(new_stacks)
+                if all(len(s) == 1 for s in new_stacks) and \
+                        all(new_stacks[i][0] == ys[i]
+                            for i in range(len(ys))):
+                    return cand, evals
+                if new_stacks in seen:
+                    continue
+                seen.add(new_stacks)
+                nxt.append((cand, new_stacks))
+        frontier = nxt
+    return None, evals
+
+
+def ap_gate_score(surface, macros, public_pairs, checker_exp, hidden_xs,
+                  b_check, isa):
+    """ak_gate_score threaded with isa: the candidate (which may use admitted
+    extension ids) is expanded and executed through the extended executor, then
+    the checker -- ground truth on the hidden side -- must accept every output.
+    With isa == AP_BASE_ISA this equals ak_gate_score."""
+    if surface is None:
+        return False
+    if not _sc_mdl_ok(surface, public_pairs):
+        return False
+    try:
+        exp = _ap_expand(surface, macros, isa)
+    except VMCrash:
+        return False
+    for x in hidden_xs:
+        try:
+            y, _ = ak_run_tokens_ext(exp, x, b_check, isa)
+        except VMCrash:
+            return False
+        ok, _ = ak_run_checker_ext(checker_exp, x, y, b_check, isa)
+        if not ok:
+            return False
+    return True
+
+
+def ap_frontier_solve(state, task_public, isa, exclude_tid=None):
+    """The frozen frontier snapshot threaded with isa: ap_solve over the base
+    vocabulary + admitted extensions + every adopted macro (minus macros mined
+    from exclude_tid), at exactly b_eval. Returns (surface_or_None, evals,
+    snapshot_aids, macros)."""
+    macros = {}
+    aids = []
+    for entry in state.archive_macros:
+        if exclude_tid is not None and entry["source_tid"] == exclude_tid:
+            continue
+        macros[entry["aid"]] = tuple(entry["tokens"])
+        aids.append(entry["aid"])
+    sol, evals = ap_solve(task_public, macros, state.cfg["b_eval"], isa)
+    return (sol, evals, aids, macros)
+
+
+# --- P1: the extension-request locator (the trigger) -------------------------
+def _ap_residue_tokens(public_pairs, budget):
+    """Mechanical, oracle-free residue: the base-vocabulary tokens the frontier
+    solver explores on a marker's PUBLIC pairs within a small budget. Reads
+    only the public pairs -- never the vault, never witnesses. The analogue of
+    rs.residues (recorded failed-attempt tokens) for the Phase J locator."""
+    xs = [x for x, _ in public_pairs]
+    mdl_chars = _sc_mdl_cap_chars(public_pairs)
+    init = tuple(() for _ in xs)
+    frontier = [((), init)]
+    seen = {init}
+    evals = 0
+    toks = []
+    while frontier and evals < budget:
+        nxt = []
+        for surface, stacks in frontier:
+            for tok in SC_SOLVER_VOCAB:
+                if evals >= budget:
+                    break
+                cand = surface + (tok,)
+                if len(cand) > SC_MDL_ABS_TOKENS or \
+                        len(_sc_ser_tokens(cand)) > mdl_chars:
+                    continue
+                evals += 1
+                new_stacks = []
+                dead = False
+                for i, x in enumerate(xs):
+                    st = list(stacks[i])
+                    try:
+                        OP_IMPL[tok](st, tuple(x))
+                    except VMCrash:
+                        dead = True
+                        break
+                    new_stacks.append(tuple(st))
+                if dead:
+                    continue
+                toks.append(tok)
+                ns = tuple(new_stacks)
+                if ns in seen:
+                    continue
+                seen.add(ns)
+                nxt.append((cand, ns))
+        frontier = nxt
+    return toks
+
+
+def _ap_live_signatures(isa):
+    """The type signatures reachable in the live ISA: every base op plus every
+    admitted extension. Reads OP_TYPES and the frozen catalog view, never the
+    mutable EXT_TYPES registry."""
+    sigs = list(OP_TYPES.values())
+    for e in sorted(isa):
+        sigs.append(_AP_EXT_TYPES[e])
+    return sigs
+
+
+def ap_extension_request_locator(marker_infos, isa):
+    """P1 (frozen). The Phase J mechanical request locator
+    (propose_capability_requests) retargeted from designer-origin open tasks to
+    K's own frontier-marker residue. A request fires when markers exist, the
+    executed constructor lemma holds, a dormant catalog op fills a type-
+    signature gap absent from the live ISA (base + admitted extensions), and
+    the marker residue carries list-consuming token mass -- measured evidence
+    of where search pressure sits, reported not tuned. Reads only public marker
+    pairs and the frozen catalog signatures; never the vault, never witnesses.
+    Empty output is the common, honest case and is returned as such."""
+    if not marker_infos:
+        return []
+    lemma = no_int_to_list_constructor_lemma()
+    live = _ap_live_signatures(isa)
+    requests = []
+    for tid in sorted(marker_infos):
+        info = marker_infos[tid]
+        toks = _ap_residue_tokens(info["public"], ASCP_RESIDUE_BUDGET)
+        if not toks:
+            continue
+        list_mass = sum(1 for t in toks if t in LIST_CONSUMING_OPS) / len(toks)
+        fam_mass = {
+            fam: round(sum(1 for t in toks if t in ids) / len(toks), 4)
+            for fam, ids in ISA_FAMILIES.items()}
+        for name in sorted(DORMANT_CAPABILITY_CATALOG):
+            spec = DORMANT_CAPABILITY_CATALOG[name]
+            if spec.ext_id in isa:
+                continue
+            gap_open = (spec.ins, spec.outs) not in live
+            if gap_open and lemma["lemma_holds"] and list_mass > 0.0:
+                requests.append({
+                    "tid": tid, "capability": name, "ext_id": spec.ext_id,
+                    "list_consuming_mass": round(list_mass, 4),
+                    "family_masses": fam_mass,
+                    "signature_gap": [list(spec.ins), list(spec.outs)],
+                    "lemma_checked_transitions": lemma["checked_transitions"],
+                    "rationale": spec.rationale})
+    return requests
+
+
+# --- K8/P2: the extension-admission gate (the judge, frozen) -----------------
+def _ap_null_programs(rng, count, max_len, isa):
+    """Seeded random-program null strategies over the base solver vocabulary
+    plus admitted extensions -- the adversarial battery under the candidate
+    ISA. With isa == AP_BASE_ISA this equals _ak_null_programs."""
+    vocab = tuple(SC_SOLVER_VOCAB) + tuple(sorted(isa))
+    progs = []
+    for _ in range(count):
+        n = rng.randint(1, max_len)
+        progs.append(tuple(vocab[rng.randrange(len(vocab))]
+                           for _ in range(n)))
+    return progs
+
+
+def _ap_cert_nontrivial(track, chk_exp, hidden_xs, rng, cfg, isa):
+    """Non-triviality under the candidate ISA (K's clause c, threaded with
+    isa): no fixed null strategy solves the task wholesale, and at least P_NULL
+    of the executing seeded random programs must not solve it. The checker
+    battery is dual-run verified bit-identical. Returns (ok, reason, detail)."""
+    def run_battery():
+        ops = 0
+        null_solved = []
+        for name, _ in _ak_null_strategies(track, hidden_xs[0]):
+            solves = True
+            for x in hidden_xs:
+                y = dict(_ak_null_strategies(track, x))[name]
+                ok, cops = ak_run_checker_ext(chk_exp, x, y, cfg["b_check"],
+                                              isa)
+                ops += cops
+                if not ok:
+                    solves = False
+                    break
+            if solves:
+                null_solved.append(name)
+        return (tuple(null_solved), ops)
+
+    first, ops1 = run_battery()
+    second, ops2 = run_battery()
+    if first != second:
+        return (False, "kc_nondeterministic", {"ops": ops1 + ops2})
+    if first:
+        return (False, "kc_null_battery",
+                {"null_solved": list(first), "ops": ops1 + ops2})
+    progs = _ap_null_programs(rng, cfg["null_programs"], ASCK_NULL_MAX_LEN,
+                              isa)
+    ops = ops1 + ops2
+    denom = 0
+    solving = 0
+    for prog in progs:
+        outs = []
+        alive = True
+        for x in hidden_xs:
+            try:
+                y, pops = ak_run_tokens_ext(prog, x, cfg["b_check"], isa)
+            except VMCrash:
+                alive = False
+                break
+            ops += pops
+            outs.append(y)
+        if not alive:
+            continue
+        denom += 1
+        solves = True
+        for x, y in zip(hidden_xs, outs):
+            ok, cops = ak_run_checker_ext(chk_exp, x, y, cfg["b_check"], isa)
+            ops += cops
+            if not ok:
+                solves = False
+                break
+        if solves:
+            solving += 1
+    vacuous = (denom == 0)
+    if not vacuous:
+        non_solving = denom - solving
+        if ASCK_P_NULL_DEN * non_solving < ASCK_P_NULL_NUM * denom:
+            return (False, "kc_null_sampler",
+                    {"denom": denom, "solving": solving, "ops": ops})
+    return (True, "", {"denom": denom, "solving": solving,
+                       "vacuous": vacuous, "ops": ops})
+
+
+def ap_extension_gate(state, isa, requests, marker_infos, cfg, k10, gen):
+    """K8 (frozen predicate). The Phase J speculative-grant discipline applied
+    to K's markers: for each requested catalog op X (ordered by ext id), build
+    the candidate ISA isa | {X}; X is admitted iff >= 1 marker task is crossed
+    under the candidate ISA at the SAME frozen b_eval that the base-ISA frontier
+    solver certifiably FAILS (difficulty), non-trivially (null battery under the
+    candidate ISA) and novelly (a fresh crossing). The extended witness is
+    re-synthesised by the extended frontier solver and its crossing certificate
+    recorded. On admit X becomes permanent for the run (isa is append-only). On
+    reject the ISA is restored byte-exactly (hash-checked) and the request
+    digest recorded to block duplicates. K8 reads the witness vault (K1).
+    Returns (new_isa, admitted_names, ext_crossings)."""
+    admitted_names = []
+    ext_crossings = 0
+    by_cap = {}
+    for req in requests:
+        by_cap.setdefault(req["capability"], []).append(req["tid"])
+    for name in sorted(by_cap, key=lambda n: DORMANT_CAPABILITY_CATALOG[n].ext_id):
+        spec = DORMANT_CAPABILITY_CATALOG[name]
+        if spec.ext_id in isa:
+            continue
+        pre_hash = _ap_isa_hash(isa)
+        tids = sorted(set(by_cap[name]))
+        # The J rejected-digest convention: block a DUPLICATE request -- the
+        # same grant, at the same ISA, over the same candidate marker set. A
+        # fresh marker set is a fresh trial (a new task may be crossable).
+        digest = hashlib.sha256(_sc_canon(
+            {"grant": name, "isa": sorted(int(t) for t in isa),
+             "markers": tids}).encode()).hexdigest()[:16]
+        if digest in state.ap_rejected_digests:
+            k10.append({"event": "ext_skip_duplicate", "gen": gen, "tid": "",
+                        "track": "", "capability": name, "digest": digest})
+            continue
+        cand_isa = frozenset(isa | {spec.ext_id})
+        crossings = []
+        for tid in tids:
+            info = marker_infos.get(tid)
+            if info is None:
+                continue
+            public = info["public"]
+            chk = state.vault.read(f"chk:{tid}")
+            hidden = state.vault.read(f"hidden:{tid}")
+            # (a) crossing under the candidate ISA at the frozen b_eval.
+            sol, cevals, _, cmacros = ap_frontier_solve(
+                state, public, cand_isa, exclude_tid=tid)
+            if sol is None or not ap_gate_score(
+                    sol, cmacros, public, chk, hidden, cfg["b_check"],
+                    cand_isa):
+                continue
+            exp = _ap_expand(sol, cmacros, cand_isa)
+            if spec.ext_id not in exp:
+                continue                     # crossing did not use X: not X's
+            # (b) difficulty: the base-ISA frontier solver must FAIL the same
+            # seeds at the same budget.
+            bsol, bevals, _, bmacros = ap_frontier_solve(
+                state, public, isa, exclude_tid=tid)
+            if bsol is not None and ap_gate_score(
+                    bsol, bmacros, public, chk, hidden, cfg["b_check"], isa):
+                continue                     # base already crosses: X not needed
+            # (c) non-triviality under the candidate ISA.
+            rng = random.Random(int(hashlib.sha256(
+                (tid + ":" + name).encode()).hexdigest()[:16], 16)
+                ^ ASCP_MASTER_SEED)
+            okc = _ap_cert_nontrivial(info["track"], chk, hidden, rng, cfg,
+                                      cand_isa)
+            if not okc[0]:
+                continue
+            # (d) novelty: a crossing not previously credited to X.
+            key = (tid, spec.ext_id)
+            if key in state.ap_ext_crossed:
+                continue
+            crossings.append({
+                "tid": tid, "capability": name, "ext_id": spec.ext_id,
+                "cand_evals": cevals, "base_evals": bevals,
+                "b_eval": cfg["b_eval"],
+                "solution_sha": hashlib.sha256(
+                    _sc_ser_tokens(exp).encode()).hexdigest(),
+                "null_denom": okc[2]["denom"], "null_solving": okc[2]["solving"]})
+        if crossings:
+            isa = cand_isa
+            for c in crossings:
+                state.ap_ext_crossed.add((c["tid"], spec.ext_id))
+            admitted_names.append(name)
+            ext_crossings += len(crossings)
+            k10.append({
+                "event": "ext_admitted", "gen": gen, "tid": "", "track": "",
+                "capability": name, "ext_id": spec.ext_id,
+                "crossings": crossings, "isa_after": sorted(
+                    _ap_ext_name(t) for t in isa),
+                "pre_isa_hash": pre_hash, "post_isa_hash": _ap_isa_hash(isa)})
+        else:
+            # rollback: the ISA is unchanged; verify byte-exact restoration.
+            if _ap_isa_hash(isa) != pre_hash:
+                raise AssertionError(
+                    "ap K8 rollback failed: ISA changed on a rejected grant")
+            state.ap_rejected_digests.append(digest)
+            k10.append({
+                "event": "ext_rejected", "gen": gen, "tid": "", "track": "",
+                "capability": name, "ext_id": spec.ext_id,
+                "reason": "no_marker_crossed", "candidate_markers": tids,
+                "digest": digest, "isa_hash": pre_hash})
+    return isa, admitted_names, ext_crossings
+
+
+# --- P4: the coupling controller and K10 closure ledger (the loop) -----------
+class APLoopState(AKLoopState):
+    """The K loop state extended with the coupling channel's bookkeeping:
+    the append-only rejected-request digests, the credited extension crossings,
+    and the closure-generation ledger K10. The frozen K state (vault, meter,
+    ledger, archive) is inherited unchanged."""
+
+    def __init__(self, cfg):
+        super().__init__(cfg)
+        self.ap_rejected_digests = []
+        self.ap_ext_crossed = set()
+        self.isa = AP_BASE_ISA
+        self.k10 = SCLedger()
+
+
+def _ap_marker_public(state, tid, cfg):
+    """K8-kernel reconstruction of a marker's PUBLIC pairs from the sealed
+    witness (K8 reads the witness vault, K1). Mirrors ak_replay_verify's
+    derivation exactly (Track A: the inverse-chain complement; Track B:
+    witness identity); no oracle, no external content. Returns
+    {tid, track, public} or None if the witness is absent."""
+    if f"wit:{tid}" not in state.vault:
+        return None
+    wit = state.vault.read(f"wit:{tid}")
+    track = tid[2]
+    if track == "A":
+        parsed = _sc_parse_a_unit(wit)
+        if parsed is None:
+            return None
+        g_exp = (_SC_OP["INPUT"], _SC_OP["HEAD"]) + parsed[0]
+    else:
+        g_exp = tuple(wit)
+    cid = _ak_task_cid(track, g_exp)
+    sampled = _ak_sample_instances(track, cid, g_exp,
+                                   cfg["n_public"] + cfg["n_hidden"],
+                                   cfg["b_check"])
+    if sampled[0] is None:
+        return None
+    instances = sampled[0]
+    public_xs = instances[:cfg["n_public"]]
+    public = []
+    for x in public_xs:
+        try:
+            y, _ = ak_run_tokens(wit, x, cfg["b_check"])
+        except VMCrash:
+            return None
+        public.append((tuple(x), y))
+    public = sorted(public, key=lambda p: _sc_canon(list(p[0])))
+    return {"tid": tid, "track": track, "public": public}
+
+
+def ap_run_loop(cfg, coupling=True):
+    """The coupling controller. The generation loop is identical to
+    ak_run_loop -- the K flywheel runs byte-for-byte, its frozen state intact
+    -- except that after each generation (and after the terminating sweep) P1
+    scans that step's fresh frontier markers, and any request it fires is
+    judged by K8/P2 against the current ISA. On admission the ISA grows
+    (append-only) and the admitting crossing is credited; the closure state is
+    recorded to K10 every step. With coupling == False the hook is inert and
+    the run is the pure frozen K arm."""
+    ak_verify_pin()
+    ap_verify_pin()
+    state = APLoopState(cfg)
+    tally = {"cum_crossed": 0, "cum_ext_crossed": 0}
+
+    def hook(g, crossed, admitted, marker_tids):
+        tally["cum_crossed"] += crossed
+        ext_requested, ext_admitted, ext_cross = [], [], 0
+        if coupling and marker_tids:
+            marker_infos = {}
+            for tid in marker_tids:
+                info = _ap_marker_public(state, tid, cfg)
+                if info is not None:
+                    marker_infos[tid] = info
+            requests = ap_extension_request_locator(marker_infos, state.isa)
+            ext_requested = sorted({r["capability"] for r in requests})
+            state.isa, ext_admitted, ext_cross = ap_extension_gate(
+                state, state.isa, requests, marker_infos, cfg, state.k10, g)
+            tally["cum_ext_crossed"] += ext_cross
+            tally["cum_crossed"] += ext_cross
+        state.k10.append({
+            "event": "closure_gen", "gen": g, "tid": "", "track": "",
+            "isa_fingerprint": _ap_isa_fingerprint(state.isa),
+            "isa_ext": sorted(_ap_ext_name(t) for t in state.isa),
+            "isa_size": len(state.isa),
+            "admitted": admitted, "crossed": crossed,
+            "markers": len(marker_tids),
+            "ext_requested": ext_requested, "ext_admitted": ext_admitted,
+            "ext_crossed": ext_cross,
+            "cum_crossed": tally["cum_crossed"],
+            "cum_ext_crossed": tally["cum_ext_crossed"]})
+
+    for _ in range(cfg["generations"]):
+        g = state.gen
+        prev_records = len(state.ledger.records)
+        ak_generation(state)
+        recs = state.ledger.records[prev_records:]
+        hook(g, sum(1 for r in recs if r["event"] == "crossed"),
+             sum(1 for r in recs if r["event"] == "admitted"),
+             [r["tid"] for r in recs if r["event"] == "frontier_marker"])
+    # Terminate the lifecycle exactly as ak_run_loop: whatever is still open
+    # becomes a frontier marker so no admitted task escapes the record. These
+    # terminal markers are fed to a final coupling step so every admitted task
+    # that piled up as residue is offered to P1/K8.
+    prev_records = len(state.ledger.records)
+    for task in list(state.open_tasks):
+        state.open_tasks.remove(task)
+        state.markers.append(task["tid"])
+        state.ledger.append({
+            "event": "frontier_marker", "tid": task["tid"], "gen": state.gen,
+            "lineage": task["lineage"], "track": task["track"],
+            "band": task["band"], "gen_admitted": task["gen_admitted"],
+            "mined": bool(task.get("mined"))})
+    terminal = [r["tid"] for r in state.ledger.records[prev_records:]
+                if r["event"] == "frontier_marker"]
+    hook(state.gen, 0, 0, terminal)
+    state.ledger.verify()
+    state.k10.verify()
+    return state
+
+
+def ap_metrics_from_ledger(k10):
+    """The K10 trajectory, recomputed from the full closure-generation ledger:
+    the cum-crossed trajectory (the sustained-ascent readout) and the ISA-growth
+    trajectory (the closure-widening readout)."""
+    k10.verify()
+    rows = [r for r in k10.records if r["event"] == "closure_gen"]
+    return {
+        "generations": len(rows),
+        "cum_crossed_trajectory": [r["cum_crossed"] for r in rows],
+        "cum_ext_crossed_trajectory": [r["cum_ext_crossed"] for r in rows],
+        "isa_size_trajectory": [r["isa_size"] for r in rows],
+        "isa_growth": [r["isa_ext"] for r in rows],
+        "markers_per_gen": [r["markers"] for r in rows],
+        "ext_requested_total": sum(len(r["ext_requested"]) for r in rows),
+        "ext_admitted_total": sum(len(r["ext_admitted"]) for r in rows),
+        "ext_crossed_total": rows[-1]["cum_ext_crossed"] if rows else 0,
+        "final_isa": rows[-1]["isa_ext"] if rows else [],
+    }
+
+
+def ap_budget_ladder(blives=ASCP_LADDER_BLIVE):
+    """The R0-R4-style ladder rerun with coupling ON: the frozen arm
+    (ak_run_loop) and the coupling arm (ap_run_loop) at increasing b_total
+    (mining) budgets with b_eval held FROZEN and equal. Reports the final
+    cum-crossed and ISA size of each arm -- the instrument for reading whether
+    a widening closure revives the trajectory or re-saturates at a higher
+    ceiling per unit b_total."""
+    rungs = []
+    for i, blive in enumerate(blives):
+        cfg = ak_config(generations=4, n_public=6, n_hidden=8,
+                        null_programs=12, h=3, b_eval=ASCP_B_EVAL,
+                        b_live=blive)
+        frozen = ak_run_loop(cfg)
+        frozen_crossed = sum(1 for r in frozen.ledger.records
+                             if r["event"] == "crossed")
+        coup = ap_run_loop(cfg, coupling=True)
+        m = ap_metrics_from_ledger(coup.k10)
+        rungs.append({
+            "rung": f"R{i}", "b_eval": cfg["b_eval"], "b_live": blive,
+            "frozen_cum_crossed": frozen_crossed,
+            "coupling_cum_crossed": m["cum_crossed_trajectory"][-1]
+            if m["cum_crossed_trajectory"] else 0,
+            "coupling_final_isa": m["final_isa"],
+            "ext_admitted_total": m["ext_admitted_total"]})
+    return rungs
+
+
+# --- the positive control: designer-stocked ext-requiring families -----------
+# The frozen catalog holds two INDEPENDENT ops (no dependency ladder), so the
+# maximal ascent it permits is two independent single-op crossings, stated as
+# such. These families are DESIGNER-STOCKED instruments (as Phase O's MOD
+# battery is, stated as such): they exist to prove the coupling executor + K8
+# gate are a real crossing mechanism -- impossibility pre-certificate before,
+# crossing after -- distinct from and complementary to the CLOSED-LOOP
+# measurement, where the markers are produced by K's own setter and no op is
+# pre-stocked.
+ASCP_CONTROL_SEED_TAG = "ASCP-CTL"
+# Depth-4 witnesses whose extended crossing is within the frozen instrument
+# budget (verified ~3000 evals). Each needs exactly one catalog op and is
+# base-inexpressible (the constructor lemma for BCAST; the elementwise order
+# gap for ZGT), so the base ISA fails the family at every budget.
+ASCP_CONTROL_SEGMENTS = {
+    "BCAST": (
+        ("sum_bcast", (_SC_OP["DUP"], _SC_OP["RED_ADD"], EXT_ID_BASE)),
+        ("max_bcast", (_SC_OP["DUP"], _SC_OP["RED_MAX"], EXT_ID_BASE)),
+        ("head_bcast", (_SC_OP["DUP"], _SC_OP["HEAD"], EXT_ID_BASE)),
+    ),
+    "ZGT": (
+        ("gt_rev", (_SC_OP["DUP"], _SC_OP["REVL"], EXT_ID_BASE + 1)),
+        ("gt_sort", (_SC_OP["DUP"], _SC_OP["SORTL"], EXT_ID_BASE + 1)),
+    ),
+}
+
+
+def ap_ext_battery(name):
+    """A frozen family of Track-B tasks whose ground truth needs catalog op
+    `name`. Each task is a (public, checker, hidden) triple in the K-1 Track-B
+    convention; the witness and checker use the extension id, so the family is
+    inexpressible in the base ISA and computed through the extended executor.
+    Instances derive from the task id and the K-1 master seed."""
+    spec = DORMANT_CAPABILITY_CATALOG[name]
+    isa = frozenset({spec.ext_id})
+    battery = []
+    for pid, seg in ASCP_CONTROL_SEGMENTS[name]:
+        seg = tuple(seg)
+        witness = (_SC_OP["INPUT"],) + seg
+        checker = _ak_checker_b(seg)
+        cid = hashlib.sha256(_sc_canon(
+            [ASCP_CONTROL_SEED_TAG, name, pid, list(seg)]).encode()).hexdigest()
+        rng = random.Random(int(cid[:16], 16) ^ ASCP_MASTER_SEED)
+        seen = set()
+        xs = []
+        guard = 0
+        need = ASCK_N_PUBLIC + ASCK_N_HIDDEN
+        while len(xs) < need and guard < 200 * need:
+            guard += 1
+            x = tuple(rng.randrange(SC_VALMAX_B)
+                      for _ in range(SC_LIST_LEN_B))
+            if x in seen:
+                continue
+            seen.add(x)
+            xs.append(x)
+        pairs = []
+        ok = True
+        for x in xs:
+            try:
+                y, _ = ak_run_tokens_ext(witness, x, ASCK_B_CHECK, isa)
+            except VMCrash:
+                ok = False
+                break
+            pairs.append((tuple(x), y))
+        if not ok or len(pairs) < need:
+            continue
+        public = sorted(pairs[:ASCK_N_PUBLIC],
+                        key=lambda p: _sc_canon(list(p[0])))
+        hidden = tuple(x for x, _ in pairs[ASCK_N_PUBLIC:])
+        battery.append({"pid": f"AP-{name}-{pid}", "track": "B",
+                        "witness": witness, "public": public,
+                        "checker": checker, "hidden": hidden,
+                        "ext_id": spec.ext_id})
+    return battery
+
+
+def ap_control_admission(name, k10):
+    """Run K8's exact predicate over the designer-stocked ext-requiring family
+    for `name`, from the base ISA. Records the impossibility pre-certificate
+    (base passes = 0 on the family at the frozen b_eval) and, on crossing, the
+    admission with its certificate. Returns the record dict."""
+    cfg = ak_config(generations=1, n_public=ASCK_N_PUBLIC,
+                    n_hidden=ASCK_N_HIDDEN, null_programs=ASCK_NULL_PROGRAMS,
+                    h=1, b_eval=ASCP_B_EVAL, b_live=ASCK_B_LIVE)
+    battery = ap_ext_battery(name)
+    state = APLoopState(cfg)
+    marker_infos = {}
+    requests = []
+    spec = DORMANT_CAPABILITY_CATALOG[name]
+    base_passes = 0
+    for task in battery:
+        tid = task["pid"]
+        if f"chk:{tid}" not in state.vault:
+            state.vault.seal(f"chk:{tid}", tuple(task["checker"]))
+        if f"hidden:{tid}" not in state.vault:
+            state.vault.seal(f"hidden:{tid}", tuple(task["hidden"]))
+        marker_infos[tid] = {"tid": tid, "track": task["track"],
+                             "public": task["public"]}
+        requests.append({"tid": tid, "capability": name,
+                         "ext_id": spec.ext_id})
+        # impossibility pre-certificate: the base ISA fails this task.
+        bsol, _ = ap_solve(task["public"], {}, cfg["b_eval"], AP_BASE_ISA)
+        if bsol is not None and ap_gate_score(
+                bsol, {}, task["public"], tuple(task["checker"]),
+                tuple(task["hidden"]), cfg["b_check"], AP_BASE_ISA):
+            base_passes += 1
+    new_isa, admitted, ext_cross = ap_extension_gate(
+        state, AP_BASE_ISA, requests, marker_infos, cfg, k10, 0)
+    return {"capability": name, "battery_size": len(battery),
+            "base_passes": base_passes, "admitted": admitted,
+            "ext_crossings": ext_cross,
+            "final_isa": sorted(_ap_ext_name(t) for t in new_isa)}
+
+
+# --- component registries and pin --------------------------------------------
+def _ap_scan_components():
+    return (ak_run_tokens_ext, ak_run_checker_ext, _ap_expand, ap_solve,
+            ap_gate_score, ap_frontier_solve, _ap_residue_tokens,
+            _ap_live_signatures, ap_extension_request_locator,
+            _ap_null_programs, _ap_cert_nontrivial, ap_extension_gate,
+            APLoopState, _ap_marker_public, ap_run_loop,
+            ap_metrics_from_ledger, ap_budget_ladder, ap_ext_battery,
+            ap_control_admission, _ap_isa_hash, _ap_isa_fingerprint)
+
+
+def _ap_pin_components():
+    return (ak_run_tokens_ext, ak_run_checker_ext, _ap_expand, ap_solve,
+            ap_gate_score, ap_frontier_solve, _ap_residue_tokens,
+            _ap_live_signatures, ap_extension_request_locator,
+            _ap_null_programs, _ap_cert_nontrivial, ap_extension_gate,
+            _ap_marker_public, ap_run_loop, ap_metrics_from_ledger,
+            _ap_isa_hash, _ap_isa_fingerprint, _ap_catalog_fingerprint,
+            _ap_frozen_constants_canon,
+            # reused, read-only K/SC machinery (defence in depth)
+            ak_run_tokens, ak_run_checker, sc_solve, _sc_expand,
+            _ak_null_strategies, no_int_to_list_constructor_lemma,
+            ak_generation, ak_run_loop, _sc_canon, _sc_ser_tokens)
+
+
+ASCP_PIN_SHA256 = ("a27bd88d380acf92f8867c0bbbb082ac"
+                   "acd1bd1a7e42fa5a930ac7e0644f7e31")
+
+
+def _ap_frozen_constants_canon():
+    """Canonical dump of every frozen Phase P constant, bound into the pin so
+    that seed drift, budget drift, catalog edits, or control-family edits flip
+    the pin and abort the battery."""
+    return _sc_canon({
+        "SPEC_VERSION": ASCP_SPEC_VERSION,
+        "MASTER_SEED": ASCP_MASTER_SEED,
+        "B_EVAL": ASCP_B_EVAL,
+        "RESIDUE_BUDGET": ASCP_RESIDUE_BUDGET,
+        "LADDER_BLIVE": list(ASCP_LADDER_BLIVE),
+        "CATALOG_SHA256": ASCP_CATALOG_SHA256,
+        "CATALOG_META": _ap_catalog_meta(),
+        "CONTROL_SEED_TAG": ASCP_CONTROL_SEED_TAG,
+        "CONTROL_SEGMENTS": {
+            k: [[pid, list(seg)] for pid, seg in v]
+            for k, v in sorted(ASCP_CONTROL_SEGMENTS.items())},
+        "EXT_ID_BASE": EXT_ID_BASE,
+        "ASCK": _ak_frozen_constants_canon(),
+    })
+
+
+def ap_compute_pin():
+    import inspect
+    blob = "".join(inspect.getsource(o) for o in _ap_pin_components())
+    blob += "\n#ASCP-FROZEN-CONSTANTS\n" + _ap_frozen_constants_canon()
+    return hashlib.sha256(blob.encode()).hexdigest()
+
+
+def ap_verify_pin(expected=None):
+    got_cat = _ap_catalog_fingerprint()
+    if ASCP_CATALOG_SHA256 != "0" * 64 and got_cat != ASCP_CATALOG_SHA256:
+        raise RuntimeError(
+            f"ap K9 catalog drifted from spec-freeze pin: {got_cat}")
+    got = ap_compute_pin()
+    want = ASCP_PIN_SHA256 if expected is None else expected
+    if want != "0" * 64 and got != want:
+        raise RuntimeError(
+            f"ap gate/harness source drifted from spec-freeze pin: {got}")
+    return got
+
+
+# --- CLI modes ----------------------------------------------------------------
+def ap_demo():
+    """CI-safe demonstration: the coupling loop over a reduced budget, plus the
+    positive control proving the executor + K8 gate cross a genuine extension-
+    requiring task."""
+    print("=" * 88)
+    print("ISA-EXTENSION COUPLING LOOP (ASCENT M6) -- DEMO (reduced budgets)")
+    print("=" * 88)
+    cfg = ak_config(generations=3, n_public=6, n_hidden=8, null_programs=12,
+                    b_eval=ASCP_B_EVAL, b_live=12000, h=3)
+    state = ap_run_loop(cfg, coupling=True)
+    m = ap_metrics_from_ledger(state.k10)
+    for r in [x for x in state.k10.records if x["event"] == "closure_gen"]:
+        print(f"[g{r['gen']}] markers={r['markers']} crossed={r['crossed']} "
+              f"ext_requested={r['ext_requested']} "
+              f"ext_admitted={r['ext_admitted']} "
+              f"isa={r['isa_ext']} cum_crossed={r['cum_crossed']}")
+    ctl_ledger = SCLedger()
+    control = [ap_control_admission(n, ctl_ledger)
+               for n in sorted(DORMANT_CAPABILITY_CATALOG)]
+    for c in control:
+        print(f"[control {c['capability']}] base_passes={c['base_passes']} "
+              f"admitted={c['admitted']} ext_crossings={c['ext_crossings']}")
+    digest = hashlib.sha256(
+        (state.k10.head() + ctl_ledger.head() + _sc_canon(m)).encode()
+    ).hexdigest()[:16]
+    print("reading: the closed loop poses K's own tasks, mechanically requests "
+          "a catalog op when its markers show an open signature gap, and lets "
+          "K8 judge the grant on those markers at the frozen instrument "
+          "budget; the control proves the same gate + extended executor cross "
+          "a genuine extension-requiring task (base passes 0, then a crossing).")
+    print(json.dumps({"ap_demo_digest": digest,
+                      "closed_loop_final_isa": m["final_isa"],
+                      "closed_loop_ext_admitted": m["ext_admitted_total"],
+                      "control_admitted": sorted(
+                          c["capability"] for c in control
+                          if c["admitted"])}))
+
+
+def ap_battery():
+    """Full evidence battery: frozen constants only, K10 replay-verified,
+    ledger + metrics artifacts to reports/evidence/, digest over
+    (K10 head + control head + metrics)."""
+    print("=" * 88)
+    print("ISA-EXTENSION COUPLING LOOP (ASCENT M6) -- EVIDENCE BATTERY "
+          f"({ASCP_SPEC_VERSION})")
+    print("=" * 88)
+    pin = ap_verify_pin()
+    ak_verify_pin()
+    # The frozen Phase P instrument: the K flywheel at the P per-evaluation
+    # budget (identical for both arms), self-allocated mining budget.
+    cfg = ak_config(generations=ASCP_GENERATIONS, b_eval=ASCP_B_EVAL,
+                    b_live=ASCP_B_LIVE)
+    frozen = ak_run_loop(cfg)
+    frozen_crossed = sum(1 for r in frozen.ledger.records
+                         if r["event"] == "crossed")
+    state = ap_run_loop(cfg, coupling=True)
+    m = ap_metrics_from_ledger(state.k10)
+    ctl_ledger = SCLedger()
+    control = [ap_control_admission(n, ctl_ledger)
+               for n in sorted(DORMANT_CAPABILITY_CATALOG)]
+    ladder = ap_budget_ladder()
+    print(f"[frozen arm] cum_crossed={frozen_crossed}")
+    print(f"[coupling arm] cum_crossed_trajectory="
+          f"{m['cum_crossed_trajectory']} isa_growth={m['isa_growth']}")
+    for c in control:
+        print(f"[control {c['capability']}] base_passes={c['base_passes']} "
+              f"admitted={c['admitted']} ext_crossings={c['ext_crossings']}")
+    ext_req = [r for r in state.k10.records
+               if r["event"] == "closure_gen" and r["ext_requested"]]
+    metrics = {
+        "spec_version": ASCP_SPEC_VERSION,
+        "pin_sha256": pin,
+        "catalog_sha256": _ap_catalog_fingerprint(),
+        "b_eval_frozen": cfg["b_eval"],
+        "frozen_arm_cum_crossed": frozen_crossed,
+        "coupling": m,
+        "closed_loop_ext_requested_gens": len(ext_req),
+        "control": control,
+        "budget_ladder": ladder,
+        "k10_records": len(state.k10.records),
+        "k10_head": state.k10.head(),
+        "control_head": ctl_ledger.head(),
+    }
+    digest = hashlib.sha256(
+        (state.k10.head() + ctl_ledger.head() + _sc_canon(metrics)).encode()
+    ).hexdigest()[:16]
+    out_dir = os.path.join("reports", "evidence")
+    os.makedirs(out_dir, exist_ok=True)
+    with _sc_guarded_open(os.path.join(out_dir, "ascent_p_ledger.jsonl"),
+                          "w") as fh:
+        fh.write(state.k10.to_jsonl())
+    with _sc_guarded_open(os.path.join(out_dir, "ascent_p_control.jsonl"),
+                          "w") as fh:
+        fh.write(ctl_ledger.to_jsonl())
+    with _sc_guarded_open(os.path.join(out_dir, "ascent_p_results.json"),
+                          "w") as fh:
+        fh.write(_sc_canon({"metrics": metrics, "digest": digest}) + "\n")
+    print("reading: the coupling loop feeds K8-gated ISA extension back into "
+          "K's task factory; the K10 trajectory is the certified, byte-"
+          "reproducible readout of whether the widening closure revives the "
+          "crossing trajectory or re-saturates; the control certifies the "
+          "mechanism itself. The catalog is frozen; observed ascent is bounded "
+          "by it and stated as such.")
+    print(json.dumps({"ap_digest": digest, "k10_head": state.k10.head(),
+                      "coupling_final_isa": m["final_isa"],
+                      "closed_loop_ext_admitted": m["ext_admitted_total"],
+                      "control_admitted": sorted(
+                          c["capability"] for c in control if c["admitted"])}))
+    return metrics
+
+
+# ---------------------------------------------------------------------------
+# Phase P tests. Every certificate and every constitution clause (K8/K9/K10)
+# ships with a red-team test that CONSTRUCTS the attack and asserts rejection,
+# plus positive-path coverage. All names carry the ap_ prefix for --only.
+# ---------------------------------------------------------------------------
+def _ap_equiv_programs():
+    """A battery spanning valid base programs, budget exhaustion, crashes, bad
+    terminals, over-length, and non-base tokens -- the equivalence surface."""
+    return [
+        ((_SC_OP["INPUT"], _SC_OP["HEAD"]), (5, 3, 1), 64),
+        ((_SC_OP["INPUT"], _SC_OP["SORTL"]), (3, 1, 2, 0), 64),
+        ((_SC_OP["INPUT"], _SC_OP["REVL"], _SC_OP["RED_ADD"]), (2, 4, 6), 64),
+        ((_SC_OP["INPUT"], _SC_OP["HEAD"]), (5, 3, 1), 1),        # op budget
+        ((_SC_OP["ADD"],), (1, 2, 3), 64),                        # underflow
+        ((_SC_OP["INPUT"],), (1,), 64),                           # tuple term
+        ((_SC_OP["INPUT"], _SC_OP["INPUT"]), (1, 2), 64),         # bad terminal
+        ((99,), (1,), 64),                                        # non-base tok
+        ((EXT_ID_BASE,), (1, 2), 64),                             # ext tok, base
+        (tuple([_SC_OP["INPUT"]] * (SC_STEP_LIMIT + 1)), (1,), 999),  # too long
+    ]
+
+
+def _ap_run_pair(fn_base, fn_ext, prog, xs, budget, isa):
+    try:
+        vb = fn_base(prog, xs, budget)
+        rb = ("ok", vb)
+    except VMCrash as e:
+        rb = ("crash", str(e))
+    try:
+        ve = fn_ext(prog, xs, budget, isa)
+        re_ = ("ok", ve)
+    except VMCrash as e:
+        re_ = ("crash", str(e))
+    return rb, re_
+
+
+def test_ap_executor_equivalence_base_isa() -> None:
+    # ak_run_tokens_ext with the base ISA is byte-equivalent to ak_run_tokens:
+    # identical (value, ops) or identical crash reason on every program.
+    for prog, xs, budget in _ap_equiv_programs():
+        rb, re_ = _ap_run_pair(ak_run_tokens, ak_run_tokens_ext, prog, xs,
+                               budget, AP_BASE_ISA)
+        _assert(rb == re_,
+                f"executor diverged at base ISA: {prog} -> {rb} vs {re_}")
+
+
+def test_ap_checker_equivalence_base_isa() -> None:
+    # ak_run_checker_ext with the base ISA equals ak_run_checker.
+    seg = (_SC_OP["SORTL"], _SC_OP["TAIL"])
+    chk = _ak_checker_b(seg)
+    for x in ((3, 1, 2, 5, 4, 0), (0, 0, 1, 1), (7, 2)):
+        for y in (tuple(sorted(x))[1:], tuple(x), ()):
+            a = ak_run_checker(chk, x, y, ASCK_B_CHECK)
+            b = ak_run_checker_ext(chk, x, y, ASCK_B_CHECK, AP_BASE_ISA)
+            _assert(a == b, f"checker diverged at base ISA: {x},{y}")
+
+
+def test_ap_solver_equivalence_base_isa() -> None:
+    # ap_solve with the base ISA searches exactly SC_SOLVER_VOCAB + macros and
+    # returns the same (surface, evals) as sc_solve.
+    tasks = [_ak_mk_b((_SC_OP["SORTL"],)),
+             _ak_mk_b((_SC_OP["REVL"], _SC_OP["TAIL"])),
+             _ak_mk_a(("A1", "M2"))]
+    for t in tasks:
+        wit = t["witness"]
+        probes = SC_PROBES_A if t["track"] == "A" else SC_PROBES_B
+        public = []
+        for x in probes[:6]:
+            try:
+                y, _ = ak_run_tokens(wit, x, ASCK_B_CHECK)
+            except VMCrash:
+                continue
+            public.append((tuple(x), y))
+        s1 = sc_solve(public, {}, 3000)
+        s2 = ap_solve(public, {}, 3000, AP_BASE_ISA)
+        _assert(s1 == s2, f"solver diverged at base ISA: {s1} vs {s2}")
+
+
+def test_ap_extended_executor_runs_catalog_ops() -> None:
+    # The extended executor runs BCAST and ZGT (the wall the base executor
+    # cannot cross): ak_run_tokens rejects the same programs.
+    isa_b = frozenset({EXT_ID_BASE})
+    prog_b = (_SC_OP["INPUT"], _SC_OP["DUP"], _SC_OP["RED_ADD"], EXT_ID_BASE)
+    y, _ = ak_run_tokens_ext(prog_b, (1, 2, 3), 64, isa_b)
+    _assert(y == (6, 6, 6), f"BCAST sum-broadcast wrong: {y}")
+    try:
+        ak_run_tokens(prog_b, (1, 2, 3), 64)
+        _assert(False, "base executor accepted an extension token")
+    except VMCrash as e:
+        _assert(str(e) == "ak_non_base_token", f"wrong crash: {e}")
+    isa_z = frozenset({EXT_ID_BASE + 1})
+    prog_z = (_SC_OP["INPUT"], _SC_OP["DUP"], _SC_OP["REVL"], EXT_ID_BASE + 1)
+    y2, _ = ak_run_tokens_ext(prog_z, (3, 1, 2), 64, isa_z)
+    _assert(y2 == (1, 0, 0), f"ZGT xs>rev wrong: {y2}")
+    # An ext token NOT in the isa is rejected exactly like a non-base token.
+    try:
+        ak_run_tokens_ext(prog_b, (1, 2, 3), 64, AP_BASE_ISA)
+        _assert(False, "executor ran an ext token absent from the ISA")
+    except VMCrash as e:
+        _assert(str(e) == "ak_non_base_token", f"wrong crash: {e}")
+
+
+def test_ap_catalog_frozen_and_pinned() -> None:
+    # K9: the catalog fingerprint is stable across calls and pins the frozen
+    # names/ids/signatures/behaviour; the ap pin verifies and rejects a tamper.
+    f1 = _ap_catalog_fingerprint()
+    f2 = _ap_catalog_fingerprint()
+    _assert(f1 == f2, "catalog fingerprint is not deterministic")
+    ap_verify_pin()
+    try:
+        ap_verify_pin("a" * 64)
+        _assert(False, "tampered ap pin accepted")
+    except RuntimeError:
+        pass
+    const = _ap_frozen_constants_canon()
+    for needle in ('"SPEC_VERSION":"P-1"', '"B_EVAL":4000',
+                   '"CATALOG_META"', '"CONTROL_SEGMENTS"'):
+        _assert(needle in const, f"frozen constant unbound from pin: {needle}")
+
+
+def test_ap_dormant_inertness_preserved() -> None:
+    # Phase P execution is a pure function of the frozen catalog and the isa
+    # set: it never touches the module-global EXT_IMPL/EXT_TYPES, so the
+    # J/K dormant-inertness invariant holds before and after a coupling run
+    # and the control.
+    _assert(not EXT_IMPL and not EXT_TYPES, "registries not dormant at entry")
+    cfg = ak_config(generations=2, n_public=5, n_hidden=6, null_programs=8,
+                    h=2, b_eval=ASCP_B_EVAL, b_live=9000)
+    ap_run_loop(cfg, coupling=True)
+    ap_control_admission("BCAST", SCLedger())
+    _assert(not EXT_IMPL and not EXT_TYPES,
+            "Phase P leaked an active global extension registry")
+
+
+def test_ap_control_impossibility_and_crossing() -> None:
+    # The positive control: for every catalog op the base ISA passes 0 tasks
+    # of its family (impossibility pre-certificate) and K8 admits the op by
+    # crossing >= 1 through the extended executor (crossing evidence). The
+    # gate + extended executor are a real crossing mechanism.
+    for name in sorted(DORMANT_CAPABILITY_CATALOG):
+        c = ap_control_admission(name, SCLedger())
+        _assert(c["battery_size"] >= 1, f"empty control family for {name}")
+        _assert(c["base_passes"] == 0,
+                f"base ISA crossed a {name}-requiring task (no wall)")
+        _assert(name in c["admitted"] and c["ext_crossings"] >= 1,
+                f"K8 did not cross a genuine {name}-requiring task")
+    _assert(not EXT_IMPL, "control leaked an active extension")
+
+
+def test_ap_k8_rollback_restores_isa_on_reject() -> None:
+    # A request whose op crosses no marker is rejected, the ISA is restored
+    # byte-exactly (hash-checked inside K8), and the digest is recorded so the
+    # duplicate request is skipped. The red-team marker is a base-only task
+    # BCAST cannot cross.
+    cfg = ak_config(generations=1, n_public=6, n_hidden=8, null_programs=8,
+                    h=1, b_eval=ASCP_B_EVAL, b_live=9000)
+    state = APLoopState(cfg)
+    t = _ak_mk_b((_SC_OP["SORTL"],))     # a base task; no ext op crosses it
+    tid = "AKB-deadbeef0001"
+    probes = SC_PROBES_B
+    public = []
+    for x in probes[:cfg["n_public"]]:
+        y, _ = ak_run_tokens(t["witness"], x, cfg["b_check"])
+        public.append((tuple(x), y))
+    public = sorted(public, key=lambda p: _sc_canon(list(p[0])))
+    hidden = tuple(probes[cfg["n_public"]:cfg["n_public"] + cfg["n_hidden"]])
+    state.vault.seal(f"chk:{tid}", tuple(t["checker"]))
+    state.vault.seal(f"hidden:{tid}", hidden)
+    infos = {tid: {"tid": tid, "track": "B", "public": public}}
+    reqs = [{"tid": tid, "capability": "BCAST", "ext_id": EXT_ID_BASE}]
+    pre = _ap_isa_hash(AP_BASE_ISA)
+    k10 = SCLedger()
+    new_isa, admitted, cross = ap_extension_gate(
+        state, AP_BASE_ISA, reqs, infos, cfg, k10, 0)
+    _assert(not admitted and cross == 0, "useless grant was admitted")
+    _assert(_ap_isa_hash(new_isa) == pre, "ISA not restored byte-exactly")
+    _assert(state.ap_rejected_digests, "rejected digest not recorded")
+    rej = [r for r in k10.records if r["event"] == "ext_rejected"]
+    _assert(rej and rej[0]["reason"] == "no_marker_crossed",
+            "rejection not recorded with reason")
+    # The duplicate request is now skipped.
+    ap_extension_gate(state, AP_BASE_ISA, reqs, infos, cfg, k10, 1)
+    _assert(any(r["event"] == "ext_skip_duplicate" for r in k10.records),
+            "duplicate request not skipped by digest")
+
+
+def test_ap_closed_loop_records_k10_and_replays() -> None:
+    # The coupling controller writes a valid, hash-chained K10 ledger; the
+    # trajectory is monotone non-decreasing and the ISA is append-only.
+    cfg = ak_config(generations=3, n_public=6, n_hidden=8, null_programs=8,
+                    h=2, b_eval=ASCP_B_EVAL, b_live=9000)
+    state = ap_run_loop(cfg, coupling=True)
+    state.k10.verify()
+    m = ap_metrics_from_ledger(state.k10)
+    # One closure row per generation plus one for the terminating sweep.
+    _assert(m["generations"] == cfg["generations"] + 1, "K10 generation count")
+    traj = m["cum_crossed_trajectory"]
+    _assert(all(traj[i] <= traj[i + 1] for i in range(len(traj) - 1)),
+            "cum-crossed trajectory is not monotone")
+    sizes = m["isa_size_trajectory"]
+    _assert(all(sizes[i] <= sizes[i + 1] for i in range(len(sizes) - 1)),
+            "ISA is not append-only")
+
+
+def test_ap_frozen_arm_parity_byte_identical() -> None:
+    # The frozen K arm is byte-untouched by the coupling machinery: the K
+    # ledger of ap_run_loop with the hook inert is identical to ak_run_loop.
+    cfg = ak_config(generations=3, n_public=5, n_hidden=6, null_programs=8,
+                    h=2, b_eval=ASCP_B_EVAL, b_live=9000)
+    k = ak_run_loop(cfg)
+    p = ap_run_loop(cfg, coupling=False)
+    _assert(k.ledger.head() == p.ledger.head(),
+            "coupling controller perturbed the frozen K arm")
+
+
+def test_ap_locator_no_vault_leakage() -> None:
+    # Constitution K8/§2.2: the mutable request path (P1) and the frozen setter
+    # reference no vault, no witness, and no K8 internals. K8 alone reads the
+    # vault.
+    import inspect
+    locator = "".join(inspect.getsource(o) for o in (
+        ap_extension_request_locator, _ap_residue_tokens,
+        _ap_live_signatures))
+    # Access-level symbols, not prose: the locator may DESCRIBE what it does
+    # not touch, but it must not REFERENCE the sealed store or the gate.
+    for name in (".vault", "AKWitnessVault", '"wit:', '"hidden:', '"chk:',
+                 "ap_extension_gate", ".read(", ".seal("):
+        _assert(name not in locator,
+                f"P1 locator references sealed/gate symbol {name}")
+    setter = inspect.getsource(AKSetterLineage)
+    for name in ("ap_extension_gate", "DORMANT_CAPABILITY_CATALOG",
+                 "ak_run_tokens_ext", ".vault", "_AP_EXT_IMPL"):
+        _assert(name not in setter,
+                f"mutable setter references coupling/vault symbol {name}")
+
+
+def test_ap_no_instrument_access() -> None:
+    import inspect
+    src = "".join(inspect.getsource(o) for o in _ap_scan_components())
+    forbidden = ("ORACLES", "TRAIN_INPUTS", "_ORACLE_REGISTRY", "seal_task",
+                 "build_sealed_tasks", "holdout_gate", "cf_gate", "_make_gate",
+                 "GATE_SEED", "SealedTask", "mint_task", "meta_gate",
+                 "frozen_holdout_phase0", "frozen_holdout_extJ")
+    for name in forbidden:
+        _assert(name not in src,
+                f"phase P code references sealed symbol {name}")
+
+
+def test_ap_b_eval_frozen_equal_across_arms() -> None:
+    # The per-evaluation budget is frozen and identical for the frozen and the
+    # coupling arm; only b_total (mining, b_live) is self-allocated. The ladder
+    # varies b_live across rungs and never the frozen instrument budget.
+    cfg = ak_config(generations=ASCP_GENERATIONS, b_eval=ASCP_B_EVAL,
+                    b_live=ASCP_B_LIVE)
+    _assert(cfg["b_eval"] == ASCP_B_EVAL, "coupling arm b_eval not frozen")
+    blives = set()
+    for rung in ap_budget_ladder():
+        _assert(rung["b_eval"] == ASCP_B_EVAL,
+                "budget ladder varied the frozen instrument budget")
+        blives.add(rung["b_live"])
+    _assert(len(blives) == len(ASCP_LADDER_BLIVE),
+            "budget ladder did not vary the self-allocated mining budget")
+
+
+def test_ap_determinism_two_runs() -> None:
+    cfg = ak_config(generations=3, n_public=6, n_hidden=8, null_programs=8,
+                    h=2, b_eval=ASCP_B_EVAL, b_live=9000)
+    heads = []
+    for _ in range(2):
+        state = ap_run_loop(cfg, coupling=True)
+        ctl = SCLedger()
+        ap_control_admission("BCAST", ctl)
+        ap_control_admission("ZGT", ctl)
+        heads.append((state.k10.head(), ctl.head()))
+    _assert(heads[0] == heads[1], "phase P not two-run byte-identical")
+
+
+def test_ap_pin_matches() -> None:
+    ap_verify_pin()
+    ak_verify_pin()
+    try:
+        ap_verify_pin("f" * 64)
+        _assert(False, "tampered pin accepted")
+    except RuntimeError:
+        pass
+
+
+def test_ap_prior_records_untouched() -> None:
+    ak_verify_pin()
+    al_verify_pin()
+    am_verify_pin()
+    an_verify_pin()
+    ao_verify_pin()
+    ap_verify_pin()
+    _assert(len({ASCK_PIN_SHA256, ASCL_PIN_SHA256, ASCM_PIN_SHA256,
+                 ASCN_PIN_SHA256, ASCO_PIN_SHA256, ASCP_PIN_SHA256}) == 6,
+            "pin collision")
+
+
+TESTS.extend([
+    test_ap_executor_equivalence_base_isa,
+    test_ap_checker_equivalence_base_isa,
+    test_ap_solver_equivalence_base_isa,
+    test_ap_extended_executor_runs_catalog_ops,
+    test_ap_catalog_frozen_and_pinned,
+    test_ap_dormant_inertness_preserved,
+    test_ap_control_impossibility_and_crossing,
+    test_ap_k8_rollback_restores_isa_on_reject,
+    test_ap_closed_loop_records_k10_and_replays,
+    test_ap_frozen_arm_parity_byte_identical,
+    test_ap_locator_no_vault_leakage,
+    test_ap_no_instrument_access,
+    test_ap_b_eval_frozen_equal_across_arms,
+    test_ap_determinism_two_runs,
+    test_ap_pin_matches,
+    test_ap_prior_records_untouched,
+])
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="real-search RSI core")
     ap.add_argument("--mode",
@@ -47701,7 +49092,8 @@ def main() -> None:
                              "ascent-l", "ascent-l-battery",
                              "ascent-m", "ascent-m-battery",
                              "ascent-n", "ascent-n-battery",
-                             "ascent-o", "ascent-o-battery",),
+                             "ascent-o", "ascent-o-battery",
+                             "ascent-p", "ascent-p-battery",),
                     default="demo")
     ap.add_argument("--save", default="")
     ap.add_argument("--adaptive-json", default="adaptive.json")
@@ -47912,6 +49304,10 @@ def main() -> None:
         ao_demo()
     elif args.mode == "ascent-o-battery":
         ao_battery()
+    elif args.mode == "ascent-p":
+        ap_demo()
+    elif args.mode == "ascent-p-battery":
+        ap_battery()
     else:
         demo()
 
