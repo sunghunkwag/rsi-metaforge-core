@@ -111,7 +111,7 @@ against ~306,777 metered candidate evaluations.
 | P5 | ≥ 8 frontier markers, witnesses sealed, no witness tokens outside retired_crossed | **CONFIRMED** — 9 markers; ledger audit clean |
 | P6 | replay verifies on finals | **CONFIRMED** — runs abort before digest otherwise |
 | P7 | meter totals match calibration exactly | **CONFIRMED** — §5 values |
-| P8 | suite exactly 215 passed 0 failed in CI order; ak_ tests pass in isolation; SC/SC2 digests untouched | **CONFIRMED** — local full suite: 205 passed plus the identical ten artifact-dependent failures as the pre-K baseline (zero regressions; the ten require the battery artifacts CI generates first); 21 ak guards green in isolation; sc2 digest re-verified locally (`50e46bc7c135ceaa`); the SC-1 source+constants pin verifies in-suite, and Full Evidence re-runs both sc batteries twice with digest equality asserted on every commit |
+| P8 | suite exactly 215 passed 0 failed in CI order; ak_ tests pass in isolation; SC/SC2 digests untouched | **CONFIRMED** — local full suite: 205 passed plus the identical ten artifact-dependent failures as the pre-K baseline (zero regressions; the ten require the battery artifacts CI generates first); 21 ak guards green in isolation; sc and sc2 battery digests re-verified locally with every ascent phase present (`f56c6c13a2bf3028`, `50e46bc7c135ceaa` — the sc run reproduced the committed record down to the g10 transfer checkpoint, control 24 vs curriculum 23); the SC-1 source+constants pin also verifies in-suite |
 | P9 | credit-supplier gap: L_B supplies the enabling macros, earns 0 | **CONFIRMED** — carried finding, see §7 |
 | P10 | no post-registration changes; pin verifies in both finals | **CONFIRMED** |
 
