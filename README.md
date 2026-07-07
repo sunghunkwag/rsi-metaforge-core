@@ -74,6 +74,7 @@ The same gated loop is measured across several substrates — not only the integ
 - **Abstract strategic planning — HDC/VSA + Kuramoto oscillators** (Section 14, *"measured, not mystified"*): an illustrative demo (`--mode hdc-rsi`) that encodes a symbolic action plan into hypervectors, performs analogical transfer via VSA bind/unbind, and selects steps by oscillator phase-locking; the measured interference-field battery is `--mode hdc-battery`.
 - **Self-curriculum — a closed task-generation loop** (Phase SC): the system poses its own tasks (each admitted only with a machine-checked feasibility witness, constructed from invertible primitives), solves them against sealed held-outs under an MDL cap, and composes adopted solutions into harder tasks — zero human-authored tasks added. Fourteen anti-gaming invariants each ship with a dedicated in-suite test — twelve construct the attack outright, determinism is proven by two-run digest identity, budgets are literal-pinned and bound into the source pin — and an append-only hash-chained ledger keeps every failure in the denominator (`--mode self-curriculum`, `--mode sc-battery`). Claim boundary: this is a closed-world compounding *measurement*, not an open-ended autonomy claim — transfer to the frozen human instrument is the pre-registered external test ([`SELF_CURRICULUM_SPEC.md`](docs/SELF_CURRICULUM_SPEC.md), [`PREDICTIONS_SC.md`](docs/PREDICTIONS_SC.md), [`SC_RESULT.md`](docs/SC_RESULT.md)). Phase SC2 makes the fence itself an evolution target: the system invents new task *kinds* as pure data over a human-frozen five-form meta-checker algebra, taps hash-pinned external corpus material, and spans capsule products (`--mode schema-forge`, `--mode sc2-battery`) — with schema admission gated by mutation-kill soundness, discrimination, non-collusion, and novelty checks, and headline credit granted only on measured transfer (I15–I23, [`SELF_CURRICULUM_SPEC_V2.md`](docs/SELF_CURRICULUM_SPEC_V2.md), [`PREDICTIONS_SC2.md`](docs/PREDICTIONS_SC2.md), [`SC2_RESULT.md`](docs/SC2_RESULT.md)). Claim boundary, verbatim from the directive: *the check-form algebra is the new fence. This directive moves the boundary one level up and measures whether the move pays; it does not remove the boundary.*
 - **Witness-sealed setter–solver — the oracle factory** (Ascent Phase K): the system manufactures its own tasks as `(task_spec, checker, witness)` triples — the checker is a budget-capped VM program, the witness is vault-sealed at emission — and admits a task only through four hermetic certificates: sealed-witness feasibility, strategy-level non-triviality against a null battery and a seeded random-program sampler, descriptor-cell novelty, and frozen-frontier difficulty (the current solver snapshot must certifiably fail the task at the frozen instrument budget). The headline event is a *crossing*: an admitted task later solved at the same frozen budget with the task's own mined macros excluded — improvement attributable only to library growth from other tasks. The final record certifies one crossing, credited to its setter lineage through the learnability-band reward, with pose allocation visibly following the credit; nine families remain archived as frontier markers, witnesses still sealed (`--mode ascent-k`, `--mode ascent-k-battery`; [`ASCENT_K_SPEC.md`](docs/ASCENT_K_SPEC.md), [`PREDICTIONS_K.md`](docs/PREDICTIONS_K.md), [`K_RESULT.md`](docs/K_RESULT.md)). Claim boundary: one certified crossing at the frozen budgets is the measured claim; the flywheel's throughput ceiling and the credit-vs-supplier gap are recorded findings, not smoothed curves.
+- **The ascent line, closed end to end** (Phases L–O): a single frozen MDL coding formula judges all vocabulary growth (2 adoptions, 203 exact-bit-delta rejections, and MORE certified crossings than raw adoption at identical budgets — [`L_RESULT.md`](docs/L_RESULT.md)); a proposal-ordering amortizer trained only on the system's own chain-verified ledgers triples certified passes per budget on sealed holdout families, with a failing retrain rolled back on record ([`M_RESULT.md`](docs/M_RESULT.md)); a frozen propositional proof kernel adopts 35 kernel-checked theorems with zero axiom adoptions and countermodel-archived refutations ([`N_RESULT.md`](docs/N_RESULT.md)); and the improver itself becomes a citizen — kernel-certified search transformations through one channel, counterfactual A/B adoptions (including an end-to-end ISA-extender protocol from impossibility pre-certificate to crossing evidence) through the other, with rejections and rollbacks on the same record ([`O_RESULT.md`](docs/O_RESULT.md)). Directive-level scoring, misses included: [`ASCENT_RESULT.md`](docs/ASCENT_RESULT.md).
 
 ---
 
@@ -104,7 +105,7 @@ python rsi_levels_metaforge_unified.py --mode crossing-anchor   # extended ISA (
 python rsi_levels_metaforge_unified.py --mode transfer-anchor   # adaptive (live)
 python rsi_levels_metaforge_unified.py --mode run-frozen        # frozen baseline
 
-# Run the full test suite (215 tests)
+# Run the full test suite (270 tests)
 python rsi_levels_metaforge_unified.py --mode test
 ```
 
@@ -125,6 +126,10 @@ python rsi_levels_metaforge_unified.py --mode schema-forge      # fence-expansio
 python rsi_levels_metaforge_unified.py --mode sc2-battery       # fence-expansion evidence battery
 python rsi_levels_metaforge_unified.py --mode ascent-k          # witness-sealed setter-solver (demo)
 python rsi_levels_metaforge_unified.py --mode ascent-k-battery  # ascent phase K evidence battery
+python rsi_levels_metaforge_unified.py --mode ascent-l-battery  # MDL master gate battery
+python rsi_levels_metaforge_unified.py --mode ascent-m-battery  # ledger-trained amortizer battery
+python rsi_levels_metaforge_unified.py --mode ascent-n-battery  # proof kernel & formal domain battery
+python rsi_levels_metaforge_unified.py --mode ascent-o-battery  # meta-improvement (two channels) battery
 python rsi_levels_metaforge_unified.py --mode crossing-anchor   # Phase J: live arm + capability-grant channel
 python rsi_levels_metaforge_unified.py --help                   # everything else
 ```
@@ -138,7 +143,7 @@ python rsi_levels_metaforge_unified.py --help                   # everything els
 Two workflows keep the claims honest on every change:
 
 - **Quick CI** — compiles the runtime, checks the CLI, runs anti-cheat guards. Fast, on every push.
-- **Full Evidence** — runs every evidence battery (including the self-curriculum, fence-expansion, and ascent phase K batteries twice each, asserting byte-identical digests) plus the full 215-test suite, then uploads the logs and JSON artifacts. Green means the whole record reproduced on a clean machine.
+- **Full Evidence** — runs every evidence battery (including the self-curriculum, fence-expansion, and all five ascent batteries twice each, asserting byte-identical digests and artifact equality) plus the full 270-test suite, then uploads the logs and JSON artifacts. Green means the whole record reproduced on a clean machine.
 
 ---
 
