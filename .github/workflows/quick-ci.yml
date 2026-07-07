@@ -36,5 +36,17 @@ jobs:
       - name: Run dynamic-evaluator guard
         run: python "rsi_levels_metaforge_unified.py" --mode test --only no_dynamic
 
+      - name: Run self-curriculum red-team guards
+        run: python "rsi_levels_metaforge_unified.py" --mode test --only sc_
+
+      - name: Run self-curriculum demo
+        run: python "rsi_levels_metaforge_unified.py" --mode self-curriculum
+
+      - name: Run fence-expansion (sc2) red-team guards
+        run: python "rsi_levels_metaforge_unified.py" --mode test --only sc2_
+
+      - name: Run schema-forge demo
+        run: python "rsi_levels_metaforge_unified.py" --mode schema-forge
+
       - name: Run general-domain smoke gate
         run: python "rsi_levels_metaforge_unified.py" --mode general-domain-test

@@ -72,6 +72,7 @@ The same gated loop is measured across several substrates — not only the integ
 - **File-world — CSV / JSON / log / repo:** real file I/O scored by sealed hidden A/B; skill proposals mined from failure residues and adopted only through a validation gate (`--mode file-battery`).
 - **Self-forge → GD bridge:** system-synthesized fold primitives, admitted through sealed gates, are registered as general-domain feature atoms that extend the vocabulary the debate pipeline searches (`--mode forge-battery`).
 - **Abstract strategic planning — HDC/VSA + Kuramoto oscillators** (Section 14, *"measured, not mystified"*): an illustrative demo (`--mode hdc-rsi`) that encodes a symbolic action plan into hypervectors, performs analogical transfer via VSA bind/unbind, and selects steps by oscillator phase-locking; the measured interference-field battery is `--mode hdc-battery`.
+- **Self-curriculum — a closed task-generation loop** (Phase SC): the system poses its own tasks (each admitted only with a machine-checked feasibility witness, constructed from invertible primitives), solves them against sealed held-outs under an MDL cap, and composes adopted solutions into harder tasks — zero human-authored tasks added. Fourteen anti-gaming invariants each ship with a dedicated in-suite test — twelve construct the attack outright, determinism is proven by two-run digest identity, budgets are literal-pinned and bound into the source pin — and an append-only hash-chained ledger keeps every failure in the denominator (`--mode self-curriculum`, `--mode sc-battery`). Claim boundary: this is a closed-world compounding *measurement*, not an open-ended autonomy claim — transfer to the frozen human instrument is the pre-registered external test ([`SELF_CURRICULUM_SPEC.md`](docs/SELF_CURRICULUM_SPEC.md), [`PREDICTIONS_SC.md`](docs/PREDICTIONS_SC.md), [`SC_RESULT.md`](docs/SC_RESULT.md)). Phase SC2 makes the fence itself an evolution target: the system invents new task *kinds* as pure data over a human-frozen five-form meta-checker algebra, taps hash-pinned external corpus material, and spans capsule products (`--mode schema-forge`, `--mode sc2-battery`) — with schema admission gated by mutation-kill soundness, discrimination, non-collusion, and novelty checks, and headline credit granted only on measured transfer (I15–I23, [`SELF_CURRICULUM_SPEC_V2.md`](docs/SELF_CURRICULUM_SPEC_V2.md), [`PREDICTIONS_SC2.md`](docs/PREDICTIONS_SC2.md), [`SC2_RESULT.md`](docs/SC2_RESULT.md)). Claim boundary, verbatim from the directive: *the check-form algebra is the new fence. This directive moves the boundary one level up and measures whether the move pays; it does not remove the boundary.*
 
 ---
 
@@ -102,7 +103,7 @@ python rsi_levels_metaforge_unified.py --mode crossing-anchor   # extended ISA (
 python rsi_levels_metaforge_unified.py --mode transfer-anchor   # adaptive (live)
 python rsi_levels_metaforge_unified.py --mode run-frozen        # frozen baseline
 
-# Run the full test suite (156 tests)
+# Run the full test suite (194 tests)
 python rsi_levels_metaforge_unified.py --mode test
 ```
 
@@ -117,6 +118,10 @@ python rsi_levels_metaforge_unified.py --mode cfs-battery       # continuous fun
 python rsi_levels_metaforge_unified.py --mode expansion-battery # residue-driven vocabulary expansion
 python rsi_levels_metaforge_unified.py --mode grammar-battery   # depth-1 grammar feature search
 python rsi_levels_metaforge_unified.py --mode grammar2-battery  # depth-2 grammar feature search
+python rsi_levels_metaforge_unified.py --mode self-curriculum   # closed self-curriculum loop (demo)
+python rsi_levels_metaforge_unified.py --mode sc-battery        # self-curriculum evidence battery
+python rsi_levels_metaforge_unified.py --mode schema-forge      # fence-expansion schema forge (demo)
+python rsi_levels_metaforge_unified.py --mode sc2-battery       # fence-expansion evidence battery
 python rsi_levels_metaforge_unified.py --mode crossing-anchor   # Phase J: live arm + capability-grant channel
 python rsi_levels_metaforge_unified.py --help                   # everything else
 ```
@@ -130,7 +135,7 @@ python rsi_levels_metaforge_unified.py --help                   # everything els
 Two workflows keep the claims honest on every change:
 
 - **Quick CI** — compiles the runtime, checks the CLI, runs anti-cheat guards. Fast, on every push.
-- **Full Evidence** — runs every evidence battery plus the full 156-test suite, then uploads the logs and JSON artifacts. Green means the whole record reproduced on a clean machine.
+- **Full Evidence** — runs every evidence battery (including the self-curriculum battery twice, asserting byte-identical digests) plus the full 194-test suite, then uploads the logs and JSON artifacts. Green means the whole record reproduced on a clean machine.
 
 ---
 

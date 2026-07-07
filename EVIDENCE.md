@@ -18,7 +18,9 @@ The current runtime extends the previous public evidence line with:
 - dynamic residue-driven feature expansion through `expansion-battery`
 - depth-1 grammar feature expansion through `grammar-battery`
 - depth-2 grammar feature expansion through `grammar2-battery`
-- a full built-in regression suite expected to report `156 passed, 0 failed`
+- a closed self-curriculum compounding loop through `sc-battery` (two-run digest equality asserted in CI)
+- a fence-expansion loop (schema forge over a frozen meta-checker algebra, corpus tap, domain capsules) through `sc2-battery` (two-run digest equality asserted in CI)
+- a full built-in regression suite expected to report `194 passed, 0 failed`
 - the Phases 0–I generalization research program: frozen holdout instrument, sealed exploration archive, external anchoring artifacts, stratified offer schedule, and per-phase reports, all committed under `docs/` with SHA-256 pins asserted by tests
 
 The current runtime should be treated as publicly validated only after the **Full Evidence** GitHub Actions workflow succeeds for the commit that contains it.
@@ -47,6 +49,8 @@ The Full Evidence workflow runs these stages:
 - Expansion battery
 - Grammar battery
 - Grammar2 battery
+- Self-curriculum battery, run twice with byte-identical `sc_digest` and artifact equality asserted in the workflow
+- Fence-expansion (sc2) battery, run twice with byte-identical `sc2_digest` and artifact equality asserted in the workflow
 - Full built-in test suite after generated evidence artifacts
 - Evidence artifact upload
 
@@ -117,16 +121,40 @@ The intended evidence is:
 
 The grammar primitives are designer-declared. These batteries measure bounded expressive reach; they are not evidence of unrestricted capability invention.
 
+## Self-Curriculum Battery
+
+The self-curriculum battery (`--mode sc-battery`) measures a closed loop that generates, witness-proves, admits, and solves its own tasks with zero human-authored tasks added, then evaluates transfer against the frozen human instrument under a pre-registered two-arm protocol.
+
+The official record (two byte-identical runs, digest `f56c6c13a2bf3028`; committed artifacts `docs/final_sc_battery.json`, `docs/sc_ledger_final.jsonl`):
+
+- 96 self-generated candidates, 16 admitted, 80 rejected with ledgered reasons, 14 distinct tasks solved; 13 of 14 solves used gate-adopted archive macros (library compression), 1 solved by base search alone
+- composition band climbed 2 → 3 through the pre-registered learnability window; the M4 cost curve rose under the pre-registered I5-tightening confound
+- transfer (the headline, pre-registered in `docs/PREDICTIONS_SC.md`, scored in `docs/SC_RESULT.md`): the curriculum arm did NOT beat the matched-compute control arm on the frozen instrument — control 24 vs curriculum 23 designer tasks at the final checkpoint. Matched-compute random exploration transferred (+1); the self-curriculum library was behaviorally inert on the instrument
+
+This is a closed-world compounding measurement with an honest negative external-transfer result — not an autonomy claim.
+
+## Fence-Expansion (SC2) Battery
+
+The fence-expansion battery (`--mode sc2-battery`) measures whether the system can profitably expand its own hunting ground: it invents new task *kinds* (schemas) as pure data over a human-frozen five-form meta-checker algebra, taps hash-pinned external corpus material, and spans capsule products — with schema admission gated by mutation-kill soundness, discrimination, non-collusion, and novelty, and headline credit granted only on measured transfer.
+
+The official record (two byte-identical runs, digest `50e46bc7c135ceaa`; committed artifacts `docs/final_sc2_battery.json`, `docs/sc2_ledger_final.jsonl`):
+
+- 24 schemas generated, 10 admitted into probation, 14 rejected with ledgered reasons; 28 provisionally-credited solves spanning all four templates, including cross-capsule base-8 digit-record tasks the frozen baseline provably cannot enter and corpus-fed tasks under full witness discipline
+- **the permanent-schema count stayed at zero for the whole run** — every M5 ablation delta was exactly 0 (sibling-macro redundancy), every solving schema retired at its probation window, and the permanent credit curve ends at 0; provisional credit is reported separately and never merged
+- the sealed corpus shard scored 6/6 at the final checkpoint with zero adoptions; the check-form algebra, relation library, and mutation operators never moved (hash-pinned, verified at battery start)
+
+The claim boundary, verbatim from the directive: *the check-form algebra is the new fence. This directive moves the boundary one level up and measures whether the move pays; it does not remove the boundary.* Scored register: `docs/PREDICTIONS_SC2.md` → `docs/SC2_RESULT.md`.
+
 ## Full Test Suite
 
 The current Full Evidence workflow requires the built-in full suite to end with:
 
 ```text
-RESULT: 156 passed, 0 failed
+RESULT: 194 passed, 0 failed
 ALL TESTS PASSED
 ```
 
-The count is pinned exactly on purpose: a suite that silently gains or loses tests should turn the badge red until the pin is updated in the same change that alters the suite. The count history is 99 (pre-rename runtime), 116 (renamed runtime, pre-program), 147 (after the Phases 0–I research program added 31 instrument, isolation, and determinism tests), 156 (after Phase J added 9 extension, re-certification, and determinism tests for the approved ISA extension).
+The count is pinned exactly on purpose: a suite that silently gains or loses tests should turn the badge red until the pin is updated in the same change that alters the suite. The count history is 99 (pre-rename runtime), 116 (renamed runtime, pre-program), 147 (after the Phases 0–I research program added 31 instrument, isolation, and determinism tests), 156 (after Phase J added 9 extension, re-certification, and determinism tests for the approved ISA extension), 178 (after Phase SC added 15 attack-construction tests — one per anti-gaming invariant I1–I14 plus a band-label-fabrication attack — and 7 positive-path tests for the self-curriculum loop), 194 (after Phase SC2 added 9 red-team tests for the fence-expansion invariants I15–I23 and 7 positive-path tests for the schema forge, meta-checker algebra, corpus tap, and capsule products).
 
 Relevant tested properties include:
 
@@ -147,6 +175,9 @@ Relevant tested properties include:
 - SHA-256 pins on the frozen research-program artifacts under `docs/` (holdout instrument, exploration archives, anchor reports, ordering spec, final evaluation artifacts)
 - ordering/eligibility isolation: the stratified offer schedule's computation cannot reach designer-task oracles, gates, or adoption records
 - two-run byte-identity for the exploration, transfer, and final-evaluation reconstructions asserted in-suite
+- self-curriculum anti-gaming invariants I1–I14, each enforced in the default battery path and each covered by a dedicated test: twelve construct the attack outright (identity task, constant task, non-injective generator, behavioural duplicate, frozen-solvable task, witnessless/invalid/over-budget witness, padded lookup-table program, archive-covered task, poser input suggestions, gate-source and pin tamper, ledger mutation and record drop, forbidden instrument access); determinism (I12) is proven by two-run digest identity plus a digest-sensitivity construction; budgets (I14) are literal-pinned in-suite and bound into the source pin, with invalid configurations refused
+- a band-label-fabrication attack test: the harness measures every task's difficulty band from the generator itself and records the poser's claim as audit metadata only
+- self-curriculum sealed pairs and witnesses held in write-once, memory-only stores, with the ledger carrying hashes only until task retirement
 
 ## Reproduction Paths
 
