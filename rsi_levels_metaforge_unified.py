@@ -41963,6 +41963,1736 @@ TESTS.extend([
 ])
 
 
+# =========================================================================== #
+# PHASE K: WITNESS-SEALED SETTER--SOLVER (ASCENT M1)                          #
+#                                                                             #
+# The oracle factory (docs/ASCENT_K_SPEC.md, docs/PREDICTIONS_K.md,           #
+# docs/K_RESULT.md). The system manufactures its own tasks as triples         #
+# (task_spec, checker, witness): the checker is a budget-capped VM program    #
+# that IS the ground truth for the task, and the witness is sealed into a     #
+# write-once vault (K1) at emission, before any admission check runs. A       #
+# task is admitted only when four hermetic certificates pass on hidden        #
+# evaluation instances:                                                       #
+#   (a) feasibility  -- the sealed witness satisfies the checker on every     #
+#                       hidden instance within frozen execution budgets;      #
+#   (c) non-trivial  -- no fixed null strategy solves the task wholesale,     #
+#                       >= 9/10 of seeded random programs do not solve it,    #
+#                       and the checker battery is dual-run bit-identical;    #
+#   (d) novelty      -- fresh behavioural signature AND an unoccupied Phase   #
+#                       D-style descriptor cell (the Phase D/G archive        #
+#                       admission threshold IS d_min);                        #
+#   (b) difficulty   -- the current frozen frontier-solver snapshot (base     #
+#                       vocabulary + every adopted macro) FAILS the task at   #
+#                       exactly ASCK_B_EVAL candidate evaluations.            #
+#                                                                             #
+# A CROSSING is the phase's headline event: a task whose admission record     #
+# proves the then-current frontier failed at B_EVAL is later solved by an     #
+# improved snapshot at the SAME budget, with every macro mined from the      #
+# task itself excluded (no self-credit) -- the improvement is attributable    #
+# only to library growth from OTHER tasks. Setter lineages earn credit only   #
+# when their tasks cross within ASCK_H generations (the learnability-band     #
+# reward); pose slots reallocate by credit. Tasks that never cross become     #
+# frontier markers: archived, witnesses sealed forever, zero credit.          #
+#                                                                             #
+# Kernel/mutable split (the constitution): the vault, budget meter, ledger,   #
+# replay engine, and every gate evaluator are frozen kernel; the setter       #
+# lineages, allocation policy, and miner are mutable citizens. Mutable        #
+# sources are AST-audited to reference no vault or meter symbol. Phase SC /   #
+# SC2 code above is read-only here; shared machinery (sc_solve, SCLedger,     #
+# _sc_expand, probe batteries, unit grammars, MDL caps) is reused by call,    #
+# never modified, and re-pinned inside ASCK_PIN_SHA256.                       #
+# =========================================================================== #
+
+# --- frozen constants (spec-freeze: docs/ASCENT_K_SPEC.md) -------------------
+ASCK_SPEC_VERSION = "K-1"
+ASCK_MASTER_SEED = 872663
+ASCK_GENERATIONS = 8
+ASCK_N_PUBLIC = 8
+ASCK_N_HIDDEN = 16
+ASCK_P_NULL_NUM, ASCK_P_NULL_DEN = 9, 10
+ASCK_NULL_PROGRAMS = 24
+ASCK_NULL_MAX_LEN = 6
+ASCK_H = 5
+ASCK_B_EVAL = 1500
+ASCK_B_LIVE = 25000
+ASCK_B_CHECK = 512
+ASCK_B_EXEC = 4096
+ASCK_MAX_ATTEMPTS = 2
+ASCK_POSE_SLOTS = 6
+ASCK_BAND_MAX = 8
+ASCK_GEN_MAX_TOKENS = 64
+ASCK_CHK_MAX_TOKENS = 64
+ASCK_WIT_MAX_TOKENS = 64
+ASCK_MACRO_BASE = 3000
+ASCK_LINEAGES = (("L_A", "A", 2), ("L_B", "B", 2), ("L_D", "B", 5))
+
+# --- K1: witness vault (write-once, memory-only, kernel-read-only) -----------
+class AKWitnessVault:
+    """The hidden-expectation store for Phase K. Witnesses, checkers and
+    hidden evaluation instances are sealed here at emission. Write-once;
+    no deletion; no enumeration. Mutable citizens (setter lineages,
+    allocation policy, miner) are AST-audited to reference no symbol of
+    this class -- only kernel gate evaluators read it."""
+
+    def __init__(self):
+        self._d = {}
+
+    def seal(self, key, value):
+        if key in self._d:
+            raise PermissionError(f"ak vault rewrite blocked: {key}")
+        self._d[key] = value
+
+    def read(self, key):
+        return self._d[key]
+
+    def __contains__(self, key):
+        return key in self._d
+
+
+# --- K4: logical budget meter (the only counter of logical cost) ------------
+AK_METER_MODULES = ("setter", "admission", "mining", "crossing")
+
+
+class AKBudgetMeter:
+    """Kernel accounting of logical cost: VM ops executed and candidate
+    evaluations (node expansions), per module. Mutable policy may DECIDE
+    how budget is allocated; only this meter COUNTS what was spent."""
+
+    def __init__(self):
+        self._c = {m: {"vm_ops": 0, "cand_evals": 0, "proposals": 0}
+                   for m in AK_METER_MODULES}
+
+    def spend(self, module, kind, n):
+        if module not in self._c or kind not in self._c[module]:
+            raise ValueError(f"ak meter: unknown spend {module}/{kind}")
+        if n < 0:
+            raise ValueError("ak meter: negative spend")
+        self._c[module][kind] += int(n)
+
+    def snapshot(self):
+        return {m: dict(v) for m, v in sorted(self._c.items())}
+
+
+# --- kernel executors --------------------------------------------------------
+def ak_run_tokens(expanded, xs, max_ops):
+    """Run an expanded base-token program on one input tuple under an
+    explicit op budget. Tuple terminal values are allowed (Track B).
+    Returns (value, ops_executed); raises VMCrash on any violation."""
+    if len(expanded) > SC_STEP_LIMIT:
+        raise VMCrash("ak_program_too_long")
+    stack = []
+    inp = tuple(int(v) for v in xs)
+    ops = 0
+    for op in expanded:
+        if not (0 <= op < N_BASE_OPS):
+            raise VMCrash("ak_non_base_token")
+        if ops >= max_ops:
+            raise VMCrash("ak_op_budget")
+        ops += 1
+        OP_IMPL[op](stack, inp)
+    if len(stack) != 1 or not isinstance(stack[0], (int, tuple)):
+        raise VMCrash("ak_bad_terminal")
+    return stack[0], ops
+
+
+def ak_run_checker(checker_exp, x, y, max_ops):
+    """Execute a checker program under its frozen calling convention: the
+    stack is pre-seeded with the candidate output y, INPUT pushes the task
+    instance x, and the program must terminate with the single int 1 to
+    accept. Any crash, any other terminal, or exceeding max_ops rejects.
+    Returns (accept, ops_executed)."""
+    if len(checker_exp) > SC_STEP_LIMIT:
+        return (False, 0)
+    stack = []
+    inp = tuple(int(v) for v in x)
+    ops = 0
+    try:
+        _push(stack, y)
+        for op in checker_exp:
+            if not (0 <= op < N_BASE_OPS):
+                raise VMCrash("ak_non_base_token")
+            if ops >= max_ops:
+                raise VMCrash("ak_checker_budget")
+            ops += 1
+            OP_IMPL[op](stack, inp)
+    except VMCrash:
+        return (False, ops)
+    if len(stack) != 1 or not isinstance(stack[0], int):
+        return (False, ops)
+    return (stack[0] == 1, ops)
+
+
+# --- checker constructors (kernel: they define certificate semantics) -------
+def _ak_checker_a(step_tokens):
+    """Track A checker: apply the generator's forward steps to the candidate
+    scalar, then compare with the instance's image point. Terminal is 1 iff
+    G(candidate) == image (any-preimage semantics)."""
+    return tuple(step_tokens) + (
+        _SC_OP["INPUT"], _SC_OP["HEAD"], _SC_OP["SUB"], _SC_OP["DUP"],
+        _SC_OP["DUP"], _SC_OP["DIVI"], _SC_OP["SWAP"], _SC_OP["DROP"],
+        _SC_OP["PUSH1"], _SC_OP["SWAP"], _SC_OP["SUB"])
+
+
+def _ak_checker_b(unit_tokens):
+    """Track B checker: recompute G(x) twice from INPUT -- once for the
+    length term, once for the elementwise term -- and accept iff
+    (len(y)-len(G(x)))^2 + sum((y-G(x))^2 over the zip) == 0."""
+    seg = tuple(unit_tokens)
+    return ((_SC_OP["DUP"], _SC_OP["LEN"], _SC_OP["INPUT"]) + seg
+            + (_SC_OP["LEN"], _SC_OP["SUB"], _SC_OP["DUP"], _SC_OP["MUL"],
+               _SC_OP["SWAP"], _SC_OP["INPUT"]) + seg
+            + (_SC_OP["ZSUB"], _SC_OP["DUP"], _SC_OP["ZMUL"],
+               _SC_OP["RED_ADD"], _SC_OP["ADD"], _SC_OP["DUP"],
+               _SC_OP["DUP"], _SC_OP["DIVI"], _SC_OP["SWAP"],
+               _SC_OP["DROP"], _SC_OP["PUSH1"], _SC_OP["SWAP"],
+               _SC_OP["SUB"]))
+
+
+# --- task identity and the sealed seed stream (SC-1 I9 discipline) ----------
+def _ak_task_cid(track, g_expanded):
+    return hashlib.sha256(
+        _sc_canon(["AK", track, list(g_expanded)]).encode()).hexdigest()
+
+
+def _ak_sample_instances(track, cid, g_exp, m, b_check):
+    """Harness-owned instance sampling. The PRNG derives from the task id
+    and the frozen master seed; the setter has no influence beyond choosing
+    the generator. Returns (instances, rng) -- the SAME stream continues
+    into the random-program null sampler -- or (None, reason)."""
+    rng = random.Random(int(cid[:16], 16) ^ ASCK_MASTER_SEED)
+    out = []
+    if track == "A":
+        seen_y = set()
+        for v in rng.sample(range(SC_VMAX_A), min(3 * m, SC_VMAX_A)):
+            try:
+                y, _ = ak_run_tokens(g_exp, (v,), b_check)
+            except VMCrash:
+                return (None, "k0_generator_exec")
+            if not isinstance(y, int) or y in seen_y:
+                continue
+            seen_y.add(y)
+            out.append((y,))
+            if len(out) >= m:
+                break
+    else:
+        seen = set()
+        guard = 0
+        while len(out) < m and guard < 50 * m:
+            guard += 1
+            x = tuple(rng.randrange(SC_VALMAX_B)
+                      for _ in range(SC_LIST_LEN_B))
+            if x in seen:
+                continue
+            seen.add(x)
+            out.append(x)
+    if len(out) < m:
+        return (None, "k0_sampling")
+    return (out, rng)
+
+
+# --- (d) instrument: task descriptor over the frozen probe battery ----------
+def ak_task_descriptor(track, g_exp, b_check):
+    """Phase D descriptor recipe applied to the task generator on the frozen
+    SC probe battery. Returns (cell_key, signature). The signature is the
+    exact behavioural hash (SC I4 discipline); the cell is the bucketed
+    descriptor whose occupancy is the novelty threshold d_min."""
+    probes = SC_PROBES_A if track == "A" else SC_PROBES_B
+    outs = []
+    for x in probes:
+        try:
+            y, _ = ak_run_tokens(g_exp, x, b_check)
+            outs.append(y)
+        except VMCrash:
+            outs.append("CRASH")
+    sig = hashlib.sha256(_sc_canon(
+        [(_sc_out_canon(o) if o != "CRASH" else "CRASH")
+         for o in outs]).encode()).hexdigest()
+    done = [o for o in outs if o != "CRASH"]
+    n = len(probes)
+    halt_b = (8 * len(done)) // n
+    if done:
+        canon_done = [_sc_out_canon(o) for o in done]
+        ent_b = min(4, (4 * len(set(canon_done))) // len(done))
+        elems = []
+        for o in done:
+            elems.extend([o] if isinstance(o, int) else list(o))
+        if elems:
+            zero_b = min(4, (4 * sum(1 for e in elems if e == 0))
+                         // len(elems))
+            big_b = min(4, (4 * sum(1 for e in elems if abs(e) > 15))
+                        // len(elems))
+        else:
+            zero_b = big_b = 0
+        lens = sorted(len(o) for o in done if isinstance(o, tuple))
+        if lens:
+            counts = {}
+            for L in lens:
+                counts[L] = counts.get(L, 0) + 1
+            shape_b = min(8, max(sorted(counts),
+                                 key=lambda L: (counts[L], -L)))
+        else:
+            shape_b = 0
+    else:
+        ent_b = zero_b = big_b = shape_b = 0
+    order_bit = 0
+    if track == "B" and done:
+        for x in probes:
+            try:
+                y1, _ = ak_run_tokens(g_exp, x, b_check)
+                y2, _ = ak_run_tokens(g_exp, tuple(reversed(x)), b_check)
+            except VMCrash:
+                continue
+            if y1 != y2:
+                order_bit = 1
+                break
+    cost_b = min(10, max(1, len(g_exp).bit_length()))
+    cell = (track, halt_b, ent_b, zero_b, big_b, shape_b, order_bit, cost_b)
+    key = (f"t{track}|h{halt_b}|e{ent_b}|z{zero_b}|b{big_b}"
+           f"|s{shape_b}|o{order_bit}|c{cost_b}")
+    return (key, sig, cell)
+
+
+# --- (c) instrument: null strategies and the random-program sampler ---------
+def _ak_null_strategies(track, x):
+    """The five fixed null strategies, evaluated per instance. A strategy
+    SOLVES the task iff the checker accepts its output on EVERY hidden
+    instance (strategy semantics, pre-registered)."""
+    if track == "A":
+        return (("identity", x[0]), ("const0", 0), ("empty", ()),
+                ("echo", tuple(x)), ("reversed", tuple(reversed(x))))
+    return (("identity", tuple(x)), ("const0", tuple(0 for _ in x)),
+            ("empty", ()), ("echo", tuple(x)),
+            ("reversed", tuple(reversed(x))))
+
+
+def _ak_null_programs(rng, count, max_len):
+    """Seeded random-program null strategies, drawn from the task's own
+    sealed PRNG stream over the frozen solver vocabulary."""
+    progs = []
+    for _ in range(count):
+        n = rng.randint(1, max_len)
+        progs.append(tuple(
+            SC_SOLVER_VOCAB[rng.randrange(len(SC_SOLVER_VOCAB))]
+            for _ in range(n)))
+    return progs
+
+
+# --- sealed solve gate: checker on hidden instances + MDL cap ----------------
+def ak_gate_score(surface, macros, public_pairs, checker_exp, hidden_xs,
+                  b_check):
+    """A candidate passes iff it fits the SC-1 MDL caps, expands, executes
+    on every hidden instance, and the checker accepts every output. The
+    checker -- not label equality -- is ground truth on the hidden side."""
+    if surface is None:
+        return False
+    if not _sc_mdl_ok(surface, public_pairs):
+        return False
+    try:
+        exp = _sc_expand(surface, macros)
+    except VMCrash:
+        return False
+    for x in hidden_xs:
+        try:
+            y, _ = ak_run_tokens(exp, x, b_check)
+        except VMCrash:
+            return False
+        ok, _ = ak_run_checker(checker_exp, x, y, b_check)
+        if not ok:
+            return False
+    return True
+
+
+def ak_frontier_solve(state, task_public, exclude_tid=None):
+    """The frozen frontier-solver snapshot: sc_solve over the base
+    vocabulary plus every adopted macro (minus macros mined from
+    exclude_tid -- the no-self-credit rule), at exactly b_eval candidate
+    evaluations. Returns (surface_or_None, evals, snapshot_aids)."""
+    macros = {}
+    aids = []
+    for entry in state.archive_macros:
+        if exclude_tid is not None and entry["source_tid"] == exclude_tid:
+            continue
+        macros[entry["aid"]] = tuple(entry["tokens"])
+        aids.append(entry["aid"])
+    sol, evals = sc_solve(task_public, macros, state.cfg["b_eval"])
+    return (sol, evals, aids, macros)
+
+
+# --- admission: certificates in frozen order K0, Ka, Kc, Kd, Kb --------------
+def _ak_cert_feasibility(wit_exp, chk_exp, hidden_xs, cfg):
+    """(a) + the dual-run half of (c): replay the sealed witness through the
+    checker on every hidden instance. Returns (ok, reason, accept_vector,
+    total_ops)."""
+    total = 0
+    accepts = []
+    for x in hidden_xs:
+        try:
+            w, ops = ak_run_tokens(wit_exp, x, cfg["b_check"])
+        except VMCrash:
+            return (False, "ka_feasibility", tuple(accepts), total)
+        total += ops
+        ok, cops = ak_run_checker(chk_exp, x, w, cfg["b_check"])
+        total += cops
+        if total > cfg["b_exec"]:
+            return (False, "ka_feasibility", tuple(accepts), total)
+        accepts.append(bool(ok))
+        if not ok:
+            return (False, "ka_feasibility", tuple(accepts), total)
+    return (True, "", tuple(accepts), total)
+
+
+def _ak_cert_nontrivial(track, chk_exp, hidden_xs, rng, cfg):
+    """(c): strategy semantics. No fixed null strategy may solve the task
+    wholesale; at least P_NULL of the seeded random programs that execute
+    on every hidden instance must not solve it (vacuous pass ledgered);
+    the checker battery is dual-run verified bit-identical."""
+    def run_battery():
+        ops = 0
+        null_solved = []
+        for name, _ in _ak_null_strategies(track, hidden_xs[0]):
+            solves = True
+            for x in hidden_xs:
+                y = dict(_ak_null_strategies(track, x))[name]
+                ok, cops = ak_run_checker(chk_exp, x, y, cfg["b_check"])
+                ops += cops
+                if not ok:
+                    solves = False
+                    break
+            if solves:
+                null_solved.append(name)
+        return (tuple(null_solved), ops)
+
+    first, ops1 = run_battery()
+    second, ops2 = run_battery()
+    if first != second:
+        return (False, "kc_nondeterministic", {"ops": ops1 + ops2})
+    if first:
+        return (False, "kc_null_battery",
+                {"null_solved": list(first), "ops": ops1 + ops2})
+    progs = _ak_null_programs(rng, cfg["null_programs"],
+                              ASCK_NULL_MAX_LEN)
+    ops = ops1 + ops2
+    denom = 0
+    solving = 0
+    for prog in progs:
+        outs = []
+        alive = True
+        for x in hidden_xs:
+            try:
+                y, pops = ak_run_tokens(prog, x, cfg["b_check"])
+            except VMCrash:
+                alive = False
+                break
+            ops += pops
+            outs.append(y)
+        if not alive:
+            continue
+        denom += 1
+        solves = True
+        for x, y in zip(hidden_xs, outs):
+            ok, cops = ak_run_checker(chk_exp, x, y, cfg["b_check"])
+            ops += cops
+            if not ok:
+                solves = False
+                break
+        if solves:
+            solving += 1
+    vacuous = (denom == 0)
+    if not vacuous:
+        non_solving = denom - solving
+        if ASCK_P_NULL_DEN * non_solving < ASCK_P_NULL_NUM * denom:
+            return (False, "kc_null_sampler",
+                    {"denom": denom, "solving": solving, "ops": ops})
+    return (True, "", {"denom": denom, "solving": solving,
+                       "vacuous": vacuous, "ops": ops})
+
+
+def ak_admit(state, lineage, track, band_claimed, g_tokens, checker_tokens,
+             witness_tokens, adv=False):
+    """Full admission pipeline. The witness (and checker, and later the
+    hidden instances) are sealed into the vault BEFORE any certificate
+    runs; the ledger carries hashes only. Returns (ok, reason, task)."""
+    led = state.ledger
+    cfg = state.cfg
+    g_exp = tuple(int(t) for t in g_tokens)
+    cid = _ak_task_cid(track, g_exp)
+    tid = f"AK{track}-{cid[:12]}"
+    chk = tuple(int(t) for t in checker_tokens)
+    wit = (tuple(int(t) for t in witness_tokens)
+           if witness_tokens is not None else None)
+    g_sha = hashlib.sha256(_sc_ser_tokens(g_exp).encode()).hexdigest()
+    chk_sha = hashlib.sha256(_sc_ser_tokens(chk).encode()).hexdigest()
+    wit_sha = (hashlib.sha256(_sc_ser_tokens(wit).encode()).hexdigest()
+               if wit is not None else None)
+    if wit is not None and f"wit:{tid}" not in state.vault:
+        state.vault.seal(f"wit:{tid}", wit)
+    if f"chk:{tid}" not in state.vault:
+        state.vault.seal(f"chk:{tid}", chk)
+    band = _sc_measured_band(track, g_exp)
+    led.append({"event": "generated", "tid": tid, "gen": state.gen,
+                "lineage": lineage, "track": track, "band": band,
+                "band_claimed": int(band_claimed), "adv": bool(adv),
+                "g_sha": g_sha, "checker_sha": chk_sha,
+                "witness_sha": wit_sha})
+
+    def reject(reason, extra=None):
+        rec = {"event": "rejected", "tid": tid, "gen": state.gen,
+               "lineage": lineage, "track": track, "band": band,
+               "adv": bool(adv), "reason": reason}
+        if extra:
+            rec.update(extra)
+        led.append(rec)
+        return (False, reason, None)
+
+    # K0: structure.
+    if wit is None:
+        return reject("k0_malformed")
+    for toks, cap in ((g_exp, ASCK_GEN_MAX_TOKENS),
+                      (chk, ASCK_CHK_MAX_TOKENS),
+                      (wit, ASCK_WIT_MAX_TOKENS)):
+        if len(toks) == 0 or len(toks) > cap or \
+                any(not (0 <= t < N_BASE_OPS) for t in toks):
+            return reject("k0_malformed")
+    sampled = _ak_sample_instances(track, cid, g_exp,
+                                   cfg["n_public"] + cfg["n_hidden"],
+                                   cfg["b_check"])
+    if sampled[0] is None:
+        return reject(sampled[1])
+    instances, rng = sampled
+    public_xs = instances[:cfg["n_public"]]
+    hidden_xs = instances[cfg["n_public"]:]
+    # Public labels come from witness replay inside the kernel.
+    public = []
+    label_ops = 0
+    for x in public_xs:
+        try:
+            y, ops = ak_run_tokens(wit, x, cfg["b_check"])
+        except VMCrash:
+            return reject("ka_feasibility")
+        label_ops += ops
+        public.append((tuple(x), y))
+    public = sorted(public, key=lambda p: _sc_canon(list(p[0])))
+    # (a) feasibility certificate on the hidden instances.
+    ok, why, _, ops_a = _ak_cert_feasibility(wit, chk, hidden_xs, cfg)
+    state.meter.spend("admission", "vm_ops", label_ops + ops_a)
+    if not ok:
+        return reject(why)
+    # (c) non-triviality certificate (dual-run verified).
+    ok3 = _ak_cert_nontrivial(track, chk, hidden_xs, rng, cfg)
+    state.meter.spend("admission", "vm_ops", ok3[2]["ops"])
+    if not ok3[0]:
+        return reject(ok3[1], {k: v for k, v in ok3[2].items()
+                               if k != "ops"})
+    null_vacuous = bool(ok3[2].get("vacuous"))
+    # (d) novelty certificate: signature dedup, then cell occupancy.
+    cell_key, sig, _ = ak_task_descriptor(track, g_exp, cfg["b_check"])
+    if sig in state.seen_sigs:
+        return reject("kd_duplicate")
+    state.seen_sigs.add(sig)
+    if cell_key in state.cells:
+        return reject("kd_cell_occupied", {"cell": cell_key})
+    # (b) difficulty certificate: the frozen frontier snapshot must fail.
+    fsol, fevals, snapshot_aids, fmacros = ak_frontier_solve(state, public)
+    state.meter.spend("admission", "cand_evals", fevals)
+    if fsol is not None and ak_gate_score(fsol, fmacros, public, chk,
+                                          hidden_xs, cfg["b_check"]):
+        return reject("kb_too_easy", {"snapshot_aids": snapshot_aids,
+                                      "frontier_evals": fevals})
+    if adv:
+        raise RuntimeError(
+            "ak adv canary: a pre-registered adversarial probe passed "
+            "every admission certificate -- battery aborted")
+    if f"hidden:{tid}" not in state.vault:
+        state.vault.seal(f"hidden:{tid}", tuple(tuple(x)
+                                                for x in hidden_xs))
+    state.cells[cell_key] = tid
+    task = {"tid": tid, "lineage": lineage, "track": track, "band": band,
+            "cell": cell_key, "public": public, "attempts": 0,
+            "gen_admitted": state.gen}
+    state.open_tasks.append(task)
+    led.append({"event": "admitted", "tid": tid, "gen": state.gen,
+                "lineage": lineage, "track": track, "band": band,
+                "band_claimed": int(band_claimed), "g_sha": g_sha,
+                "checker_sha": chk_sha, "witness_sha": wit_sha,
+                "sig": sig, "cell": cell_key,
+                "snapshot_aids": snapshot_aids,
+                "frontier_evals": fevals, "b_eval": cfg["b_eval"],
+                "dual_run_ok": True, "null_vacuous": null_vacuous,
+                "null_denom": ok3[2]["denom"],
+                "null_solving": ok3[2]["solving"]})
+    return (True, "", task)
+
+
+# --- mutable citizens: setter lineages and the allocation policy -------------
+class AKSetterLineage:
+    """A setter policy: deterministic cursor enumeration over the frozen
+    unit grammars plus gate-adopted archive bodies (the SC-1 poser
+    discipline), emitting full (task_spec, checker, witness) triples. Its
+    whole world is the adopted archive and its own band; kernel stores are
+    out of reach by construction and by the AST audit."""
+
+    def __init__(self, name, track, band_start):
+        self.name = name
+        self.track = track
+        self.band = band_start
+        self.cursors = {}
+
+    def propose(self, count, archive_bodies):
+        units = (_sc_units_track_a(archive_bodies) if self.track == "A"
+                 else _sc_units_track_b(archive_bodies))
+        weights = [u["w"] for u in units]
+        last = self.cursors.get(self.band)
+        out = []
+        newest = last
+        for seq in _sc_enum_weighted(len(units), weights, self.band):
+            if last is not None and seq <= last:
+                continue
+            newest = seq
+            if self.track == "A":
+                steps = ()
+                inv_tail = ()
+                for i in seq:
+                    steps = steps + units[i]["fwd"]
+                    inv_tail = units[i]["inv"] + inv_tail
+                g = (_SC_OP["INPUT"], _SC_OP["HEAD"]) + steps
+                out.append({
+                    "lineage": self.name, "track": "A", "band": self.band,
+                    "g": g, "checker": _ak_checker_a(steps),
+                    "witness": (_SC_OP["INPUT"], _SC_OP["HEAD"])
+                    + inv_tail})
+            else:
+                seg = ()
+                for i in seq:
+                    seg = seg + units[i]["seg"]
+                g = (_SC_OP["INPUT"],) + seg
+                out.append({
+                    "lineage": self.name, "track": "B", "band": self.band,
+                    "g": g, "checker": _ak_checker_b(seg), "witness": g})
+            if len(out) >= count:
+                break
+        if newest is not None:
+            self.cursors[self.band] = newest
+        return out
+
+
+def ak_allocate_slots(credits, total_slots):
+    """Mutable allocation policy: one base slot per lineage, the remainder
+    proportional to cumulative crossing credit in exact integer arithmetic
+    (largest remainder, ties to the lower lineage index)."""
+    names = [n for n, _, _ in ASCK_LINEAGES]
+    slots = {n: 1 for n in names}
+    bonus = total_slots - len(names)
+    total_credit = sum(credits.get(n, 0) for n in names)
+    if bonus <= 0:
+        return slots
+    if total_credit == 0:
+        for i in range(bonus):
+            slots[names[i % len(names)]] += 1
+        return slots
+    rema = []
+    used = 0
+    for i, n in enumerate(names):
+        c = credits.get(n, 0)
+        share = (bonus * c) // total_credit
+        slots[n] += share
+        used += share
+        rema.append((-(bonus * c % total_credit), i, n))
+    for _, _, n in sorted(rema)[: bonus - used]:
+        slots[n] += 1
+    return slots
+
+
+def _ak_lineage_ratchet(lineage, proposed, kb_rejected, crossed_now):
+    """Mutable band policy: climb when the whole band fell below the
+    frontier (every proposal rejected kb_too_easy) or when the band is
+    being crossed; hold otherwise."""
+    if proposed > 0 and kb_rejected == proposed:
+        return min(ASCK_BAND_MAX, lineage.band + 1)
+    if crossed_now > 0:
+        return min(ASCK_BAND_MAX, lineage.band + 1)
+    return lineage.band
+
+
+# --- ADV: pre-registered adversarial probes (every gate fires on record) -----
+def _ak_adv_probes():
+    """Four fixed probes per generation: a wrong witness (fails Ka), a
+    degenerate generator whose empty output is null-solvable (fails Kc),
+    and a frontier-trivial task emitted twice (first fails Kb, its twin
+    fails Kd). Credit-ineligible; admission of any probe aborts the run."""
+    seg_sr = (_SC_OP["SORTL"], _SC_OP["REVL"])
+    seg_t6 = (_SC_OP["TAIL"],) * 6
+    seg_sa = (_SC_OP["SCAN_ADD"],)
+    return (
+        {"probe": "adv_ka", "track": "B",
+         "g": (_SC_OP["INPUT"],) + seg_sr,
+         "checker": _ak_checker_b(seg_sr),
+         "witness": (_SC_OP["INPUT"],)},
+        {"probe": "adv_kc", "track": "B",
+         "g": (_SC_OP["INPUT"],) + seg_t6,
+         "checker": _ak_checker_b(seg_t6),
+         "witness": (_SC_OP["INPUT"],) + seg_t6},
+        {"probe": "adv_kb", "track": "B",
+         "g": (_SC_OP["INPUT"],) + seg_sa,
+         "checker": _ak_checker_b(seg_sa),
+         "witness": (_SC_OP["INPUT"],) + seg_sa},
+        {"probe": "adv_kd", "track": "B",
+         "g": (_SC_OP["INPUT"],) + seg_sa,
+         "checker": _ak_checker_b(seg_sa),
+         "witness": (_SC_OP["INPUT"],) + seg_sa},
+    )
+
+
+# --- loop state and driver ---------------------------------------------------
+class AKLoopState:
+    def __init__(self, cfg):
+        self.cfg = cfg
+        self.gen = 0
+        self.ledger = SCLedger()
+        self.vault = AKWitnessVault()
+        self.meter = AKBudgetMeter()
+        self.lineages = [AKSetterLineage(n, t, b)
+                         for n, t, b in ASCK_LINEAGES]
+        self.credits = {n: 0 for n, _, _ in ASCK_LINEAGES}
+        self.archive_macros = []     # {"aid","tokens","source_tid","gen"}
+        self.ak_macros = {}          # aid -> expanded tuple (miner view)
+        self.open_tasks = []
+        self.markers = []
+        self.seen_sigs = set()
+        self.cells = {}
+        self.crossed = []
+        self.gen_rows = []
+
+
+def ak_config(**overrides):
+    cfg = {
+        "generations": ASCK_GENERATIONS,
+        "n_public": ASCK_N_PUBLIC,
+        "n_hidden": ASCK_N_HIDDEN,
+        "null_programs": ASCK_NULL_PROGRAMS,
+        "h": ASCK_H,
+        "b_eval": ASCK_B_EVAL,
+        "b_live": ASCK_B_LIVE,
+        "b_check": ASCK_B_CHECK,
+        "b_exec": ASCK_B_EXEC,
+        "max_attempts": ASCK_MAX_ATTEMPTS,
+        "pose_slots": ASCK_POSE_SLOTS,
+    }
+    cfg.update(overrides)
+    if cfg["n_public"] <= 0 or cfg["n_hidden"] <= 0:
+        raise ValueError("ak config invalid: empty public or hidden split")
+    if cfg["n_public"] + cfg["n_hidden"] > SC_VMAX_A:
+        raise ValueError("ak config invalid: instance count exceeds the "
+                         "Track A domain")
+    if min(cfg["b_eval"], cfg["b_live"], cfg["b_check"], cfg["b_exec"],
+           cfg["generations"], cfg["h"]) <= 0:
+        raise ValueError("ak config invalid: non-positive budget")
+    if cfg["b_live"] < cfg["b_eval"]:
+        raise ValueError("ak config invalid: mining budget below the "
+                         "instrument budget")
+    return cfg
+
+
+def _ak_adopt(state, task, surface, evals, kind):
+    """Adopt a gate-passing solution as a macro. Records the expanded body
+    in the ledger (adopted solutions are public by design, like the SC
+    archive); the witness stays sealed."""
+    expanded = _sc_expand(surface, state.ak_macros)
+    aid = ASCK_MACRO_BASE + len(state.archive_macros)
+    state.archive_macros.append({"aid": aid, "tokens": list(expanded),
+                                 "source_tid": task["tid"],
+                                 "gen": state.gen})
+    state.ak_macros[aid] = expanded
+    state.ledger.append({
+        "event": kind, "tid": task["tid"], "gen": state.gen,
+        "lineage": task["lineage"], "track": task["track"],
+        "band": task["band"], "solve_cost": evals, "aid": aid,
+        "tokens": list(expanded),
+        "solution_sha": hashlib.sha256(
+            _sc_ser_tokens(expanded).encode()).hexdigest(),
+        "used_macro": bool(any(t >= N_BASE_OPS for t in surface))})
+    return aid
+
+
+def ak_generation(state):
+    """One generation: allocate, pose, admit, mine, cross, credit,
+    ratchet, summarize."""
+    cfg = state.cfg
+    g = state.gen
+    slots = ak_allocate_slots(dict(state.credits), cfg["pose_slots"])
+    archive_bodies = [{"aid": e["aid"], "tokens": list(e["tokens"])}
+                      for e in state.archive_macros]
+    tallies = {lin.name: {"proposed": 0, "kb": 0, "admitted": 0}
+               for lin in state.lineages}
+    bands_during = {lin.name: lin.band for lin in state.lineages}
+    for lin in state.lineages:
+        cands = lin.propose(slots[lin.name], archive_bodies)
+        state.meter.spend("setter", "proposals", len(cands))
+        for cand in cands:
+            tallies[lin.name]["proposed"] += 1
+            ok, reason, _ = ak_admit(
+                state, cand["lineage"], cand["track"], cand["band"],
+                cand["g"], cand["checker"], cand["witness"])
+            if ok:
+                tallies[lin.name]["admitted"] += 1
+            elif reason == "kb_too_easy":
+                tallies[lin.name]["kb"] += 1
+    for probe in _ak_adv_probes():
+        state.meter.spend("setter", "proposals", 1)
+        ak_admit(state, probe["probe"], probe["track"], 0, probe["g"],
+                 probe["checker"], probe["witness"], adv=True)
+    # Mine: live budget, full adopted vocabulary, capped attempts.
+    for task in list(state.open_tasks):
+        if task["attempts"] >= cfg["max_attempts"] or task.get("mined"):
+            continue
+        task["attempts"] += 1
+        sol, evals = sc_solve(task["public"], state.ak_macros,
+                              cfg["b_live"])
+        state.meter.spend("mining", "cand_evals", evals)
+        chk = state.vault.read(f"chk:{task['tid']}")
+        hidden = state.vault.read(f"hidden:{task['tid']}")
+        if sol is not None and ak_gate_score(
+                sol, state.ak_macros, task["public"], chk, hidden,
+                cfg["b_check"]):
+            task["mined"] = True
+            _ak_adopt(state, task, sol, evals, "mined")
+        else:
+            state.ledger.append({
+                "event": "unsolved", "tid": task["tid"], "gen": g,
+                "lineage": task["lineage"], "track": task["track"],
+                "band": task["band"], "solve_cost": evals,
+                "public_fit": bool(sol is not None)})
+    # Cross: frozen instrument budget, own-solution macros excluded.
+    crossed_by_lineage = {lin.name: 0 for lin in state.lineages}
+    for task in list(state.open_tasks):
+        sol, evals, aids, macros = ak_frontier_solve(
+            state, task["public"], exclude_tid=task["tid"])
+        state.meter.spend("crossing", "cand_evals", evals)
+        chk = state.vault.read(f"chk:{task['tid']}")
+        hidden = state.vault.read(f"hidden:{task['tid']}")
+        if sol is not None and ak_gate_score(
+                sol, macros, task["public"], chk, hidden, cfg["b_check"]):
+            within_h = (g - task["gen_admitted"]) <= cfg["h"]
+            expanded = _sc_expand(sol, macros)
+            state.ledger.append({
+                "event": "crossed", "tid": task["tid"], "gen": g,
+                "lineage": task["lineage"], "track": task["track"],
+                "band": task["band"],
+                "gen_admitted": task["gen_admitted"],
+                "within_h": bool(within_h), "solve_cost": evals,
+                "b_eval": cfg["b_eval"], "snapshot_aids": aids,
+                "solution_sha": hashlib.sha256(
+                    _sc_ser_tokens(expanded).encode()).hexdigest(),
+                "used_macro": bool(any(t >= N_BASE_OPS for t in sol))})
+            if not task.get("mined"):
+                _ak_adopt(state, task, sol, evals, "cross_adopted")
+            if within_h and task["lineage"] in crossed_by_lineage:
+                state.credits[task["lineage"]] += 1
+                crossed_by_lineage[task["lineage"]] += 1
+            state.crossed.append(task["tid"])
+            state.open_tasks.remove(task)
+            wit = state.vault.read(f"wit:{task['tid']}")
+            state.ledger.append({
+                "event": "retired_crossed", "tid": task["tid"], "gen": g,
+                "lineage": task["lineage"], "track": task["track"],
+                "band": task["band"], "witness": list(wit)})
+    # Frontier markers: admitted, never crossed within the horizon. The
+    # witness stays sealed forever; the family remains archived territory.
+    for task in list(state.open_tasks):
+        if (g - task["gen_admitted"]) >= cfg["h"]:
+            state.open_tasks.remove(task)
+            state.markers.append(task["tid"])
+            state.ledger.append({
+                "event": "frontier_marker", "tid": task["tid"], "gen": g,
+                "lineage": task["lineage"], "track": task["track"],
+                "band": task["band"],
+                "gen_admitted": task["gen_admitted"],
+                "mined": bool(task.get("mined"))})
+    for lin in state.lineages:
+        t = tallies[lin.name]
+        lin.band = _ak_lineage_ratchet(lin, t["proposed"], t["kb"],
+                                       crossed_by_lineage[lin.name])
+    row = {"gen": g, "slots": {k: slots[k] for k in sorted(slots)},
+           "bands": bands_during,
+           "bands_next": {lin.name: lin.band for lin in state.lineages},
+           "credits": {k: state.credits[k] for k in sorted(state.credits)},
+           "archive_size": len(state.archive_macros),
+           "open": len(state.open_tasks),
+           "markers_cum": len(state.markers),
+           "crossed_cum": len(state.crossed),
+           "meter": state.meter.snapshot()}
+    state.ledger.append(dict(row, event="gen_summary", tid="", track=""))
+    state.gen_rows.append(row)
+    state.gen += 1
+
+
+def ak_run_loop(cfg):
+    ak_verify_pin()
+    state = AKLoopState(cfg)
+    for _ in range(cfg["generations"]):
+        ak_generation(state)
+    # Terminate the lifecycle: whatever is still open becomes a frontier
+    # marker so no admitted task escapes the record.
+    for task in list(state.open_tasks):
+        state.open_tasks.remove(task)
+        state.markers.append(task["tid"])
+        state.ledger.append({
+            "event": "frontier_marker", "tid": task["tid"],
+            "gen": state.gen, "lineage": task["lineage"],
+            "track": task["track"], "band": task["band"],
+            "gen_admitted": task["gen_admitted"],
+            "mined": bool(task.get("mined"))})
+    state.ledger.verify()
+    return state
+
+
+# --- metrics: recomputed from the FULL ledger --------------------------------
+def ak_metrics_from_ledger(ledger, generations):
+    ledger.verify()
+    rows = []
+    cum_crossed = 0
+    cum_adopted = 0
+    cum_markers = 0
+    for g in range(generations + 1):
+        recs = [r for r in ledger.records if r.get("gen") == g]
+        if g == generations and not recs:
+            break
+        crossed = [r for r in recs if r["event"] == "crossed"]
+        cum_crossed += len(crossed)
+        adopted = [r for r in recs
+                   if r["event"] in ("mined", "cross_adopted")]
+        cum_adopted += len(adopted)
+        markers = [r for r in recs if r["event"] == "frontier_marker"]
+        cum_markers += len(markers)
+        reasons = {}
+        for r in recs:
+            if r["event"] == "rejected":
+                reasons[r["reason"]] = reasons.get(r["reason"], 0) + 1
+        rows.append({
+            "gen": g,
+            "generated": sum(1 for r in recs
+                             if r["event"] == "generated"),
+            "admitted": sum(1 for r in recs if r["event"] == "admitted"),
+            "rejected": reasons,
+            "mined": sum(1 for r in recs if r["event"] == "mined"),
+            "crossed": len(crossed),
+            "crossed_within_h": sum(1 for r in crossed
+                                    if r.get("within_h")),
+            "k1_cum_crossed": cum_crossed,
+            "k2_cum_adopted": cum_adopted,
+            "k5_cum_markers": cum_markers,
+        })
+    return rows
+
+
+# --- component registries: isolation scan, mutable audit, source pin --------
+def _ak_scan_components():
+    """The Phase K namespace (kernel + citizens). Test-enforced to
+    reference none of the sealed human-instrument machinery (the SC-1 I13
+    discipline)."""
+    return (AKWitnessVault, AKBudgetMeter, ak_run_tokens, ak_run_checker,
+            _ak_checker_a, _ak_checker_b, _ak_task_cid,
+            _ak_sample_instances, ak_task_descriptor, _ak_null_strategies,
+            _ak_null_programs, ak_gate_score, ak_frontier_solve,
+            _ak_cert_feasibility, _ak_cert_nontrivial, ak_admit,
+            AKSetterLineage, ak_allocate_slots, _ak_lineage_ratchet,
+            _ak_adv_probes, AKLoopState, ak_config, _ak_adopt,
+            ak_generation, ak_run_loop, ak_metrics_from_ledger,
+            ak_replay_verify)
+
+
+def _ak_mutable_components():
+    """The mutable citizens: setter policies, allocation policy, band
+    policy. AST-audited to reference no vault, meter, ledger, or sealed
+    instance symbol -- the constitution's kernel/citizen split."""
+    return (AKSetterLineage, ak_allocate_slots, _ak_lineage_ratchet)
+
+
+def _ak_pin_components():
+    """The kernel: everything whose source is bound into ASCK_PIN_SHA256.
+    Reused SC-1 machinery is re-pinned here (defense in depth)."""
+    return (AKWitnessVault, AKBudgetMeter, ak_run_tokens, ak_run_checker,
+            _ak_checker_a, _ak_checker_b, _ak_task_cid,
+            _ak_sample_instances, ak_task_descriptor, _ak_null_strategies,
+            _ak_null_programs, ak_gate_score, ak_frontier_solve,
+            _ak_cert_feasibility, _ak_cert_nontrivial, ak_admit,
+            _ak_adv_probes, _ak_adopt, ak_generation, ak_run_loop,
+            ak_metrics_from_ledger, ak_replay_verify,
+            _ak_frozen_constants_canon,
+            # reused, read-only SC-1 machinery
+            SCLedger, sc_solve, _sc_expand, _sc_measured_band,
+            _sc_mdl_cap_chars, _sc_mdl_ok, _sc_canon, _sc_ser_tokens,
+            _sc_pairs_canon, _sc_out_canon, _sc_guarded_open)
+
+
+ASCK_PIN_SHA256 = ("c9da2bbcb6a14da5acb5a3db1d2ef82e"
+                   "24c8735bc9e4d20131cbea5a2d594c42")
+
+
+def _ak_frozen_constants_canon() -> str:
+    """Canonical dump of every frozen Phase K constant, bound into the pin
+    so that seed-shopping, budget drift, probe edits, or ADV-table changes
+    flip ASCK_PIN_SHA256 and abort the battery."""
+    return _sc_canon({
+        "SPEC_VERSION": ASCK_SPEC_VERSION,
+        "MASTER_SEED": ASCK_MASTER_SEED,
+        "GENERATIONS": ASCK_GENERATIONS,
+        "N_PUBLIC": ASCK_N_PUBLIC,
+        "N_HIDDEN": ASCK_N_HIDDEN,
+        "P_NULL": (ASCK_P_NULL_NUM, ASCK_P_NULL_DEN),
+        "NULL_PROGRAMS": ASCK_NULL_PROGRAMS,
+        "NULL_MAX_LEN": ASCK_NULL_MAX_LEN,
+        "H": ASCK_H,
+        "B_EVAL": ASCK_B_EVAL,
+        "B_LIVE": ASCK_B_LIVE,
+        "B_CHECK": ASCK_B_CHECK,
+        "B_EXEC": ASCK_B_EXEC,
+        "MAX_ATTEMPTS": ASCK_MAX_ATTEMPTS,
+        "POSE_SLOTS": ASCK_POSE_SLOTS,
+        "BAND_MAX": ASCK_BAND_MAX,
+        "GEN_MAX_TOKENS": ASCK_GEN_MAX_TOKENS,
+        "CHK_MAX_TOKENS": ASCK_CHK_MAX_TOKENS,
+        "WIT_MAX_TOKENS": ASCK_WIT_MAX_TOKENS,
+        "MACRO_BASE": ASCK_MACRO_BASE,
+        "LINEAGES": ASCK_LINEAGES,
+        "METER_MODULES": AK_METER_MODULES,
+        "ADV_PROBES": [
+            {"probe": p["probe"], "track": p["track"],
+             "g": list(p["g"]), "checker": list(p["checker"]),
+             "witness": list(p["witness"])}
+            for p in _ak_adv_probes()],
+        "SC_REUSED": {
+            "SOLVER_VOCAB": SC_SOLVER_VOCAB,
+            "PROBES_A": SC_PROBES_A,
+            "PROBES_B": SC_PROBES_B,
+            "MDL_ALPHA": (SC_MDL_ALPHA_NUM, SC_MDL_ALPHA_DEN),
+            "MDL_ABS_TOKENS": SC_MDL_ABS_TOKENS,
+            "STEP_LIMIT": SC_STEP_LIMIT,
+            "VMAX_A": SC_VMAX_A,
+            "LIST_LEN_B": SC_LIST_LEN_B,
+            "VALMAX_B": SC_VALMAX_B,
+        },
+    })
+
+
+def ak_compute_pin() -> str:
+    import inspect
+    blob = "".join(inspect.getsource(o) for o in _ak_pin_components())
+    blob += "\n#ASCK-FROZEN-CONSTANTS\n" + _ak_frozen_constants_canon()
+    return hashlib.sha256(blob.encode()).hexdigest()
+
+
+def ak_verify_pin(expected: str = None) -> str:
+    got = ak_compute_pin()
+    want = ASCK_PIN_SHA256 if expected is None else expected
+    if got != want:
+        raise RuntimeError(
+            f"ak gate/harness source drifted from spec-freeze pin: {got}")
+    return got
+
+
+# --- K3: replay engine -- an audit is a replay from the ledger --------------
+def ak_replay_verify(state):
+    """Re-derive every admission certificate of every admitted task from
+    the ledger and the vault: chain integrity, generator/witness/checker
+    hashes, instance sampling, feasibility, non-triviality, novelty
+    signature, and the difficulty snapshot (reconstructed from adoption
+    records preceding the admission). Raises on any divergence."""
+    led = state.ledger
+    led.verify()
+    cfg = state.cfg
+    adopted_at = []          # (ledger_idx, aid, tokens, source_tid)
+    for rec in led.records:
+        if rec["event"] in ("mined", "cross_adopted"):
+            adopted_at.append((rec["idx"], rec["aid"],
+                               tuple(rec["tokens"]), rec["tid"]))
+    for rec in led.records:
+        if rec["event"] != "admitted":
+            continue
+        tid = rec["tid"]
+        track = rec["track"]
+        wit = state.vault.read(f"wit:{tid}")
+        chk = state.vault.read(f"chk:{tid}")
+        if hashlib.sha256(_sc_ser_tokens(wit).encode()).hexdigest() != \
+                rec["witness_sha"]:
+            raise AssertionError(f"ak replay: witness hash drift {tid}")
+        if hashlib.sha256(_sc_ser_tokens(chk).encode()).hexdigest() != \
+                rec["checker_sha"]:
+            raise AssertionError(f"ak replay: checker hash drift {tid}")
+        # Derive the generator from the sealed witness (Track B: identity;
+        # Track A: exact complement of the inverse chain).
+        if track == "A":
+            parsed = _sc_parse_a_unit(wit)
+            if parsed is None:
+                raise AssertionError(f"ak replay: unparseable witness "
+                                     f"{tid}")
+            g_exp = (_SC_OP["INPUT"], _SC_OP["HEAD"]) + parsed[0]
+        else:
+            g_exp = tuple(wit)
+        if hashlib.sha256(_sc_ser_tokens(g_exp).encode()).hexdigest() != \
+                rec["g_sha"]:
+            raise AssertionError(f"ak replay: generator hash drift {tid}")
+        cid = _ak_task_cid(track, g_exp)
+        if f"AK{track}-{cid[:12]}" != tid:
+            raise AssertionError(f"ak replay: task id drift {tid}")
+        instances, rng = _ak_sample_instances(
+            track, cid, g_exp, cfg["n_public"] + cfg["n_hidden"],
+            cfg["b_check"])
+        if instances is None:
+            raise AssertionError(f"ak replay: sampling failed {tid}")
+        hidden_xs = instances[cfg["n_public"]:]
+        if tuple(tuple(x) for x in hidden_xs) != \
+                state.vault.read(f"hidden:{tid}"):
+            raise AssertionError(f"ak replay: hidden instances drift "
+                                 f"{tid}")
+        ok, why, _, _ = _ak_cert_feasibility(wit, chk, hidden_xs, cfg)
+        if not ok:
+            raise AssertionError(f"ak replay: feasibility fails {tid}: "
+                                 f"{why}")
+        ok3 = _ak_cert_nontrivial(track, chk, hidden_xs, rng, cfg)
+        if not ok3[0]:
+            raise AssertionError(f"ak replay: non-triviality fails {tid}")
+        cell_key, sig, _ = ak_task_descriptor(track, g_exp,
+                                              cfg["b_check"])
+        if sig != rec["sig"] or cell_key != rec["cell"]:
+            raise AssertionError(f"ak replay: descriptor drift {tid}")
+        # Difficulty snapshot: adoption records with idx < admission idx.
+        snap = [aid for idx, aid, _, _ in adopted_at if idx < rec["idx"]]
+        if snap != list(rec["snapshot_aids"]):
+            raise AssertionError(f"ak replay: snapshot drift {tid}")
+        macros = {aid: toks for idx, aid, toks, _ in adopted_at
+                  if idx < rec["idx"]}
+        public_xs = instances[:cfg["n_public"]]
+        public = []
+        for x in public_xs:
+            y, _ = ak_run_tokens(wit, x, cfg["b_check"])
+            public.append((tuple(x), y))
+        public = sorted(public, key=lambda p: _sc_canon(list(p[0])))
+        fsol, fevals = sc_solve(public, macros, cfg["b_eval"])
+        if fevals != rec["frontier_evals"]:
+            raise AssertionError(f"ak replay: frontier cost drift {tid}")
+        if fsol is not None and ak_gate_score(fsol, macros, public, chk,
+                                              hidden_xs, cfg["b_check"]):
+            raise AssertionError(f"ak replay: difficulty certificate "
+                                 f"fails {tid}")
+    return True
+
+
+# --- CLI modes ----------------------------------------------------------------
+def ak_demo():
+    """CI-safe demonstration of the loop (reduced budgets)."""
+    print("=" * 88)
+    print("WITNESS-SEALED SETTER--SOLVER (ASCENT M1) -- DEMO "
+          "(reduced budgets)")
+    print("=" * 88)
+    cfg = ak_config(generations=3, n_public=6, n_hidden=8,
+                    null_programs=12, b_eval=1500, b_live=12000, h=3)
+    state = ak_run_loop(cfg)
+    ak_replay_verify(state)
+    rows = ak_metrics_from_ledger(state.ledger, cfg["generations"])
+    for row in rows:
+        print(f"[g{row['gen']}] generated={row['generated']} "
+              f"admitted={row['admitted']} mined={row['mined']} "
+              f"crossed={row['crossed']} "
+              f"K1={row['k1_cum_crossed']} K2={row['k2_cum_adopted']} "
+              f"markers={row['k5_cum_markers']}")
+    digest = hashlib.sha256(
+        (state.ledger.head() + _sc_canon(rows)).encode()).hexdigest()[:16]
+    print("reading: the system manufactured its own tasks as "
+          "(spec, checker, witness) triples; witnesses stayed vault-"
+          "sealed; every admission carries four hermetic certificates; "
+          "crossings are certified at the frozen instrument budget with "
+          "own-solution macros excluded.")
+    print(json.dumps({"ak_demo_digest": digest,
+                      "archive_size": len(state.archive_macros),
+                      "crossed": len(state.crossed),
+                      "markers": len(state.markers),
+                      "ledger_records": len(state.ledger.records)}))
+
+
+def ak_battery():
+    """Full evidence battery: frozen constants only, replay-verified,
+    ledger + metrics artifacts to reports/evidence/, digest over
+    (chain head + metrics)."""
+    print("=" * 88)
+    print("WITNESS-SEALED SETTER--SOLVER (ASCENT M1) -- EVIDENCE BATTERY "
+          f"({ASCK_SPEC_VERSION})")
+    print("=" * 88)
+    pin = ak_verify_pin()
+    sc_verify_pin()
+    cfg = ak_config()
+    # LITERAL spec values -- comparing the constants to themselves would
+    # be vacuous; any drift aborts.
+    frozen_expect = {
+        "generations": 8, "n_public": 8, "n_hidden": 16,
+        "null_programs": 24, "h": 5, "b_eval": 1500, "b_live": 25000,
+        "b_check": 512, "b_exec": 4096, "max_attempts": 2,
+        "pose_slots": 6,
+    }
+    if cfg != frozen_expect:
+        raise RuntimeError("ak battery config drifted from frozen spec")
+    state = ak_run_loop(cfg)
+    ak_replay_verify(state)
+    rows = ak_metrics_from_ledger(state.ledger, cfg["generations"])
+    print("[K] loop complete")
+    for row, grow in zip(rows, state.gen_rows):
+        print(f"  g{row['gen']}: gen={row['generated']} "
+              f"adm={row['admitted']} mined={row['mined']} "
+              f"crossed={row['crossed']} K1={row['k1_cum_crossed']} "
+              f"K2={row['k2_cum_adopted']} "
+              f"markers={row['k5_cum_markers']} "
+              f"credits={grow['credits']} slots={grow['slots']}")
+    crossed_recs = [r for r in state.ledger.records
+                    if r["event"] == "crossed"]
+    gate_fired = {}
+    for r in state.ledger.records:
+        if r["event"] == "rejected":
+            fam = r["reason"].split("_")[0]
+            gate_fired[fam] = gate_fired.get(fam, 0) + 1
+    metrics = {
+        "spec_version": ASCK_SPEC_VERSION,
+        "pin_sha256": pin,
+        "budgets": frozen_expect,
+        "human_authored_tasks": 0,
+        "rows": rows,
+        "k1_final": rows[-1]["k1_cum_crossed"],
+        "k1_within_h": sum(1 for r in crossed_recs if r.get("within_h")),
+        "crossed_by_track": {
+            t: sum(1 for r in crossed_recs if r["track"] == t)
+            for t in ("A", "B")},
+        "crossed_by_lineage": {
+            n: sum(1 for r in crossed_recs if r["lineage"] == n)
+            for n, _, _ in ASCK_LINEAGES},
+        "gate_families_fired": gate_fired,
+        "credits_final": {k: state.credits[k]
+                          for k in sorted(state.credits)},
+        "gen_rows": state.gen_rows,
+        "archive_size": len(state.archive_macros),
+        "markers": len(state.markers),
+        "ledger_records": len(state.ledger.records),
+        "ledger_head": state.ledger.head(),
+        "replay_verified": True,
+    }
+    digest = hashlib.sha256(
+        (state.ledger.head() + _sc_canon(metrics)).encode()
+    ).hexdigest()[:16]
+    out_dir = os.path.join("reports", "evidence")
+    os.makedirs(out_dir, exist_ok=True)
+    with _sc_guarded_open(os.path.join(out_dir, "ascent_k_ledger.jsonl"),
+                          "w") as fh:
+        fh.write(state.ledger.to_jsonl())
+    with _sc_guarded_open(os.path.join(out_dir, "ascent_k_results.json"),
+                          "w") as fh:
+        fh.write(_sc_canon({"metrics": metrics, "digest": digest}) + "\n")
+    print("reading: every admitted task carries four replay-verified "
+          "certificates; every crossing is a certified pass at the frozen "
+          "instrument budget that the admission-time snapshot certifiably "
+          "failed; lineage credit flowed only through crossings inside "
+          "the horizon. Zero human-authored tasks.")
+    print(json.dumps({"ak_digest": digest,
+                      "ledger_head": state.ledger.head(),
+                      "k1_final": metrics["k1_final"],
+                      "archive_size": len(state.archive_macros)}))
+    return metrics
+
+
+# ---------------------------------------------------------------------------
+# Phase K tests. Every certificate and every constitution clause ships with
+# a red-team test that CONSTRUCTS the attack and asserts rejection, plus
+# positive-path coverage. All names carry the ak_ prefix for --only.
+# ---------------------------------------------------------------------------
+def _ak_test_cfg(**kw):
+    base = dict(generations=2, n_public=5, n_hidden=6, null_programs=8,
+                h=2, b_eval=1500, b_live=9000)
+    base.update(kw)
+    return ak_config(**base)
+
+
+def _ak_mk_b(units):
+    """Build a full Track B triple from a unit-token segment."""
+    seg = tuple(units)
+    g = (_SC_OP["INPUT"],) + seg
+    return {"track": "B", "g": g, "checker": _ak_checker_b(seg),
+            "witness": g}
+
+
+def _ak_mk_a(names):
+    """Build a full Track A triple from SC_STEPS_A step names."""
+    steps_tab = {n: (f, i) for n, f, i in SC_STEPS_A}
+    steps = ()
+    inv_tail = ()
+    for n in names:
+        f, i = steps_tab[n]
+        steps = steps + f
+        inv_tail = i + inv_tail
+    g = (_SC_OP["INPUT"], _SC_OP["HEAD"]) + steps
+    return {"track": "A", "g": g, "checker": _ak_checker_a(steps),
+            "witness": (_SC_OP["INPUT"], _SC_OP["HEAD"]) + inv_tail}
+
+
+def test_ak_checker_convention_semantics() -> None:
+    # The checker calling convention is the certificate substrate: correct
+    # outputs accept, wrong values / wrong types / wrong lengths reject,
+    # and a checker never accepts by crashing.
+    seg = (_SC_OP["SORTL"], _SC_OP["TAIL"])
+    chk = _ak_checker_b(seg)
+    x = (3, 1, 2, 5, 4, 0)
+    good = tuple(sorted(x))[1:]
+    ok, _ = ak_run_checker(chk, x, good, ASCK_B_CHECK)
+    _assert(ok, "checker rejected the correct output")
+    for bad in (tuple(sorted(x)), (), good + (9,), 7,
+                tuple(reversed(good))):
+        ok, _ = ak_run_checker(chk, x, bad, ASCK_B_CHECK)
+        _assert(not ok, f"checker accepted a wrong output: {bad!r}")
+    steps = (_SC_OP["PUSH2"], _SC_OP["MUL"], _SC_OP["PUSH3"],
+             _SC_OP["ADD"])
+    chka = _ak_checker_a(steps)
+    ok, _ = ak_run_checker(chka, (2 * 7 + 3,), 7, ASCK_B_CHECK)
+    _assert(ok, "Track A checker rejected the true preimage")
+    ok, _ = ak_run_checker(chka, (2 * 7 + 3,), 8, ASCK_B_CHECK)
+    _assert(not ok, "Track A checker accepted a wrong preimage")
+    ok, _ = ak_run_checker(chka, (17,), (1, 2), ASCK_B_CHECK)
+    _assert(not ok, "Track A checker accepted a type-wrong output")
+
+
+def test_ak_checker_budget_capped() -> None:
+    # A checker (or a checked execution) that exceeds its op budget is a
+    # reject, never a hang and never an accept.
+    seg = (_SC_OP["SORTL"],)
+    chk = _ak_checker_b(seg)
+    x = (1, 2, 3, 4, 5, 0)
+    ok, ops = ak_run_checker(chk, x, tuple(sorted(x)), 3)
+    _assert(not ok and ops <= 3, "checker budget not enforced")
+    try:
+        ak_run_tokens((_SC_OP["INPUT"],) * 6, x, 2)
+        _assert(False, "ak_run_tokens ignored its op budget")
+    except VMCrash:
+        pass
+
+
+def test_ak_vault_write_once() -> None:
+    vault = AKWitnessVault()
+    vault.seal("wit:T", (1, 2))
+    try:
+        vault.seal("wit:T", (3,))
+        _assert(False, "vault rewrite accepted")
+    except PermissionError:
+        pass
+    _assert(vault.read("wit:T") == (1, 2), "vault content drifted")
+
+
+def test_ak_vault_unreadable_from_mutable_code() -> None:
+    # The constitution's kernel/citizen split: no mutable component's
+    # source may reference the vault, the meter, the ledger, or a sealed
+    # store key prefix.
+    import inspect
+    src = "".join(inspect.getsource(o) for o in _ak_mutable_components())
+    for banned in ("vault", "AKWitnessVault", "wit:", "chk:", "hidden:",
+                   "meter", "AKBudgetMeter", "ledger", "SCLedger",
+                   "sealed", "witnesses"):
+        _assert(banned not in src,
+                f"mutable citizen references kernel symbol '{banned}'")
+
+
+def test_ak_witness_never_in_ledger_before_retirement() -> None:
+    # Witness tokens appear in exactly one record kind: retired_crossed.
+    # Frontier markers never reveal witnesses.
+    cfg = _ak_test_cfg()
+    state = ak_run_loop(cfg)
+    for rec in state.ledger.records:
+        if rec["event"] == "retired_crossed":
+            _assert("witness" in rec, "crossed retirement lacks witness")
+        else:
+            _assert("witness" not in rec,
+                    f"witness leaked in a {rec['event']} record")
+    markers = [r for r in state.ledger.records
+               if r["event"] == "frontier_marker"]
+    for r in markers:
+        _assert(f"wit:{r['tid']}" in state.vault,
+                "marker witness missing from the vault")
+
+
+def test_ak_feasibility_gate_rejects_wrong_witness() -> None:
+    # Ka red team: a wrong witness, a crashing witness, and a witnessless
+    # emission are three distinct attacks; each must be rejected.
+    cfg = _ak_test_cfg()
+    st = AKLoopState(cfg)
+    t = _ak_mk_b((_SC_OP["SORTL"], _SC_OP["REVL"]))
+    ok, reason, _ = ak_admit(st, "red", "B", 2, t["g"], t["checker"],
+                             (_SC_OP["INPUT"],))
+    _assert(not ok and reason == "ka_feasibility",
+            f"wrong witness admitted (reason={reason})")
+    st2 = AKLoopState(cfg)
+    crash_wit = (_SC_OP["ADD"],)
+    ok, reason, _ = ak_admit(st2, "red", "B", 2, t["g"], t["checker"],
+                             crash_wit)
+    _assert(not ok and reason == "ka_feasibility",
+            f"crashing witness admitted (reason={reason})")
+    st3 = AKLoopState(cfg)
+    ok, reason, _ = ak_admit(st3, "red", "B", 2, t["g"], t["checker"],
+                             None)
+    _assert(not ok and reason == "k0_malformed",
+            f"witnessless emission admitted (reason={reason})")
+
+
+def test_ak_difficulty_gate_rejects_frontier_solvable() -> None:
+    # Kb red team: a task the frontier snapshot solves at B_EVAL must be
+    # rejected, and the rejection must carry the snapshot evidence.
+    cfg = _ak_test_cfg()
+    st = AKLoopState(cfg)
+    t = _ak_mk_b((_SC_OP["SCAN_ADD"],))
+    ok, reason, _ = ak_admit(st, "red", "B", 1, t["g"], t["checker"],
+                             t["witness"])
+    _assert(not ok and reason == "kb_too_easy",
+            f"frontier-solvable task admitted (reason={reason})")
+    rej = [r for r in st.ledger.records if r["event"] == "rejected"][-1]
+    _assert("frontier_evals" in rej and "snapshot_aids" in rej,
+            "kb rejection lacks snapshot evidence")
+
+
+def test_ak_null_battery_rejects_trivial_checker() -> None:
+    # Kc red team, three attacks: (1) an accept-everything checker dies on
+    # the identity null; (2) a degenerate generator whose constant empty
+    # output is null-solvable dies on the empty null; (3) the strategy
+    # semantics -- a null that is lucky on ONE instance but not all does
+    # NOT fire the gate.
+    cfg = _ak_test_cfg()
+    st = AKLoopState(cfg)
+    seg = (_SC_OP["SORTL"], _SC_OP["REVL"])
+    g = (_SC_OP["INPUT"],) + seg
+    accept_all = (_SC_OP["DROP"], _SC_OP["PUSH1"])
+    ok, reason, _ = ak_admit(st, "red", "B", 2, g, accept_all, g)
+    _assert(not ok and reason == "kc_null_battery",
+            f"accept-everything checker admitted (reason={reason})")
+    st2 = AKLoopState(cfg)
+    t6 = _ak_mk_b((_SC_OP["TAIL"],) * 6)
+    ok, reason, _ = ak_admit(st2, "red", "B", 6, t6["g"], t6["checker"],
+                             t6["witness"])
+    _assert(not ok and reason == "kc_null_battery",
+            f"empty-output generator admitted (reason={reason})")
+    st3 = AKLoopState(cfg)
+    deep = _ak_mk_a(["A1", "A2", "M2", "A3", "M3"])
+    ok, reason, _ = ak_admit(st3, "red", "A", 5, deep["g"],
+                             deep["checker"], deep["witness"])
+    _assert(ok, f"strategy semantics broken: a non-trivial task was "
+            f"rejected ({reason})")
+
+
+def test_ak_novelty_gate_rejects_duplicate() -> None:
+    # Kd red team: the same behaviour re-emitted rejects on the signature;
+    # a different generator landing in an occupied descriptor cell rejects
+    # on the cell (d_min = the Phase D/G archive admission threshold).
+    cfg = _ak_test_cfg()
+    st = AKLoopState(cfg)
+    deep = _ak_mk_a(["A1", "A2", "M2", "A3"])
+    ok, reason, _ = ak_admit(st, "red", "A", 4, deep["g"],
+                             deep["checker"], deep["witness"])
+    _assert(ok, f"seed task rejected ({reason})")
+    ok, reason, _ = ak_admit(st, "red", "A", 4, deep["g"],
+                             deep["checker"], deep["witness"])
+    _assert(not ok and reason == "kd_duplicate",
+            f"behavioural duplicate admitted (reason={reason})")
+    # Same cell, different behaviour: shift the constant term only.
+    sib = _ak_mk_a(["A3", "A2", "M2", "A3"])
+    cell1, sig1, _ = ak_task_descriptor("A", deep["g"], cfg["b_check"])
+    cell2, sig2, _ = ak_task_descriptor("A", sib["g"], cfg["b_check"])
+    if cell1 == cell2:
+        _assert(sig1 != sig2, "test construction drifted")
+        ok, reason, _ = ak_admit(st, "red", "A", 4, sib["g"],
+                                 sib["checker"], sib["witness"])
+        _assert(not ok and reason == "kd_cell_occupied",
+                f"occupied-cell task admitted (reason={reason})")
+
+
+def test_ak_adv_probes_rejected() -> None:
+    # The pre-registered adversarial lineage: each probe must be rejected
+    # at its designated gate inside a real generation, and the canary must
+    # abort if a probe is force-admitted.
+    cfg = _ak_test_cfg()
+    state = AKLoopState(cfg)
+    ak_generation(state)
+    by_probe = {}
+    for r in state.ledger.records:
+        if r["event"] == "rejected" and r.get("adv"):
+            by_probe.setdefault(r["lineage"], []).append(r["reason"])
+    _assert(by_probe.get("adv_ka") == ["ka_feasibility"],
+            f"adv_ka wrong disposition: {by_probe.get('adv_ka')}")
+    _assert(by_probe.get("adv_kc") == ["kc_null_battery"],
+            f"adv_kc wrong disposition: {by_probe.get('adv_kc')}")
+    _assert(by_probe.get("adv_kb") == ["kb_too_easy"],
+            f"adv_kb wrong disposition: {by_probe.get('adv_kb')}")
+    _assert(by_probe.get("adv_kd") == ["kd_duplicate"],
+            f"adv_kd wrong disposition: {by_probe.get('adv_kd')}")
+    admitted_adv = [r for r in state.ledger.records
+                    if r["event"] == "admitted" and r.get("adv")]
+    _assert(not admitted_adv, "an ADV probe entered the archive")
+    # Canary: an ADV emission that would pass every gate must abort.
+    st2 = AKLoopState(cfg)
+    deep = _ak_mk_a(["A1", "A2", "M2", "A3"])
+    try:
+        ak_admit(st2, "adv_forced", "A", 4, deep["g"], deep["checker"],
+                 deep["witness"], adv=True)
+        _assert(False, "adv canary did not abort on admission")
+    except RuntimeError as e:
+        _assert("canary" in str(e), f"wrong abort: {e}")
+
+
+def test_ak_crossing_excludes_own_solution() -> None:
+    # No self-credit: after a task is mined, its own macro must be absent
+    # from its crossing snapshot, and a crossing must therefore not occur
+    # purely on the strength of the task's own adopted solution.
+    cfg = _ak_test_cfg()
+    st = AKLoopState(cfg)
+    deep = _ak_mk_a(["A1", "A2", "M2", "A3"])
+    ok, reason, task = ak_admit(st, "red", "A", 4, deep["g"],
+                                deep["checker"], deep["witness"])
+    _assert(ok, f"seed task rejected ({reason})")
+    st.archive_macros.append({"aid": ASCK_MACRO_BASE,
+                              "tokens": list(deep["witness"]),
+                              "source_tid": task["tid"], "gen": 0})
+    st.ak_macros[ASCK_MACRO_BASE] = tuple(deep["witness"])
+    sol, evals, aids, macros = ak_frontier_solve(
+        st, task["public"], exclude_tid=task["tid"])
+    _assert(ASCK_MACRO_BASE not in aids and ASCK_MACRO_BASE not in macros,
+            "own-solution macro leaked into the crossing snapshot")
+    other = {"aid": ASCK_MACRO_BASE + 1, "tokens": list(deep["witness"]),
+             "source_tid": "AKX-other", "gen": 0}
+    st.archive_macros.append(other)
+    st.ak_macros[other["aid"]] = tuple(other["tokens"])
+    sol2, _, aids2, macros2 = ak_frontier_solve(
+        st, task["public"], exclude_tid=task["tid"])
+    _assert(other["aid"] in aids2,
+            "another task's macro wrongly excluded")
+    _assert(sol2 is not None,
+            "crossing snapshot cannot use another task's macro")
+
+
+def test_ak_meter_kernel_only() -> None:
+    # K4: the meter counts every spend path; unknown modules and negative
+    # spends raise; snapshots are per-module.
+    m = AKBudgetMeter()
+    m.spend("mining", "cand_evals", 5)
+    m.spend("admission", "vm_ops", 7)
+    snap = m.snapshot()
+    _assert(snap["mining"]["cand_evals"] == 5 and
+            snap["admission"]["vm_ops"] == 7, "meter miscounts")
+    for bad in (("solver", "cand_evals", 1), ("mining", "wall_clock", 1)):
+        try:
+            m.spend(*bad)
+            _assert(False, f"meter accepted unknown spend {bad}")
+        except ValueError:
+            pass
+    try:
+        m.spend("mining", "cand_evals", -1)
+        _assert(False, "meter accepted negative spend")
+    except ValueError:
+        pass
+
+
+def test_ak_input_sampling_setter_immune() -> None:
+    # The SC-1 I9 discipline: instances derive only from the task id and
+    # the frozen master seed. Two states, same generator: identical
+    # instance sets; a different generator: different task id.
+    cfg = _ak_test_cfg()
+    deep = _ak_mk_a(["A1", "M2", "A3"])
+    views = []
+    for _ in range(2):
+        st = AKLoopState(cfg)
+        ok, reason, task = ak_admit(st, "red", "A", 3, deep["g"],
+                                    deep["checker"], deep["witness"])
+        _assert(ok, f"valid task rejected ({reason})")
+        views.append((_sc_pairs_canon(task["public"]),
+                      st.vault.read(f"hidden:{task['tid']}")))
+    _assert(views[0] == views[1], "instance sampling is not a pure "
+            "function of the task id and the master seed")
+
+
+def test_ak_no_instrument_access() -> None:
+    # The SC-1 I13 discipline for the whole Phase K namespace.
+    import inspect
+    src = "".join(inspect.getsource(o) for o in _ak_scan_components())
+    forbidden = ("ORACLES", "TRAIN_INPUTS", "_ORACLE_REGISTRY",
+                 "seal_task", "build_sealed_tasks", "holdout_gate",
+                 "cf_gate", "_make_gate", "GATE_SEED", "CF_GATE_SEED",
+                 "task_target_vector", "SealedTask", "mint_task",
+                 "RunState", "adopted_tokens", "meta_gate",
+                 "lookup_solution", "extj_instrument", "frozen_holdout")
+    for name in forbidden:
+        _assert(name not in src,
+                f"phase K code references sealed symbol {name}")
+
+
+def test_ak_pin_matches() -> None:
+    # A wrong pin aborts; every kernel component is pinned; every frozen
+    # constant is bound into the pin input.
+    import inspect
+    ak_verify_pin()
+    try:
+        ak_verify_pin("f" * 64)
+        _assert(False, "tampered pin accepted")
+    except RuntimeError:
+        pass
+    pinned = _ak_pin_components()
+    for fn in (ak_admit, ak_gate_score, ak_frontier_solve,
+               _ak_cert_feasibility, _ak_cert_nontrivial,
+               ak_task_descriptor, _ak_sample_instances, _ak_task_cid,
+               ak_run_tokens, ak_run_checker, _ak_checker_a,
+               _ak_checker_b, _ak_adv_probes, ak_replay_verify,
+               AKWitnessVault, AKBudgetMeter, _ak_frozen_constants_canon):
+        _assert(fn in pinned, f"critical component unpinned: {fn}")
+    const = _ak_frozen_constants_canon()
+    for needle in ('"MASTER_SEED":872663', '"B_EVAL":1500',
+                   '"P_NULL":[9,10]', '"N_HIDDEN":16', '"H":5',
+                   '"ADV_PROBES":', '"LINEAGES":'):
+        _assert(needle in const,
+                f"frozen constant unbound from pin: {needle}")
+
+
+def test_ak_replay_from_ledger() -> None:
+    # K3: the replay engine re-derives every admission certificate; a
+    # tampered admission record must be caught by the hash chain, and a
+    # forged snapshot list must be caught by the replay itself.
+    cfg = _ak_test_cfg()
+    state = ak_run_loop(cfg)
+    _assert(ak_replay_verify(state), "replay failed on an honest run")
+    adm = [r for r in state.ledger.records if r["event"] == "admitted"]
+    _assert(adm, "no admissions in the test loop")
+    saved = adm[0]["snapshot_aids"]
+    adm[0]["snapshot_aids"] = list(saved) + [9999]
+    try:
+        ak_replay_verify(state)
+        _assert(False, "forged snapshot list survived replay")
+    except AssertionError as e:
+        _assert("ledger" in str(e) or "tampered" in str(e)
+                or "snapshot" in str(e), f"wrong diagnosis: {e}")
+    adm[0]["snapshot_aids"] = saved
+    ak_replay_verify(state)
+
+
+def test_ak_config_validity() -> None:
+    for bad in (dict(n_public=0), dict(n_hidden=0),
+                dict(n_public=40, n_hidden=40), dict(b_eval=0),
+                dict(generations=0), dict(h=0),
+                dict(b_live=100, b_eval=500)):
+        try:
+            _ak_test_cfg(**bad)
+            _assert(False, f"invalid config accepted: {bad}")
+        except ValueError:
+            pass
+
+
+def test_ak_gate_not_weakened_mdl() -> None:
+    # The SC-1 MDL caps apply unchanged to Phase K adoptions: a padded
+    # sealed-correct solution must be rejected by the gate.
+    cfg = _ak_test_cfg()
+    st = AKLoopState(cfg)
+    deep = _ak_mk_a(["A1", "M2", "A3"])
+    ok, reason, task = ak_admit(st, "red", "A", 3, deep["g"],
+                                deep["checker"], deep["witness"])
+    _assert(ok, f"seed task rejected ({reason})")
+    chk = st.vault.read(f"chk:{task['tid']}")
+    hidden = st.vault.read(f"hidden:{task['tid']}")
+    minimal = deep["witness"]
+    _assert(ak_gate_score(minimal, {}, task["public"], chk, hidden,
+                          cfg["b_check"]),
+            "true witness rejected by the solve gate")
+    pad = (_SC_OP["PUSH1"], _SC_OP["ADD"], _SC_OP["PUSH1"],
+           _SC_OP["SUB"])
+    big = tuple(minimal) + pad * 8
+    _assert(not ak_gate_score(big, {}, task["public"], chk, hidden,
+                              cfg["b_check"]),
+            "MDL cap not enforced on the Phase K gate")
+
+
+def test_ak_crossing_certificate_semantics() -> None:
+    # A crossed record must prove both sides: the admission-time snapshot
+    # failed at B_EVAL and the crossing snapshot (own macros excluded)
+    # passed at the SAME B_EVAL.
+    cfg = _ak_test_cfg()
+    state = ak_run_loop(cfg)
+    for rec in [r for r in state.ledger.records
+                if r["event"] == "crossed"]:
+        adm = [r for r in state.ledger.records
+               if r["event"] == "admitted" and r["tid"] == rec["tid"]]
+        _assert(len(adm) == 1, f"crossed task {rec['tid']} lacks its "
+                "admission record")
+        _assert(adm[0]["b_eval"] == rec["b_eval"] == cfg["b_eval"],
+                "crossing budget differs from the admission budget")
+        own = [e["aid"] for e in state.archive_macros
+               if e["source_tid"] == rec["tid"]]
+        for aid in own:
+            _assert(aid not in rec["snapshot_aids"],
+                    "own macro inside a crossing snapshot")
+
+
+def test_ak_determinism_two_runs() -> None:
+    # Two full loops from the same frozen seeds agree byte-for-byte; a
+    # different budget must not reproduce the digest.
+    digests = []
+    for _ in range(2):
+        cfg = _ak_test_cfg()
+        st = ak_run_loop(cfg)
+        rows = ak_metrics_from_ledger(st.ledger, cfg["generations"])
+        digests.append(hashlib.sha256(
+            (st.ledger.head() + _sc_canon(rows)).encode()).hexdigest())
+    _assert(digests[0] == digests[1],
+            "phase K loop not two-run byte-identical")
+    cfg = _ak_test_cfg(b_live=3000)
+    st = ak_run_loop(cfg)
+    rows = ak_metrics_from_ledger(st.ledger, cfg["generations"])
+    d3 = hashlib.sha256(
+        (st.ledger.head() + _sc_canon(rows)).encode()).hexdigest()
+    _assert(d3 != digests[0], "digest insensitive to run content")
+
+
+def test_ak_loop_crosses_and_credits() -> None:
+    # Positive path: the mini loop admits tasks, mines macros, certifies
+    # at least one crossing inside the horizon, credits exactly the
+    # crossing lineages, and reallocates pose slots accordingly.
+    cfg = _ak_test_cfg()
+    state = ak_run_loop(cfg)
+    crossed = [r for r in state.ledger.records if r["event"] == "crossed"]
+    _assert(crossed, "mini loop produced no crossing")
+    _assert(any(r["within_h"] for r in crossed),
+            "no crossing inside the horizon")
+    for name, total in state.credits.items():
+        expect = sum(1 for r in crossed
+                     if r["lineage"] == name and r["within_h"])
+        _assert(total == expect, f"credit drift for {name}")
+    _assert(sum(state.credits.values()) > 0, "no lineage earned credit")
+    last = state.gen_rows[-1]["slots"]
+    _assert(sum(last.values()) == cfg["pose_slots"],
+            "allocation policy lost slots")
+    top = max(state.credits, key=lambda n: (state.credits[n], n))
+    if state.credits[top] > 0:
+        _assert(last[top] == max(last.values()),
+                "credit did not steer the allocation")
+
+
+TESTS.extend([
+    test_ak_checker_convention_semantics,
+    test_ak_checker_budget_capped,
+    test_ak_vault_write_once,
+    test_ak_vault_unreadable_from_mutable_code,
+    test_ak_witness_never_in_ledger_before_retirement,
+    test_ak_feasibility_gate_rejects_wrong_witness,
+    test_ak_difficulty_gate_rejects_frontier_solvable,
+    test_ak_null_battery_rejects_trivial_checker,
+    test_ak_novelty_gate_rejects_duplicate,
+    test_ak_adv_probes_rejected,
+    test_ak_crossing_excludes_own_solution,
+    test_ak_meter_kernel_only,
+    test_ak_input_sampling_setter_immune,
+    test_ak_no_instrument_access,
+    test_ak_pin_matches,
+    test_ak_replay_from_ledger,
+    test_ak_config_validity,
+    test_ak_gate_not_weakened_mdl,
+    test_ak_crossing_certificate_semantics,
+    test_ak_determinism_two_runs,
+    test_ak_loop_crosses_and_credits,
+])
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="real-search RSI core")
     ap.add_argument("--mode",
@@ -41983,7 +43713,8 @@ def main() -> None:
                              "crossing-anchor",
                              "attribution-probe",
                              "self-curriculum", "sc-battery",
-                             "schema-forge", "sc2-battery",),
+                             "schema-forge", "sc2-battery",
+                             "ascent-k", "ascent-k-battery",),
                     default="demo")
     ap.add_argument("--save", default="")
     ap.add_argument("--adaptive-json", default="adaptive.json")
@@ -42174,6 +43905,10 @@ def main() -> None:
         sc2_demo()
     elif args.mode == "sc2-battery":
         sc2_battery()
+    elif args.mode == "ascent-k":
+        ak_demo()
+    elif args.mode == "ascent-k-battery":
+        ak_battery()
     else:
         demo()
 

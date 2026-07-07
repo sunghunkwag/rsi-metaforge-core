@@ -48,5 +48,11 @@ jobs:
       - name: Run schema-forge demo
         run: python "rsi_levels_metaforge_unified.py" --mode schema-forge
 
+      - name: Run ascent phase K red-team guards
+        run: python "rsi_levels_metaforge_unified.py" --mode test --only ak_
+
+      - name: Run ascent phase K demo
+        run: python "rsi_levels_metaforge_unified.py" --mode ascent-k
+
       - name: Run general-domain smoke gate
         run: python "rsi_levels_metaforge_unified.py" --mode general-domain-test
