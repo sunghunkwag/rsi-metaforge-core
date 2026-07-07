@@ -38366,6 +38366,1666 @@ def run_general_domain_self_improvement_test(save_path: str = "") -> int:
 
 
 
+# =========================================================================== #
+# PHASE SC: SELF-CURRICULUM COMPOUNDING LOOP                                  #
+#                                                                             #
+# A closed loop that generates its own tasks, proves each task feasible       #
+# before admitting it, solves tasks under sealed evaluation, and composes     #
+# solved tasks into harder ones -- zero human-authored tasks added. The       #
+# deliverable is a measured compounding curve (docs/SELF_CURRICULUM_SPEC.md,  #
+# docs/PREDICTIONS_SC.md, docs/SC_RESULT.md), not an autonomy claim.          #
+#                                                                             #
+# Five components, strict separation:                                         #
+#   C1 Poser    -- deterministic enumerator over the frozen SC primitive     #
+#                  units plus gate-adopted archive programs. Receives only    #
+#                  aggregated per-band pass/fail statistics.                  #
+#   C2 Harness  -- the only component touching both sides: validates          #
+#                  witnesses, owns input sampling (seeded by the task hash;   #
+#                  poser input suggestions are discarded), runs admission     #
+#                  checks I1-I9, writes the ledger.                           #
+#   C3 Solver   -- sees ONLY the canonicalized public example pairs plus the  #
+#                  adopted archive vocabulary; breadth-first synthesis under  #
+#                  a frozen budget.                                           #
+#   C4 Gate     -- scores candidate programs on sealed held-out pairs under   #
+#                  the MDL cap; source hash-pinned (SC_PIN_SHA256).           #
+#   C5 Ledger   -- append-only, hash-chained; metrics are recomputed from     #
+#                  the full ledger; no record is ever dropped.                #
+#                                                                             #
+# Isolation boundary: the functions listed in _SC_SCAN_COMPONENTS form the    #
+# self-curriculum namespace and are test-enforced (test_sc_no_instrument_     #
+# access) to reference none of the sealed human-instrument machinery. The     #
+# transfer checkpoint (sc_transfer_eval / sc_battery) is trusted EVALUATION   #
+# code -- it offers adopted SC bodies to the existing frozen-instrument       #
+# machinery exactly like the Phase D-I exploration archives and is not part   #
+# of the loop's decision path (M3 results never feed back into the poser).    #
+#                                                                             #
+# The SC substrate is the same stack VM (base ops only; granted EXT ops are   #
+# invisible to SC by construction). Track A generators are affine chains     #
+# over singleton-int inputs whose inverses exist in the ISA by construction   #
+# (+k inverts to SUB k; *k inverts to DIVI k exactly on the reachable set),   #
+# so every Track A task carries a feasibility witness (G, G_inv). Track B    #
+# generators are list-pipeline compositions; the witness is G itself.         #
+# =========================================================================== #
+
+# --- frozen constants (spec-freeze: docs/SELF_CURRICULUM_SPEC.md) -----------
+SC_SPEC_VERSION = "SC-1"
+SC_MASTER_SEED = 730117
+SC_GENERATIONS = 10
+SC_CHECKPOINTS = (0, 5, 10)
+SC_BAND_START = 2
+SC_BAND_MAX = 12
+SC_POSE_PER_TRACK = 4
+SC_POSE_M4_PER_TRACK = 2
+SC_M4_REF_BAND = 2
+SC_M_INPUTS = 28
+SC_M_PUBLIC = 8
+SC_B_WITNESS = 4096
+SC_B_FROZEN_BASE = 1500
+SC_B_FROZEN_MAX = 24000
+SC_B_LIVE = 25000
+SC_MDL_ALPHA_NUM = 1          # alpha = 1/2, exact integer arithmetic
+SC_MDL_ALPHA_DEN = 2
+SC_MDL_ABS_TOKENS = 24
+SC_TASK_MAX_ATTEMPTS = 2
+SC_ARCHIVE_TOPK = 256
+SC_TRANSFER_POOL_CAP = 256
+SC_MIN_DISTINCT_OUTPUTS = 3
+SC_WINDOW_LO_NUM, SC_WINDOW_LO_DEN = 1, 5     # solve-rate window [0.2, 0.8]
+SC_WINDOW_HI_NUM, SC_WINDOW_HI_DEN = 4, 5
+SC_STEP_LIMIT = 200           # expanded-program length cap for SC programs
+SC_MACRO_BASE = 1000          # SC-local macro token ids (never leave SC)
+SC_VMAX_A = 60
+SC_LIST_LEN_B = 6
+SC_VALMAX_B = 8
+
+_SC_OP = {n: i for i, n in enumerate(OP_NAMES)}
+
+# Universal probe batteries, frozen literals (I4 signatures + witness checks).
+SC_PROBES_A = tuple((v,) for v in (
+    0, 1, 2, 3, 5, 7, 11, 13, 17, 23, 29, 37, 41, 47, 53, 59))
+SC_PROBES_B = (
+    (0, 1, 2, 3, 4, 5), (5, 4, 3, 2, 1, 0), (1, 1, 2, 2, 3, 3),
+    (7, 0, 7, 0, 7, 0), (2, 3, 5, 7, 1, 4), (6, 6, 6, 6, 6, 6),
+    (0, 7, 1, 6, 2, 5), (3, 1, 4, 1, 5, 2), (7, 6, 5, 4, 3, 2),
+    (1, 0, 0, 0, 0, 1), (4, 2, 7, 3, 6, 0), (2, 5, 2, 5, 2, 5),
+)
+
+# Track A elementary invertible steps: (name, forward tokens, inverse tokens).
+SC_STEPS_A = (
+    ("A1", (_SC_OP["PUSH1"], _SC_OP["ADD"]), (_SC_OP["PUSH1"], _SC_OP["SUB"])),
+    ("A2", (_SC_OP["PUSH2"], _SC_OP["ADD"]), (_SC_OP["PUSH2"], _SC_OP["SUB"])),
+    ("A3", (_SC_OP["PUSH3"], _SC_OP["ADD"]), (_SC_OP["PUSH3"], _SC_OP["SUB"])),
+    ("M2", (_SC_OP["PUSH2"], _SC_OP["MUL"]), (_SC_OP["PUSH2"], _SC_OP["DIVI"])),
+    ("M3", (_SC_OP["PUSH3"], _SC_OP["MUL"]), (_SC_OP["PUSH3"], _SC_OP["DIVI"])),
+)
+_SC_A_FWD_OPS = (_SC_OP["ADD"], _SC_OP["MUL"])
+_SC_A_INV_OPS = (_SC_OP["SUB"], _SC_OP["DIVI"])
+_SC_A_OP_COMPLEMENT = {
+    _SC_OP["ADD"]: _SC_OP["SUB"], _SC_OP["SUB"]: _SC_OP["ADD"],
+    _SC_OP["MUL"]: _SC_OP["DIVI"], _SC_OP["DIVI"]: _SC_OP["MUL"],
+}
+_SC_A_PUSHES = (_SC_OP["PUSH1"], _SC_OP["PUSH2"], _SC_OP["PUSH3"])
+
+# Track B elementary pipeline units: (name, token tuple).
+SC_UNITS_B = (
+    ("TAIL", (_SC_OP["TAIL"],)),
+    ("REVL", (_SC_OP["REVL"],)),
+    ("SORTL", (_SC_OP["SORTL"],)),
+    ("SCANM", (_SC_OP["SCAN_MAX"],)),
+    ("SCANA", (_SC_OP["SCAN_ADD"],)),
+    ("EVEN", (_SC_OP["EVENIDX"],)),
+    ("ODD", (_SC_OP["ODDIDX"],)),
+    ("DBL", (_SC_OP["DUP"], _SC_OP["ZADD"])),
+    ("SQR", (_SC_OP["DUP"], _SC_OP["ZMUL"])),
+)
+
+# The solver's frozen base vocabulary: the closure of the poser's primitive
+# language plus the exact inverse ops. No other base op is searchable.
+SC_SOLVER_VOCAB = tuple(_SC_OP[n] for n in (
+    "PUSH1", "PUSH2", "PUSH3", "INPUT", "DUP",
+    "ADD", "SUB", "MUL", "DIVI", "HEAD",
+    "TAIL", "REVL", "SORTL", "ZADD", "ZMUL",
+    "SCAN_MAX", "SCAN_ADD", "RED_ADD", "RED_MAX", "EVENIDX", "ODDIDX",
+))
+
+
+# --- canonical serialization -------------------------------------------------
+def _sc_canon(v) -> str:
+    return json.dumps(v, separators=(",", ":"), sort_keys=True)
+
+
+def _sc_ser_tokens(tokens) -> str:
+    return json.dumps(list(tokens), separators=(",", ":"))
+
+
+def _sc_pairs_canon(pairs) -> str:
+    return _sc_canon([[list(x), (y if isinstance(y, int) else list(y))]
+                      for x, y in pairs])
+
+
+def _sc_out_canon(y) -> str:
+    return _sc_canon(y if isinstance(y, int) else list(y))
+
+
+# --- SC program runner (base ops only; EXT grants invisible on purpose) ----
+def _sc_run_tokens(expanded, xs):
+    """Run an expanded base-token program on one input tuple. Unlike the
+    core executor this allows a tuple terminal value (Track B pipelines);
+    everything else is a crash."""
+    if len(expanded) > SC_STEP_LIMIT:
+        raise VMCrash("sc_program_too_long")
+    stack = []
+    inp = tuple(int(v) for v in xs)
+    for op in expanded:
+        if not (0 <= op < N_BASE_OPS):
+            raise VMCrash("sc_non_base_token")
+        OP_IMPL[op](stack, inp)
+    if len(stack) != 1 or not isinstance(stack[0], (int, tuple)):
+        raise VMCrash("sc_bad_terminal")
+    return stack[0]
+
+
+def _sc_expand(tokens, macros):
+    """Expand SC macro tokens (single level: archive bodies are stored fully
+    expanded) to base ops."""
+    out = []
+    for t in tokens:
+        if 0 <= t < N_BASE_OPS:
+            out.append(t)
+        elif t in macros:
+            out.extend(macros[t])
+        else:
+            raise VMCrash("sc_unknown_token")
+        if len(out) > SC_STEP_LIMIT:
+            raise VMCrash("sc_program_too_long")
+    return tuple(out)
+
+
+# --- MDL cap (I7) -----------------------------------------------------------
+def _sc_mdl_cap_chars(public_pairs) -> int:
+    return (len(_sc_pairs_canon(public_pairs)) * SC_MDL_ALPHA_NUM
+            ) // SC_MDL_ALPHA_DEN
+
+
+def _sc_mdl_ok(surface, public_pairs) -> bool:
+    if len(surface) > SC_MDL_ABS_TOKENS:
+        return False
+    return len(_sc_ser_tokens(surface)) <= _sc_mdl_cap_chars(public_pairs)
+
+
+# --- write-once gate-private store (I10) -------------------------------------
+class SCSealedStore:
+    """Write-once in-memory store. Sealed pairs and witnesses live here and
+    are never written to the workspace before retirement."""
+
+    def __init__(self):
+        self._d = {}
+
+    def put(self, key, value):
+        if key in self._d:
+            raise PermissionError(f"sc sealed store rewrite blocked: {key}")
+        self._d[key] = value
+
+    def get(self, key):
+        return self._d[key]
+
+    def __contains__(self, key):
+        return key in self._d
+
+
+# --- append-only hash-chained ledger (I11) -----------------------------------
+class SCLedger:
+    """Append-only JSONL ledger; every record carries the SHA-256 of the
+    previous record. Metrics are computed over the FULL ledger."""
+
+    GENESIS = "0" * 64
+
+    def __init__(self):
+        self.records = []
+
+    def append(self, rec: dict) -> dict:
+        prev = self.records[-1]["h"] if self.records else self.GENESIS
+        body = dict(rec)
+        body["idx"] = len(self.records)
+        body["prev"] = prev
+        h = hashlib.sha256(
+            (prev + _sc_canon({k: v for k, v in body.items()
+                               if k != "h"})).encode()).hexdigest()
+        body["h"] = h
+        self.records.append(body)
+        return body
+
+    def head(self) -> str:
+        return self.records[-1]["h"] if self.records else self.GENESIS
+
+    def verify(self) -> None:
+        prev = self.GENESIS
+        for i, rec in enumerate(self.records):
+            if rec["idx"] != i or rec["prev"] != prev:
+                raise AssertionError(f"sc ledger chain broken at {i}")
+            h = hashlib.sha256(
+                (prev + _sc_canon({k: v for k, v in rec.items()
+                                   if k != "h"})).encode()).hexdigest()
+            if h != rec["h"]:
+                raise AssertionError(f"sc ledger record tampered at {i}")
+            prev = rec["h"]
+
+    def to_jsonl(self) -> str:
+        return "".join(_sc_canon(r) + "\n" for r in self.records)
+
+
+# --- filesystem guard (I13): no path to the human instrument stores ---------
+def _sc_guarded_open(path, mode="r"):
+    p = os.path.abspath(path)
+    if "frozen_holdout" in p:
+        raise PermissionError(
+            "self-curriculum code may not touch the frozen human "
+            "instrument stores")
+    if mode not in ("r", "rb"):
+        allowed = os.path.abspath(os.path.join("reports", "evidence"))
+        if not p.startswith(allowed + os.sep):
+            raise PermissionError(
+                "self-curriculum writes are confined to reports/evidence")
+    return open(p, mode, encoding=(None if "b" in mode else "utf-8"))
+
+
+# --- harness: task identity and input sampling (I9) --------------------------
+def _sc_task_cid(track: str, g_expanded) -> str:
+    return hashlib.sha256(
+        _sc_canon([track, list(g_expanded)]).encode()).hexdigest()
+
+
+def _sc_sample_inputs(track: str, cid: str, m_inputs: int):
+    """Harness-owned input sampling. The PRNG seed derives from the task's
+    canonical id and the frozen master seed; the poser has no influence."""
+    rng = random.Random(int(cid[:16], 16) ^ SC_MASTER_SEED)
+    if track == "A":
+        return [(v,) for v in rng.sample(range(SC_VMAX_A), m_inputs)]
+    seen = set()
+    out = []
+    guard = 0
+    while len(out) < m_inputs and guard < 50 * m_inputs:
+        guard += 1
+        x = tuple(rng.randrange(SC_VALMAX_B) for _ in range(SC_LIST_LEN_B))
+        if x in seen:
+            continue
+        seen.add(x)
+        out.append(x)
+    return out
+
+
+# --- solver (C3): breadth-first synthesis with behavioural-class dedup ------
+def sc_solve(public_pairs, macros, budget, vocab=None):
+    """Deterministic breadth-first search over the SC vocabulary. Sees ONLY
+    the canonicalized public pairs, the archive macro bodies, and its
+    budget. Dedups by the joint stack signature over the public inputs;
+    respects the MDL cap as a search bound. Returns
+    (surface_tokens_or_None, candidate_evaluations_used)."""
+    if vocab is None:
+        vocab = tuple(SC_SOLVER_VOCAB) + tuple(sorted(macros))
+    xs = [x for x, _ in public_pairs]
+    ys = [y for _, y in public_pairs]
+    mdl_chars = _sc_mdl_cap_chars(public_pairs)
+    init = tuple(() for _ in xs)
+    frontier = [((), init)]
+    seen = {init}
+    evals = 0
+    while frontier and evals < budget:
+        nxt = []
+        for surface, stacks in frontier:
+            for tok in vocab:
+                if evals >= budget:
+                    break
+                cand = surface + (tok,)
+                if len(cand) > SC_MDL_ABS_TOKENS:
+                    continue
+                if len(_sc_ser_tokens(cand)) > mdl_chars:
+                    continue
+                if tok < N_BASE_OPS:
+                    body = (tok,)
+                elif tok in macros:
+                    body = macros[tok]
+                else:
+                    continue
+                evals += 1
+                new_stacks = []
+                dead = False
+                for i, x in enumerate(xs):
+                    st = list(stacks[i])
+                    try:
+                        for op in body:
+                            OP_IMPL[op](st, tuple(x))
+                    except VMCrash:
+                        dead = True
+                        break
+                    new_stacks.append(tuple(st))
+                if dead:
+                    continue
+                new_stacks = tuple(new_stacks)
+                if all(len(s) == 1 for s in new_stacks) and \
+                        all(new_stacks[i][0] == ys[i]
+                            for i in range(len(ys))):
+                    return cand, evals
+                if new_stacks in seen:
+                    continue
+                seen.add(new_stacks)
+                nxt.append((cand, new_stacks))
+        frontier = nxt
+    return None, evals
+
+
+# --- gate (C4): sealed scoring + MDL cap (I7) --------------------------------
+def _sc_gate_score(surface, macros, public_pairs, sealed_pairs) -> bool:
+    """Score a candidate on the sealed held-out pairs the solver never saw.
+    The MDL cap (I7) rejects lookup-table-scale programs first."""
+    if surface is None:
+        return False
+    if not _sc_mdl_ok(surface, public_pairs):
+        return False
+    try:
+        exp = _sc_expand(surface, macros)
+    except VMCrash:
+        return False
+    for x, y in sealed_pairs:
+        try:
+            if _sc_run_tokens(exp, tuple(x)) != y:
+                return False
+        except VMCrash:
+            return False
+    return True
+
+
+# --- harness admission (C2): invariants I1-I9 --------------------------------
+def sc_witness_validate(track, g_tokens, ginv_tokens, budget):
+    """I6/I3: execute the witness deterministically within budget; Track A
+    additionally proves injectivity on the full probe set and the exact
+    round-trip ginv(g(x)) == x. Returns (ok, reason, probe_outputs, execs)."""
+    probes = SC_PROBES_A if track == "A" else SC_PROBES_B
+    execs = 0
+    outs = []
+    for x in probes:
+        if execs >= budget:
+            return (False, "i6_witness_budget", outs, execs)
+        execs += 1
+        try:
+            outs.append(_sc_run_tokens(g_tokens, x))
+        except VMCrash:
+            return (False, "i6_witness_exec", outs, execs)
+    if track == "A":
+        if len(set(_sc_out_canon(o) for o in outs)) != len(outs):
+            return (False, "i3_injective", outs, execs)
+        for x, y in zip(probes, outs):
+            if execs >= budget:
+                return (False, "i6_witness_budget", outs, execs)
+            execs += 1
+            if not isinstance(y, int):
+                return (False, "i6_witness_exec", outs, execs)
+            try:
+                back = _sc_run_tokens(ginv_tokens, (y,))
+            except VMCrash:
+                return (False, "i6_roundtrip", outs, execs)
+            if back != x[0]:
+                return (False, "i6_roundtrip", outs, execs)
+    return (True, "", outs, execs)
+
+
+def sc_admit(state, track, band, g_tokens, ginv_tokens, cfg,
+             input_suggestions=None):
+    """Full admission pipeline. Any poser-supplied input suggestions are
+    discarded unread (I9): the harness owns the input distribution."""
+    input_suggestions = None   # discarded by design (I9)
+    led = state.ledger
+    bad_token = any(not (0 <= int(t) < N_BASE_OPS) for t in g_tokens)
+    g_exp = tuple(int(t) for t in g_tokens)
+    cid = _sc_task_cid(track, g_exp)
+    tid = f"SC{track}-{cid[:12]}"
+    g_sha = hashlib.sha256(_sc_ser_tokens(g_exp).encode()).hexdigest()
+    # The band is MEASURED from the generator; the poser's claim is audit
+    # metadata only and can never move the M2 ladder.
+    band_claimed = int(band)
+    band = _sc_measured_band(track, g_exp)
+    wit = {"g": list(g_exp),
+           "ginv": (list(ginv_tokens) if ginv_tokens is not None else None)}
+    wit_sha = hashlib.sha256(_sc_canon(wit).encode()).hexdigest()
+    led.append({"event": "generated", "tid": tid, "gen": state.gen,
+                "track": track, "band": band,
+                "band_claimed": band_claimed, "g_sha": g_sha,
+                "witness_sha": wit_sha})
+
+    def reject(reason):
+        led.append({"event": "rejected", "tid": tid, "gen": state.gen,
+                    "track": track, "band": band, "reason": reason})
+        return (False, reason, None)
+
+    # I6: a witness must exist and be executable.
+    if bad_token:
+        return reject("i6_witness_exec")
+    if track == "A" and ginv_tokens is None:
+        return reject("i6_witness")
+    if track == "A" and any(not (0 <= int(t) < N_BASE_OPS)
+                            for t in ginv_tokens):
+        return reject("i6_witness_exec")
+    ok, why, probe_outs, execs = sc_witness_validate(
+        track, g_exp, ginv_tokens, cfg["b_witness"])
+    if not ok:
+        return reject(why)
+    probes = SC_PROBES_A if track == "A" else SC_PROBES_B
+    # I1: identity / multiset-preserving generators are trivial.
+    n = len(probes)
+    ident = 0
+    multi = 0
+    for x, y in zip(probes, probe_outs):
+        if track == "A":
+            if y == x[0]:
+                ident += 1
+        else:
+            if isinstance(y, tuple):
+                if y == x:
+                    ident += 1
+                if tuple(sorted(y)) == tuple(sorted(x)):
+                    multi += 1
+    if 2 * ident > n or 2 * multi > n:
+        return reject("i1_identity")
+    # I2: minimum output diversity on the probe battery.
+    if len(set(_sc_out_canon(o) for o in probe_outs)) < \
+            SC_MIN_DISTINCT_OUTPUTS:
+        return reject("i2_diversity")
+    # I4: behavioural dedup against the universal probe battery.
+    sig = hashlib.sha256(
+        _sc_canon([_sc_out_canon(o) for o in probe_outs]).encode()
+    ).hexdigest()
+    if sig in state.seen_sigs:
+        return reject("i4_duplicate")
+    state.seen_sigs.add(sig)
+    # Harness-owned sampling; label with G; split public/sealed.
+    inputs = _sc_sample_inputs(track, cid, cfg["m_inputs"])
+    if len(inputs) < cfg["m_inputs"]:
+        return reject("sampling_shortfall")
+    pairs = []
+    for x in inputs:
+        try:
+            y = _sc_run_tokens(g_exp, x)
+        except VMCrash:
+            return reject("i6_witness_exec")
+        if track == "A":
+            pairs.append(((y,), x[0]))
+        else:
+            pairs.append((x, y))
+    if track == "A":
+        keys = [_sc_out_canon(list(x)) for x, _ in pairs]
+        if len(set(keys)) != len(keys):
+            return reject("i3_injective")
+    public = sorted(pairs[:cfg["m_public"]],
+                    key=lambda p: _sc_canon(list(p[0])))
+    sealed = pairs[cfg["m_public"]:]
+    # I5: the frozen baseline (base vocabulary, frozen budget) must fail.
+    fsol, fevals = sc_solve(public, {}, state.b_frozen,
+                            vocab=SC_SOLVER_VOCAB)
+    state.frozen_evals += fevals
+    if fsol is not None and _sc_gate_score(fsol, {}, public, sealed):
+        return reject("i5_frozen")
+    # I8: the archive must not already contain the answer.
+    for entry in state.archive[:SC_ARCHIVE_TOPK]:
+        body = tuple(entry["tokens"])
+        matched = True
+        for x, y in sealed:
+            try:
+                if _sc_run_tokens(body, tuple(x)) != y:
+                    matched = False
+                    break
+            except VMCrash:
+                matched = False
+                break
+        if matched:
+            return reject("i8_archive")
+    state.sealed_pairs.put(tid, sealed)
+    state.witnesses.put(tid, wit)
+    task = {"tid": tid, "track": track, "band": band, "public": public,
+            "attempts": 0, "gen_admitted": state.gen, "i8_novel": True}
+    state.open_tasks.append(task)
+    led.append({"event": "admitted", "tid": tid, "gen": state.gen,
+                "track": track, "band": band,
+                "band_claimed": band_claimed, "g_sha": g_sha,
+                "witness_sha": wit_sha, "sig": sig,
+                "frozen_evals": fevals, "i8_checked": True})
+    return (True, "", task)
+
+
+# --- poser (C1): deterministic composition over units ------------------------
+def _sc_parse_a_unit(body):
+    """Parse an archive body as an affine chain; return (fwd_steps,
+    inv_steps) as flat token tuples, or None. A forward unit must be
+    injective by construction, so only ADD/MUL chains (or the exact
+    complement of a SUB/DIVI chain) qualify."""
+    body = tuple(body)
+    if len(body) < 4 or body[0] != _SC_OP["INPUT"] or \
+            body[1] != _SC_OP["HEAD"]:
+        return None
+    rest = body[2:]
+    if len(rest) % 2:
+        return None
+    steps = []
+    for i in range(0, len(rest), 2):
+        push, op = rest[i], rest[i + 1]
+        if push not in _SC_A_PUSHES:
+            return None
+        steps.append((push, op))
+    ops = set(op for _, op in steps)
+    if ops <= set(_SC_A_FWD_OPS):
+        fwd = steps
+        inv = [(p, _SC_A_OP_COMPLEMENT[o]) for p, o in reversed(steps)]
+    elif ops <= set(_SC_A_INV_OPS):
+        fwd = [(p, _SC_A_OP_COMPLEMENT[o]) for p, o in reversed(steps)]
+        inv = steps
+    else:
+        return None
+    flat_f = tuple(t for pair in fwd for t in pair)
+    flat_i = tuple(t for pair in inv for t in pair)
+    return (flat_f, flat_i, len(steps))
+
+
+def _sc_parse_b_seg(body):
+    """Parse an archive body as INPUT + a pipeline of known Track B units;
+    return (segment_tokens, unit_count) or None."""
+    body = tuple(body)
+    if len(body) < 2 or body[0] != _SC_OP["INPUT"]:
+        return None
+    rest = body[1:]
+    i = 0
+    count = 0
+    while i < len(rest):
+        hit = False
+        for _, toks in SC_UNITS_B:
+            k = len(toks)
+            if rest[i:i + k] == toks:
+                i += k
+                count += 1
+                hit = True
+                break
+        if not hit:
+            return None
+    return (rest, count)
+
+
+def _sc_measured_band(track, g_expanded):
+    """Harness-measured difficulty band, derived from the generator itself.
+    The poser's claimed band is recorded for audit but never trusted: a
+    fabricated label would otherwise inflate the M2 ladder."""
+    g = tuple(g_expanded)
+    if track == "A":
+        parsed = _sc_parse_a_unit(g)
+        if parsed is not None:
+            return parsed[2]
+        return max(0, len(g) - 2)
+    parsed = _sc_parse_b_seg(g)
+    if parsed is not None:
+        return parsed[1]
+    return max(0, len(g) - 1)
+
+
+def _sc_units_track_a(archive):
+    units = [{"w": 1, "fwd": fwd, "inv": inv}
+             for _, fwd, inv in SC_STEPS_A]
+    for entry in archive:
+        parsed = _sc_parse_a_unit(entry["tokens"])
+        if parsed is not None:
+            fwd, inv, w = parsed
+            units.append({"w": w, "fwd": fwd, "inv": inv})
+    return units
+
+
+def _sc_units_track_b(archive):
+    units = [{"w": 1, "seg": toks} for _, toks in SC_UNITS_B]
+    for entry in archive:
+        parsed = _sc_parse_b_seg(entry["tokens"])
+        if parsed is not None:
+            seg, w = parsed
+            units.append({"w": w, "seg": seg})
+    return units
+
+
+def _sc_enum_weighted(n_units, weights, band):
+    """Yield unit-index tuples with total weight == band, in lexicographic
+    order (deterministic)."""
+    seq = []
+
+    def rec(total):
+        if total == band:
+            yield tuple(seq)
+            return
+        for i in range(n_units):
+            w = weights[i]
+            if total + w > band:
+                continue
+            seq.append(i)
+            yield from rec(total + w)
+            seq.pop()
+
+    yield from rec(0)
+
+
+class SCPoser:
+    """C1. Deterministic enumerator; keeps a per-(track, band) cursor (the
+    last emitted index sequence) so enumeration resumes monotonically as
+    the archive grows. Receives only aggregated pass/fail statistics."""
+
+    def __init__(self):
+        self.cursors = {}
+
+    def propose(self, track, band, count, archive, stats=None):
+        units = (_sc_units_track_a(archive) if track == "A"
+                 else _sc_units_track_b(archive))
+        weights = [u["w"] for u in units]
+        last = self.cursors.get((track, band))
+        out = []
+        newest = last
+        for seq in _sc_enum_weighted(len(units), weights, band):
+            if last is not None and seq <= last:
+                continue
+            newest = seq
+            if track == "A":
+                g = (_SC_OP["INPUT"], _SC_OP["HEAD"])
+                inv_tail = ()
+                for i in seq:
+                    g = g + units[i]["fwd"]
+                    inv_tail = units[i]["inv"] + inv_tail
+                ginv = (_SC_OP["INPUT"], _SC_OP["HEAD"]) + inv_tail
+                out.append({"track": "A", "band": band,
+                            "g": g, "ginv": ginv})
+            else:
+                g = (_SC_OP["INPUT"],)
+                for i in seq:
+                    g = g + units[i]["seg"]
+                out.append({"track": "B", "band": band,
+                            "g": g, "ginv": None})
+            if len(out) >= count:
+                break
+        if newest is not None:
+            self.cursors[(track, band)] = newest
+        return out
+
+
+# --- loop state and driver ----------------------------------------------------
+class SCLoopState:
+    def __init__(self, cfg):
+        self.cfg = cfg
+        self.gen = 0
+        self.band = cfg["band_start"]
+        self.b_frozen = cfg["b_frozen_base"]
+        self.ledger = SCLedger()
+        self.sealed_pairs = SCSealedStore()
+        self.witnesses = SCSealedStore()
+        self.archive = []
+        self.sc_macros = {}
+        self.open_tasks = []
+        self.seen_sigs = set()
+        self.poser = SCPoser()
+        self.live_evals = 0
+        self.frozen_evals = 0
+        self.gen_rows = []
+        self.band_stats = {}
+
+
+def sc_config(**overrides):
+    cfg = {
+        "generations": SC_GENERATIONS,
+        "band_start": SC_BAND_START,
+        "band_max": SC_BAND_MAX,
+        "pose_per_track": SC_POSE_PER_TRACK,
+        "pose_m4_per_track": SC_POSE_M4_PER_TRACK,
+        "m4_ref_band": SC_M4_REF_BAND,
+        "m_inputs": SC_M_INPUTS,
+        "m_public": SC_M_PUBLIC,
+        "b_witness": SC_B_WITNESS,
+        "b_frozen_base": SC_B_FROZEN_BASE,
+        "b_frozen_max": SC_B_FROZEN_MAX,
+        "b_live": SC_B_LIVE,
+        "max_attempts": SC_TASK_MAX_ATTEMPTS,
+    }
+    cfg.update(overrides)
+    if cfg["m_public"] >= cfg["m_inputs"]:
+        raise ValueError("sc config invalid: sealed split would be empty "
+                         "(m_public must be < m_inputs)")
+    if cfg["m_inputs"] > SC_VMAX_A:
+        raise ValueError("sc config invalid: m_inputs exceeds the Track A "
+                         "input domain")
+    if min(cfg["b_witness"], cfg["b_frozen_base"], cfg["b_live"],
+           cfg["generations"]) <= 0:
+        raise ValueError("sc config invalid: non-positive budget")
+    return cfg
+
+
+def _sc_retire(state, task, solved):
+    wit = state.witnesses.get(task["tid"])
+    state.ledger.append({
+        "event": "retired", "tid": task["tid"], "gen": state.gen,
+        "track": task["track"], "band": task["band"],
+        "solved": bool(solved), "witness": wit})
+
+
+def _sc_ratchet(state):
+    """Curriculum ratchet: the composition band grows ONLY when the current
+    band's per-generation solve rate lies inside the pre-registered
+    learnability window; above the window the I5 admission budget doubles
+    (bounded); below it the band holds. Returns (action, attempted,
+    solved)."""
+    cfg = state.cfg
+    attempted = 0
+    solved = 0
+    for rec in state.ledger.records:
+        if rec["gen"] != state.gen or rec.get("band") != state.band:
+            continue
+        if rec["event"] == "solved":
+            solved += 1
+        elif rec["event"] == "unsolved":
+            attempted += 1
+    attempted += solved
+    action = "hold"
+    if attempted > 0:
+        lo_ok = (SC_WINDOW_LO_DEN * solved >=
+                 SC_WINDOW_LO_NUM * attempted)
+        hi_ok = (SC_WINDOW_HI_DEN * solved <=
+                 SC_WINDOW_HI_NUM * attempted)
+        if lo_ok and hi_ok:
+            if state.band < cfg["band_max"]:
+                state.band += 1
+                action = "band_up"
+        elif not hi_ok:
+            nb = min(2 * state.b_frozen, cfg["b_frozen_max"])
+            if nb != state.b_frozen:
+                state.b_frozen = nb
+                action = "tighten_i5"
+            else:
+                action = "tighten_i5_capped"
+    return (action, attempted, solved)
+
+
+def sc_generation(state):
+    """Run one generation: pose, admit, solve, ratchet."""
+    cfg = state.cfg
+    band_during = state.band
+    b_frozen_during = state.b_frozen
+    # C1 pose: current-band candidates plus the fixed M4 reference stream.
+    stats = {str(k): dict(v) for k, v in sorted(state.band_stats.items())}
+    cands = []
+    for track in ("A", "B"):
+        cands.extend(state.poser.propose(
+            track, state.band, cfg["pose_per_track"], state.archive, stats))
+        if state.band != cfg["m4_ref_band"]:
+            cands.extend(state.poser.propose(
+                track, cfg["m4_ref_band"], cfg["pose_m4_per_track"],
+                state.archive, stats))
+    for cand in cands:
+        sc_admit(state, cand["track"], cand["band"], cand["g"],
+                 cand["ginv"], cfg)
+    # C3/C4 solve pass over open tasks in admission order.
+    solved_now = []
+    for task in list(state.open_tasks):
+        sol, evals = sc_solve(task["public"], state.sc_macros,
+                              cfg["b_live"])
+        state.live_evals += evals
+        arch_size_before = len(state.archive)
+        gate_ok = False
+        if sol is not None:
+            gate_ok = _sc_gate_score(sol, state.sc_macros, task["public"],
+                                     state.sealed_pairs.get(task["tid"]))
+        bs = state.band_stats.setdefault(task["band"],
+                                         {"attempted": 0, "solved": 0})
+        bs["attempted"] += 1
+        if gate_ok:
+            expanded = _sc_expand(sol, state.sc_macros)
+            aid = SC_MACRO_BASE + len(state.archive)
+            state.archive.append({"aid": aid, "tokens": list(expanded)})
+            state.sc_macros[aid] = expanded
+            bs["solved"] += 1
+            state.ledger.append({
+                "event": "solved", "tid": task["tid"], "gen": state.gen,
+                "track": task["track"], "band": task["band"],
+                "solve_cost": evals,
+                "solution_sha": hashlib.sha256(
+                    _sc_ser_tokens(expanded).encode()).hexdigest(),
+                "aid": aid, "distinct": bool(task["i8_novel"]),
+                "used_macro": bool(any(t >= SC_MACRO_BASE for t in sol))})
+            solved_now.append(task)
+            state.open_tasks.remove(task)
+            _sc_retire(state, task, True)
+        else:
+            if len(state.archive) != arch_size_before:
+                raise AssertionError("sc archive mutated on a rejected "
+                                     "candidate")
+            task["attempts"] += 1
+            state.ledger.append({
+                "event": "unsolved", "tid": task["tid"], "gen": state.gen,
+                "track": task["track"], "band": task["band"],
+                "solve_cost": evals,
+                "public_fit": bool(sol is not None)})
+            if task["attempts"] >= cfg["max_attempts"]:
+                state.open_tasks.remove(task)
+                _sc_retire(state, task, False)
+    ratchet, attempted, solved = _sc_ratchet(state)
+    row = {
+        "gen": state.gen, "band": band_during,
+        "b_frozen": b_frozen_during, "band_next": state.band,
+        "b_frozen_next": state.b_frozen,
+        "attempted": attempted, "solved_at_band": solved,
+        "archive_size": len(state.archive),
+        "cum_evals": state.live_evals + state.frozen_evals,
+        "ratchet": ratchet}
+    state.ledger.append(dict(row, event="gen_summary", tid="",
+                             track="", ))
+    state.gen_rows.append(row)
+    state.gen += 1
+
+
+def sc_run_loop(cfg):
+    sc_verify_pin()
+    state = SCLoopState(cfg)
+    for _ in range(cfg["generations"]):
+        sc_generation(state)
+    # Lifecycle terminates: whatever is still open at the end of the run is
+    # retired (witness revealed) so no task escapes the ledger record.
+    for task in list(state.open_tasks):
+        state.open_tasks.remove(task)
+        _sc_retire(state, task, False)
+    state.ledger.verify()
+    return state
+
+
+# --- metrics: recomputed from the FULL ledger (I11) ---------------------------
+def sc_metrics_from_ledger(ledger, generations):
+    ledger.verify()
+    rows = []
+    cum_distinct = 0
+    for g in range(generations):
+        recs = [r for r in ledger.records if r["gen"] == g]
+        solved = [r for r in recs if r["event"] == "solved"]
+        cum_distinct += sum(1 for r in solved if r.get("distinct"))
+        admitted = [r for r in recs if r["event"] == "admitted"]
+        rejected = [r for r in recs if r["event"] == "rejected"]
+        reasons = {}
+        for r in rejected:
+            reasons[r["reason"]] = reasons.get(r["reason"], 0) + 1
+        m4_costs = sorted(r["solve_cost"] for r in solved
+                          if r["band"] == SC_M4_REF_BAND)
+        m4 = (m4_costs[len(m4_costs) // 2] if m4_costs else None)
+        rows.append({
+            "gen": g,
+            "generated": sum(1 for r in recs if r["event"] == "generated"),
+            "admitted": len(admitted),
+            "rejected": reasons,
+            "solved": len(solved),
+            "unsolved": sum(1 for r in recs if r["event"] == "unsolved"),
+            "retired": sum(1 for r in recs if r["event"] == "retired"),
+            "m1_cum_distinct_solved": cum_distinct,
+            "m2_max_admitted_band": (max(r["band"] for r in admitted)
+                                     if admitted else None),
+            "m4_median_cost_ref_band": m4,
+        })
+    return rows
+
+
+# --- component registries: I13 isolation scan set + I10 source pin ----------
+def _sc_scan_components():
+    """The self-curriculum namespace (C1-C5). Test-enforced to reference no
+    sealed human-instrument machinery. The trusted evaluation side
+    (sc_transfer_eval, sc_control_library, sc_battery) is deliberately NOT
+    here: it drives the existing frozen-instrument harness with adopted
+    bodies, exactly like the Phase D-I archive offers."""
+    return (SCPoser, _sc_units_track_a, _sc_units_track_b,
+            _sc_parse_a_unit, _sc_parse_b_seg, _sc_enum_weighted,
+            sc_solve, _sc_gate_score, sc_witness_validate, sc_admit,
+            _sc_measured_band, _sc_sample_inputs, _sc_task_cid,
+            _sc_run_tokens, _sc_expand, _sc_mdl_cap_chars, _sc_mdl_ok,
+            SCSealedStore, SCLedger, SCLoopState, sc_generation,
+            _sc_ratchet, sc_run_loop, sc_metrics_from_ledger,
+            _sc_retire, _sc_canon, _sc_ser_tokens, _sc_pairs_canon,
+            _sc_out_canon)
+
+
+def _sc_pin_components():
+    return (SCSealedStore, SCLedger, _sc_run_tokens, _sc_expand,
+            _sc_canon, _sc_ser_tokens, _sc_pairs_canon, _sc_out_canon,
+            _sc_mdl_cap_chars, _sc_mdl_ok, _sc_task_cid,
+            _sc_sample_inputs, sc_solve, _sc_gate_score,
+            sc_witness_validate, sc_admit, _sc_measured_band,
+            _sc_ratchet, sc_generation, _sc_retire, sc_run_loop,
+            sc_metrics_from_ledger, _sc_guarded_open,
+            _sc_frozen_constants_canon)
+
+
+SC_PIN_SHA256 = "8471a86b13c61e07e46eb948c1fbc458d2486e24c480224e191549cd3824145f"
+
+
+def _sc_frozen_constants_canon() -> str:
+    """Canonical dump of every frozen constant. Bound into the pin so that
+    seed-shopping, window drift, probe edits, or budget changes flip
+    SC_PIN_SHA256 and abort the battery, not just fail a test."""
+    return _sc_canon({
+        "SPEC_VERSION": SC_SPEC_VERSION,
+        "MASTER_SEED": SC_MASTER_SEED,
+        "GENERATIONS": SC_GENERATIONS,
+        "CHECKPOINTS": SC_CHECKPOINTS,
+        "BAND_START": SC_BAND_START,
+        "BAND_MAX": SC_BAND_MAX,
+        "POSE_PER_TRACK": SC_POSE_PER_TRACK,
+        "POSE_M4_PER_TRACK": SC_POSE_M4_PER_TRACK,
+        "M4_REF_BAND": SC_M4_REF_BAND,
+        "M_INPUTS": SC_M_INPUTS,
+        "M_PUBLIC": SC_M_PUBLIC,
+        "B_WITNESS": SC_B_WITNESS,
+        "B_FROZEN_BASE": SC_B_FROZEN_BASE,
+        "B_FROZEN_MAX": SC_B_FROZEN_MAX,
+        "B_LIVE": SC_B_LIVE,
+        "MDL_ALPHA": (SC_MDL_ALPHA_NUM, SC_MDL_ALPHA_DEN),
+        "MDL_ABS_TOKENS": SC_MDL_ABS_TOKENS,
+        "TASK_MAX_ATTEMPTS": SC_TASK_MAX_ATTEMPTS,
+        "ARCHIVE_TOPK": SC_ARCHIVE_TOPK,
+        "TRANSFER_POOL_CAP": SC_TRANSFER_POOL_CAP,
+        "MIN_DISTINCT_OUTPUTS": SC_MIN_DISTINCT_OUTPUTS,
+        "WINDOW": (SC_WINDOW_LO_NUM, SC_WINDOW_LO_DEN,
+                   SC_WINDOW_HI_NUM, SC_WINDOW_HI_DEN),
+        "STEP_LIMIT": SC_STEP_LIMIT,
+        "MACRO_BASE": SC_MACRO_BASE,
+        "VMAX_A": SC_VMAX_A,
+        "LIST_LEN_B": SC_LIST_LEN_B,
+        "VALMAX_B": SC_VALMAX_B,
+        "PROBES_A": SC_PROBES_A,
+        "PROBES_B": SC_PROBES_B,
+        "STEPS_A": SC_STEPS_A,
+        "UNITS_B": SC_UNITS_B,
+        "SOLVER_VOCAB": SC_SOLVER_VOCAB,
+    })
+
+
+def sc_compute_pin() -> str:
+    import inspect
+    blob = "".join(inspect.getsource(o) for o in _sc_pin_components())
+    blob += "\n#SC-FROZEN-CONSTANTS\n" + _sc_frozen_constants_canon()
+    return hashlib.sha256(blob.encode()).hexdigest()
+
+
+def sc_verify_pin(expected: str = None) -> str:
+    got = sc_compute_pin()
+    want = SC_PIN_SHA256 if expected is None else expected
+    if got != want:
+        raise RuntimeError(
+            f"sc gate/harness source drifted from spec-freeze pin: {got}")
+    return got
+
+
+# --- trusted evaluation side: M3 transfer anchor ------------------------------
+def sc_transfer_eval(bodies):
+    """Offer a library of base-token bodies to the existing frozen-instrument
+    machinery (the pre-I cursor-walk offer schedule) and report the designer
+    solved count. Evaluation only; results never feed back into the loop."""
+    pool = [tuple(int(t) for t in b) for b in bodies]
+    rs = run_system(adaptive=True, exploration_pool=pool if pool else None)
+    d, g = _solved_split(rs)
+    return {"designer_solved": d, "generated_solved": g,
+            "digest": adoption_log_digest(rs),
+            "pool_size": len(pool)}
+
+
+def sc_control_library(budget):
+    """Matched-compute control arm: the existing exploration regime
+    (explore_run, its own frozen seed) at the same candidate-evaluation
+    budget. The whole archive is offered in the regime's own canonical
+    order (sorted cell keys, exactly as explore_serialize emits it), the
+    same way the curriculum arm offers its whole archive in adoption
+    order — neither arm gets a curated subset."""
+    if budget <= 0:
+        return []
+    doc = explore_run(seed=EXPLORE_SEED, budget=budget)
+    return [tuple(doc["archive"][k]["tokens"])
+            for k in sorted(doc["archive"])][:SC_TRANSFER_POOL_CAP]
+
+
+# --- CLI modes ----------------------------------------------------------------
+def sc_demo():
+    """CI-safe demonstration of the loop (reduced budgets, no transfer)."""
+    print("=" * 88)
+    print("SELF-CURRICULUM COMPOUNDING LOOP -- DEMO (reduced budgets)")
+    print("=" * 88)
+    cfg = sc_config(generations=3, pose_per_track=3, pose_m4_per_track=1,
+                    m_inputs=20, m_public=6, b_frozen_base=800,
+                    b_frozen_max=6400, b_live=8000)
+    state = sc_run_loop(cfg)
+    rows = sc_metrics_from_ledger(state.ledger, cfg["generations"])
+    for row, grow in zip(rows, state.gen_rows):
+        print(f"[g{row['gen']}] band={grow['band']} "
+              f"b_frozen={grow['b_frozen']} generated={row['generated']} "
+              f"admitted={row['admitted']} solved={row['solved']} "
+              f"M1={row['m1_cum_distinct_solved']} "
+              f"ratchet={grow['ratchet']}")
+    digest = hashlib.sha256(
+        (state.ledger.head() + _sc_canon(rows)).encode()).hexdigest()[:16]
+    print("reading: tasks were generated, witness-proved, admitted and "
+          "solved with zero human-authored tasks; sealed pairs and "
+          "witnesses stayed gate-private until retirement.")
+    print(json.dumps({"demo_digest": digest,
+                      "archive_size": len(state.archive),
+                      "ledger_records": len(state.ledger.records)}))
+
+
+def sc_battery():
+    """Full evidence battery: frozen constants only, ledger + metrics
+    artifacts to reports/evidence/, digest over (chain head + metrics)."""
+    print("=" * 88)
+    print("SELF-CURRICULUM COMPOUNDING LOOP -- EVIDENCE BATTERY "
+          f"({SC_SPEC_VERSION})")
+    print("=" * 88)
+    pin = sc_verify_pin()
+    cfg = sc_config()
+    # LITERAL spec values (not the constants themselves — comparing the
+    # constants to the constants would be vacuous). Any drift aborts.
+    frozen_expect = {
+        "generations": 10, "band_start": 2, "band_max": 12,
+        "pose_per_track": 4, "pose_m4_per_track": 2, "m4_ref_band": 2,
+        "m_inputs": 28, "m_public": 8, "b_witness": 4096,
+        "b_frozen_base": 1500, "b_frozen_max": 24000, "b_live": 25000,
+        "max_attempts": 2,
+    }
+    if cfg != frozen_expect:
+        raise RuntimeError("sc battery config drifted from frozen spec")
+    state = sc_run_loop(cfg)
+    rows = sc_metrics_from_ledger(state.ledger, cfg["generations"])
+    print("[SC1] loop complete")
+    for row, grow in zip(rows, state.gen_rows):
+        print(f"  g{row['gen']}: band={grow['band']} "
+              f"b_frozen={grow['b_frozen']} gen={row['generated']} "
+              f"adm={row['admitted']} solved={row['solved']} "
+              f"M1={row['m1_cum_distinct_solved']} "
+              f"M2={row['m2_max_admitted_band']} "
+              f"M4={row['m4_median_cost_ref_band']} "
+              f"ratchet={grow['ratchet']}")
+    # M3 transfer checkpoints: curriculum arm vs matched-compute control arm.
+    print("[SC2] transfer anchor checkpoints (frozen human instrument)")
+    transfer = {}
+    for cp in SC_CHECKPOINTS:
+        if cp == 0:
+            arch_n, budget = 0, 0
+        else:
+            grow = state.gen_rows[cp - 1]
+            arch_n, budget = grow["archive_size"], grow["cum_evals"]
+        cur_bodies = [tuple(e["tokens"])
+                      for e in state.archive[:arch_n]][:SC_TRANSFER_POOL_CAP]
+        ctl_bodies = sc_control_library(budget)
+        if not cur_bodies and not ctl_bodies:
+            shared = sc_transfer_eval([])
+            cur, ctl = shared, shared
+        else:
+            cur = sc_transfer_eval(cur_bodies)
+            ctl = sc_transfer_eval(ctl_bodies)
+        transfer[str(cp)] = {"curriculum": cur, "control": ctl,
+                             "matched_budget": budget}
+        print(f"  g{cp}: curriculum={cur['designer_solved']} "
+              f"(pool {cur['pool_size']}) "
+              f"control={ctl['designer_solved']} "
+              f"(pool {ctl['pool_size']}) matched_evals={budget}")
+    solved_recs = [r for r in state.ledger.records
+                   if r["event"] == "solved"]
+    metrics = {
+        "spec_version": SC_SPEC_VERSION,
+        "pin_sha256": pin,
+        "budgets": frozen_expect,
+        "human_authored_tasks": 0,
+        "m1_m2_m4_rows": rows,
+        "m1_decomposition": {
+            "solved_total": len(solved_recs),
+            "solved_using_archive_macro": sum(
+                1 for r in solved_recs if r.get("used_macro")),
+            "solved_base_search_only": sum(
+                1 for r in solved_recs if not r.get("used_macro")),
+        },
+        "m3_transfer": transfer,
+        "gen_rows": state.gen_rows,
+        "end_retired": sum(
+            1 for r in state.ledger.records
+            if r["event"] == "retired" and r["gen"] >= SC_GENERATIONS),
+        "archive_size": len(state.archive),
+        "ledger_records": len(state.ledger.records),
+        "ledger_head": state.ledger.head(),
+    }
+    digest = hashlib.sha256(
+        (state.ledger.head() + _sc_canon(metrics)).encode()
+    ).hexdigest()[:16]
+    out_dir = os.path.join("reports", "evidence")
+    os.makedirs(out_dir, exist_ok=True)
+    with _sc_guarded_open(os.path.join(out_dir, "sc_ledger.jsonl"),
+                          "w") as fh:
+        fh.write(state.ledger.to_jsonl())
+    with _sc_guarded_open(os.path.join(out_dir, "sc_battery_results.json"),
+                          "w") as fh:
+        fh.write(_sc_canon({"metrics": metrics, "digest": digest}) + "\n")
+    final = rows[-1]
+    print("reading: the compounding curve above is the measured claim; "
+          "the transfer arm comparison against the frozen instrument is "
+          "the pre-registered external judge. Zero human-authored tasks "
+          "were added; every admitted task carries a machine-checked "
+          "feasibility witness.")
+    print(json.dumps({"sc_digest": digest,
+                      "ledger_head": state.ledger.head(),
+                      "m1_final": final["m1_cum_distinct_solved"],
+                      "archive_size": len(state.archive)}))
+    return metrics
+
+
+# ---------------------------------------------------------------------------
+# Phase SC tests. Every anti-gaming invariant I1-I14 ships with a red-team
+# test that CONSTRUCTS the attack and asserts rejection, plus positive-path
+# coverage. All names carry the sc_ prefix for the --only filter.
+# ---------------------------------------------------------------------------
+def _sc_test_cfg(**kw):
+    base = dict(generations=2, pose_per_track=2, pose_m4_per_track=1,
+                m_inputs=16, m_public=5, b_frozen_base=400,
+                b_frozen_max=3200, b_live=4000)
+    base.update(kw)
+    return sc_config(**base)
+
+
+def _sc_chain(names):
+    steps = {n: (f, i) for n, f, i in SC_STEPS_A}
+    g = (_SC_OP["INPUT"], _SC_OP["HEAD"])
+    inv_tail = ()
+    for n in names:
+        f, i = steps[n]
+        g = g + f
+        inv_tail = i + inv_tail
+    return g, (_SC_OP["INPUT"], _SC_OP["HEAD"]) + inv_tail
+
+
+def test_sc_identity_task_rejected() -> None:
+    # I1 red team: an identity generator (Track A) and a multiset-preserving
+    # generator (Track B) are both constructed and must be rejected.
+    cfg = _sc_test_cfg()
+    st = SCLoopState(cfg)
+    ident = (_SC_OP["INPUT"], _SC_OP["HEAD"])
+    ok, reason, _ = sc_admit(st, "A", 1, ident, ident, cfg)
+    _assert(not ok and reason == "i1_identity",
+            f"identity generator admitted (reason={reason})")
+    st2 = SCLoopState(cfg)
+    rev = (_SC_OP["INPUT"], _SC_OP["REVL"])
+    ok, reason, _ = sc_admit(st2, "B", 1, rev, None, cfg)
+    _assert(not ok and reason == "i1_identity",
+            f"multiset-preserving generator admitted (reason={reason})")
+
+
+def test_sc_constant_task_rejected() -> None:
+    # I2 red team: a constant-output generator must fail the diversity floor.
+    cfg = _sc_test_cfg()
+    st = SCLoopState(cfg)
+    const = (_SC_OP["INPUT"], _SC_OP["LEN"])
+    ok, reason, _ = sc_admit(st, "B", 1, const, None, cfg)
+    _assert(not ok and reason == "i2_diversity",
+            f"constant generator admitted (reason={reason})")
+
+
+def test_sc_noninjective_rejected() -> None:
+    # I3 red team: a non-injective Track A generator (integer halving) with
+    # a plausible-looking witness must be rejected by the injectivity check.
+    cfg = _sc_test_cfg()
+    st = SCLoopState(cfg)
+    g = (_SC_OP["INPUT"], _SC_OP["HEAD"], _SC_OP["PUSH2"], _SC_OP["DIVI"])
+    ginv = (_SC_OP["INPUT"], _SC_OP["HEAD"], _SC_OP["PUSH2"], _SC_OP["MUL"])
+    ok, reason, _ = sc_admit(st, "A", 1, g, ginv, cfg)
+    _assert(not ok and reason == "i3_injective",
+            f"non-injective generator admitted (reason={reason})")
+
+
+def test_sc_duplicate_task_rejected() -> None:
+    # I4 red team: the same behaviour under a different surface form must be
+    # rejected by the behavioural signature dedup.
+    cfg = _sc_test_cfg(b_frozen_base=50)
+    st = SCLoopState(cfg)
+    g1, ginv1 = _sc_chain(["A1", "A2"])            # +1 then +2  == +3
+    ok, reason, _ = sc_admit(st, "A", 2, g1, ginv1, cfg)
+    _assert(ok, f"seed task rejected ({reason})")
+    g2, ginv2 = _sc_chain(["A3"])                  # +3 directly
+    ok, reason, _ = sc_admit(st, "A", 1, g2, ginv2, cfg)
+    _assert(not ok and reason == "i4_duplicate",
+            f"behavioural duplicate admitted (reason={reason})")
+
+
+def test_sc_frozen_solvable_rejected() -> None:
+    # I5 red team: with an ample frozen budget, a task the frozen baseline
+    # can solve must be rejected as below the ladder.
+    cfg = _sc_test_cfg(b_frozen_base=30000)
+    st = SCLoopState(cfg)
+    g, ginv = _sc_chain(["A1", "A1"])              # +2: trivially invertible
+    ok, reason, _ = sc_admit(st, "A", 2, g, ginv, cfg)
+    _assert(not ok and reason == "i5_frozen",
+            f"frozen-solvable task admitted (reason={reason})")
+
+
+def test_sc_witnessless_rejected() -> None:
+    # I6 red team: no witness, an invalid witness, and an over-budget
+    # witness are three distinct attacks; each must be rejected.
+    cfg = _sc_test_cfg()
+    st = SCLoopState(cfg)
+    g, ginv = _sc_chain(["M2"])
+    ok, reason, _ = sc_admit(st, "A", 1, g, None, cfg)
+    _assert(not ok and reason == "i6_witness", f"witnessless admitted")
+    st2 = SCLoopState(cfg)
+    bad_inv = (_SC_OP["INPUT"], _SC_OP["HEAD"], _SC_OP["PUSH3"],
+               _SC_OP["DIVI"])
+    ok, reason, _ = sc_admit(st2, "A", 1, g, bad_inv, cfg)
+    _assert(not ok and reason == "i6_roundtrip",
+            f"invalid witness admitted (reason={reason})")
+    tight = _sc_test_cfg(b_witness=4)
+    st3 = SCLoopState(tight)
+    ok, reason, _ = sc_admit(st3, "A", 1, g, ginv, tight)
+    _assert(not ok and reason == "i6_witness_budget",
+            f"over-budget witness admitted (reason={reason})")
+
+
+def test_sc_lookup_table_rejected() -> None:
+    # I7 red team: a sealed-correct but lookup-table-scale program (the true
+    # solution padded with a no-op +1-1 idiom) must be rejected by the MDL
+    # cap on both channels: the alpha-relative cap and the absolute cap.
+    cfg = _sc_test_cfg(b_frozen_base=50)
+    st = SCLoopState(cfg)
+    g, ginv = _sc_chain(["A1", "A1"])
+    ok, reason, task = sc_admit(st, "A", 2, g, ginv, cfg)
+    _assert(ok, f"seed task rejected ({reason})")
+    sealed = st.sealed_pairs.get(task["tid"])
+    minimal = (_SC_OP["INPUT"], _SC_OP["HEAD"], _SC_OP["PUSH2"],
+               _SC_OP["SUB"])
+    _assert(_sc_gate_score(minimal, {}, task["public"], sealed),
+            "minimal true solution rejected")
+    pad = (_SC_OP["PUSH1"], _SC_OP["ADD"], _SC_OP["PUSH1"], _SC_OP["SUB"])
+    mid = minimal + pad * 4          # 20 tokens: over alpha cap, under abs
+    _assert(len(mid) <= SC_MDL_ABS_TOKENS, "test construction drifted")
+    _assert(len(_sc_ser_tokens(mid)) > _sc_mdl_cap_chars(task["public"]),
+            "test construction drifted: mid pad not over alpha cap")
+    _assert(not _sc_gate_score(mid, {}, task["public"], sealed),
+            "alpha-relative MDL cap not enforced")
+    big = minimal + pad * 8          # 36 tokens: over the absolute cap
+    _assert(not _sc_gate_score(big, {}, task["public"], sealed),
+            "absolute MDL cap not enforced")
+
+
+def test_sc_archive_lookup_rejected() -> None:
+    # I8 red team: a state whose archive already contains the exact answer
+    # must reject the task as non-novel.
+    cfg = _sc_test_cfg(b_frozen_base=50)
+    st = SCLoopState(cfg)
+    st.archive.append({"aid": SC_MACRO_BASE, "tokens": [
+        _SC_OP["INPUT"], _SC_OP["HEAD"], _SC_OP["PUSH2"], _SC_OP["SUB"]]})
+    g, ginv = _sc_chain(["A1", "A1"])
+    ok, reason, _ = sc_admit(st, "A", 2, g, ginv, cfg)
+    _assert(not ok and reason == "i8_archive",
+            f"archive-covered task admitted (reason={reason})")
+
+
+def test_sc_poser_inputs_ignored() -> None:
+    # I9 red team: poser-supplied input suggestions must change nothing --
+    # public and sealed example sets are byte-identical across attempts.
+    cfg = _sc_test_cfg(b_frozen_base=50)
+    g, ginv = _sc_chain(["A2", "M2"])
+    views = []
+    for sugg in (None, [(1,), (2,), (3,)], [(59,)] * 20):
+        st = SCLoopState(cfg)
+        ok, reason, task = sc_admit(st, "A", 2, g, ginv, cfg,
+                                    input_suggestions=sugg)
+        _assert(ok, f"valid task rejected ({reason})")
+        views.append((_sc_pairs_canon(task["public"]),
+                      _sc_pairs_canon(st.sealed_pairs.get(task["tid"]))))
+    _assert(views[0] == views[1] == views[2],
+            "poser input suggestions influenced the example sets")
+
+
+def test_sc_band_fabrication_ignored() -> None:
+    # M2-integrity red team: a poser stamping an inflated band label on a
+    # shallow generator must not move the ladder — the harness measures the
+    # band from the generator itself and records the claim as audit only.
+    cfg = _sc_test_cfg(b_frozen_base=50)
+    st = SCLoopState(cfg)
+    g, ginv = _sc_chain(["A1", "M2"])          # a genuine 2-step chain
+    ok, reason, task = sc_admit(st, "A", 12, g, ginv, cfg)
+    _assert(ok, f"valid task rejected ({reason})")
+    _assert(task["band"] == 2,
+            f"fabricated band label moved the ladder: {task['band']}")
+    adm = [r for r in st.ledger.records if r["event"] == "admitted"][-1]
+    _assert(adm["band"] == 2 and adm["band_claimed"] == 12,
+            "ledger does not separate measured band from the claim")
+    st2 = SCLoopState(cfg)
+    gb = (_SC_OP["INPUT"], _SC_OP["SCAN_ADD"])
+    ok, reason, task = sc_admit(st2, "B", 9, gb, None, cfg)
+    _assert(ok and task["band"] == 1,
+            "Track B measured band wrong under a fabricated claim")
+    _assert(_sc_measured_band("A", (_SC_OP["INPUT"], _SC_OP["HEAD"])) == 0,
+            "identity generator measured band should be 0")
+
+
+def test_sc_gate_tamper_detected() -> None:
+    # I10 red team: a wrong pin must abort; every critical component must be
+    # inside the pinned source region; every frozen constant must be bound
+    # into the pin input; sealed stores are write-once.
+    import inspect
+    sc_verify_pin()
+    try:
+        sc_verify_pin("0" * 64)
+        _assert(False, "tampered pin accepted")
+    except RuntimeError:
+        pass
+    pinned = _sc_pin_components()
+    for fn in (sc_admit, _sc_gate_score, sc_solve, _sc_sample_inputs,
+               sc_witness_validate, _sc_measured_band, _sc_ratchet,
+               _sc_mdl_ok, SCLedger, SCSealedStore, _sc_guarded_open,
+               _sc_frozen_constants_canon):
+        _assert(fn in pinned, f"critical component unpinned: {fn}")
+    blob = "".join(inspect.getsource(o) for o in pinned)
+    blob += "\n#SC-FROZEN-CONSTANTS\n" + _sc_frozen_constants_canon()
+    _assert(hashlib.sha256(blob.encode()).hexdigest() == SC_PIN_SHA256,
+            "pin does not match the live source + constants")
+    const = _sc_frozen_constants_canon()
+    for needle in ('"MASTER_SEED":730117', '"B_LIVE":25000',
+                   '"WINDOW":[1,5,4,5]', '"PROBES_A":', '"SOLVER_VOCAB":'):
+        _assert(needle in const, f"frozen constant unbound from pin: "
+                f"{needle}")
+    store = SCSealedStore()
+    store.put("k", [1])
+    try:
+        store.put("k", [2])
+        _assert(False, "sealed store rewrite accepted")
+    except PermissionError:
+        pass
+
+
+def test_sc_ledger_append_only() -> None:
+    # I11 red team: mutate a mid-chain record, then drop a record; the
+    # loader must detect both.
+    led = SCLedger()
+    for i in range(4):
+        led.append({"event": "generated", "tid": f"T{i}", "gen": 0,
+                    "track": "A", "band": 1})
+    led.verify()
+    saved = led.records[1]["event"]
+    led.records[1]["event"] = "solved"
+    try:
+        led.verify()
+        _assert(False, "ledger mutation not detected")
+    except AssertionError as e:
+        _assert("tampered" in str(e), f"wrong tamper diagnosis: {e}")
+    led.records[1]["event"] = saved
+    led.verify()
+    led.records.pop(0)
+    try:
+        led.verify()
+        _assert(False, "ledger record drop not detected")
+    except AssertionError:
+        pass
+
+
+def test_sc_determinism_two_runs() -> None:
+    # I12: two full runs of the loop from the same frozen seeds must agree
+    # byte-for-byte on the ledger head, the metrics, and the digest; and
+    # the digest must actually bind the run content (a different
+    # configuration must NOT reproduce it).
+    digests = []
+    for _ in range(2):
+        cfg = _sc_test_cfg()
+        st = sc_run_loop(cfg)
+        rows = sc_metrics_from_ledger(st.ledger, cfg["generations"])
+        digests.append(hashlib.sha256(
+            (st.ledger.head() + _sc_canon(rows)).encode()).hexdigest())
+    _assert(digests[0] == digests[1],
+            "self-curriculum loop not two-run byte-identical")
+    other = _sc_test_cfg(b_live=2000)
+    st = sc_run_loop(other)
+    rows = sc_metrics_from_ledger(st.ledger, other["generations"])
+    d3 = hashlib.sha256(
+        (st.ledger.head() + _sc_canon(rows)).encode()).hexdigest()
+    _assert(d3 != digests[0],
+            "digest is insensitive to the run content")
+
+
+def test_sc_no_instrument_access() -> None:
+    # I13 red team: the forbidden read raises; the write escape raises; and
+    # the whole SC namespace references none of the sealed instrument
+    # machinery.
+    import inspect
+    for path in ("docs/frozen_holdout_phase0.json",
+                 "docs/frozen_holdout_extJ.json"):
+        try:
+            _sc_guarded_open(path)
+            _assert(False, f"instrument read allowed: {path}")
+        except PermissionError:
+            pass
+    try:
+        _sc_guarded_open("docs/sc_leak.json", "w")
+        _assert(False, "workspace write outside reports/evidence allowed")
+    except PermissionError:
+        pass
+    src = "".join(inspect.getsource(o) for o in _sc_scan_components())
+    forbidden = ("ORACLES", "TRAIN_INPUTS", "_ORACLE_REGISTRY",
+                 "seal_task", "build_sealed_tasks", "holdout_gate",
+                 "cf_gate", "_make_gate", "GATE_SEED", "CF_GATE_SEED",
+                 "task_target_vector", "SealedTask", "mint_task",
+                 "RunState", "adopted_tokens", "meta_gate",
+                 "lookup_solution", "extj_instrument", "frozen_holdout")
+    for name in forbidden:
+        _assert(name not in src,
+                f"self-curriculum code references sealed symbol {name}")
+
+
+def test_sc_budgets_frozen() -> None:
+    # I14: every budget and protocol constant is a frozen LITERAL, the
+    # default config equals the frozen spec, and invalid configurations
+    # (empty sealed split, out-of-domain sampling) are refused outright.
+    _assert((SC_B_WITNESS, SC_B_FROZEN_BASE, SC_B_FROZEN_MAX, SC_B_LIVE)
+            == (4096, 1500, 24000, 25000), "budget constants drifted")
+    _assert((SC_MDL_ALPHA_NUM, SC_MDL_ALPHA_DEN, SC_MDL_ABS_TOKENS)
+            == (1, 2, 24), "MDL constants drifted")
+    _assert((SC_WINDOW_LO_NUM, SC_WINDOW_LO_DEN, SC_WINDOW_HI_NUM,
+             SC_WINDOW_HI_DEN) == (1, 5, 4, 5),
+            "learnability window drifted")
+    _assert(SC_CHECKPOINTS == (0, 5, 10) and SC_GENERATIONS == 10,
+            "checkpoint schedule drifted")
+    _assert(SC_MASTER_SEED == 730117, "master seed drifted")
+    _assert((SC_ARCHIVE_TOPK, SC_TRANSFER_POOL_CAP) == (256, 256),
+            "archive/transfer caps drifted")
+    _assert((SC_M_INPUTS, SC_M_PUBLIC, SC_VMAX_A, SC_LIST_LEN_B,
+             SC_VALMAX_B) == (28, 8, 60, 6, 8),
+            "sampling constants drifted")
+    _assert(len(SC_PROBES_A) == 16 and len(SC_PROBES_B) == 12,
+            "probe batteries drifted")
+    cfg = sc_config()
+    _assert(cfg["b_live"] == SC_B_LIVE
+            and cfg["b_frozen_base"] == SC_B_FROZEN_BASE
+            and cfg["b_witness"] == SC_B_WITNESS
+            and cfg["generations"] == SC_GENERATIONS,
+            "default config does not equal the frozen spec")
+    for bad in (dict(m_public=16, m_inputs=16),
+                dict(m_inputs=61),
+                dict(b_live=0)):
+        try:
+            sc_config(**bad)
+            _assert(False, f"invalid config accepted: {bad}")
+        except ValueError:
+            pass
+
+
+def test_sc_witness_roundtrip_admits_valid_task() -> None:
+    # Positive path: a witness-backed novel task is admitted; sealed pairs
+    # and the witness stay gate-private (hashes only in the ledger until
+    # retirement); the public set is canonicalized.
+    cfg = _sc_test_cfg(b_frozen_base=50)
+    st = SCLoopState(cfg)
+    g, ginv = _sc_chain(["A1", "M2"])
+    ok, reason, task = sc_admit(st, "A", 2, g, ginv, cfg)
+    _assert(ok, f"valid Track A task rejected ({reason})")
+    _assert(task["tid"] in st.sealed_pairs and task["tid"] in st.witnesses,
+            "gate-private stores not populated")
+    keys = [_sc_canon(list(x)) for x, _ in task["public"]]
+    _assert(keys == sorted(keys), "public examples not canonicalized")
+    _assert(len(task["public"]) == cfg["m_public"], "public split wrong")
+    for rec in st.ledger.records:
+        _assert("witness" not in rec or rec["event"] == "retired",
+                "witness leaked into the ledger before retirement")
+    st2 = SCLoopState(cfg)
+    gb = (_SC_OP["INPUT"], _SC_OP["SCAN_ADD"])
+    ok, reason, _ = sc_admit(st2, "B", 1, gb, None, cfg)
+    _assert(ok, f"valid Track B task rejected ({reason})")
+
+
+def test_sc_solver_solves_and_gate_adopts() -> None:
+    # Positive path: one generation of the mini loop admits and solves
+    # tasks; solutions enter the archive; retirement reveals the witness.
+    cfg = _sc_test_cfg(generations=1)
+    st = sc_run_loop(cfg)
+    solved = [r for r in st.ledger.records if r["event"] == "solved"]
+    _assert(len(solved) >= 1, "mini loop solved nothing")
+    _assert(len(st.archive) == len(solved), "archive size != solves")
+    retired = [r for r in st.ledger.records if r["event"] == "retired"
+               and r["solved"]]
+    _assert(retired and all("witness" in r and r["witness"]["g"]
+                            for r in retired),
+            "retirement did not reveal the witness")
+
+
+def test_sc_solver_and_poser_blind_to_sealed() -> None:
+    # Channel discipline: the solver and poser sources reference neither
+    # the sealed stores, nor the sampler, nor the ledger.
+    import inspect
+    src = (inspect.getsource(sc_solve) + inspect.getsource(SCPoser)
+           + inspect.getsource(_sc_units_track_a)
+           + inspect.getsource(_sc_units_track_b)
+           + inspect.getsource(_sc_enum_weighted))
+    for banned in ("sealed_pairs", "witnesses", "SCSealedStore",
+                   "_sc_sample_inputs", "ledger", "SC_MASTER_SEED"):
+        _assert(banned not in src,
+                f"solver/poser path references {banned}")
+
+
+def test_sc_metrics_full_denominator() -> None:
+    # I11 companion: metrics recompute from the FULL ledger; every generated
+    # candidate lands in admitted or rejected, unsolved attempts are never
+    # dropped, and the lifecycle terminates (nothing stays open).
+    cfg = _sc_test_cfg()
+    st = sc_run_loop(cfg)
+    rows = sc_metrics_from_ledger(st.ledger, cfg["generations"])
+    for row in rows:
+        _assert(row["generated"] ==
+                row["admitted"] + sum(row["rejected"].values()),
+                "a generated candidate escaped the denominators")
+    n_unsolved = sum(1 for r in st.ledger.records
+                     if r["event"] == "unsolved")
+    _assert(sum(r["unsolved"] for r in rows) == n_unsolved,
+            "unsolved attempts dropped from metrics")
+    _assert(not st.open_tasks, "lifecycle did not terminate: open tasks "
+            "remain after the final generation")
+    n_admitted = sum(1 for r in st.ledger.records
+                     if r["event"] == "admitted")
+    n_retired = sum(1 for r in st.ledger.records
+                    if r["event"] == "retired")
+    _assert(n_retired == n_admitted,
+            "an admitted task escaped retirement")
+    counted = {"generated", "admitted", "rejected", "solved", "unsolved",
+               "retired", "gen_summary"}
+    _assert(all(r["event"] in counted for r in st.ledger.records),
+            "unknown ledger event outside the accounting")
+
+
+def test_sc_ratchet_window_rules() -> None:
+    # The pre-registered window rules, exercised on synthetic ledgers:
+    # in-window -> band up; above -> I5 budget doubles; below -> hold.
+    def synth(n_solved, n_unsolved):
+        cfg = _sc_test_cfg()
+        st = SCLoopState(cfg)
+        for i in range(n_solved):
+            st.ledger.append({"event": "solved", "tid": f"s{i}", "gen": 0,
+                              "track": "A", "band": st.band,
+                              "solve_cost": 1, "solution_sha": "x",
+                              "aid": 0, "distinct": True})
+        for i in range(n_unsolved):
+            st.ledger.append({"event": "unsolved", "tid": f"u{i}",
+                              "gen": 0, "track": "A", "band": st.band,
+                              "solve_cost": 1, "public_fit": False})
+        return st
+    st = synth(1, 1)
+    action, att, sol = _sc_ratchet(st)
+    _assert(action == "band_up" and st.band == st.cfg["band_start"] + 1,
+            f"in-window rate did not raise the band ({action})")
+    st = synth(5, 0)
+    b0 = st.b_frozen
+    action, _, _ = _sc_ratchet(st)
+    _assert(action == "tighten_i5" and st.b_frozen == 2 * b0,
+            f"too-easy rate did not tighten admission ({action})")
+    st = synth(0, 4)
+    action, _, _ = _sc_ratchet(st)
+    _assert(action == "hold" and st.band == st.cfg["band_start"],
+            f"too-hard rate did not hold the band ({action})")
+
+
+def test_sc_archive_entries_carry_no_metadata() -> None:
+    # The archive is the single poser<->solver channel; entries carry only
+    # an id and base tokens -- no free-form fields, no hint side-channel.
+    cfg = _sc_test_cfg()
+    st = sc_run_loop(cfg)
+    _assert(st.archive, "mini loop adopted nothing to inspect")
+    for entry in st.archive:
+        _assert(set(entry.keys()) == {"aid", "tokens"},
+                f"archive entry carries metadata: {sorted(entry)}")
+        _assert(all(isinstance(t, int) and 0 <= t < N_BASE_OPS
+                    for t in entry["tokens"]),
+                "archive entry tokens are not pure base ops")
+
+
+def test_sc_macro_compounding_reduces_cost() -> None:
+    # The core compounding mechanism, measured: a depth-doubled task that is
+    # unsolvable at the live budget without the archive becomes cheap once
+    # the half-depth solution is adopted as a macro.
+    cfg = _sc_test_cfg(b_frozen_base=50, m_inputs=20, m_public=6)
+    st = SCLoopState(cfg)
+    g3, ginv3 = _sc_chain(["A1", "A2"])
+    ok, reason, t3 = sc_admit(st, "A", 2, g3, ginv3, cfg)
+    _assert(ok, f"seed task rejected ({reason})")
+    sol3, ev3 = sc_solve(t3["public"], {}, 25000)
+    _assert(sol3 is not None, "half-depth task unsolved")
+    macros = {SC_MACRO_BASE: _sc_expand(sol3, {})}
+    g6, ginv6 = _sc_chain(["A1", "A2", "A1", "A2"])
+    ok, reason, t6 = sc_admit(st, "A", 4, g6, ginv6, cfg)
+    _assert(ok, f"deep task rejected ({reason})")
+    bare, ev_bare = sc_solve(t6["public"], {}, 25000)
+    with_macro, ev_macro = sc_solve(t6["public"], macros, 25000)
+    _assert(bare is None, "deep task unexpectedly solvable without the "
+            "archive (calibration drifted)")
+    _assert(with_macro is not None, "archive macro did not unlock the "
+            "deep task")
+    _assert(ev_macro < ev_bare, "macro did not reduce solve cost")
+    _assert(_sc_gate_score(with_macro, macros, t6["public"],
+                           st.sealed_pairs.get(t6["tid"])),
+            "compounded solution failed the sealed gate")
+
+
+TESTS.extend([
+    test_sc_identity_task_rejected,
+    test_sc_constant_task_rejected,
+    test_sc_noninjective_rejected,
+    test_sc_duplicate_task_rejected,
+    test_sc_frozen_solvable_rejected,
+    test_sc_witnessless_rejected,
+    test_sc_lookup_table_rejected,
+    test_sc_archive_lookup_rejected,
+    test_sc_poser_inputs_ignored,
+    test_sc_band_fabrication_ignored,
+    test_sc_gate_tamper_detected,
+    test_sc_ledger_append_only,
+    test_sc_determinism_two_runs,
+    test_sc_no_instrument_access,
+    test_sc_budgets_frozen,
+    test_sc_witness_roundtrip_admits_valid_task,
+    test_sc_solver_solves_and_gate_adopts,
+    test_sc_solver_and_poser_blind_to_sealed,
+    test_sc_metrics_full_denominator,
+    test_sc_ratchet_window_rules,
+    test_sc_archive_entries_carry_no_metadata,
+    test_sc_macro_compounding_reduces_cost,
+])
+
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="real-search RSI core")
     ap.add_argument("--mode",
@@ -38384,7 +40044,8 @@ def main() -> None:
                              "explore", "explore-report",
                              "transfer-anchor", "anchor-report",
                              "crossing-anchor",
-                             "attribution-probe",),
+                             "attribution-probe",
+                             "self-curriculum", "sc-battery",),
                     default="demo")
     ap.add_argument("--save", default="")
     ap.add_argument("--adaptive-json", default="adaptive.json")
@@ -38567,6 +40228,10 @@ def main() -> None:
         demo_hdc_rsi()
     elif args.mode == "general-domain-test":
         raise SystemExit(run_general_domain_self_improvement_test(args.save))
+    elif args.mode == "self-curriculum":
+        sc_demo()
+    elif args.mode == "sc-battery":
+        sc_battery()
     else:
         demo()
 

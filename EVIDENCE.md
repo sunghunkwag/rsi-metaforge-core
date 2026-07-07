@@ -18,7 +18,8 @@ The current runtime extends the previous public evidence line with:
 - dynamic residue-driven feature expansion through `expansion-battery`
 - depth-1 grammar feature expansion through `grammar-battery`
 - depth-2 grammar feature expansion through `grammar2-battery`
-- a full built-in regression suite expected to report `156 passed, 0 failed`
+- a closed self-curriculum compounding loop through `sc-battery` (two-run digest equality asserted in CI)
+- a full built-in regression suite expected to report `178 passed, 0 failed`
 - the Phases 0–I generalization research program: frozen holdout instrument, sealed exploration archive, external anchoring artifacts, stratified offer schedule, and per-phase reports, all committed under `docs/` with SHA-256 pins asserted by tests
 
 The current runtime should be treated as publicly validated only after the **Full Evidence** GitHub Actions workflow succeeds for the commit that contains it.
@@ -47,6 +48,7 @@ The Full Evidence workflow runs these stages:
 - Expansion battery
 - Grammar battery
 - Grammar2 battery
+- Self-curriculum battery, run twice with byte-identical `sc_digest` and artifact equality asserted in the workflow
 - Full built-in test suite after generated evidence artifacts
 - Evidence artifact upload
 
@@ -122,11 +124,11 @@ The grammar primitives are designer-declared. These batteries measure bounded ex
 The current Full Evidence workflow requires the built-in full suite to end with:
 
 ```text
-RESULT: 156 passed, 0 failed
+RESULT: 178 passed, 0 failed
 ALL TESTS PASSED
 ```
 
-The count is pinned exactly on purpose: a suite that silently gains or loses tests should turn the badge red until the pin is updated in the same change that alters the suite. The count history is 99 (pre-rename runtime), 116 (renamed runtime, pre-program), 147 (after the Phases 0–I research program added 31 instrument, isolation, and determinism tests), 156 (after Phase J added 9 extension, re-certification, and determinism tests for the approved ISA extension).
+The count is pinned exactly on purpose: a suite that silently gains or loses tests should turn the badge red until the pin is updated in the same change that alters the suite. The count history is 99 (pre-rename runtime), 116 (renamed runtime, pre-program), 147 (after the Phases 0–I research program added 31 instrument, isolation, and determinism tests), 156 (after Phase J added 9 extension, re-certification, and determinism tests for the approved ISA extension), 178 (after Phase SC added 15 attack-construction tests — one per anti-gaming invariant I1–I14 plus a band-label-fabrication attack — and 7 positive-path tests for the self-curriculum loop).
 
 Relevant tested properties include:
 
@@ -147,6 +149,9 @@ Relevant tested properties include:
 - SHA-256 pins on the frozen research-program artifacts under `docs/` (holdout instrument, exploration archives, anchor reports, ordering spec, final evaluation artifacts)
 - ordering/eligibility isolation: the stratified offer schedule's computation cannot reach designer-task oracles, gates, or adoption records
 - two-run byte-identity for the exploration, transfer, and final-evaluation reconstructions asserted in-suite
+- self-curriculum anti-gaming invariants I1–I14, each enforced in the default battery path and each covered by a dedicated test: twelve construct the attack outright (identity task, constant task, non-injective generator, behavioural duplicate, frozen-solvable task, witnessless/invalid/over-budget witness, padded lookup-table program, archive-covered task, poser input suggestions, gate-source and pin tamper, ledger mutation and record drop, forbidden instrument access); determinism (I12) is proven by two-run digest identity plus a digest-sensitivity construction; budgets (I14) are literal-pinned in-suite and bound into the source pin, with invalid configurations refused
+- a band-label-fabrication attack test: the harness measures every task's difficulty band from the generator itself and records the poser's claim as audit metadata only
+- self-curriculum sealed pairs and witnesses held in write-once, memory-only stores, with the ledger carrying hashes only until task retirement
 
 ## Reproduction Paths
 
