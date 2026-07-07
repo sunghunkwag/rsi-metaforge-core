@@ -119,6 +119,18 @@ The intended evidence is:
 
 The grammar primitives are designer-declared. These batteries measure bounded expressive reach; they are not evidence of unrestricted capability invention.
 
+## Self-Curriculum Battery
+
+The self-curriculum battery (`--mode sc-battery`) measures a closed loop that generates, witness-proves, admits, and solves its own tasks with zero human-authored tasks added, then evaluates transfer against the frozen human instrument under a pre-registered two-arm protocol.
+
+The official record (two byte-identical runs, digest `f56c6c13a2bf3028`; committed artifacts `docs/final_sc_battery.json`, `docs/sc_ledger_final.jsonl`):
+
+- 96 self-generated candidates, 16 admitted, 80 rejected with ledgered reasons, 14 distinct tasks solved; 13 of 14 solves used gate-adopted archive macros (library compression), 1 solved by base search alone
+- composition band climbed 2 → 3 through the pre-registered learnability window; the M4 cost curve rose under the pre-registered I5-tightening confound
+- transfer (the headline, pre-registered in `docs/PREDICTIONS_SC.md`, scored in `docs/SC_RESULT.md`): the curriculum arm did NOT beat the matched-compute control arm on the frozen instrument — control 24 vs curriculum 23 designer tasks at the final checkpoint. Matched-compute random exploration transferred (+1); the self-curriculum library was behaviorally inert on the instrument
+
+This is a closed-world compounding measurement with an honest negative external-transfer result — not an autonomy claim.
+
 ## Full Test Suite
 
 The current Full Evidence workflow requires the built-in full suite to end with:
