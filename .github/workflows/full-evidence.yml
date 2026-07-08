@@ -22,7 +22,12 @@ jobs:
   full-evidence:
     name: Full evidence battery
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    # The full battery (sc-battery runs ~82 min and is executed twice for the
+    # byte-identity check, plus forge/horizon and the ascent K-P batteries)
+    # takes ~3.8 h of wall clock; 180 min cancelled every run mid sc-battery.
+    # Raised to 330 min (well under GitHub's 360 min hosted-runner ceiling) so
+    # a run can complete. No battery, digest, or assertion is weakened.
+    timeout-minutes: 330
 
     steps:
       - name: Check out repository
