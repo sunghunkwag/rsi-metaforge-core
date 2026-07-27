@@ -1,0 +1,80 @@
+{
+  "$schema": "https://fundingjson.org/schema/v1.1.0.json",
+  "version": "v1.1.0",
+  "entity": {
+    "type": "individual",
+    "role": "maintainer",
+    "name": "Sung Hun Kwag",
+    "email": "sunghunkwag@gmail.com",
+    "description": "Independent maintainer of RSI MetaForge Core. I build and maintain a deterministic, CPU-runnable Python research runtime for reproducible experiments in program synthesis, self-generated task search, and measured system improvement. The project is developed in public with executable tests, frozen evaluation instruments, committed result records, and explicit limitations.",
+    "webpageUrl": {
+      "url": "https://github.com/sunghunkwag"
+    }
+  },
+  "projects": [
+    {
+      "guid": "rsi-metaforge-core",
+      "name": "RSI MetaForge Core",
+      "description": "RSI MetaForge Core is an Apache-2.0-licensed, standard-library-only Python runtime for studying whether programs can propose, test, and retain measurable improvements under fixed evaluation conditions. The public repository includes 286 executable tests, quick and full-evidence GitHub Actions workflows, sealed held-out evaluations, deterministic replay checks, failure and rollback records, pre-registered predictions, and committed result documents across stack-VM, file-processing, formal-reasoning, and self-generated-task substrates. It is a bounded experimental research instrument, not a claim of general intelligence or a production code-evolution service. Funding supports maintenance, reproducible releases, faster CI, independent reproduction tooling, documentation, and broader externally designed evaluation tasks.",
+      "webpageUrl": {
+        "url": "https://github.com/sunghunkwag/rsi-metaforge-core",
+        "wellKnown": "https://github.com/sunghunkwag/rsi-metaforge-core/blob/main/.well-known/funding-manifest-urls"
+      },
+      "repositoryUrl": {
+        "url": "https://github.com/sunghunkwag/rsi-metaforge-core",
+        "wellKnown": "https://github.com/sunghunkwag/rsi-metaforge-core/blob/main/.well-known/funding-manifest-urls"
+      },
+      "licenses": [
+        "spdx:Apache-2.0"
+      ],
+      "tags": [
+        "artificial-intelligence",
+        "developer-tools",
+        "program-synthesis",
+        "python",
+        "research",
+        "testing",
+        "benchmarking",
+        "reproducibility"
+      ]
+    }
+  ],
+  "funding": {
+    "channels": [
+      {
+        "guid": "bank-transfer",
+        "type": "bank",
+        "address": "",
+        "description": "Direct bank or Wise transfer. Account and tax-residency details are provided by email after funding approval."
+      },
+      {
+        "guid": "github-sponsors",
+        "type": "payment-provider",
+        "address": "https://github.com/sponsors/sunghunkwag",
+        "description": "GitHub Sponsors supports optional community contributions outside the FLOSS/fund grant."
+      }
+    ],
+    "plans": [
+      {
+        "guid": "minimum-sustainability-grant",
+        "status": "active",
+        "name": "Minimum sustainability grant",
+        "description": "A one-time minimum-denomination grant for ten months of public maintenance. Deliverables: three tagged reproducible releases; a parallelized evidence workflow; a documented external-reproduction kit; independently specified held-out evaluation packs; issue and contribution templates; and monthly public maintenance notes. Budget: USD 7,000 maintainer time, USD 1,500 CI/storage/compute, USD 1,000 benchmark and reproduction work, and USD 500 transfer, tax, and administrative reserve.",
+        "amount": 10000,
+        "currency": "USD",
+        "frequency": "one-time",
+        "channels": [
+          "bank-transfer"
+        ]
+      }
+    ],
+    "history": [
+      {
+        "year": 2026,
+        "income": 0,
+        "currency": "USD",
+        "description": "No project-specific grant income received as of July 2026."
+      }
+    ]
+  }
+}
