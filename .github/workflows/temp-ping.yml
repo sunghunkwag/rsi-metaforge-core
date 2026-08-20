@@ -1,4 +1,4 @@
-name: Temporary Actions Ping
+name: Temporary Projection Diagnostic
 
 on:
   push:
@@ -11,15 +11,35 @@ permissions:
   contents: write
 
 jobs:
-  ping:
+  diagnose:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Record ping
+      - name: Measure current OEIS projection hash
         run: |
-          printf 'actions-ping-ok\n' > tmp/evidence-budget/PING_RESULT
+          curl --fail --location --retry 3 --retry-delay 2 https://oeis.org/stripped.gz -o /tmp/stripped.gz
+          python - <<'PY'
+          import gzip, hashlib, json
+          from pathlib import Path
+          aids = set(Path('tmp/evidence-budget/aids_400.txt').read_text(encoding='utf-8').splitlines())
+          selected = []
+          with gzip.open('/tmp/stripped.gz', 'rt', encoding='utf-8', newline='') as handle:
+              for line in handle:
+                  if len(line) >= 8 and line[:7] in aids and line[7] == ' ':
+                      selected.append(line)
+          payload = ''.join(selected).encode('utf-8')
+          result = {
+              'row_count': len(selected),
+              'unique_aids': len({line[:7] for line in selected}),
+              'projection_sha256': hashlib.sha256(payload).hexdigest(),
+              'expected_frozen_projection_sha256': '11f2213bf98c1bee51268f9dd327bbdea413d9446daf6507a0a370b921f3a6ad',
+          }
+          result['exact_match'] = result['projection_sha256'] == result['expected_frozen_projection_sha256']
+          Path('tmp/evidence-budget/PROJECTION_DIAG.json').write_text(json.dumps(result, indent=2) + '\n')
+          print(json.dumps(result, indent=2))
+          PY
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add tmp/evidence-budget/PING_RESULT
-          git commit -m "Temporary Actions ping result"
+          git add tmp/evidence-budget/PROJECTION_DIAG.json
+          git commit -m "Temporary projection diagnostic result"
           git push origin HEAD:chatgpt-evidence-budget-20260820
