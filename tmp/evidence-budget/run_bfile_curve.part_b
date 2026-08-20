@@ -1,0 +1,186 @@
+                })
+                break
+            previous_pass = current_pass
+
+    instability: list[dict] = []
+    for slot in common_slots:
+        states = [(W, bool(per_slot_results[slot][W]['pass'])) for W in WINDOWS]
+        seen_pass = False
+        for W, state in states:
+            if state:
+                seen_pass = True
+            elif seen_pass:
+                instability.append({'slot': slot, 'aid': aids[slot], 'states': states})
+                break
+
+    prediction_score = []
+    for W in WINDOWS:
+        observed = windows[str(W)]['common_subset_pass_count']
+        predicted = PREDICTIONS[W]
+        prediction_score.append({
+            'window': W,
+            'predicted_common_subset_pass_count': predicted,
+            'observed_common_subset_pass_count': observed,
+            'error': observed - predicted,
+            'absolute_error': abs(observed - predicted),
+            'exact_match': observed == predicted,
+        })
+
+    observed_common = [windows[str(W)]['common_subset_pass_count'] for W in WINDOWS]
+    first_saturation = None
+    for i in range(len(WINDOWS) - 1):
+        if all(observed_common[j] == observed_common[i] for j in range(i, len(WINDOWS))):
+            first_saturation = WINDOWS[i]
+            break
+
+    return {
+        'experiment': 'OEIS constant-coefficient recurrence evidence-budget curve using cached b-files',
+        'sample_size': 400,
+        'frozen_sample_sha256': EXPECTED_SAMPLE_SHA256,
+        'windows': windows,
+        'common_eligible_subset': {
+            'size': len(common_slots),
+            'slots': common_slots,
+            'aids': [aids[slot] for slot in common_slots],
+        },
+        'newly_solved_on_common_subset': newly_solved,
+        'pass_instability_on_common_subset': instability,
+        'frozen_predictions': {
+            'counts_by_window': {str(k): v for k, v in PREDICTIONS.items()},
+            'predicted_saturation_window': 48,
+            'score_on_common_subset': prediction_score,
+            'observed_first_saturation_window': first_saturation,
+        },
+        'coverage_note': (
+            'The prior stripped-only curve 14/5/0/0 is void as an evidence-budget measurement because '
+            'the eligible population collapsed with window size; it confounded term coverage with evidence budget.'
+        ),
+    }
+
+
+def write_manifest(manifest: list[dict]) -> None:
+    json_path = ROOT / 'bfile_fetch_manifest.json'
+    json_path.write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
+
+    csv_path = ROOT / 'bfile_term_counts.csv'
+    fields = [
+        'slot', 'aid', 'status', 'raw_term_count', 'aligned_term_count', 'first_index', 'last_index',
+        'alignment_offset_rows', 'alignment_candidates', 'error', 'path'
+    ]
+    with csv_path.open('w', newline='', encoding='utf-8') as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields)
+        writer.writeheader()
+        for row in manifest:
+            out = dict(row)
+            out['alignment_candidates'] = json.dumps(out['alignment_candidates'])
+            writer.writerow(out)
+
+
+def write_markdown(result: dict, manifest: list[dict]) -> None:
+    lines: list[str] = []
+    lines.append('# OEIS B-file Evidence-Budget Curve')
+    lines.append('')
+    lines.append('## Protocol')
+    lines.append('')
+    lines.append('- Frozen sample: 400 A-numbers, original slot order preserved.')
+    lines.append(f"- Frozen sample SHA-256: `{result['frozen_sample_sha256']}`")
+    lines.append('- Fitter, triviality rule, exact arithmetic, and sealed SolverView are unchanged.')
+    lines.append('- Windows: W = 12, 24, 48, 96; maximum recurrence order = floor(W/2).')
+    lines.append('- Holdout length is unchanged at 16 terms, so required aligned terms are 40, 64, 112, and 208.')
+    lines.append('- No resampling and no sequence substitution.')
+    lines.append('')
+    ok = sum(row['status'] in ('ok', 'ok_ambiguous_earliest_alignment') for row in manifest)
+    missing = sum(row['status'] == 'missing' for row in manifest)
+    invalid = sum(row['status'] == 'invalid' for row in manifest)
+    lines.append('## B-file cache coverage')
+    lines.append('')
+    lines.append(f'- Usable cached b-files: {ok}/400')
+    lines.append(f'- Missing: {missing}')
+    lines.append(f'- Invalid or prefix-mismatched: {invalid}')
+    lines.append('')
+    lines.append('## Curve')
+    lines.append('')
+    lines.append('| W | Required terms | Eligible | Excluded | All-400 passes | Common-subset passes | Max recovered order (all/common) | CPU seconds |')
+    lines.append('|---:|---:|---:|---:|---:|---:|---:|---:|')
+    for W in WINDOWS:
+        row = result['windows'][str(W)]
+        lines.append(
+            f"| {W} | {row['required_aligned_terms']} | {row['eligible_count']} | {row['excluded_count']} | "
+            f"{row['all_400_pass_count']} | {row['common_subset_pass_count']} | "
+            f"{row['max_recovered_order_all_400']}/{row['max_recovered_order_common_subset']} | {row['cpu_seconds']:.6f} |"
+        )
+    lines.append('')
+    common = result['common_eligible_subset']
+    lines.append(f"Common eligible subset size: **{common['size']}**")
+    lines.append('')
+    lines.append('Common eligible slots:')
+    lines.append('')
+    lines.append('`' + ','.join(map(str, common['slots'])) + '`')
+    lines.append('')
+    lines.append('## Eligible slots by window')
+    lines.append('')
+    for W in WINDOWS:
+        slots = result['windows'][str(W)]['eligible_slots']
+        lines.append(f"- W={W}: `{','.join(map(str, slots))}`")
+    lines.append('')
+    lines.append('## Newly solved sequences on the common subset')
+    lines.append('')
+    if result['newly_solved_on_common_subset']:
+        lines.append('| Slot | A-number | First passing W | Order k | Coefficients |')
+        lines.append('|---:|---|---:|---:|---|')
+        for row in result['newly_solved_on_common_subset']:
+            lines.append(
+                f"| {row['slot']} | {row['aid']} | {row['first_passing_window']} | {row['order']} | "
+                f"`{tuple(row['coefficients'])}` |"
+            )
+    else:
+        lines.append('None.')
+    lines.append('')
+    lines.append('## Frozen prediction score')
+    lines.append('')
+    lines.append('Frozen prediction: 13 / 21 / 25 / 25 with saturation at W=48.')
+    lines.append('')
+    lines.append('| W | Predicted | Observed on common subset | Error | Absolute error | Exact |')
+    lines.append('|---:|---:|---:|---:|---:|---|')
+    for row in result['frozen_predictions']['score_on_common_subset']:
+        lines.append(
+            f"| {row['window']} | {row['predicted_common_subset_pass_count']} | "
+            f"{row['observed_common_subset_pass_count']} | {row['error']} | {row['absolute_error']} | {row['exact_match']} |"
+        )
+    lines.append('')
+    lines.append(
+        f"Observed first saturation window on the common subset: "
+        f"{result['frozen_predictions']['observed_first_saturation_window']}"
+    )
+    lines.append('')
+    lines.append('## Interpretation guardrail')
+    lines.append('')
+    lines.append(result['coverage_note'])
+    lines.append('')
+    if result['pass_instability_on_common_subset']:
+        lines.append('Pass instability was observed and is recorded in the JSON result.')
+    else:
+        lines.append('No pass-to-fail instability was observed on the common subset.')
+    lines.append('')
+    (ROOT / 'EVIDENCE_BUDGET_BFILE_RESULT.md').write_text('\n'.join(lines), encoding='utf-8')
+
+
+def main() -> None:
+    BFILE_DIR.mkdir(parents=True, exist_ok=True)
+    aids = load_aids(AIDS_FILE)
+    stripped = load_stripped(STRIPPED_FILE)
+    manifest, aligned_terms = build_manifest(aids, stripped)
+    write_manifest(manifest)
+    result = run_curve(aids, aligned_terms, manifest)
+    (ROOT / 'bfile_curve_result.json').write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
+    write_markdown(result, manifest)
+    print(json.dumps({
+        'usable_bfiles': len(aligned_terms),
+        'common_subset_size': result['common_eligible_subset']['size'],
+        'all_400_pass_counts': [result['windows'][str(W)]['all_400_pass_count'] for W in WINDOWS],
+        'common_pass_counts': [result['windows'][str(W)]['common_subset_pass_count'] for W in WINDOWS],
+    }, indent=2))
+
+
+if __name__ == '__main__':
+    main()
