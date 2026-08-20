@@ -1,0 +1,186 @@
+from __future__ import annotations
+
+import csv
+import json
+import time
+from pathlib import Path
+from typing import Iterable
+
+from evidence_curve import load_stripped, run_one
+
+ROOT = Path('/mnt/data/evidence_curve')
+AIDS_FILE = ROOT / 'aids_400.txt'
+BFILE_DIR = ROOT / 'bfiles'
+STRIPPED_FILE = ROOT / 'stripped'
+WINDOWS = (12, 24, 48, 96)
+PREDICTIONS = {12: 13, 24: 21, 48: 25, 96: 25}
+EXPECTED_SAMPLE_SHA256 = '0e0af9d7d3df204563d66f71130b96012d9308c595ad7a1e1df9bc47ce146d6e'
+
+
+def load_aids(path: Path) -> list[str]:
+    aids = [line.strip() for line in path.read_text(encoding='utf-8').splitlines() if line.strip()]
+    if len(aids) != 400 or len(set(aids)) != 400:
+        raise ValueError(f'Expected 400 unique A-numbers, found {len(aids)} rows and {len(set(aids))} unique values.')
+    return aids
+
+
+def parse_bfile(path: Path) -> tuple[list[int], list[int]]:
+    indices: list[int] = []
+    values: list[int] = []
+    for line_number, raw in enumerate(path.read_text(encoding='utf-8').splitlines(), start=1):
+        line = raw.strip()
+        if not line or line.startswith('#'):
+            continue
+        parts = line.split()
+        if len(parts) != 2:
+            raise ValueError(f'{path.name}:{line_number}: expected exactly two whitespace-separated integers.')
+        n, value = int(parts[0]), int(parts[1])
+        indices.append(n)
+        values.append(value)
+    if not indices:
+        raise ValueError(f'{path.name}: no term rows found.')
+    for left, right in zip(indices, indices[1:]):
+        if right != left + 1:
+            raise ValueError(f'{path.name}: non-contiguous indices at {left} -> {right}.')
+    return indices, values
+
+
+def align_to_frozen_prefix(values: list[int], frozen_terms: list[int]) -> tuple[int, list[int]]:
+    """Align a b-file value stream to the exact frozen sequence start.
+
+    The frozen sample was drawn from OEIS stripped data.  A b-file may in
+    principle contain terms before that displayed start, so we locate the
+    frozen prefix in the b-file rather than assuming row zero is identical.
+    No generated or substituted terms are used.
+    """
+    if not frozen_terms:
+        raise ValueError('Frozen sequence has no terms.')
+    probe_len = min(16, len(frozen_terms))
+    probe = frozen_terms[:probe_len]
+    candidates: list[int] = []
+    max_start = len(values) - probe_len
+    for start in range(max_start + 1):
+        if values[start:start + probe_len] != probe:
+            continue
+        overlap = min(len(frozen_terms), len(values) - start)
+        if values[start:start + overlap] == frozen_terms[:overlap]:
+            candidates.append(start)
+    if not candidates:
+        raise ValueError('b-file values do not contain the frozen stripped prefix.')
+    if len(candidates) > 1:
+        # Prefer the earliest exact alignment.  Record ambiguity separately in
+        # the manifest so the audit trail remains explicit.
+        return candidates[0], candidates
+    return candidates[0], candidates
+
+
+def bfile_name(aid: str) -> str:
+    digits = aid[1:]
+    return f'b{digits}.txt'
+
+
+def build_manifest(aids: list[str], stripped: dict[str, list[int]]) -> tuple[list[dict], dict[str, list[int]]]:
+    manifest: list[dict] = []
+    aligned_terms: dict[str, list[int]] = {}
+
+    for slot, aid in enumerate(aids):
+        path = BFILE_DIR / bfile_name(aid)
+        row = {
+            'slot': slot,
+            'aid': aid,
+            'path': str(path),
+            'status': None,
+            'raw_term_count': 0,
+            'aligned_term_count': 0,
+            'first_index': None,
+            'last_index': None,
+            'alignment_offset_rows': None,
+            'alignment_candidates': [],
+            'error': None,
+        }
+        if not path.exists():
+            row['status'] = 'missing'
+            manifest.append(row)
+            continue
+        try:
+            indices, values = parse_bfile(path)
+            row['raw_term_count'] = len(values)
+            row['first_index'] = indices[0]
+            row['last_index'] = indices[-1]
+            offset, candidates = align_to_frozen_prefix(values, stripped[aid])
+            terms = values[offset:]
+            row['alignment_offset_rows'] = offset
+            row['alignment_candidates'] = candidates
+            row['aligned_term_count'] = len(terms)
+            row['status'] = 'ok' if len(candidates) == 1 else 'ok_ambiguous_earliest_alignment'
+            aligned_terms[aid] = terms
+        except Exception as exc:
+            row['status'] = 'invalid'
+            row['error'] = f'{type(exc).__name__}: {exc}'
+        manifest.append(row)
+
+    return manifest, aligned_terms
+
+
+def run_curve(aids: list[str], aligned_terms: dict[str, list[int]], manifest: list[dict]) -> dict:
+    required = {W: 2 * W + 16 for W in WINDOWS}
+    eligible_slots = {
+        W: [slot for slot, aid in enumerate(aids) if aid in aligned_terms and len(aligned_terms[aid]) >= required[W]]
+        for W in WINDOWS
+    }
+    common_slots = sorted(set.intersection(*(set(eligible_slots[W]) for W in WINDOWS)))
+
+    windows: dict[str, dict] = {}
+    per_slot_results: dict[int, dict[int, dict]] = {slot: {} for slot in range(len(aids))}
+
+    for W in WINDOWS:
+        t0 = time.process_time()
+        passes_all: list[dict] = []
+        pass_slots: set[int] = set()
+        for slot in eligible_slots[W]:
+            aid = aids[slot]
+            result = run_one(aligned_terms[aid], W)
+            if result is None:
+                raise AssertionError(f'Eligibility/run_one disagreement at slot {slot}, {aid}, W={W}.')
+            per_slot_results[slot][W] = result
+            if result['pass']:
+                pass_slots.add(slot)
+                passes_all.append({
+                    'slot': slot,
+                    'aid': aid,
+                    'order': result['order'],
+                    'coefficients': list(result['coeffs']) if result['coeffs'] is not None else None,
+                })
+        cpu_seconds = time.process_time() - t0
+
+        common_passes = [row for row in passes_all if row['slot'] in common_slots]
+        windows[str(W)] = {
+            'window': W,
+            'max_recurrence_order_allowed': W // 2,
+            'required_aligned_terms': required[W],
+            'eligible_count': len(eligible_slots[W]),
+            'excluded_count': 400 - len(eligible_slots[W]),
+            'eligible_slots': eligible_slots[W],
+            'all_400_pass_count': len(passes_all),
+            'all_400_passes': passes_all,
+            'common_subset_size': len(common_slots),
+            'common_subset_pass_count': len(common_passes),
+            'common_subset_passes': common_passes,
+            'max_recovered_order_all_400': max((row['order'] for row in passes_all), default=None),
+            'max_recovered_order_common_subset': max((row['order'] for row in common_passes), default=None),
+            'cpu_seconds': cpu_seconds,
+        }
+
+    newly_solved: list[dict] = []
+    for slot in common_slots:
+        previous_pass = False
+        for W in WINDOWS:
+            result = per_slot_results[slot].get(W)
+            current_pass = bool(result and result['pass'])
+            if current_pass and not previous_pass:
+                newly_solved.append({
+                    'slot': slot,
+                    'aid': aids[slot],
+                    'first_passing_window': W,
+                    'order': result['order'],
+                    'coefficients': list(result['coeffs']) if result['coeffs'] is not None else None,
