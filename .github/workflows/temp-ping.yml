@@ -1,0 +1,25 @@
+name: Temporary Actions Ping
+
+on:
+  push:
+    branches:
+      - chatgpt-evidence-budget-20260820
+    paths:
+      - 'tmp/evidence-budget/PING_TRIGGER'
+
+permissions:
+  contents: write
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record ping
+        run: |
+          printf 'actions-ping-ok\n' > tmp/evidence-budget/PING_RESULT
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tmp/evidence-budget/PING_RESULT
+          git commit -m "Temporary Actions ping result"
+          git push origin HEAD:chatgpt-evidence-budget-20260820
