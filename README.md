@@ -8,6 +8,8 @@
 
 The question this repository is built to answer is not *"can a system look like it's improving?"* but *"is each improvement actually validated, or just plausible?"* Everything here exists to make that distinction measurable.
 
+Project write-ups: [research overview](https://sunghunkwag.github.io/research/#program-synthesis) · [recursive self-improvement guide and test checklist](https://sunghunkwag.github.io/research/recursive-self-improvement/).
+
 ---
 
 ## How it works
