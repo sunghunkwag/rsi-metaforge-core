@@ -1,12 +1,25 @@
 # Funding RSI MetaForge Core
 
-## Request
+## Supporting this research
 
-RSI MetaForge Core is seeking a **USD 10,000 one-time sustainability grant** covering ten months of public maintenance. This is the minimum grant denomination accepted by FLOSS/fund.
+Support goes to research funding: the compute and time the next experiments need. There is no fixed target, and any amount helps.
+
+- [GitHub Sponsors](https://github.com/sponsors/sunghunkwag): monthly or one-time, any amount.
+- Email [sunghunkwag@gmail.com](mailto:sunghunkwag@gmail.com): how to send it is settled in the reply.
+
+The research this supports, with its results, retractions and limits, is published at [Intelligence Research Project](https://sunghunkwag.github.io/).
+
+## FLOSS/fund grant application
+
+This repository is also listed with FLOSS/fund, which funds open-source projects through fixed grants. The rest of this page is that application. FLOSS/fund's smallest grant is USD 10,000, so the application uses that amount. It is the grant program's format, not a fundraising target.
+
+### Request
+
+A **USD 10,000 one-time sustainability grant** covering ten months of public maintenance.
 
 This request supports an existing Apache-2.0-licensed repository. It does not fund a private product, a company, or a closed research result.
 
-## What the project provides
+### What the project provides
 
 RSI MetaForge Core is a standard-library-only Python runtime for measuring whether a program can propose, test, and retain improvements under fixed evaluation conditions.
 
@@ -23,7 +36,7 @@ The repository currently provides:
 
 The project is experimental. Its value is the reproducible public instrument and evidence trail, not a claim of general intelligence or production readiness.
 
-## Ten-month maintenance plan
+### Ten-month maintenance plan
 
 | Milestone | Public deliverable |
 | --- | --- |
@@ -33,7 +46,7 @@ The project is experimental. Its value is the reproducible public instrument and
 | 4. Independent evaluations | Add held-out task packs whose specifications are separated from the implementation and document every pass and failure. |
 | 5. Maintainer surface | Publish issue templates, contribution guidance, release notes, and monthly maintenance reports; complete two additional tagged releases. |
 
-## Budget
+### Budget
 
 | Use | Amount |
 | --- | ---: |
@@ -43,14 +56,14 @@ The project is experimental. Its value is the reproducible public instrument and
 | Transfer, tax, and administration reserve | USD 500 |
 | **Total** | **USD 10,000** |
 
-## Accountability
+### Accountability
 
 All funded work will remain public in this repository. Progress will be visible through commits, tagged releases, GitHub Actions runs, issues, and monthly maintenance notes. Failed experiments and negative results will remain in the record rather than being rewritten as successes.
 
 No project-specific grant income has been received as of July 2026.
 
-## Payment and contact
+### Payment and contact
 
 The grant can be paid by direct bank or Wise transfer after approval. Bank and tax-residency details will be supplied privately by email. Email-only, asynchronous communication is preferred.
 
-Optional smaller community contributions can use [GitHub Sponsors](https://github.com/sponsors/sunghunkwag); they are separate from the FLOSS/fund grant request.
+Support through GitHub Sponsors or email is separate from this grant request.
