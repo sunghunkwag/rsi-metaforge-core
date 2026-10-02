@@ -1,0 +1,600 @@
+{
+  "B_eval": 64,
+  "B_wake": 64,
+  "baseline": "generation-zero grammar, empty library, no recognition, heuristic zero",
+  "budget_grid": [
+    16,
+    32,
+    64,
+    128,
+    256,
+    512,
+    1024
+  ],
+  "failure_reason": null,
+  "gate": {
+    "inclusive": true,
+    "maximum": 0.4,
+    "minimum": 0.1,
+    "selection": "earliest eligible grid value"
+  },
+  "grid_results": [
+    {
+      "budget": 16,
+      "logical_cost": 187,
+      "mean_candidates": 15.583333333333334,
+      "solved": 1,
+      "solved_fraction": 0.08333333333333333,
+      "total": 12
+    },
+    {
+      "budget": 32,
+      "logical_cost": 363,
+      "mean_candidates": 30.25,
+      "solved": 1,
+      "solved_fraction": 0.08333333333333333,
+      "total": 12
+    },
+    {
+      "budget": 64,
+      "logical_cost": 705,
+      "mean_candidates": 58.75,
+      "solved": 2,
+      "solved_fraction": 0.16666666666666666,
+      "total": 12
+    },
+    {
+      "budget": 128,
+      "logical_cost": 1345,
+      "mean_candidates": 112.08333333333333,
+      "solved": 2,
+      "solved_fraction": 0.16666666666666666,
+      "total": 12
+    },
+    {
+      "budget": 256,
+      "logical_cost": 2625,
+      "mean_candidates": 218.75,
+      "solved": 2,
+      "solved_fraction": 0.16666666666666666,
+      "total": 12
+    },
+    {
+      "budget": 512,
+      "logical_cost": 5185,
+      "mean_candidates": 432.0833333333333,
+      "solved": 2,
+      "solved_fraction": 0.16666666666666666,
+      "total": 12
+    },
+    {
+      "budget": 1024,
+      "logical_cost": 10305,
+      "mean_candidates": 858.75,
+      "solved": 2,
+      "solved_fraction": 0.16666666666666666,
+      "total": 12
+    }
+  ],
+  "logical_cost": 10305,
+  "method": "One maximum-budget search per task; smaller budgets inferred from its first selected solution. Hidden failures never resume search.",
+  "partition": "VALIDATION",
+  "schema_version": 1,
+  "search": {
+    "max_expansions": 20000,
+    "max_size": 12,
+    "step_budget": 2000
+  },
+  "search_wall_seconds_sum": 178.04734033999966,
+  "seed": 20261002,
+  "status": "passed",
+  "tasks": [
+    {
+      "candidates": 1024,
+      "evaluation_steps": 31090,
+      "exhausted": false,
+      "first_solution_count": null,
+      "hidden_examples": 5,
+      "hidden_pass": false,
+      "hidden_verification_wall_seconds": 1.3439998838293832e-06,
+      "logical_cost": 1024,
+      "name": "add-k with k=5",
+      "request_type": {
+        "args": [
+          {
+            "args": [
+              {
+                "args": [],
+                "tag": "int"
+              }
+            ],
+            "tag": "list"
+          },
+          {
+            "args": [
+              {
+                "args": [],
+                "tag": "int"
+              }
+            ],
+            "tag": "list"
+          }
+        ],
+        "tag": "arrow"
+      },
+      "search_examples": 10,
+      "search_wall_seconds": 10.000220053000021,
+      "selected_log_probability": null,
+      "selected_program": null,
+      "wall_seconds": 10.069265588000007
+    },
+    {
+      "candidates": 1024,
+      "evaluation_steps": 49615,
+      "exhausted": false,
+      "first_solution_count": null,
+      "hidden_examples": 5,
+      "hidden_pass": false,
+      "hidden_verification_wall_seconds": 8.290001005661907e-07,
+      "logical_cost": 1024,
+      "name": "bool-identify-is-mod-k with k=2",
+      "request_type": {
+        "args": [
+          {
+            "args": [
+              {
+                "args": [],
+                "tag": "int"
+              }
+            ],
+            "tag": "list"
+          },
+          {
+            "args": [
+              {
+                "args": [],
+                "tag": "bool"
+              }
+            ],
+            "tag": "list"
+          }
+        ],
+        "tag": "arrow"
+      },
+      "search_examples": 10,
+      "search_wall_seconds": 16.873188849999906,
+      "selected_log_probability": null,
+      "selected_program": null,
+      "wall_seconds": 16.936099481999918
+    },
+    {
+      "candidates": 1024,
+      "evaluation_steps": 33099,
+      "exhausted": false,
+      "first_solution_count": null,
+      "hidden_examples": 4,
+      "hidden_pass": false,
+      "hidden_verification_wall_seconds": 1.2210000477352878e-06,
+      "logical_cost": 1024,
+      "name": "caesar-cipher-k-modulo-n with k=1 and n=3",
+      "request_type": {
+        "args": [
+          {
+            "args": [
+              {
+                "args": [],
+                "tag": "int"
+              }
+            ],
+            "tag": "list"
+          },
+          {
+            "args": [
+              {
+                "args": [],
+                "tag": "int"
+              }
+            ],
+            "tag": "list"
+          }
+        ],
+        "tag": "arrow"
+      },
+      "search_examples": 10,
+      "search_wall_seconds": 25.30522985199991,
+      "selected_log_probability": null,
+      "selected_program": null,
+      "wall_seconds": 25.397571943000003
+    },
+    {
+      "candidates": 1024,
+      "evaluation_steps": 35702,
+      "exhausted": false,
+      "first_solution_count": null,
+      "hidden_examples": 3,
+      "hidden_pass": false,
+      "hidden_verification_wall_seconds": 2.088999963234528e-06,
+      "logical_cost": 1024,
+      "name": "caesar-cipher-k-modulo-n with k=1 and n=4",
+      "request_type": {
+        "args": [
+          {
+            "args": [
+              {
+                "args": [],
+                "tag": "int"
+              }
+            ],
+            "tag": "list"
+          },
+          {
+            "args": [
+              {
+                "args": [],
+                "tag": "int"
+              }
+            ],
+            "tag": "list"
+          }
+        ],
+        "tag": "arrow"
+      },
+      "search_examples": 10,
+      "search_wall_seconds": 22.870503749999898,
+      "selected_log_probability": null,
+      "selected_program": null,
+      "wall_seconds": 22.97696493999979
+    },
+    {
+      "candidates": 1024,
+      "evaluation_steps": 37711,
+      "exhausted": false,
+      "first_solution_count": null,
+      "hidden_examples": 3,
+      "hidden_pass": false,
+      "hidden_verification_wall_seconds": 1.1309998626529705e-06,
+      "logical_cost": 1024,
+      "name": "caesar-cipher-k-modulo-n with k=2 and n=5",
+      "request_type": {
+        "args": [
+          {
+            "args": [
+              {
+                "args": [],
+                "tag": "int"
+              }
+            ],
+            "tag": "list"
+          },
+          {
+            "args": [
+              {
+                "args": [],
+                "tag": "int"
+              }
+            ],
+            "tag": "list"
+          }
+        ],
+        "tag": "arrow"
+      },
+      "search_examples": 10,
+      "search_wall_seconds": 25.456673705999947,
+      "selected_log_probability": null,
+      "selected_program": null,
+      "wall_seconds": 25.559206036999967
+    },
+    {
+      "candidates": 54,
+      "evaluation_steps": 1952,
+      "exhausted": false,
+      "first_solution_count": 54,
+      "hidden_examples": 1,
+      "hidden_pass": true,
+      "hidden_verification_wall_seconds": 0.00010325500011276745,
+      "logical_cost": 54,
+      "name": "caesar-cipher-k-modulo-n with k=3 and n=2",
+      "request_type": {
+        "args": [
+          {
+            "args": [
+              {
+                "args": [],
+                "tag": "int"
+              }
+            ],
+            "tag": "list"
+          },
+          {
+            "args": [
+              {
+                "args": [],
+                "tag": "int"
+              }
+            ],
+            "tag": "list"
+          }
+        ],
+        "tag": "arrow"
+      },
+      "search_examples": 10,
+      "search_wall_seconds": 0.5060676180000883,
+      "selected_log_probability": -7.495541943884257,
+      "selected_program": {
+        "children": [
+          {
+            "children": [],
+            "tag": "prim",
+            "value": "map"
+          },
+          {
+            "children": [
+              {
+                "children": [],
+                "tag": "prim",
+                "value": "sub"
+              },
+              {
+                "children": [],
+                "tag": "int",
+                "value": 1
+              }
+            ],
+            "tag": "app",
+            "value": null
+          }
+        ],
+        "tag": "app",
+        "value": null
+      },
+      "wall_seconds": 0.5112544670000716
+    },
+    {
+      "candidates": 1024,
+      "evaluation_steps": 40533,
+      "exhausted": false,
+      "first_solution_count": null,
+      "hidden_examples": 5,
+      "hidden_pass": false,
+      "hidden_verification_wall_seconds": 1.137000026574242e-06,
+      "logical_cost": 1024,
+      "name": "has-k with k=2",
+      "request_type": {
+        "args": [
+          {
+            "args": [
+              {
+                "args": [],
+                "tag": "int"
+              }
+            ],
+            "tag": "list"
+          },
+          {
+            "args": [],
+            "tag": "bool"
+          }
+        ],
+        "tag": "arrow"
+      },
+      "search_examples": 10,
+      "search_wall_seconds": 11.635320591999971,
+      "selected_log_probability": null,
+      "selected_program": null,
+      "wall_seconds": 11.722947629000146
+    },
+    {
+      "candidates": 1024,
+      "evaluation_steps": 60862,
+      "exhausted": false,
+      "first_solution_count": null,
+      "hidden_examples": 5,
+      "hidden_pass": false,
+      "hidden_verification_wall_seconds": 1.4329998521134257e-06,
+      "logical_cost": 1024,
+      "name": "kth-largest with k=5",
+      "request_type": {
+        "args": [
+          {
+            "args": [
+              {
+                "args": [],
+                "tag": "int"
+              }
+            ],
+            "tag": "list"
+          },
+          {
+            "args": [],
+            "tag": "int"
+          }
+        ],
+        "tag": "arrow"
+      },
+      "search_examples": 10,
+      "search_wall_seconds": 23.486137848999988,
+      "selected_log_probability": null,
+      "selected_program": null,
+      "wall_seconds": 23.540266858999985
+    },
+    {
+      "candidates": 1024,
+      "evaluation_steps": 38634,
+      "exhausted": false,
+      "first_solution_count": null,
+      "hidden_examples": 5,
+      "hidden_pass": false,
+      "hidden_verification_wall_seconds": 1.207999957841821e-06,
+      "logical_cost": 1024,
+      "name": "prepend-index-k with k=3",
+      "request_type": {
+        "args": [
+          {
+            "args": [
+              {
+                "args": [],
+                "tag": "int"
+              }
+            ],
+            "tag": "list"
+          },
+          {
+            "args": [
+              {
+                "args": [],
+                "tag": "int"
+              }
+            ],
+            "tag": "list"
+          }
+        ],
+        "tag": "arrow"
+      },
+      "search_examples": 10,
+      "search_wall_seconds": 9.950081605999912,
+      "selected_log_probability": null,
+      "selected_program": null,
+      "wall_seconds": 10.008732822999946
+    },
+    {
+      "candidates": 1024,
+      "evaluation_steps": 33668,
+      "exhausted": false,
+      "first_solution_count": null,
+      "hidden_examples": 4,
+      "hidden_pass": false,
+      "hidden_verification_wall_seconds": 2.0400000266818097e-06,
+      "logical_cost": 1024,
+      "name": "repeat-k with k=2",
+      "request_type": {
+        "args": [
+          {
+            "args": [
+              {
+                "args": [],
+                "tag": "int"
+              }
+            ],
+            "tag": "list"
+          },
+          {
+            "args": [
+              {
+                "args": [],
+                "tag": "int"
+              }
+            ],
+            "tag": "list"
+          }
+        ],
+        "tag": "arrow"
+      },
+      "search_examples": 10,
+      "search_wall_seconds": 22.03231422900012,
+      "selected_log_probability": null,
+      "selected_program": null,
+      "wall_seconds": 22.085539628000106
+    },
+    {
+      "candidates": 1024,
+      "evaluation_steps": 40336,
+      "exhausted": false,
+      "first_solution_count": null,
+      "hidden_examples": 5,
+      "hidden_pass": false,
+      "hidden_verification_wall_seconds": 1.9059998521697707e-06,
+      "logical_cost": 1024,
+      "name": "slice-k-n with k=3 and n=3",
+      "request_type": {
+        "args": [
+          {
+            "args": [
+              {
+                "args": [],
+                "tag": "int"
+              }
+            ],
+            "tag": "list"
+          },
+          {
+            "args": [
+              {
+                "args": [],
+                "tag": "int"
+              }
+            ],
+            "tag": "list"
+          }
+        ],
+        "tag": "arrow"
+      },
+      "search_examples": 10,
+      "search_wall_seconds": 9.578913335999914,
+      "selected_log_probability": null,
+      "selected_program": null,
+      "wall_seconds": 9.633870114000047
+    },
+    {
+      "candidates": 11,
+      "evaluation_steps": 423,
+      "exhausted": false,
+      "first_solution_count": 11,
+      "hidden_examples": 5,
+      "hidden_pass": true,
+      "hidden_verification_wall_seconds": 0.00038779300007263373,
+      "logical_cost": 11,
+      "name": "sum",
+      "request_type": {
+        "args": [
+          {
+            "args": [
+              {
+                "args": [],
+                "tag": "int"
+              }
+            ],
+            "tag": "list"
+          },
+          {
+            "args": [],
+            "tag": "int"
+          }
+        ],
+        "tag": "arrow"
+      },
+      "search_examples": 10,
+      "search_wall_seconds": 0.3526888989999861,
+      "selected_log_probability": -6.956545443151569,
+      "selected_program": {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [],
+                "tag": "prim",
+                "value": "fold"
+              },
+              {
+                "children": [],
+                "tag": "prim",
+                "value": "add"
+              }
+            ],
+            "tag": "app",
+            "value": null
+          },
+          {
+            "children": [],
+            "tag": "int",
+            "value": 0
+          }
+        ],
+        "tag": "app",
+        "value": null
+      },
+      "wall_seconds": 0.35557431400002315
+    }
+  ],
+  "wall_seconds": 45.30634723999992,
+  "workers": 5
+}
