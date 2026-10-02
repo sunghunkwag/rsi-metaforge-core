@@ -14,8 +14,8 @@ from rsi2.types import Arrow, BOOL, INT, ListOf, function_parts
 
 PACKAGE = Path(__file__).resolve().parents[1]
 DATA = PACKAGE / "data"
-LEARNING_MODULES = ("learning.py", "abstraction.py", "recognition.py", "heuristics.py")
-SEALED_MODULES = ("search.py", "grammar.py") + LEARNING_MODULES
+LEARNING_MODULES = ("learning.py", "abstraction.py", "recognition.py")
+SEALED_MODULES = ("search.py", "grammar.py") + LEARNING_MODULES + ("heuristics.py",)
 
 
 def static_string(node):
@@ -180,6 +180,9 @@ class StructuralSealTests(unittest.TestCase):
             for filename in LEARNING_MODULES:
                 self.assertTrue((PACKAGE / filename).is_file(),
                                 f"Stage 3 must include and scan {filename}")
+        if (PACKAGE / "experiment.py").exists():
+            self.assertTrue((PACKAGE / "heuristics.py").is_file(),
+                            "The experiment must include and scan heuristic learning")
         for filename in SEALED_MODULES:
             path = PACKAGE / filename
             if path.exists():

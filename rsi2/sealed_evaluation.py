@@ -19,13 +19,14 @@ def load_test():
     return [parse_task(record) for record in json.loads(path.read_text(encoding="utf-8"))]
 
 
-def report(testtasks, grammar, heuristic, budget, searchconfig=None):
+def report(testtasks, grammar, heuristic, budget, searchconfig=None, conditioner=None):
     """Return hidden-verified measurements without updating any search state."""
     started = time.perf_counter()
     searchconfig = dict(searchconfig or {})
     records = []
     for task in testtasks:
-        result = solve(task.examples, task.request_type, budget, grammar,
+        conditional = conditioner(task, grammar) if conditioner is not None else grammar
+        result = solve(task.examples, task.request_type, budget, conditional,
                        heuristic=heuristic, **searchconfig)
         accepted = verify(result.term, task.hidden, library=grammar.library,
                           step_budget=searchconfig.get("step_budget", 2000))
@@ -39,6 +40,7 @@ def report(testtasks, grammar, heuristic, budget, searchconfig=None):
             "mean_candidates_to_solution": (sum(r["candidates"] for r in solved) / len(solved)
                                              if solved else None),
             "budget": budget, "wall_seconds": time.perf_counter() - started,
+            "candidate_evaluations": sum(r["candidates"] for r in records),
             "records": records}
 
 

@@ -9,9 +9,9 @@ entries and primitive heads go through the same selection and application path.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from collections import Counter, defaultdict
 from itertools import count
 import math
-from typing import Mapping
 
 from .terms import Term
 from .types import (
@@ -166,7 +166,7 @@ class Grammar:
                                 weight - normalizer, c.parameter)
                      for c, weight in weighted)
 
-    def log_probability(self, term, request_type=None, env=()):
+    def _derivation(self, term, request_type=None, env=()):
         """Replay a derivation, including its evolving polymorphic constraints.
 
         Pass the original request type when it is more specific than the
@@ -176,6 +176,7 @@ class Grammar:
         actual_type = infer(term, env=env, library=self.library)
         request_type = actual_type if request_type is None else request_type
         unify(actual_type, request_type)
+        decisions = []
 
         def visit(node, target, bindings, constraints, context):
             head, arguments = _spine(node)
@@ -197,6 +198,7 @@ class Grammar:
                              if p.name == name and p.arity == arity), None)
             if selected is None:
                 raise ValueError(f"term uses an unavailable production {name}/{arity}")
+            decisions.append((tuple(context), f"{selected.name}/{selected.arity}"))
             score, updated = selected.log_probability, selected.substitutions
             if selected.is_lambda:
                 subtotal, updated = visit(head.children[0], selected.arguments[0],
@@ -208,8 +210,57 @@ class Grammar:
                 score += subtotal
             return score, updated
 
-        return visit(term, request_type, tuple(env), {}, ROOT_CONTEXT)[0]
+        return visit(term, request_type, tuple(env), {}, ROOT_CONTEXT)[0], decisions
+
+    def log_probability(self, term, request_type=None, env=()):
+        """Return a typed derivation's contextual log probability.
+
+        Supply the original request for programs with a more general principal
+        type, such as polymorphic ``nil`` under a ``list[int]`` request.
+        """
+        return self._derivation(term, request_type, env)[0]
+
+    def decisions(self, term, request_type=None):
+        """Return ``[(context, name/arity), ...]`` in top-down decision order."""
+        return self._derivation(term, request_type)[1]
 
     def fit(self, solutions):
-        """Stage 3 learning hook; Stage 1 deliberately contains no updates."""
-        raise NotImplementedError("grammar fitting is introduced after the Stage 1 freeze")
+        """Refit production counts from solutions, with a fixed pseudocount one.
+
+        Each item is a closed term or ``(term, request_type)``. Observed contexts
+        receive their own count tables; unseen contexts back off to pooled
+        counts. Every available production and observed variable/arity key gets
+        pseudocount one, so unseen capabilities retain nonzero probability.
+        Validation finishes before weights change. No productions are added.
+        """
+        pairs = [(item, None) if isinstance(item, Term) else tuple(item)
+                 for item in solutions]
+        if any(len(pair) != 2 or not isinstance(pair[0], Term)
+               or (pair[1] is not None and not isinstance(pair[1], Type)) for pair in pairs):
+            raise TypeError("solutions must contain terms or (term, request_type) pairs")
+        global_counts = Counter()
+        contextual_counts = defaultdict(Counter)
+        before = 0.0
+        for term, request_type in pairs:
+            score, decisions = self._derivation(term, request_type)
+            before += score
+            for context, production in decisions:
+                global_counts[production] += 1
+                contextual_counts[context][production] += 1
+        inventory = {"lambda/1"}
+        inventory.update(f"{name}/{arity}"
+                         for name, signature in (*self.primitives.items(),
+                                                 *self._library_types.items())
+                         for arity in range(len(function_parts(signature)[0]) + 1))
+        inventory.update(f"{_constant_name(term)}/0" for term in self.constants)
+        inventory.update(global_counts)
+        self.weights = {key: global_counts[key] + 1 for key in sorted(inventory)}
+        self.context_weights = {
+            context: {key: counts[key] + 1 for key in sorted(inventory)}
+            for context, counts in sorted(contextual_counts.items())
+        }
+        after = sum(self.log_probability(term, request_type) for term, request_type in pairs)
+        return {"solutions": len(pairs), "decisions": sum(global_counts.values()),
+                "contexts": len(contextual_counts), "pseudocount": 1,
+                "log_likelihood_before": before, "log_likelihood_after": after,
+                "production_counts": dict(sorted(global_counts.items()))}
