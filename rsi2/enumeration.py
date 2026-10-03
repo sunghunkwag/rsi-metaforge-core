@@ -15,6 +15,7 @@ The zero heuristic preserves the exact baseline traversal in both modes.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import cached_property
 import heapq
 from itertools import count
 import math
@@ -37,9 +38,9 @@ class Candidate:
 
 @dataclass(frozen=True)
 class PartialProgram:
-    """Read-only frontier features; holes have ``Term('hole', expected_type)``."""
+    """Read-only frontier features; optional ASTs contain typed hole terms."""
 
-    term: Term
+    term: Term | None
     log_probability: float
     min_size: int
     depth: int
@@ -59,15 +60,27 @@ class _Node:
     value: object = None
     children: tuple = ()
 
+    @cached_property
+    def features(self):
+        children = tuple(_features(child) for child in self.children)
+        return 1 + sum(size for size, _ in children), 1 + max(
+            (depth for _, depth in children), default=0)
+
+    @cached_property
+    def first_hole(self):
+        for index, child in enumerate(self.children):
+            result = _first_hole(child)
+            if result is not None:
+                path, hole = result
+                return (index,) + path, hole
+        return None
+
 
 def _first_hole(tree, path=()):
     if isinstance(tree, _Hole):
         return path, tree
-    for index, child in enumerate(tree.children):
-        result = _first_hole(child, path + (index,))
-        if result is not None:
-            return result
-    return None
+    result = tree.first_hole
+    return (path + result[0], result[1]) if result is not None else None
 
 
 def _replace(tree, path, replacement):
@@ -81,9 +94,7 @@ def _replace(tree, path, replacement):
 def _features(tree):
     if isinstance(tree, _Hole):
         return 1, 1
-    features = [_features(child) for child in tree.children]
-    return 1 + sum(size for size, _ in features), 1 + max(
-        (depth for _, depth in features), default=0)
+    return tree.features
 
 
 def _materialize(tree, substitutions):
@@ -113,7 +124,7 @@ def _finite_score(value):
 
 
 def _frontier(request_type, grammar, max_size, max_depth, max_expansions,
-              partial_heuristic, heuristic):
+              partial_heuristic, heuristic, partial_features_only=False):
     serials = count()
     initial = _Hole(request_type, (), ROOT_CONTEXT)
     heap = []
@@ -126,7 +137,7 @@ def _frontier(request_type, grammar, max_size, max_depth, max_expansions,
         complete = pending is None
         score = log_probability
         term = None
-        if partial_heuristic is not None and not complete:
+        if partial_heuristic is not None and not complete and not partial_features_only:
             term = _materialize(tree, constraints)
         if partial_heuristic is not None and not complete:
             score += _finite_score(partial_heuristic(
@@ -166,7 +177,7 @@ def _frontier(request_type, grammar, max_size, max_depth, max_expansions,
 
 def enumerate_programs(request_type, grammar=None, max_size=14, heuristic=None, *,
                        partial_heuristic=None, max_expansions=None, max_depth=None,
-                       lookahead=32):
+                       lookahead=32, partial_features_only=False):
     """Yield well-typed programs, with explicit size and expansion budgets.
 
     A ``heuristic(term)`` callback supplies complete-program scores. With no
@@ -179,6 +190,9 @@ def enumerate_programs(request_type, grammar=None, max_size=14, heuristic=None, 
     Complete callbacks run only on first dequeue. A nonzero complete score
     reinserts the program with its adjusted priority without calling the scorer
     again; a zero score yields directly, preserving baseline evaluation order.
+    With ``partial_features_only=True``, partial callbacks receive ``term=None``
+    while all other features are unchanged. Complete callbacks always receive
+    the full term. The default includes a materialized AST with typed holes.
 
     Neither score callback changes typing or probabilities. They never inspect
     a task or examples unless the caller explicitly captures that information.
@@ -196,7 +210,8 @@ def enumerate_programs(request_type, grammar=None, max_size=14, heuristic=None, 
     grammar = Grammar() if grammar is None else grammar
     if heuristic is None or partial_heuristic is not None:
         yield from _frontier(request_type, grammar, max_size, max_depth,
-                             max_expansions, partial_heuristic, heuristic)
+                             max_expansions, partial_heuristic, heuristic,
+                             partial_features_only)
         return
 
     baseline = iter(_frontier(request_type, grammar, max_size, max_depth,

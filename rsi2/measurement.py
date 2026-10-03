@@ -22,6 +22,8 @@ def assess(tasks, grammar, heuristic, budget, searchconfig=None, conditioner=Non
                         "wall_seconds": result.wall_seconds,
                         "evaluation_steps": result.evaluation_steps,
                         "heuristic_calls": result.heuristic_calls,
+                        "heuristic_evaluations": result.heuristic_evaluations,
+                        "heuristic_steps": result.heuristic_steps,
                         "exhausted": result.exhausted})
     solved = [record for record in records if record["solved"]]
     return {"tasks": len(records), "solved": len(solved),

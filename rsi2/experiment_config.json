@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "seeds": [11, 22, 33],
+  "generations": 8,
+  "arms": ["BASE", "BRUTE", "ONESHOT", "FULL", "NO_LIBRARY", "NO_RECOGNITION", "NO_HEURISTIC"],
+  "B_wake": 64,
+  "B_eval": 64,
+  "M": 10,
+  "dreams": 16,
+  "search": {"max_size": 12, "max_expansions": 20000, "step_budget": 2000},
+  "heuristics": {"N_h": 4, "N_m": 2, "screen_tasks": 4, "screen_budget_divisor": 4, "confirm_candidates": 2},
+  "max_workers": 5,
+  "numpy_threads": 1,
+  "cpu_limit_seconds": 86400
+}
