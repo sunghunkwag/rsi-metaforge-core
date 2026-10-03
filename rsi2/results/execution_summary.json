@@ -1,0 +1,154 @@
+{
+  "status": "complete",
+  "stop_reason": null,
+  "config": {
+    "schema_version": 1,
+    "seeds": [
+      11,
+      22,
+      33
+    ],
+    "generations": 8,
+    "arms": [
+      "BASE",
+      "BRUTE",
+      "ONESHOT",
+      "FULL",
+      "NO_LIBRARY",
+      "NO_RECOGNITION",
+      "NO_HEURISTIC"
+    ],
+    "B_wake": 64,
+    "B_eval": 64,
+    "M": 10,
+    "dreams": 16,
+    "search": {
+      "max_size": 12,
+      "max_expansions": 20000,
+      "step_budget": 2000
+    },
+    "heuristics": {
+      "N_h": 4,
+      "N_m": 2,
+      "screen_tasks": 4,
+      "screen_budget_divisor": 4,
+      "confirm_candidates": 2
+    },
+    "max_workers": 5,
+    "numpy_threads": 1,
+    "cpu_limit_seconds": 86400
+  },
+  "workers": 5,
+  "runs": [
+    {
+      "arm": "BASE",
+      "seed": 11,
+      "status": "complete"
+    },
+    {
+      "arm": "BASE",
+      "seed": 22,
+      "status": "complete"
+    },
+    {
+      "arm": "BASE",
+      "seed": 33,
+      "status": "complete"
+    },
+    {
+      "arm": "BRUTE",
+      "seed": 11,
+      "status": "complete"
+    },
+    {
+      "arm": "BRUTE",
+      "seed": 22,
+      "status": "complete"
+    },
+    {
+      "arm": "BRUTE",
+      "seed": 33,
+      "status": "complete"
+    },
+    {
+      "arm": "ONESHOT",
+      "seed": 11,
+      "status": "complete"
+    },
+    {
+      "arm": "ONESHOT",
+      "seed": 22,
+      "status": "complete"
+    },
+    {
+      "arm": "ONESHOT",
+      "seed": 33,
+      "status": "complete"
+    },
+    {
+      "arm": "FULL",
+      "seed": 11,
+      "status": "complete"
+    },
+    {
+      "arm": "FULL",
+      "seed": 22,
+      "status": "complete"
+    },
+    {
+      "arm": "FULL",
+      "seed": 33,
+      "status": "complete"
+    },
+    {
+      "arm": "NO_LIBRARY",
+      "seed": 11,
+      "status": "complete"
+    },
+    {
+      "arm": "NO_LIBRARY",
+      "seed": 22,
+      "status": "complete"
+    },
+    {
+      "arm": "NO_LIBRARY",
+      "seed": 33,
+      "status": "complete"
+    },
+    {
+      "arm": "NO_RECOGNITION",
+      "seed": 11,
+      "status": "complete"
+    },
+    {
+      "arm": "NO_RECOGNITION",
+      "seed": 22,
+      "status": "complete"
+    },
+    {
+      "arm": "NO_RECOGNITION",
+      "seed": 33,
+      "status": "complete"
+    },
+    {
+      "arm": "NO_HEURISTIC",
+      "seed": 11,
+      "status": "complete"
+    },
+    {
+      "arm": "NO_HEURISTIC",
+      "seed": 22,
+      "status": "complete"
+    },
+    {
+      "arm": "NO_HEURISTIC",
+      "seed": 33,
+      "status": "complete"
+    }
+  ],
+  "totals": {
+    "candidate_evaluations": 574956,
+    "wall_seconds": 7431.433926425001,
+    "cpu_seconds": 27902.035097123997
+  }
+}

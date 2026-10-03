@@ -1,0 +1,1456 @@
+{
+  "generation": {
+    "generation": 1,
+    "wake": [
+      {
+        "name": "keep-mod-k with k=2",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "append-index-k with k=1",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "prepend-k with k=4",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "index-k with k=3",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "index-head",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "has-k with k=3",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "caesar-cipher-k-modulo-n with k=1 and n=2",
+        "hidden_verified": true,
+        "candidates": 54,
+        "has_solution": true
+      },
+      {
+        "name": "prepend-k with k=5",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "modulo-k with k=3",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "replace-all-with-index-k with k=5",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "caesar-cipher-k-modulo-n with k=5 and n=5",
+        "hidden_verified": true,
+        "candidates": 4,
+        "has_solution": true
+      },
+      {
+        "name": "slice-k-n with k=5 and n=4",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "kth-smallest with k=2",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "has-head-in-tail",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "prepend-index-k with k=5",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "caesar-cipher-k-modulo-n with k=2 and n=2",
+        "hidden_verified": true,
+        "candidates": 4,
+        "has_solution": true
+      },
+      {
+        "name": "slice-k-n with k=5 and n=1",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "modulo-k with k=2",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "dup",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "slice-k-n with k=1 and n=4",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "slice-k-n with k=5 and n=2",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "rotate-k with k=4",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "index-k with k=5",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "kth-largest with k=3",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "reverse",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "kth-largest with k=4",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "bool-identify-k with k=1",
+        "hidden_verified": true,
+        "candidates": 12,
+        "has_solution": true
+      },
+      {
+        "name": "append-k with k=4",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "append-k with k=1",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "is-mod-k with k=5",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "prepend-index-k with k=2",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "caesar-cipher-k-modulo-n with k=0 and n=3",
+        "hidden_verified": true,
+        "candidates": 4,
+        "has_solution": true
+      },
+      {
+        "name": "slice-k-n with k=2 and n=4",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "prepend-k with k=0",
+        "hidden_verified": true,
+        "candidates": 8,
+        "has_solution": true
+      },
+      {
+        "name": "replace-all-with-index-k with k=1",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      },
+      {
+        "name": "slice-k-n with k=4 and n=4",
+        "hidden_verified": false,
+        "candidates": 64,
+        "has_solution": false
+      }
+    ],
+    "training_solutions": 6,
+    "library_entries": 0,
+    "adopted_library": [],
+    "grammar": {
+      "solutions": 6,
+      "decisions": 14,
+      "contexts": 6,
+      "pseudocount": 1,
+      "log_likelihood_before": -33.01872204361128,
+      "log_likelihood_after": -22.467113746141578,
+      "production_counts": {
+        "cons/1": 1,
+        "eq/1": 1,
+        "int:0/0": 1,
+        "int:1/0": 2,
+        "lambda/1": 3,
+        "map/1": 2,
+        "sub/1": 1,
+        "var:0/0": 3
+      }
+    },
+    "recognition": {
+      "examples": 22,
+      "decisions": 97,
+      "contexts": 23,
+      "productions": 29,
+      "steps": 80,
+      "objective_before": 3.367643040700789,
+      "objective_after": 1.8162000202547224
+    },
+    "dreams": 16,
+    "wake_candidate_evaluations": 2006,
+    "dream_candidate_evaluations": 26,
+    "wall_seconds": 21.737996464005846,
+    "cpu_seconds": 21.726517203
+  },
+  "heuristics": {
+    "generation": 1,
+    "seed": 11,
+    "primitive_only": false,
+    "update_state": true,
+    "parameters": {
+      "N_h": 4,
+      "N_m": 2,
+      "screen_tasks": 4,
+      "screen_budget_divisor": 4,
+      "confirm_candidates": 2
+    },
+    "screen_budget": 16,
+    "screen_task_names": [
+      "add-k with k=5",
+      "bool-identify-is-mod-k with k=2",
+      "caesar-cipher-k-modulo-n with k=1 and n=3",
+      "caesar-cipher-k-modulo-n with k=1 and n=4"
+    ],
+    "incumbent": {
+      "tag": "lam",
+      "value": {
+        "tag": "list",
+        "args": [
+          {
+            "tag": "int",
+            "args": []
+          }
+        ]
+      },
+      "children": [
+        {
+          "tag": "lam",
+          "value": {
+            "tag": "list",
+            "args": [
+              {
+                "tag": "int",
+                "args": []
+              }
+            ]
+          },
+          "children": [
+            {
+              "tag": "lam",
+              "value": {
+                "tag": "int",
+                "args": []
+              },
+              "children": [
+                {
+                  "tag": "lam",
+                  "value": {
+                    "tag": "int",
+                    "args": []
+                  },
+                  "children": [
+                    {
+                      "tag": "int",
+                      "value": 0,
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "incumbent_full": {
+      "tasks": 12,
+      "solved": 1,
+      "solved_fraction": 0.08333333333333333,
+      "mean_candidates_to_solution": 3.0,
+      "candidate_evaluations": 707,
+      "budget": 64,
+      "wall_seconds": 6.058706454998173,
+      "records": [
+        {
+          "name": "add-k with k=5",
+          "solved": false,
+          "candidates": 64,
+          "candidates_to_solution": null,
+          "wall_seconds": 0.5085921680001775,
+          "evaluation_steps": 1651,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "exhausted": false
+        },
+        {
+          "name": "bool-identify-is-mod-k with k=2",
+          "solved": false,
+          "candidates": 64,
+          "candidates_to_solution": null,
+          "wall_seconds": 1.0726658899948234,
+          "evaluation_steps": 2301,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "exhausted": false
+        },
+        {
+          "name": "caesar-cipher-k-modulo-n with k=1 and n=3",
+          "solved": false,
+          "candidates": 64,
+          "candidates_to_solution": null,
+          "wall_seconds": 0.46538079300080426,
+          "evaluation_steps": 1642,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "exhausted": false
+        },
+        {
+          "name": "caesar-cipher-k-modulo-n with k=1 and n=4",
+          "solved": false,
+          "candidates": 64,
+          "candidates_to_solution": null,
+          "wall_seconds": 0.6775996040014434,
+          "evaluation_steps": 1689,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "exhausted": false
+        },
+        {
+          "name": "caesar-cipher-k-modulo-n with k=2 and n=5",
+          "solved": false,
+          "candidates": 64,
+          "candidates_to_solution": null,
+          "wall_seconds": 0.49629427600302733,
+          "evaluation_steps": 2028,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "exhausted": false
+        },
+        {
+          "name": "caesar-cipher-k-modulo-n with k=3 and n=2",
+          "solved": true,
+          "candidates": 3,
+          "candidates_to_solution": 3,
+          "wall_seconds": 0.00843935800367035,
+          "evaluation_steps": 351,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "exhausted": false
+        },
+        {
+          "name": "has-k with k=2",
+          "solved": false,
+          "candidates": 64,
+          "candidates_to_solution": null,
+          "wall_seconds": 0.5479258179984754,
+          "evaluation_steps": 2067,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "exhausted": false
+        },
+        {
+          "name": "kth-largest with k=5",
+          "solved": false,
+          "candidates": 64,
+          "candidates_to_solution": null,
+          "wall_seconds": 0.4540091939998092,
+          "evaluation_steps": 2305,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "exhausted": false
+        },
+        {
+          "name": "prepend-index-k with k=3",
+          "solved": false,
+          "candidates": 64,
+          "candidates_to_solution": null,
+          "wall_seconds": 0.43941716799599817,
+          "evaluation_steps": 2093,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "exhausted": false
+        },
+        {
+          "name": "repeat-k with k=2",
+          "solved": false,
+          "candidates": 64,
+          "candidates_to_solution": null,
+          "wall_seconds": 0.44199392500013346,
+          "evaluation_steps": 1841,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "exhausted": false
+        },
+        {
+          "name": "slice-k-n with k=3 and n=3",
+          "solved": false,
+          "candidates": 64,
+          "candidates_to_solution": null,
+          "wall_seconds": 0.4966890270006843,
+          "evaluation_steps": 2218,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "exhausted": false
+        },
+        {
+          "name": "sum",
+          "solved": false,
+          "candidates": 64,
+          "candidates_to_solution": null,
+          "wall_seconds": 0.3474332690020674,
+          "evaluation_steps": 1324,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "exhausted": false
+        }
+      ]
+    },
+    "best_full_fraction": 0.08333333333333333,
+    "best_term": {
+      "tag": "lam",
+      "value": {
+        "tag": "list",
+        "args": [
+          {
+            "tag": "int",
+            "args": []
+          }
+        ]
+      },
+      "children": [
+        {
+          "tag": "lam",
+          "value": {
+            "tag": "list",
+            "args": [
+              {
+                "tag": "int",
+                "args": []
+              }
+            ]
+          },
+          "children": [
+            {
+              "tag": "lam",
+              "value": {
+                "tag": "int",
+                "args": []
+              },
+              "children": [
+                {
+                  "tag": "lam",
+                  "value": {
+                    "tag": "int",
+                    "args": []
+                  },
+                  "children": [
+                    {
+                      "tag": "int",
+                      "value": 0,
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "adopted": false,
+    "adopted_index": null,
+    "synthesis_candidate_evaluations": 6,
+    "inner_candidate_evaluations": 2361,
+    "candidate_evaluations": 2367,
+    "wall_seconds": 306.13505111899576,
+    "cpu_seconds": 306.097107156,
+    "candidates": [
+      {
+        "origin": "enumeration",
+        "term": {
+          "tag": "app",
+          "value": null,
+          "children": [
+            {
+              "tag": "prim",
+              "value": "head",
+              "children": []
+            },
+            {
+              "tag": "prim",
+              "value": "nil",
+              "children": []
+            }
+          ]
+        },
+        "mutation_path": null,
+        "rejection": "no_strict_improvement",
+        "index": 0,
+        "generation": 1,
+        "screen": {
+          "tasks": 4,
+          "solved": 0,
+          "solved_fraction": 0.0,
+          "mean_candidates_to_solution": null,
+          "candidate_evaluations": 64,
+          "budget": 16,
+          "wall_seconds": 0.6942523580000852,
+          "records": [
+            {
+              "name": "add-k with k=5",
+              "solved": false,
+              "candidates": 16,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.12939006899978267,
+              "evaluation_steps": 2619,
+              "heuristic_calls": 740,
+              "heuristic_evaluations": 35,
+              "heuristic_steps": 1850,
+              "exhausted": false
+            },
+            {
+              "name": "bool-identify-is-mod-k with k=2",
+              "solved": false,
+              "candidates": 16,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.25463012300315313,
+              "evaluation_steps": 3577,
+              "heuristic_calls": 1084,
+              "heuristic_evaluations": 31,
+              "heuristic_steps": 1932,
+              "exhausted": false
+            },
+            {
+              "name": "caesar-cipher-k-modulo-n with k=1 and n=3",
+              "solved": false,
+              "candidates": 16,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.1559317259961972,
+              "evaluation_steps": 3033,
+              "heuristic_calls": 896,
+              "heuristic_evaluations": 33,
+              "heuristic_steps": 2162,
+              "exhausted": false
+            },
+            {
+              "name": "caesar-cipher-k-modulo-n with k=1 and n=4",
+              "solved": false,
+              "candidates": 16,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.141113942998345,
+              "evaluation_steps": 2297,
+              "heuristic_calls": 895,
+              "heuristic_evaluations": 33,
+              "heuristic_steps": 1790,
+              "exhausted": false
+            }
+          ]
+        },
+        "full": {
+          "tasks": 12,
+          "solved": 1,
+          "solved_fraction": 0.08333333333333333,
+          "mean_candidates_to_solution": 3.0,
+          "candidate_evaluations": 707,
+          "budget": 64,
+          "wall_seconds": 8.002801693000947,
+          "records": [
+            {
+              "name": "add-k with k=5",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.6290014719997998,
+              "evaluation_steps": 15208,
+              "heuristic_calls": 3254,
+              "heuristic_evaluations": 72,
+              "heuristic_steps": 4516,
+              "exhausted": false
+            },
+            {
+              "name": "bool-identify-is-mod-k with k=2",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 1.4655443830051809,
+              "evaluation_steps": 16446,
+              "heuristic_calls": 4690,
+              "heuristic_evaluations": 52,
+              "heuristic_steps": 3684,
+              "exhausted": false
+            },
+            {
+              "name": "caesar-cipher-k-modulo-n with k=1 and n=3",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.6565854330037837,
+              "evaluation_steps": 13066,
+              "heuristic_calls": 3312,
+              "heuristic_evaluations": 57,
+              "heuristic_steps": 3999,
+              "exhausted": false
+            },
+            {
+              "name": "caesar-cipher-k-modulo-n with k=1 and n=4",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.7232174649980152,
+              "evaluation_steps": 11093,
+              "heuristic_calls": 3362,
+              "heuristic_evaluations": 56,
+              "heuristic_steps": 3321,
+              "exhausted": false
+            },
+            {
+              "name": "caesar-cipher-k-modulo-n with k=2 and n=5",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.7158085659975768,
+              "evaluation_steps": 13258,
+              "heuristic_calls": 3428,
+              "heuristic_evaluations": 61,
+              "heuristic_steps": 4628,
+              "exhausted": false
+            },
+            {
+              "name": "caesar-cipher-k-modulo-n with k=3 and n=2",
+              "solved": true,
+              "candidates": 3,
+              "candidates_to_solution": 3,
+              "wall_seconds": 0.012792716006515548,
+              "evaluation_steps": 481,
+              "heuristic_calls": 99,
+              "heuristic_evaluations": 12,
+              "heuristic_steps": 746,
+              "exhausted": false
+            },
+            {
+              "name": "has-k with k=2",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.7561244989992701,
+              "evaluation_steps": 12241,
+              "heuristic_calls": 3704,
+              "heuristic_evaluations": 39,
+              "heuristic_steps": 988,
+              "exhausted": false
+            },
+            {
+              "name": "kth-largest with k=5",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.6551581820021966,
+              "evaluation_steps": 17051,
+              "heuristic_calls": 3289,
+              "heuristic_evaluations": 58,
+              "heuristic_steps": 1596,
+              "exhausted": false
+            },
+            {
+              "name": "prepend-index-k with k=3",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.5904561059942353,
+              "evaluation_steps": 19720,
+              "heuristic_calls": 2937,
+              "heuristic_evaluations": 68,
+              "heuristic_steps": 8400,
+              "exhausted": false
+            },
+            {
+              "name": "repeat-k with k=2",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.6376445139976568,
+              "evaluation_steps": 13123,
+              "heuristic_calls": 3023,
+              "heuristic_evaluations": 64,
+              "heuristic_steps": 5308,
+              "exhausted": false
+            },
+            {
+              "name": "slice-k-n with k=3 and n=3",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.6533343200062518,
+              "evaluation_steps": 21695,
+              "heuristic_calls": 3168,
+              "heuristic_evaluations": 67,
+              "heuristic_steps": 6398,
+              "exhausted": false
+            },
+            {
+              "name": "sum",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.468232708000869,
+              "evaluation_steps": 11371,
+              "heuristic_calls": 2792,
+              "heuristic_evaluations": 51,
+              "heuristic_steps": 1382,
+              "exhausted": false
+            }
+          ]
+        },
+        "adopted": false,
+        "duplicate": false,
+        "readable": "(head nil)"
+      },
+      {
+        "origin": "enumeration",
+        "term": {
+          "tag": "lam",
+          "value": {
+            "tag": "list",
+            "args": [
+              {
+                "tag": "int",
+                "args": []
+              }
+            ]
+          },
+          "children": [
+            {
+              "tag": "app",
+              "value": null,
+              "children": [
+                {
+                  "tag": "prim",
+                  "value": "head",
+                  "children": []
+                },
+                {
+                  "tag": "prim",
+                  "value": "nil",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        "mutation_path": null,
+        "rejection": "no_strict_improvement",
+        "index": 1,
+        "generation": 1,
+        "screen": {
+          "tasks": 4,
+          "solved": 0,
+          "solved_fraction": 0.0,
+          "mean_candidates_to_solution": null,
+          "candidate_evaluations": 64,
+          "budget": 16,
+          "wall_seconds": 0.713791267000488,
+          "records": [
+            {
+              "name": "add-k with k=5",
+              "solved": false,
+              "candidates": 16,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.14054864599893335,
+              "evaluation_steps": 2619,
+              "heuristic_calls": 740,
+              "heuristic_evaluations": 35,
+              "heuristic_steps": 2025,
+              "exhausted": false
+            },
+            {
+              "name": "bool-identify-is-mod-k with k=2",
+              "solved": false,
+              "candidates": 16,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.23938868900586385,
+              "evaluation_steps": 3577,
+              "heuristic_calls": 1084,
+              "heuristic_evaluations": 31,
+              "heuristic_steps": 2087,
+              "exhausted": false
+            },
+            {
+              "name": "caesar-cipher-k-modulo-n with k=1 and n=3",
+              "solved": false,
+              "candidates": 16,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.15501760299957823,
+              "evaluation_steps": 3033,
+              "heuristic_calls": 896,
+              "heuristic_evaluations": 33,
+              "heuristic_steps": 2327,
+              "exhausted": false
+            },
+            {
+              "name": "caesar-cipher-k-modulo-n with k=1 and n=4",
+              "solved": false,
+              "candidates": 16,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.16878846599865938,
+              "evaluation_steps": 2297,
+              "heuristic_calls": 895,
+              "heuristic_evaluations": 33,
+              "heuristic_steps": 1955,
+              "exhausted": false
+            }
+          ]
+        },
+        "full": {
+          "tasks": 12,
+          "solved": 1,
+          "solved_fraction": 0.08333333333333333,
+          "mean_candidates_to_solution": 3.0,
+          "candidate_evaluations": 707,
+          "budget": 64,
+          "wall_seconds": 7.6018601189935,
+          "records": [
+            {
+              "name": "add-k with k=5",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.6539727429990307,
+              "evaluation_steps": 15208,
+              "heuristic_calls": 3254,
+              "heuristic_evaluations": 72,
+              "heuristic_steps": 4876,
+              "exhausted": false
+            },
+            {
+              "name": "bool-identify-is-mod-k with k=2",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 1.3589649560017278,
+              "evaluation_steps": 16446,
+              "heuristic_calls": 4690,
+              "heuristic_evaluations": 52,
+              "heuristic_steps": 3944,
+              "exhausted": false
+            },
+            {
+              "name": "caesar-cipher-k-modulo-n with k=1 and n=3",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.6277058300038334,
+              "evaluation_steps": 13066,
+              "heuristic_calls": 3312,
+              "heuristic_evaluations": 57,
+              "heuristic_steps": 4284,
+              "exhausted": false
+            },
+            {
+              "name": "caesar-cipher-k-modulo-n with k=1 and n=4",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.6258941630003392,
+              "evaluation_steps": 11093,
+              "heuristic_calls": 3362,
+              "heuristic_evaluations": 56,
+              "heuristic_steps": 3601,
+              "exhausted": false
+            },
+            {
+              "name": "caesar-cipher-k-modulo-n with k=2 and n=5",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.6284797439948306,
+              "evaluation_steps": 13258,
+              "heuristic_calls": 3428,
+              "heuristic_evaluations": 61,
+              "heuristic_steps": 4933,
+              "exhausted": false
+            },
+            {
+              "name": "caesar-cipher-k-modulo-n with k=3 and n=2",
+              "solved": true,
+              "candidates": 3,
+              "candidates_to_solution": 3,
+              "wall_seconds": 0.013514931000827346,
+              "evaluation_steps": 481,
+              "heuristic_calls": 99,
+              "heuristic_evaluations": 12,
+              "heuristic_steps": 806,
+              "exhausted": false
+            },
+            {
+              "name": "has-k with k=2",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.7189565929948003,
+              "evaluation_steps": 12241,
+              "heuristic_calls": 3704,
+              "heuristic_evaluations": 39,
+              "heuristic_steps": 1183,
+              "exhausted": false
+            },
+            {
+              "name": "kth-largest with k=5",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.6246121139993193,
+              "evaluation_steps": 17051,
+              "heuristic_calls": 3289,
+              "heuristic_evaluations": 58,
+              "heuristic_steps": 1886,
+              "exhausted": false
+            },
+            {
+              "name": "prepend-index-k with k=3",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.6115678700007265,
+              "evaluation_steps": 19720,
+              "heuristic_calls": 2937,
+              "heuristic_evaluations": 68,
+              "heuristic_steps": 8740,
+              "exhausted": false
+            },
+            {
+              "name": "repeat-k with k=2",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.6120589730053325,
+              "evaluation_steps": 13123,
+              "heuristic_calls": 3023,
+              "heuristic_evaluations": 64,
+              "heuristic_steps": 5628,
+              "exhausted": false
+            },
+            {
+              "name": "slice-k-n with k=3 and n=3",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.6296219190044212,
+              "evaluation_steps": 21695,
+              "heuristic_calls": 3168,
+              "heuristic_evaluations": 67,
+              "heuristic_steps": 6733,
+              "exhausted": false
+            },
+            {
+              "name": "sum",
+              "solved": false,
+              "candidates": 64,
+              "candidates_to_solution": null,
+              "wall_seconds": 0.4597539200040046,
+              "evaluation_steps": 11371,
+              "heuristic_calls": 2792,
+              "heuristic_evaluations": 51,
+              "heuristic_steps": 1637,
+              "exhausted": false
+            }
+          ]
+        },
+        "adopted": false,
+        "duplicate": false,
+        "readable": "(lambda x0: list[int]. (head nil))"
+      },
+      {
+        "origin": "enumeration",
+        "term": {
+          "tag": "lam",
+          "value": {
+            "tag": "list",
+            "args": [
+              {
+                "tag": "int",
+                "args": []
+              }
+            ]
+          },
+          "children": [
+            {
+              "tag": "lam",
+              "value": {
+                "tag": "list",
+                "args": [
+                  {
+                    "tag": "int",
+                    "args": []
+                  }
+                ]
+              },
+              "children": [
+                {
+                  "tag": "prim",
+                  "value": "add",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        "mutation_path": null,
+        "rejection": "not_confirmed",
+        "index": 2,
+        "generation": 1,
+        "screen": {
+          "tasks": 4,
+          "solved": 0,
+          "solved_fraction": 0.0,
+          "mean_candidates_to_solution": null,
+          "candidate_evaluations": 16,
+          "budget": 16,
+          "wall_seconds": 83.33127051100018,
+          "records": [
+            {
+              "name": "add-k with k=5",
+              "solved": false,
+              "candidates": 0,
+              "candidates_to_solution": null,
+              "wall_seconds": 21.509819116006838,
+              "evaluation_steps": 0,
+              "heuristic_calls": 23740,
+              "heuristic_evaluations": 26,
+              "heuristic_steps": 1274,
+              "exhausted": true
+            },
+            {
+              "name": "bool-identify-is-mod-k with k=2",
+              "solved": false,
+              "candidates": 16,
+              "candidates_to_solution": null,
+              "wall_seconds": 17.960398467999767,
+              "evaluation_steps": 3577,
+              "heuristic_calls": 17231,
+              "heuristic_evaluations": 34,
+              "heuristic_steps": 2326,
+              "exhausted": false
+            },
+            {
+              "name": "caesar-cipher-k-modulo-n with k=1 and n=3",
+              "solved": false,
+              "candidates": 0,
+              "candidates_to_solution": null,
+              "wall_seconds": 22.567691236006794,
+              "evaluation_steps": 0,
+              "heuristic_calls": 24198,
+              "heuristic_evaluations": 27,
+              "heuristic_steps": 1566,
+              "exhausted": true
+            },
+            {
+              "name": "caesar-cipher-k-modulo-n with k=1 and n=4",
+              "solved": false,
+              "candidates": 0,
+              "candidates_to_solution": null,
+              "wall_seconds": 21.282246758004476,
+              "evaluation_steps": 0,
+              "heuristic_calls": 24815,
+              "heuristic_evaluations": 27,
+              "heuristic_steps": 1377,
+              "exhausted": true
+            }
+          ]
+        },
+        "full": null,
+        "adopted": false,
+        "duplicate": false,
+        "readable": "(lambda x0: list[int]. (lambda x1: list[int]. add))"
+      },
+      {
+        "origin": "enumeration",
+        "term": {
+          "tag": "lam",
+          "value": {
+            "tag": "list",
+            "args": [
+              {
+                "tag": "int",
+                "args": []
+              }
+            ]
+          },
+          "children": [
+            {
+              "tag": "lam",
+              "value": {
+                "tag": "list",
+                "args": [
+                  {
+                    "tag": "int",
+                    "args": []
+                  }
+                ]
+              },
+              "children": [
+                {
+                  "tag": "prim",
+                  "value": "sub",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        "mutation_path": null,
+        "rejection": "not_confirmed",
+        "index": 3,
+        "generation": 1,
+        "screen": {
+          "tasks": 4,
+          "solved": 0,
+          "solved_fraction": 0.0,
+          "mean_candidates_to_solution": null,
+          "candidate_evaluations": 64,
+          "budget": 16,
+          "wall_seconds": 28.91091141600191,
+          "records": [
+            {
+              "name": "add-k with k=5",
+              "solved": false,
+              "candidates": 16,
+              "candidates_to_solution": null,
+              "wall_seconds": 5.506692555005429,
+              "evaluation_steps": 2619,
+              "heuristic_calls": 14601,
+              "heuristic_evaluations": 39,
+              "heuristic_steps": 2291,
+              "exhausted": false
+            },
+            {
+              "name": "bool-identify-is-mod-k with k=2",
+              "solved": false,
+              "candidates": 16,
+              "candidates_to_solution": null,
+              "wall_seconds": 7.627101443998981,
+              "evaluation_steps": 3577,
+              "heuristic_calls": 12376,
+              "heuristic_evaluations": 34,
+              "heuristic_steps": 2326,
+              "exhausted": false
+            },
+            {
+              "name": "caesar-cipher-k-modulo-n with k=1 and n=3",
+              "solved": false,
+              "candidates": 16,
+              "candidates_to_solution": null,
+              "wall_seconds": 7.525635497004259,
+              "evaluation_steps": 3033,
+              "heuristic_calls": 17800,
+              "heuristic_evaluations": 39,
+              "heuristic_steps": 2741,
+              "exhausted": false
+            },
+            {
+              "name": "caesar-cipher-k-modulo-n with k=1 and n=4",
+              "solved": false,
+              "candidates": 16,
+              "candidates_to_solution": null,
+              "wall_seconds": 8.235503257004893,
+              "evaluation_steps": 2297,
+              "heuristic_calls": 20970,
+              "heuristic_evaluations": 37,
+              "heuristic_steps": 2225,
+              "exhausted": false
+            }
+          ]
+        },
+        "full": null,
+        "adopted": false,
+        "duplicate": false,
+        "readable": "(lambda x0: list[int]. (lambda x1: list[int]. sub))"
+      },
+      {
+        "origin": "mutation",
+        "term": {
+          "tag": "lam",
+          "value": {
+            "tag": "list",
+            "args": [
+              {
+                "tag": "int",
+                "args": []
+              }
+            ]
+          },
+          "children": [
+            {
+              "tag": "lam",
+              "value": {
+                "tag": "list",
+                "args": [
+                  {
+                    "tag": "int",
+                    "args": []
+                  }
+                ]
+              },
+              "children": [
+                {
+                  "tag": "prim",
+                  "value": "add",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        "mutation_path": [
+          0
+        ],
+        "rejection": "not_confirmed",
+        "index": 4,
+        "generation": 1,
+        "screen": {
+          "tasks": 4,
+          "solved": 0,
+          "solved_fraction": 0.0,
+          "mean_candidates_to_solution": null,
+          "candidate_evaluations": 16,
+          "budget": 16,
+          "wall_seconds": 80.9295323319966,
+          "records": [
+            {
+              "name": "add-k with k=5",
+              "solved": false,
+              "candidates": 0,
+              "candidates_to_solution": null,
+              "wall_seconds": 20.869622293001157,
+              "evaluation_steps": 0,
+              "heuristic_calls": 23740,
+              "heuristic_evaluations": 26,
+              "heuristic_steps": 1274,
+              "exhausted": true
+            },
+            {
+              "name": "bool-identify-is-mod-k with k=2",
+              "solved": false,
+              "candidates": 16,
+              "candidates_to_solution": null,
+              "wall_seconds": 17.47276439000416,
+              "evaluation_steps": 3577,
+              "heuristic_calls": 17231,
+              "heuristic_evaluations": 34,
+              "heuristic_steps": 2326,
+              "exhausted": false
+            },
+            {
+              "name": "caesar-cipher-k-modulo-n with k=1 and n=3",
+              "solved": false,
+              "candidates": 0,
+              "candidates_to_solution": null,
+              "wall_seconds": 20.950061511000968,
+              "evaluation_steps": 0,
+              "heuristic_calls": 24198,
+              "heuristic_evaluations": 27,
+              "heuristic_steps": 1566,
+              "exhausted": true
+            },
+            {
+              "name": "caesar-cipher-k-modulo-n with k=1 and n=4",
+              "solved": false,
+              "candidates": 0,
+              "candidates_to_solution": null,
+              "wall_seconds": 21.621899686004326,
+              "evaluation_steps": 0,
+              "heuristic_calls": 24815,
+              "heuristic_evaluations": 27,
+              "heuristic_steps": 1377,
+              "exhausted": true
+            }
+          ]
+        },
+        "full": null,
+        "adopted": false,
+        "duplicate": true,
+        "readable": "(lambda x0: list[int]. (lambda x1: list[int]. add))"
+      },
+      {
+        "origin": "mutation",
+        "term": {
+          "tag": "lam",
+          "value": {
+            "tag": "list",
+            "args": [
+              {
+                "tag": "int",
+                "args": []
+              }
+            ]
+          },
+          "children": [
+            {
+              "tag": "lam",
+              "value": {
+                "tag": "list",
+                "args": [
+                  {
+                    "tag": "int",
+                    "args": []
+                  }
+                ]
+              },
+              "children": [
+                {
+                  "tag": "prim",
+                  "value": "add",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        "mutation_path": [
+          0,
+          0
+        ],
+        "rejection": "not_confirmed",
+        "index": 5,
+        "generation": 1,
+        "screen": {
+          "tasks": 4,
+          "solved": 0,
+          "solved_fraction": 0.0,
+          "mean_candidates_to_solution": null,
+          "candidate_evaluations": 16,
+          "budget": 16,
+          "wall_seconds": 89.79755064300116,
+          "records": [
+            {
+              "name": "add-k with k=5",
+              "solved": false,
+              "candidates": 0,
+              "candidates_to_solution": null,
+              "wall_seconds": 21.651790926000103,
+              "evaluation_steps": 0,
+              "heuristic_calls": 23740,
+              "heuristic_evaluations": 26,
+              "heuristic_steps": 1274,
+              "exhausted": true
+            },
+            {
+              "name": "bool-identify-is-mod-k with k=2",
+              "solved": false,
+              "candidates": 16,
+              "candidates_to_solution": null,
+              "wall_seconds": 25.711917462998827,
+              "evaluation_steps": 3577,
+              "heuristic_calls": 17231,
+              "heuristic_evaluations": 34,
+              "heuristic_steps": 2326,
+              "exhausted": false
+            },
+            {
+              "name": "caesar-cipher-k-modulo-n with k=1 and n=3",
+              "solved": false,
+              "candidates": 0,
+              "candidates_to_solution": null,
+              "wall_seconds": 21.385938344996248,
+              "evaluation_steps": 0,
+              "heuristic_calls": 24198,
+              "heuristic_evaluations": 27,
+              "heuristic_steps": 1566,
+              "exhausted": true
+            },
+            {
+              "name": "caesar-cipher-k-modulo-n with k=1 and n=4",
+              "solved": false,
+              "candidates": 0,
+              "candidates_to_solution": null,
+              "wall_seconds": 21.037061636001454,
+              "evaluation_steps": 0,
+              "heuristic_calls": 24815,
+              "heuristic_evaluations": 27,
+              "heuristic_steps": 1377,
+              "exhausted": true
+            }
+          ]
+        },
+        "full": null,
+        "adopted": false,
+        "duplicate": true,
+        "readable": "(lambda x0: list[int]. (lambda x1: list[int]. add))"
+      }
+    ]
+  }
+}
