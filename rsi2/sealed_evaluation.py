@@ -33,7 +33,12 @@ def report(testtasks, grammar, heuristic, budget, searchconfig=None, conditioner
         records.append({"name": task.name, "solved": accepted,
                         "candidates": result.candidates,
                         "candidates_to_solution": result.candidates if accepted else None,
-                        "wall_seconds": result.wall_seconds})
+                        "wall_seconds": result.wall_seconds,
+                        "evaluation_steps": result.evaluation_steps,
+                        "heuristic_calls": result.heuristic_calls,
+                        "heuristic_evaluations": result.heuristic_evaluations,
+                        "heuristic_steps": result.heuristic_steps,
+                        "exhausted": result.exhausted})
     solved = [r for r in records if r["solved"]]
     return {"tasks": len(records), "solved": len(solved),
             "solved_fraction": len(solved) / len(records) if records else 0.0,
