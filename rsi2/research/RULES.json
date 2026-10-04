@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "development_complete": false,
+  "evidence_scope": "Development and fresh confirmation only; reporting audit excluded",
+  "rules": [
+    {
+      "id": "static_versus_original",
+      "type": "loop",
+      "pattern": "Repeated finite proposal prefixes and verified unproductive selection",
+      "diagnosis": "Verified proposal productivity is the measured target; task capability is a separate outcome.",
+      "intervention": "Persistent frontier, semantic eligibility and AST novelty",
+      "evidence": [],
+      "decision": "UNKNOWN",
+      "threshold": "No worse fresh-confirmation verified count on every seed, some strict gain, and no solved-task loss in any corresponding confirmation cycle",
+      "scope": "Limited paired development claim about verified proposal productivity; not task fitness or RSI",
+      "next_test": "Complete the fixed paired comparison before selecting a rule"
+    },
+    {
+      "id": "learned_versus_static",
+      "type": "meta",
+      "pattern": "Static novelty may leave a learned proposal-ranking opportunity",
+      "diagnosis": "Verified proposal productivity is the measured target; task capability is a separate outcome.",
+      "intervention": "Prior-cycle NumPy ranking on verified executable, candidate-dependent labels",
+      "evidence": [],
+      "decision": "UNKNOWN",
+      "threshold": "No worse fresh-confirmation verified count on every seed, some strict gain, and no solved-task loss in any corresponding confirmation cycle",
+      "scope": "Limited paired development claim about verified proposal productivity; not task fitness or RSI",
+      "next_test": "Complete the fixed paired comparison before selecting a rule"
+    },
+    {
+      "id": "task_heuristic_admission",
+      "type": "object",
+      "pattern": "Proposal-proxy gains can fail to improve hidden-verified task search",
+      "diagnosis": "Executable and informative behavior is insufficient evidence of task fitness.",
+      "intervention": "Require strict full VALIDATION gain, valid informative probes and per-task confirmation nonloss",
+      "evidence": [],
+      "decision": "UNKNOWN",
+      "scope": "Only individually verified adopted task heuristics; no original recursive-improvement claim",
+      "next_test": "Complete measurements"
+    }
+  ]
+}
