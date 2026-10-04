@@ -46,5 +46,34 @@ failure clusters, probes, screens, confirmations, fitted model and proposal
 memory. The runner writes the policy freeze before opening the separate audit
 capability. A partial study cannot supply a complete positive comparison.
 
+The first procedure run completed 11/27 cycles and the evaluation-reuse run
+completed 22/27 before their selection guards stopped them. Both retained the
+incumbent and left the reporting audit unopened. The corresponding 11 cycles
+had identical scientific results; actual inner task evaluations decreased from
+19,640 to 10,588 (46.1%) and their CPU decreased from 4,671.97 to 2,248.67 seconds
+(51.9%). Savings exclude unmatched cycles. Total run CPU differs with coverage.
+Read `EFFICIENCY_RESULTS.md` for scope and `EFFICIENCY_RULES.json` for the
+limited retained rule. Task and learned-procedure gain remain unestablished.
+
+`EFFICIENCY_PROTOCOL.md` registers that intervention before its execution.
+Use a new directory for `python -m rsi2.research.efficient_run --workers 3
+--output PATH`; the same report command accepts its output. Compare against the
+retained baseline using:
+
+```sh
+/workspace/.venvs/rsi2/bin/python -m rsi2.research.efficiency_report \
+  --baseline rsi2/research/results --results PATH \
+  --verification rsi2/research/EFFICIENCY_VERIFIERS.json \
+  --output comparison.md --rules comparison-rules.json
+```
+
+`SELF_REFINEMENT_PROTOCOL.md` separately registers the bounded autonomous
+coordinator. It derives a procedure hypothesis from recorded failures, executes
+paired task-specific verifiers, preserves admitted rules, and automatically
+uses the selected memory factory in the next cycle. Run it with
+`python -m rsi2.research.self_refinement_run --output NEW_PATH`. It changes the
+evaluation method; arbitrary algorithm synthesis and task-solving RSI require
+separate evidence. All cycle reports contain the eleven requested fields.
+
 No original study output is overwritten. No runtime network, pretrained model,
 LLM, API, service or hand-written heuristic is used.
