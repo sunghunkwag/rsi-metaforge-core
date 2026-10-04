@@ -77,3 +77,11 @@ separate evidence. All cycle reports contain the eleven requested fields.
 
 No original study output is overwritten. No runtime network, pretrained model,
 LLM, API, service or hand-written heuristic is used.
+
+The autonomous two-cycle trace completed in 110.61 aggregate CPU seconds.
+The runtime admitted and applied its own logical-work rule: actual task
+evaluations fell 26.7% on VALIDATION and 20.8% on confirmation, with identical
+scientific results on all three seeds. Confirmation CPU increased about 13%,
+so the retained rule does not establish general physical speed or task-solving
+RSI. Read `SELF_REFINEMENT_RESULTS.md` for every cycle's eleven evidence fields,
+raw measurements and limitations, and `SELF_REFINEMENT_RULES.json` for the rule.
