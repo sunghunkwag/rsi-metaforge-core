@@ -40,6 +40,8 @@ are recorded separately. At most six candidates are screened on the original
 first four sorted VALIDATION tasks at budget 16, and at most two are confirmed
 on all twelve original VALIDATION tasks at budget 64. AST size 12, expansion
 limit 20,000, interpreter steps 2,000 and all original task budgets are unchanged.
+Screen ties preserve the proposer's selected order, so a learned ranking can
+influence confirmation rather than being overwritten by raw enumeration order.
 
 All raw candidates receive the same independent semantic-contract probes.
 Record interpreter failures, non-integer results, constant-within-task scores,
