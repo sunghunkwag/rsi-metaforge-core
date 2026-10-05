@@ -2,6 +2,7 @@
 import unittest
 from unittest.mock import patch
 
+from rsi2 import enumeration
 from rsi2.enumeration import enumerate_programs
 from rsi2.evaluator import evaluate
 from rsi2.grammar import Grammar
@@ -138,6 +139,48 @@ class StratifiedSearchTests(unittest.TestCase):
                                                  _grammar(), max_expansions=maximum)
             self.assertLessEqual(result.expansions, maximum)
             self.assertEqual(result.expansions, sum(result.expansion_counts.values()))
+            self.assertIsNone(result.term)
+
+    def test_actual_heap_pops_match_reported_pops_across_paused_stream_caps(self):
+        grammar = Grammar(primitives={name: PRIMITIVE_TYPES[name] for name in ("sub", "neg")},
+                          constants=(Int(0), Int(1)))
+        original_pop = enumeration.heapq.heappop
+        for prefix in (0, 16):
+            for maximum in (1, 8, 10, 11, 12, 13, 20, 40, 80):
+                actual = []
+                def counted(heap):
+                    item = original_pop(heap)
+                    actual.append(item)
+                    return item
+                with patch.object(stratified, "BASELINE_PREFIX", prefix), \
+                        patch.object(enumeration.heapq, "heappop", side_effect=counted):
+                    result = stratified.solve_stratified((((2,), 999),), REQUEST, 64,
+                                                          grammar, max_expansions=maximum)
+                structure = result.expansion_counts.get("structure", 0)
+                self.assertEqual(len(actual), result.expansions - structure,
+                                 (prefix, maximum, result.expansion_counts))
+                self.assertLessEqual(len(actual) + structure, maximum)
+                self.assertEqual(result.expansion_accounting, stratified.EXPANSION_ACCOUNTING)
+
+    def test_cpu_overrun_after_partial_or_complete_heap_pop_retains_that_pop(self):
+        grammar = Grammar(primitives={"neg": PRIMITIVE_TYPES["neg"]}, constants=())
+        original_pop = enumeration.heapq.heappop
+        for crossing_pop in (1, 2):
+            clock, actual = [0.0], []
+            def counted(heap):
+                item = original_pop(heap)
+                actual.append(item)
+                if len(actual) == crossing_pop:
+                    clock[0] = 2.0
+                return item
+            with patch.object(enumeration.heapq, "heappop", side_effect=counted), \
+                    patch.object(stratified.time, "process_time", side_effect=lambda: clock[0]):
+                result = stratified.solve_stratified((((2,), 999),), REQUEST, 64,
+                                                      grammar, max_cpu_seconds=1)
+            self.assertEqual(result.termination, "cpu_budget")
+            self.assertEqual(result.expansions, len(actual))
+            self.assertEqual(len(actual), crossing_pop)
+            self.assertEqual(result.candidates, 0)
             self.assertIsNone(result.term)
 
     def test_cpu_deadline_keeps_charges_but_withholds_final_match(self):

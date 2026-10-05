@@ -21,6 +21,7 @@ from ..types import (Type, TypeInferenceError, function_parts, infer, instantiat
 
 
 BASELINE_PREFIX = 16
+EXPANSION_ACCOUNTING = "live_shared_global_cap_v2"
 
 
 @dataclass
@@ -34,6 +35,7 @@ class SearchResult:
     evaluator_steps: int = 0
     expansions: int = 0
     expansion_counts: dict = field(default_factory=dict)
+    expansion_accounting: str = EXPANSION_ACCOUNTING
     generated_wrappers: int = 0
     rejected_compositions: int = 0
     strata: list = field(default_factory=list)
@@ -49,6 +51,24 @@ class _Stopped(Exception):
         self.reason = reason
 
 
+class _LiveExpansionLimit:
+    """Consult the shared cap before each frozen enumerator heap pop.
+
+    The frozen frontier compares its local integer count to this limit. A
+    construction-time remainder becomes stale while other streams run;
+    this comparison instead reads the current shared charge on every resume.
+    """
+    def __init__(self, result, maximum, check):
+        self.result, self.maximum, self.check = result, maximum, check
+
+    def __lt__(self, other):
+        return self.maximum < other  # Frozen enumerate_programs validates <0.
+
+    def __gt__(self, _local_count):
+        self.check()
+        return self.result.expansions < self.maximum
+
+
 class _Meter:
     def __init__(self, grammar, result, check, maximum, stage, force_lambdas=0):
         self.grammar, self.result, self.check = grammar, result, check
@@ -56,14 +76,18 @@ class _Meter:
         self.force_lambdas = force_lambdas
 
     def pop(self):
-        self.check()
         if self.result.expansions >= self.maximum:
             raise _Stopped("expansion_budget")
         self.result.expansions += 1
         counts = self.result.expansion_counts
         counts[self.stage] = counts.get(self.stage, 0) + 1
+        # This pop already happened in the frozen frontier. Keep its charge
+        # even if the subsequent CPU check interrupts production/materialization.
+        self.check()
 
     def productions(self, *args, **kwargs):
+        if self.stage == "structure":
+            self.check()  # Structural queries do not have a prior frontier pop.
         self.pop()
         choices = self.grammar.productions(*args, **kwargs)
         self.check()
@@ -97,7 +121,8 @@ def _report(result, budget, limits):
                    "limits": dict(limits), "baseline_attempts": result.baseline_attempts,
                    "stratum_attempts": result.stratum_attempts, "helper_attempts": 0,
                    "expansions": result.expansions, "example_evaluations": result.example_evaluations,
-                   "evaluator_steps": result.evaluator_steps},
+                   "evaluator_steps": result.evaluator_steps,
+                   "expansion_accounting": result.expansion_accounting},
         "keep_revert_revise": "UNASSESSED: structural search requires matched hidden-verified TRAIN evidence",
         "updated_rule": {"status": "candidate structural policy", "learned_rule": False,
                          "admission": "No solver or RSI gain is admitted from this diagnostic alone"},
@@ -134,15 +159,17 @@ def solve_stratified(examples, request_type, budget, grammar, *, max_size=12,
 
     def generated(type_, size, stage):
         check()
-        remaining = max_expansions - result.expansions
-        if remaining <= 0:
+        if result.expansions >= max_expansions:
             raise _Stopped("expansion_budget")
         meter = _Meter(grammar, result, check, max_expansions, stage,
                        force_lambdas=1 if stage == "argument" else 0)
-        for candidate in enumerate_programs(type_, meter, max_size=size, max_expansions=remaining):
+        live_limit = _LiveExpansionLimit(result, max_expansions, check)
+        for candidate in enumerate_programs(type_, meter, max_size=size, max_expansions=live_limit):
             meter.pop()  # Partial pops are metered by productions; complete pops here.
             yield candidate.term
         check()
+        if result.expansions >= max_expansions:
+            raise _Stopped("expansion_budget")
 
     def attempt(term, source):
         check()

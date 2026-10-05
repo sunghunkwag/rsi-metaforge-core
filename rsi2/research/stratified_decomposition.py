@@ -16,13 +16,14 @@ from ..evaluator import evaluate
 from ..terms import apply, pretty
 from ..types import Arrow
 from .decomposition_search import SearchResult as DecompositionResult, _projection
-from .stratified_search import solve_stratified
+from .stratified_search import EXPANSION_ACCOUNTING, _LiveExpansionLimit, solve_stratified
 
 
 @dataclass
 class SearchResult(DecompositionResult):
     scalar_search: dict = field(default_factory=dict)
     expansion_counts: dict = field(default_factory=dict)
+    expansion_accounting: str = EXPANSION_ACCOUNTING
     report: dict = field(default_factory=dict)
 
 
@@ -36,12 +37,12 @@ class _HeadMeter:
         self.grammar, self.result, self.check, self.maximum = grammar, result, check, maximum
 
     def pop(self):
-        self.check()
         if self.result.expansions >= self.maximum:
             raise _Stopped("expansion_budget")
         self.result.expansions += 1
         counts = self.result.expansion_counts
         counts["head"] = counts.get("head", 0) + 1
+        self.check()
 
     def productions(self, *args, **kwargs):
         self.pop()
@@ -70,7 +71,8 @@ def _report(result, budget, limits):
         "result": {"termination": result.termination, "candidate_budget": budget, "limits": dict(limits),
                    "head_attempts": result.head_attempts, "component_attempts": result.component_attempts,
                    "root_attempts": result.root_attempts, "expansions": result.expansions,
-                   "example_evaluations": result.example_evaluations, "evaluator_steps": result.evaluator_steps},
+                   "example_evaluations": result.example_evaluations, "evaluator_steps": result.evaluator_steps,
+                   "expansion_accounting": result.expansion_accounting},
         "keep_revert_revise": "UNASSESSED: requires matched independently verified TRAIN evidence",
         "updated_rule": {"status": "candidate structural policy", "learned_rule": False,
                          "admission": "A public diagnostic does not establish solver or RSI gain"},
@@ -147,7 +149,8 @@ def solve_stratified_decomposition(examples, request_type, budget, grammar, *, m
             raise _Stopped("candidate_budget")
         meter, heads = _HeadMeter(grammar, result, check, max_expansions), []
         head_stream = enumerate_programs(Arrow(component_type, request_type), meter,
-                                         max_size=1, max_expansions=max_expansions)
+                                         max_size=1,
+                                         max_expansions=_LiveExpansionLimit(result, max_expansions, check))
         for candidate in head_stream:
             meter.pop()
             if attempt(candidate.term, (((), None),), "head"):

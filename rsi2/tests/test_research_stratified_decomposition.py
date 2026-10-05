@@ -2,6 +2,7 @@
 import unittest
 from unittest.mock import patch
 
+from rsi2 import enumeration
 from rsi2.evaluator import evaluate
 from rsi2.grammar import Grammar
 from rsi2.research import stratified_decomposition as decomposition
@@ -111,6 +112,43 @@ class StratifiedDecompositionTests(unittest.TestCase):
             for trial in result.trials:
                 size = Term.from_dict(trial["term"]).size
                 self.assertLessEqual(size, maximum - 2 if trial["stage"] == "component" else maximum)
+
+    def test_actual_head_and_scalar_heap_pops_share_one_live_cap(self):
+        grammar = Grammar(primitives={name: PRIMITIVE_TYPES[name] for name in ("map", "sub", "neg")},
+                          constants=(Int(0), Int(1)))
+        examples = ((([2],), [999]),)
+        original_pop = enumeration.heapq.heappop
+        for maximum in (0, 1, 2, 8, 12, 16, 20, 40):
+            actual = []
+            def counted(heap):
+                item = original_pop(heap)
+                actual.append(item)
+                return item
+            with patch.object(stratified, "BASELINE_PREFIX", 0), \
+                    patch.object(enumeration.heapq, "heappop", side_effect=counted):
+                result = decomposition.solve_stratified_decomposition(examples, REQUEST, 64,
+                                                                      grammar, max_expansions=maximum)
+            structure = result.expansion_counts.get("scalar_structure", 0)
+            self.assertEqual(len(actual), result.expansions - structure)
+            self.assertLessEqual(len(actual) + structure, maximum)
+
+    def test_head_heap_pop_interrupted_by_cpu_is_charged(self):
+        clock, actual = [0.0], []
+        original_pop = enumeration.heapq.heappop
+        def counted(heap):
+            item = original_pop(heap)
+            actual.append(item)
+            clock[0] = 2.0
+            return item
+        with patch.object(enumeration.heapq, "heappop", side_effect=counted), \
+                patch.object(decomposition.time, "process_time", side_effect=lambda: clock[0]):
+            result = decomposition.solve_stratified_decomposition(EXAMPLES, REQUEST, 64,
+                                                                  _grammar(), max_cpu_seconds=1)
+        self.assertEqual(result.termination, "cpu_budget")
+        self.assertEqual(len(actual), 1)
+        self.assertEqual(result.expansions, 1)
+        self.assertEqual(result.expansion_counts, {"head": 1})
+        self.assertIsNone(result.term)
 
     def test_cpu_deadline_after_scalar_call_retains_merged_work_and_prevents_root(self):
         clock = [0.0]

@@ -41,17 +41,17 @@ def enumeration_probe(examples, request_type, budget, grammar, max_cpu_seconds=1
 
     class Proxy:
         def productions(self, *args, **kwargs):
-            check()
             counters["expansions"] += 1
+            check()
             return grammar.productions(*args, **kwargs)
 
         def __getattr__(self, key):
             return getattr(grammar, key)
 
     def complete(state):
-        check()
         if state.complete:
             counters["expansions"] += 1
+        check()
         return 0.0
 
     def iterator(*args, **kwargs):
