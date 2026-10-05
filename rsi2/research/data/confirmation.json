@@ -1,0 +1,1253 @@
+[
+  {
+    "name": "remove-index-k with k=1",
+    "request_type": {
+      "tag": "arrow",
+      "args": [
+        {
+          "tag": "list",
+          "args": [
+            {
+              "tag": "int",
+              "args": []
+            }
+          ]
+        },
+        {
+          "tag": "list",
+          "args": [
+            {
+              "tag": "int",
+              "args": []
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "inputs": [
+          [
+            4,
+            8,
+            11,
+            0,
+            8,
+            11
+          ]
+        ],
+        "output": [
+          8,
+          11,
+          0,
+          8,
+          11
+        ]
+      },
+      {
+        "inputs": [
+          [
+            14,
+            13,
+            8,
+            15,
+            8,
+            10,
+            0,
+            6
+          ]
+        ],
+        "output": [
+          13,
+          8,
+          15,
+          8,
+          10,
+          0,
+          6
+        ]
+      },
+      {
+        "inputs": [
+          [
+            8,
+            10,
+            12,
+            11,
+            8,
+            8
+          ]
+        ],
+        "output": [
+          10,
+          12,
+          11,
+          8,
+          8
+        ]
+      },
+      {
+        "inputs": [
+          [
+            4,
+            4,
+            12,
+            7,
+            13,
+            9,
+            1
+          ]
+        ],
+        "output": [
+          4,
+          12,
+          7,
+          13,
+          9,
+          1
+        ]
+      },
+      {
+        "inputs": [
+          [
+            13,
+            4,
+            11,
+            10,
+            5
+          ]
+        ],
+        "output": [
+          4,
+          11,
+          10,
+          5
+        ]
+      },
+      {
+        "inputs": [
+          [
+            12,
+            14,
+            15,
+            4,
+            8,
+            1,
+            0,
+            10
+          ]
+        ],
+        "output": [
+          14,
+          15,
+          4,
+          8,
+          1,
+          0,
+          10
+        ]
+      },
+      {
+        "inputs": [
+          [
+            0,
+            10,
+            4,
+            11,
+            14
+          ]
+        ],
+        "output": [
+          10,
+          4,
+          11,
+          14
+        ]
+      },
+      {
+        "inputs": [
+          [
+            13
+          ]
+        ],
+        "output": []
+      },
+      {
+        "inputs": [
+          [
+            10
+          ]
+        ],
+        "output": []
+      },
+      {
+        "inputs": [
+          [
+            2,
+            8,
+            12
+          ]
+        ],
+        "output": [
+          8,
+          12
+        ]
+      }
+    ],
+    "hidden": [
+      {
+        "inputs": [
+          [
+            1
+          ]
+        ],
+        "output": []
+      },
+      {
+        "inputs": [
+          [
+            12,
+            15,
+            10,
+            10,
+            3,
+            8,
+            1
+          ]
+        ],
+        "output": [
+          15,
+          10,
+          10,
+          3,
+          8,
+          1
+        ]
+      },
+      {
+        "inputs": [
+          [
+            6,
+            10,
+            8,
+            14,
+            2,
+            12
+          ]
+        ],
+        "output": [
+          10,
+          8,
+          14,
+          2,
+          12
+        ]
+      },
+      {
+        "inputs": [
+          [
+            6,
+            0
+          ]
+        ],
+        "output": [
+          0
+        ]
+      },
+      {
+        "inputs": [
+          [
+            16
+          ]
+        ],
+        "output": []
+      }
+    ]
+  },
+  {
+    "name": "bool-identify-is-prime",
+    "request_type": {
+      "tag": "arrow",
+      "args": [
+        {
+          "tag": "list",
+          "args": [
+            {
+              "tag": "int",
+              "args": []
+            }
+          ]
+        },
+        {
+          "tag": "list",
+          "args": [
+            {
+              "tag": "bool",
+              "args": []
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "inputs": [
+          [
+            2
+          ]
+        ],
+        "output": [
+          true
+        ]
+      },
+      {
+        "inputs": [
+          [
+            2,
+            0
+          ]
+        ],
+        "output": [
+          true,
+          false
+        ]
+      },
+      {
+        "inputs": [
+          [
+            5,
+            11
+          ]
+        ],
+        "output": [
+          true,
+          true
+        ]
+      },
+      {
+        "inputs": [
+          [
+            5,
+            11,
+            12
+          ]
+        ],
+        "output": [
+          true,
+          true,
+          false
+        ]
+      },
+      {
+        "inputs": [
+          [
+            2,
+            3,
+            4,
+            5,
+            7,
+            9
+          ]
+        ],
+        "output": [
+          true,
+          true,
+          false,
+          true,
+          true,
+          false
+        ]
+      },
+      {
+        "inputs": [
+          [
+            7,
+            4,
+            11
+          ]
+        ],
+        "output": [
+          true,
+          false,
+          true
+        ]
+      },
+      {
+        "inputs": [
+          [
+            6,
+            13,
+            0,
+            2
+          ]
+        ],
+        "output": [
+          false,
+          true,
+          false,
+          true
+        ]
+      },
+      {
+        "inputs": [
+          [
+            3,
+            6
+          ]
+        ],
+        "output": [
+          true,
+          false
+        ]
+      },
+      {
+        "inputs": [
+          [
+            7,
+            7,
+            0
+          ]
+        ],
+        "output": [
+          true,
+          true,
+          false
+        ]
+      },
+      {
+        "inputs": [
+          [
+            5,
+            14,
+            10,
+            15,
+            6
+          ]
+        ],
+        "output": [
+          true,
+          false,
+          false,
+          false,
+          false
+        ]
+      }
+    ],
+    "hidden": [
+      {
+        "inputs": [
+          [
+            16,
+            12,
+            15,
+            7
+          ]
+        ],
+        "output": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "inputs": [
+          [
+            7,
+            6,
+            11
+          ]
+        ],
+        "output": [
+          true,
+          false,
+          true
+        ]
+      },
+      {
+        "inputs": [
+          [
+            10,
+            8,
+            4,
+            7
+          ]
+        ],
+        "output": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "inputs": [
+          [
+            12
+          ]
+        ],
+        "output": [
+          false
+        ]
+      },
+      {
+        "inputs": [
+          [
+            5
+          ]
+        ],
+        "output": [
+          true
+        ]
+      }
+    ]
+  },
+  {
+    "name": "len",
+    "request_type": {
+      "tag": "arrow",
+      "args": [
+        {
+          "tag": "list",
+          "args": [
+            {
+              "tag": "int",
+              "args": []
+            }
+          ]
+        },
+        {
+          "tag": "int",
+          "args": []
+        }
+      ]
+    },
+    "examples": [
+      {
+        "inputs": [
+          [
+            1,
+            2,
+            3
+          ]
+        ],
+        "output": 3
+      },
+      {
+        "inputs": [
+          [
+            0
+          ]
+        ],
+        "output": 1
+      },
+      {
+        "inputs": [
+          [
+            1,
+            1,
+            2,
+            1
+          ]
+        ],
+        "output": 4
+      },
+      {
+        "inputs": [
+          [
+            2,
+            9
+          ]
+        ],
+        "output": 2
+      },
+      {
+        "inputs": [
+          [
+            10,
+            14,
+            8,
+            2,
+            12,
+            10,
+            3
+          ]
+        ],
+        "output": 7
+      },
+      {
+        "inputs": [
+          []
+        ],
+        "output": 0
+      },
+      {
+        "inputs": [
+          [
+            2,
+            7
+          ]
+        ],
+        "output": 2
+      },
+      {
+        "inputs": [
+          [
+            13,
+            11,
+            10,
+            12,
+            13
+          ]
+        ],
+        "output": 5
+      },
+      {
+        "inputs": [
+          [
+            15
+          ]
+        ],
+        "output": 1
+      },
+      {
+        "inputs": [
+          [
+            5,
+            6,
+            2,
+            8,
+            9
+          ]
+        ],
+        "output": 5
+      }
+    ],
+    "hidden": [
+      {
+        "inputs": [
+          [
+            3
+          ]
+        ],
+        "output": 1
+      },
+      {
+        "inputs": [
+          [
+            7,
+            14,
+            11
+          ]
+        ],
+        "output": 3
+      },
+      {
+        "inputs": [
+          [
+            15,
+            15,
+            0,
+            1,
+            3,
+            16
+          ]
+        ],
+        "output": 6
+      }
+    ]
+  },
+  {
+    "name": "is-evens",
+    "request_type": {
+      "tag": "arrow",
+      "args": [
+        {
+          "tag": "list",
+          "args": [
+            {
+              "tag": "int",
+              "args": []
+            }
+          ]
+        },
+        {
+          "tag": "bool",
+          "args": []
+        }
+      ]
+    },
+    "examples": [
+      {
+        "inputs": [
+          [
+            2,
+            0,
+            4
+          ]
+        ],
+        "output": true
+      },
+      {
+        "inputs": [
+          [
+            2,
+            5,
+            4,
+            2,
+            0,
+            5,
+            1,
+            1
+          ]
+        ],
+        "output": false
+      },
+      {
+        "inputs": [
+          [
+            14,
+            6,
+            5
+          ]
+        ],
+        "output": false
+      },
+      {
+        "inputs": [
+          [
+            8,
+            3
+          ]
+        ],
+        "output": false
+      },
+      {
+        "inputs": [
+          [
+            12,
+            16,
+            22,
+            22,
+            4,
+            2,
+            6
+          ]
+        ],
+        "output": true
+      },
+      {
+        "inputs": [
+          [
+            8,
+            4
+          ]
+        ],
+        "output": true
+      },
+      {
+        "inputs": [
+          [
+            26,
+            20,
+            32,
+            10,
+            16,
+            16,
+            12
+          ]
+        ],
+        "output": true
+      },
+      {
+        "inputs": [
+          [
+            28
+          ]
+        ],
+        "output": true
+      },
+      {
+        "inputs": [
+          [
+            11,
+            16,
+            10,
+            2,
+            1,
+            8
+          ]
+        ],
+        "output": false
+      },
+      {
+        "inputs": [
+          [
+            14,
+            10,
+            4,
+            0,
+            12,
+            6
+          ]
+        ],
+        "output": true
+      }
+    ],
+    "hidden": [
+      {
+        "inputs": [
+          [
+            24,
+            10,
+            30,
+            4,
+            14
+          ]
+        ],
+        "output": true
+      },
+      {
+        "inputs": [
+          [
+            5,
+            7,
+            14,
+            0,
+            13,
+            5,
+            9
+          ]
+        ],
+        "output": false
+      },
+      {
+        "inputs": [
+          [
+            4,
+            13,
+            12,
+            8,
+            14,
+            1,
+            7
+          ]
+        ],
+        "output": false
+      },
+      {
+        "inputs": [
+          [
+            22,
+            2,
+            20
+          ]
+        ],
+        "output": true
+      },
+      {
+        "inputs": [
+          [
+            3,
+            6,
+            4
+          ]
+        ],
+        "output": false
+      }
+    ]
+  },
+  {
+    "name": "is-squares",
+    "request_type": {
+      "tag": "arrow",
+      "args": [
+        {
+          "tag": "list",
+          "args": [
+            {
+              "tag": "int",
+              "args": []
+            }
+          ]
+        },
+        {
+          "tag": "bool",
+          "args": []
+        }
+      ]
+    },
+    "examples": [
+      {
+        "inputs": [
+          [
+            25
+          ]
+        ],
+        "output": true
+      },
+      {
+        "inputs": [
+          [
+            3
+          ]
+        ],
+        "output": false
+      },
+      {
+        "inputs": [
+          [
+            1,
+            4
+          ]
+        ],
+        "output": true
+      },
+      {
+        "inputs": [
+          [
+            1,
+            4,
+            9
+          ]
+        ],
+        "output": true
+      },
+      {
+        "inputs": [
+          [
+            1,
+            4,
+            9,
+            15
+          ]
+        ],
+        "output": false
+      },
+      {
+        "inputs": [
+          [
+            144,
+            169
+          ]
+        ],
+        "output": true
+      },
+      {
+        "inputs": [
+          [
+            9,
+            1
+          ]
+        ],
+        "output": true
+      },
+      {
+        "inputs": [
+          [
+            196,
+            49,
+            9,
+            1,
+            81,
+            81,
+            25
+          ]
+        ],
+        "output": true
+      },
+      {
+        "inputs": [
+          [
+            16,
+            49,
+            100
+          ]
+        ],
+        "output": true
+      },
+      {
+        "inputs": [
+          []
+        ],
+        "output": true
+      }
+    ],
+    "hidden": [
+      {
+        "inputs": [
+          [
+            4,
+            15,
+            1
+          ]
+        ],
+        "output": false
+      },
+      {
+        "inputs": [
+          [
+            2
+          ]
+        ],
+        "output": false
+      },
+      {
+        "inputs": [
+          [
+            9,
+            10,
+            11
+          ]
+        ],
+        "output": false
+      },
+      {
+        "inputs": [
+          [
+            169,
+            25,
+            25,
+            64,
+            49,
+            16,
+            256
+          ]
+        ],
+        "output": true
+      },
+      {
+        "inputs": [
+          [
+            256,
+            64,
+            169,
+            64,
+            0,
+            196
+          ]
+        ],
+        "output": true
+      }
+    ]
+  },
+  {
+    "name": "remove-mod-k with k=4",
+    "request_type": {
+      "tag": "arrow",
+      "args": [
+        {
+          "tag": "list",
+          "args": [
+            {
+              "tag": "int",
+              "args": []
+            }
+          ]
+        },
+        {
+          "tag": "list",
+          "args": [
+            {
+              "tag": "int",
+              "args": []
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "inputs": [
+          [
+            3,
+            32,
+            32,
+            36
+          ]
+        ],
+        "output": [
+          3
+        ]
+      },
+      {
+        "inputs": [
+          [
+            10,
+            14
+          ]
+        ],
+        "output": [
+          10,
+          14
+        ]
+      },
+      {
+        "inputs": [
+          [
+            20
+          ]
+        ],
+        "output": []
+      },
+      {
+        "inputs": [
+          []
+        ],
+        "output": []
+      },
+      {
+        "inputs": [
+          [
+            10
+          ]
+        ],
+        "output": [
+          10
+        ]
+      },
+      {
+        "inputs": [
+          [
+            20,
+            11,
+            0,
+            20,
+            24,
+            10,
+            24
+          ]
+        ],
+        "output": [
+          11,
+          10
+        ]
+      },
+      {
+        "inputs": [
+          [
+            0,
+            24,
+            16,
+            24
+          ]
+        ],
+        "output": []
+      },
+      {
+        "inputs": [
+          [
+            28,
+            6,
+            20,
+            16,
+            5
+          ]
+        ],
+        "output": [
+          6,
+          5
+        ]
+      },
+      {
+        "inputs": [
+          [
+            11,
+            7,
+            16,
+            14,
+            13,
+            12,
+            3
+          ]
+        ],
+        "output": [
+          11,
+          7,
+          14,
+          13,
+          3
+        ]
+      },
+      {
+        "inputs": [
+          [
+            12,
+            9,
+            4,
+            16,
+            6
+          ]
+        ],
+        "output": [
+          9,
+          6
+        ]
+      }
+    ],
+    "hidden": [
+      {
+        "inputs": [
+          [
+            4,
+            14,
+            15,
+            1
+          ]
+        ],
+        "output": [
+          14,
+          15,
+          1
+        ]
+      },
+      {
+        "inputs": [
+          [
+            0,
+            12
+          ]
+        ],
+        "output": []
+      },
+      {
+        "inputs": [
+          [
+            10,
+            3,
+            5,
+            8,
+            3,
+            7
+          ]
+        ],
+        "output": [
+          10,
+          3,
+          5,
+          3,
+          7
+        ]
+      },
+      {
+        "inputs": [
+          [
+            9,
+            5,
+            3,
+            3,
+            4,
+            5
+          ]
+        ],
+        "output": [
+          9,
+          5,
+          3,
+          3,
+          5
+        ]
+      }
+    ]
+  }
+]

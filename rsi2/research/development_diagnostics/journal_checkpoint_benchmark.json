@@ -1,0 +1,75 @@
+{
+  "source": "rsi2/research/recursive_bootstrap_results/FULL_seed11.json",
+  "source_bytes": 13854370,
+  "source_status": "partial",
+  "completed_generations": [
+    0
+  ],
+  "source_read_cpu_seconds": 0.27188627200000004,
+  "repeated_identical_checkpoints": 3,
+  "original_write_cpu_seconds": [
+    1.195883156,
+    1.2562619820000003,
+    1.2270724260000003
+  ],
+  "journal_write_cpu_seconds": [
+    2.1042314109999998,
+    0.14742139200000004,
+    0.4691287510000004
+  ],
+  "original_total_write_cpu_seconds": 3.679217564000001,
+  "journal_total_write_cpu_seconds": 2.720781554,
+  "original_reconstruction_cpu_seconds": 0.22974069700000044,
+  "journal_reconstruction_cpu_seconds": 0.7039063840000006,
+  "original_pipeline_cpu_seconds": 3.9089744910000004,
+  "journal_pipeline_cpu_seconds": 3.4269643160000003,
+  "pipeline_scope": "Three matched writes and one reconstruction, including journal constructor/close; common source loading and imports excluded.",
+  "journal_manifest_bytes": 764534,
+  "journal_file_bytes": 13305271,
+  "exact_field_values": true,
+  "exact_field_order": true,
+  "writer_metrics": {
+    "checkpoint_calls": 3,
+    "successful_commits": 3,
+    "failed_commits": 0,
+    "journal_entries_written": 150,
+    "journal_bytes_written": 13305271,
+    "checkpoint_bytes_written": 2293602,
+    "archived_searches": 149,
+    "archived_generations": 1,
+    "cpu_seconds": 2.716843655,
+    "wall_seconds": 2.7305815139843617
+  },
+  "scope": "Paired persistence replay only; no engine execution, held-out loading or capability claim.",
+  "cycle_report": {
+    "current_performance_summary": {
+      "matched_record_bytes": 13854370,
+      "source_status": "partial",
+      "reconstruction_exact": true
+    },
+    "main_failure_clusters": [
+      "Repeated whole-history serialization consumes CPU between verified search operations."
+    ],
+    "deep_bottleneck_abstraction": "Persistence cost grows with all prior trials despite completed searches/generations being immutable.",
+    "why_previous_improvement_attempts_were_insufficient": "The previous streaming atomic serializer avoided a full copy but still walked and wrote every prior candidate on every checkpoint.",
+    "proposed_intervention": "Identity-cached immutable search/generation journal plus an atomic live-root manifest.",
+    "expected_mechanism_of_improvement": "Serialize completed immutable evidence once and reference it thereafter while updating mutable proof/counter/state fields.",
+    "verification_plan": "Exact original JSON values/order, real controller callback roundtrips, committed-prefix/truncation recovery, and pre/post-publication fault injection.",
+    "regression_risks": [
+      "Requires immutable completed-search and completed-generation contract and single writer.",
+      "First journal write and journal reconstruction can cost more.",
+      "Strong identity references retain archived objects during the run."
+    ],
+    "result_after_testing": {
+      "journal_unit_tests_passed": 12,
+      "exact_field_values": true,
+      "exact_field_order": true,
+      "original_pipeline_cpu_seconds": 3.9089744910000004,
+      "journal_pipeline_cpu_seconds": 3.4269643160000003,
+      "first_original_write_cpu_seconds": 1.195883156,
+      "first_journal_write_cpu_seconds": 2.1042314109999998
+    },
+    "keep_revert_revise_decision": "Keep persistence implementation after independent transaction review; no capability or RSI admission.",
+    "updated_rule_for_future_improvement_cycles": "Archive immutable verified evidence once; atomically publish references only after durable append, and separately measure persistence and reconstruction CPU."
+  }
+}

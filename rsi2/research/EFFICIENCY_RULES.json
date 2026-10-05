@@ -1,0 +1,802 @@
+{
+  "schema_version": 1,
+  "comparison": {
+    "schema_version": 1,
+    "scope": "observed_matched_prefix",
+    "logical_status": "EQUAL_OBSERVED_PREFIX",
+    "full_study_equivalence": "UNKNOWN",
+    "decision": "KEEP",
+    "verification": {
+      "exact_reuse": {
+        "status": "passed",
+        "tests": [
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_all_certificate_scope_dependencies_require_new_measurement",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_budget_hit_cannot_hide_a_solution_at_larger_budget",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_certificate_is_only_reused_upwards_not_at_a_smaller_budget",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_completed_failed_space_certificate_equals_direct_higher_budget",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_empty_measurement_has_defined_zero_counts",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_expansion_cap_certificate_is_reused_but_changed_cap_misses",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_hidden_list_and_tuple_inputs_and_outputs_cannot_share_scope",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_hidden_verifier_failure_never_supplies_a_cross_budget_certificate",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_hit_wall_time_and_actual_counters_do_not_copy_historical_work",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_live_multitask_decomposition_equals_original_assessment",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_live_primitive_order_change_can_change_success_and_must_miss",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_partial_hit_and_duplicate_tasks_charge_only_new_task_work",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_public_list_and_tuple_arguments_cannot_share_a_scope",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_recognizer_parameter_changes_invalidate_exact_scope",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_shared_cross_arm_exact_hits_have_independent_actual_counters",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_shared_store_does_not_expose_mutable_report_aliases",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_typed_scope_keys_preserve_nested_containers_and_scalar_types",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_zero_candidate_certificate_records_saved_heuristic_work"
+        ],
+        "count": 18
+      },
+      "exhaustion_certificate": {
+        "status": "passed",
+        "tests": [
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_all_certificate_scope_dependencies_require_new_measurement",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_budget_hit_cannot_hide_a_solution_at_larger_budget",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_certificate_is_only_reused_upwards_not_at_a_smaller_budget",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_completed_failed_space_certificate_equals_direct_higher_budget",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_expansion_cap_certificate_is_reused_but_changed_cap_misses",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_hidden_verifier_failure_never_supplies_a_cross_budget_certificate",
+          "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_zero_candidate_certificate_records_saved_heuristic_work"
+        ],
+        "count": 7
+      }
+    },
+    "baseline_source_commit": "2562f564cb995fd9b6863d1fa4ef3de1d0d27a31",
+    "matched_cycles": [
+      {
+        "seed": 11,
+        "arm": "original",
+        "cycle": 1,
+        "logical_equal": true,
+        "baseline_actual_inner_candidates": 2590,
+        "effective_actual_inner_candidates": 2590,
+        "saved_actual_inner_candidates": 0,
+        "baseline_cpu_seconds": 220.678455906,
+        "effective_cpu_seconds": 242.32905285200002,
+        "saved_cpu_seconds": -21.650596946000007,
+        "secondary_baseline_work": {
+          "evaluation_steps": 398008,
+          "heuristic_calls": 237077,
+          "heuristic_evaluations": 1841,
+          "heuristic_steps": 125471,
+          "verification_examples": 11,
+          "verification_steps": 184
+        },
+        "secondary_effective_work": {
+          "evaluation_steps": 398008,
+          "heuristic_calls": 237077,
+          "heuristic_evaluations": 1841,
+          "heuristic_steps": 125471,
+          "verification_examples": 11,
+          "verification_steps": 184
+        },
+        "secondary_saved_work": {
+          "evaluation_steps": 0,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "verification_examples": 0,
+          "verification_steps": 0
+        }
+      },
+      {
+        "seed": 11,
+        "arm": "static",
+        "cycle": 1,
+        "logical_equal": true,
+        "baseline_actual_inner_candidates": 1973,
+        "effective_actual_inner_candidates": 925,
+        "saved_actual_inner_candidates": 1048,
+        "baseline_cpu_seconds": 940.399233197,
+        "effective_cpu_seconds": 586.101472932,
+        "saved_cpu_seconds": 354.29776026499997,
+        "secondary_baseline_work": {
+          "evaluation_steps": 252314,
+          "heuristic_calls": 1015353,
+          "heuristic_evaluations": 1773,
+          "heuristic_steps": 118817,
+          "verification_examples": 10,
+          "verification_steps": 149
+        },
+        "secondary_effective_work": {
+          "evaluation_steps": 206864,
+          "heuristic_calls": 786869,
+          "heuristic_evaluations": 1430,
+          "heuristic_steps": 98474,
+          "verification_examples": 1,
+          "verification_steps": 35
+        },
+        "secondary_saved_work": {
+          "evaluation_steps": 45450,
+          "heuristic_calls": 228484,
+          "heuristic_evaluations": 343,
+          "heuristic_steps": 20343,
+          "verification_examples": 9,
+          "verification_steps": 114
+        }
+      },
+      {
+        "seed": 11,
+        "arm": "learned",
+        "cycle": 1,
+        "logical_equal": true,
+        "baseline_actual_inner_candidates": 1973,
+        "effective_actual_inner_candidates": 0,
+        "saved_actual_inner_candidates": 1973,
+        "baseline_cpu_seconds": 603.1815049729998,
+        "effective_cpu_seconds": 9.089470842000082,
+        "saved_cpu_seconds": 594.0920341309998,
+        "secondary_baseline_work": {
+          "evaluation_steps": 252314,
+          "heuristic_calls": 1015353,
+          "heuristic_evaluations": 1773,
+          "heuristic_steps": 118817,
+          "verification_examples": 10,
+          "verification_steps": 149
+        },
+        "secondary_effective_work": {
+          "evaluation_steps": 0,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "verification_examples": 0,
+          "verification_steps": 0
+        },
+        "secondary_saved_work": {
+          "evaluation_steps": 252314,
+          "heuristic_calls": 1015353,
+          "heuristic_evaluations": 1773,
+          "heuristic_steps": 118817,
+          "verification_examples": 10,
+          "verification_steps": 149
+        }
+      },
+      {
+        "seed": 22,
+        "arm": "original",
+        "cycle": 1,
+        "logical_equal": true,
+        "baseline_actual_inner_candidates": 2619,
+        "effective_actual_inner_candidates": 2619,
+        "saved_actual_inner_candidates": 0,
+        "baseline_cpu_seconds": 107.923036951,
+        "effective_cpu_seconds": 241.356022882,
+        "saved_cpu_seconds": -133.432985931,
+        "secondary_baseline_work": {
+          "evaluation_steps": 405537,
+          "heuristic_calls": 233627,
+          "heuristic_evaluations": 1936,
+          "heuristic_steps": 130939,
+          "verification_examples": 26,
+          "verification_steps": 604
+        },
+        "secondary_effective_work": {
+          "evaluation_steps": 405537,
+          "heuristic_calls": 233627,
+          "heuristic_evaluations": 1936,
+          "heuristic_steps": 130939,
+          "verification_examples": 26,
+          "verification_steps": 604
+        },
+        "secondary_saved_work": {
+          "evaluation_steps": 0,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "verification_examples": 0,
+          "verification_steps": 0
+        }
+      },
+      {
+        "seed": 22,
+        "arm": "original",
+        "cycle": 2,
+        "logical_equal": true,
+        "baseline_actual_inner_candidates": 0,
+        "effective_actual_inner_candidates": 0,
+        "saved_actual_inner_candidates": 0,
+        "baseline_cpu_seconds": 1.1777339370000846,
+        "effective_cpu_seconds": 8.310785361000057,
+        "saved_cpu_seconds": -7.133051423999973,
+        "secondary_baseline_work": {
+          "evaluation_steps": 0,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "verification_examples": 0,
+          "verification_steps": 0
+        },
+        "secondary_effective_work": {
+          "evaluation_steps": 0,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "verification_examples": 0,
+          "verification_steps": 0
+        },
+        "secondary_saved_work": {
+          "evaluation_steps": 0,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "verification_examples": 0,
+          "verification_steps": 0
+        }
+      },
+      {
+        "seed": 22,
+        "arm": "static",
+        "cycle": 1,
+        "logical_equal": true,
+        "baseline_actual_inner_candidates": 1944,
+        "effective_actual_inner_candidates": 909,
+        "saved_actual_inner_candidates": 1035,
+        "baseline_cpu_seconds": 605.272985923,
+        "effective_cpu_seconds": 500.75715251,
+        "saved_cpu_seconds": 104.51583341299994,
+        "secondary_baseline_work": {
+          "evaluation_steps": 249528,
+          "heuristic_calls": 999995,
+          "heuristic_evaluations": 1746,
+          "heuristic_steps": 116255,
+          "verification_examples": 15,
+          "verification_steps": 289
+        },
+        "secondary_effective_work": {
+          "evaluation_steps": 203005,
+          "heuristic_calls": 776948,
+          "heuristic_evaluations": 1405,
+          "heuristic_steps": 96051,
+          "verification_examples": 1,
+          "verification_steps": 35
+        },
+        "secondary_saved_work": {
+          "evaluation_steps": 46523,
+          "heuristic_calls": 223047,
+          "heuristic_evaluations": 341,
+          "heuristic_steps": 20204,
+          "verification_examples": 14,
+          "verification_steps": 254
+        }
+      },
+      {
+        "seed": 22,
+        "arm": "learned",
+        "cycle": 1,
+        "logical_equal": true,
+        "baseline_actual_inner_candidates": 1944,
+        "effective_actual_inner_candidates": 0,
+        "saved_actual_inner_candidates": 1944,
+        "baseline_cpu_seconds": 584.3079903729999,
+        "effective_cpu_seconds": 8.313329745999908,
+        "saved_cpu_seconds": 575.994660627,
+        "secondary_baseline_work": {
+          "evaluation_steps": 249528,
+          "heuristic_calls": 999995,
+          "heuristic_evaluations": 1746,
+          "heuristic_steps": 116255,
+          "verification_examples": 15,
+          "verification_steps": 289
+        },
+        "secondary_effective_work": {
+          "evaluation_steps": 0,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "verification_examples": 0,
+          "verification_steps": 0
+        },
+        "secondary_saved_work": {
+          "evaluation_steps": 249528,
+          "heuristic_calls": 999995,
+          "heuristic_evaluations": 1746,
+          "heuristic_steps": 116255,
+          "verification_examples": 15,
+          "verification_steps": 289
+        }
+      },
+      {
+        "seed": 33,
+        "arm": "original",
+        "cycle": 1,
+        "logical_equal": true,
+        "baseline_actual_inner_candidates": 2587,
+        "effective_actual_inner_candidates": 2587,
+        "saved_actual_inner_candidates": 0,
+        "baseline_cpu_seconds": 213.398754737,
+        "effective_cpu_seconds": 122.325377796,
+        "saved_cpu_seconds": 91.07337694099999,
+        "secondary_baseline_work": {
+          "evaluation_steps": 454040,
+          "heuristic_calls": 210526,
+          "heuristic_evaluations": 1804,
+          "heuristic_steps": 118952,
+          "verification_examples": 11,
+          "verification_steps": 184
+        },
+        "secondary_effective_work": {
+          "evaluation_steps": 454040,
+          "heuristic_calls": 210526,
+          "heuristic_evaluations": 1804,
+          "heuristic_steps": 118952,
+          "verification_examples": 11,
+          "verification_steps": 184
+        },
+        "secondary_saved_work": {
+          "evaluation_steps": 0,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "verification_examples": 0,
+          "verification_steps": 0
+        }
+      },
+      {
+        "seed": 33,
+        "arm": "original",
+        "cycle": 2,
+        "logical_equal": true,
+        "baseline_actual_inner_candidates": 0,
+        "effective_actual_inner_candidates": 0,
+        "saved_actual_inner_candidates": 0,
+        "baseline_cpu_seconds": 1.0859085570000389,
+        "effective_cpu_seconds": 9.280623064999986,
+        "saved_cpu_seconds": -8.194714507999947,
+        "secondary_baseline_work": {
+          "evaluation_steps": 0,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "verification_examples": 0,
+          "verification_steps": 0
+        },
+        "secondary_effective_work": {
+          "evaluation_steps": 0,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "verification_examples": 0,
+          "verification_steps": 0
+        },
+        "secondary_saved_work": {
+          "evaluation_steps": 0,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "verification_examples": 0,
+          "verification_steps": 0
+        }
+      },
+      {
+        "seed": 33,
+        "arm": "static",
+        "cycle": 1,
+        "logical_equal": true,
+        "baseline_actual_inner_candidates": 2005,
+        "effective_actual_inner_candidates": 958,
+        "saved_actual_inner_candidates": 1047,
+        "baseline_cpu_seconds": 891.0180776479999,
+        "effective_cpu_seconds": 511.80359048199995,
+        "saved_cpu_seconds": 379.21448716599997,
+        "secondary_baseline_work": {
+          "evaluation_steps": 294599,
+          "heuristic_calls": 876709,
+          "heuristic_evaluations": 1762,
+          "heuristic_steps": 116231,
+          "verification_examples": 10,
+          "verification_steps": 149
+        },
+        "secondary_effective_work": {
+          "evaluation_steps": 243549,
+          "heuristic_calls": 666973,
+          "heuristic_evaluations": 1417,
+          "heuristic_steps": 95597,
+          "verification_examples": 1,
+          "verification_steps": 35
+        },
+        "secondary_saved_work": {
+          "evaluation_steps": 51050,
+          "heuristic_calls": 209736,
+          "heuristic_evaluations": 345,
+          "heuristic_steps": 20634,
+          "verification_examples": 9,
+          "verification_steps": 114
+        }
+      },
+      {
+        "seed": 33,
+        "arm": "learned",
+        "cycle": 1,
+        "logical_equal": true,
+        "baseline_actual_inner_candidates": 2005,
+        "effective_actual_inner_candidates": 0,
+        "saved_actual_inner_candidates": 2005,
+        "baseline_cpu_seconds": 503.52925357899994,
+        "effective_cpu_seconds": 9.00698038600001,
+        "saved_cpu_seconds": 494.52227319299993,
+        "secondary_baseline_work": {
+          "evaluation_steps": 294599,
+          "heuristic_calls": 876709,
+          "heuristic_evaluations": 1762,
+          "heuristic_steps": 116231,
+          "verification_examples": 10,
+          "verification_steps": 149
+        },
+        "secondary_effective_work": {
+          "evaluation_steps": 0,
+          "heuristic_calls": 0,
+          "heuristic_evaluations": 0,
+          "heuristic_steps": 0,
+          "verification_examples": 0,
+          "verification_steps": 0
+        },
+        "secondary_saved_work": {
+          "evaluation_steps": 294599,
+          "heuristic_calls": 876709,
+          "heuristic_evaluations": 1762,
+          "heuristic_steps": 116231,
+          "verification_examples": 10,
+          "verification_steps": 149
+        }
+      }
+    ],
+    "coverage": [
+      {
+        "seed": 11,
+        "arm": "original",
+        "matched_cycles": [
+          1
+        ],
+        "baseline_completed_missing_from_effective": [],
+        "effective_cycles_without_baseline": [
+          2,
+          3
+        ],
+        "baseline_unrun_cycles": [
+          2,
+          3
+        ]
+      },
+      {
+        "seed": 11,
+        "arm": "static",
+        "matched_cycles": [
+          1
+        ],
+        "baseline_completed_missing_from_effective": [],
+        "effective_cycles_without_baseline": [
+          2
+        ],
+        "baseline_unrun_cycles": [
+          2,
+          3
+        ]
+      },
+      {
+        "seed": 11,
+        "arm": "learned",
+        "matched_cycles": [
+          1
+        ],
+        "baseline_completed_missing_from_effective": [],
+        "effective_cycles_without_baseline": [
+          2
+        ],
+        "baseline_unrun_cycles": [
+          2,
+          3
+        ]
+      },
+      {
+        "seed": 22,
+        "arm": "original",
+        "matched_cycles": [
+          1,
+          2
+        ],
+        "baseline_completed_missing_from_effective": [],
+        "effective_cycles_without_baseline": [
+          3
+        ],
+        "baseline_unrun_cycles": [
+          3
+        ]
+      },
+      {
+        "seed": 22,
+        "arm": "static",
+        "matched_cycles": [
+          1
+        ],
+        "baseline_completed_missing_from_effective": [],
+        "effective_cycles_without_baseline": [
+          2
+        ],
+        "baseline_unrun_cycles": [
+          2,
+          3
+        ]
+      },
+      {
+        "seed": 22,
+        "arm": "learned",
+        "matched_cycles": [
+          1
+        ],
+        "baseline_completed_missing_from_effective": [],
+        "effective_cycles_without_baseline": [
+          2
+        ],
+        "baseline_unrun_cycles": [
+          2,
+          3
+        ]
+      },
+      {
+        "seed": 33,
+        "arm": "original",
+        "matched_cycles": [
+          1,
+          2
+        ],
+        "baseline_completed_missing_from_effective": [],
+        "effective_cycles_without_baseline": [
+          3
+        ],
+        "baseline_unrun_cycles": [
+          3
+        ]
+      },
+      {
+        "seed": 33,
+        "arm": "static",
+        "matched_cycles": [
+          1
+        ],
+        "baseline_completed_missing_from_effective": [],
+        "effective_cycles_without_baseline": [
+          2,
+          3
+        ],
+        "baseline_unrun_cycles": [
+          2,
+          3
+        ]
+      },
+      {
+        "seed": 33,
+        "arm": "learned",
+        "matched_cycles": [
+          1
+        ],
+        "baseline_completed_missing_from_effective": [],
+        "effective_cycles_without_baseline": [
+          2
+        ],
+        "baseline_unrun_cycles": [
+          2,
+          3
+        ]
+      }
+    ],
+    "differences": [],
+    "unknown_reasons": [],
+    "totals": {
+      "matched_cycles": 11,
+      "saved_actual_inner_candidates": 9052,
+      "baseline_actual_inner_candidates": 19640,
+      "effective_actual_inner_candidates": 10588,
+      "saved_cpu_seconds": 2423.2990769269995,
+      "baseline_cpu_seconds": 4671.972935780999,
+      "effective_cpu_seconds": 2248.673858854
+    }
+  },
+  "rules": [
+    {
+      "id": "exact_evaluation_reuse",
+      "type": "loop",
+      "scope": "observed_matched_prefix",
+      "pattern": "Completed task evidence is recomputed across overlapping exact scopes or a certified larger budget",
+      "diagnosis": "Actual inner evaluation work can repeat while the scientific policy is unchanged",
+      "intervention": "Share exact per-task evidence and sound early-termination certificates without changing proposals or search",
+      "evidence": {
+        "matched_cycles": 11,
+        "logical_status": "EQUAL_OBSERVED_PREFIX",
+        "totals": {
+          "matched_cycles": 11,
+          "saved_actual_inner_candidates": 9052,
+          "baseline_actual_inner_candidates": 19640,
+          "effective_actual_inner_candidates": 10588,
+          "saved_cpu_seconds": 2423.2990769269995,
+          "baseline_cpu_seconds": 4671.972935780999,
+          "effective_cpu_seconds": 2248.673858854
+        },
+        "verification": {
+          "exact_reuse": {
+            "status": "passed",
+            "tests": [
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_all_certificate_scope_dependencies_require_new_measurement",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_budget_hit_cannot_hide_a_solution_at_larger_budget",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_certificate_is_only_reused_upwards_not_at_a_smaller_budget",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_completed_failed_space_certificate_equals_direct_higher_budget",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_empty_measurement_has_defined_zero_counts",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_expansion_cap_certificate_is_reused_but_changed_cap_misses",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_hidden_list_and_tuple_inputs_and_outputs_cannot_share_scope",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_hidden_verifier_failure_never_supplies_a_cross_budget_certificate",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_hit_wall_time_and_actual_counters_do_not_copy_historical_work",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_live_multitask_decomposition_equals_original_assessment",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_live_primitive_order_change_can_change_success_and_must_miss",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_partial_hit_and_duplicate_tasks_charge_only_new_task_work",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_public_list_and_tuple_arguments_cannot_share_a_scope",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_recognizer_parameter_changes_invalidate_exact_scope",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_shared_cross_arm_exact_hits_have_independent_actual_counters",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_shared_store_does_not_expose_mutable_report_aliases",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_typed_scope_keys_preserve_nested_containers_and_scalar_types",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_zero_candidate_certificate_records_saved_heuristic_work"
+            ],
+            "count": 18
+          },
+          "exhaustion_certificate": {
+            "status": "passed",
+            "tests": [
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_all_certificate_scope_dependencies_require_new_measurement",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_budget_hit_cannot_hide_a_solution_at_larger_budget",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_certificate_is_only_reused_upwards_not_at_a_smaller_budget",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_completed_failed_space_certificate_equals_direct_higher_budget",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_expansion_cap_certificate_is_reused_but_changed_cap_misses",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_hidden_verifier_failure_never_supplies_a_cross_budget_certificate",
+              "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_zero_candidate_certificate_records_saved_heuristic_work"
+            ],
+            "count": 7
+          }
+        },
+        "coverage": [
+          {
+            "seed": 11,
+            "arm": "original",
+            "matched_cycles": [
+              1
+            ],
+            "baseline_completed_missing_from_effective": [],
+            "effective_cycles_without_baseline": [
+              2,
+              3
+            ],
+            "baseline_unrun_cycles": [
+              2,
+              3
+            ]
+          },
+          {
+            "seed": 11,
+            "arm": "static",
+            "matched_cycles": [
+              1
+            ],
+            "baseline_completed_missing_from_effective": [],
+            "effective_cycles_without_baseline": [
+              2
+            ],
+            "baseline_unrun_cycles": [
+              2,
+              3
+            ]
+          },
+          {
+            "seed": 11,
+            "arm": "learned",
+            "matched_cycles": [
+              1
+            ],
+            "baseline_completed_missing_from_effective": [],
+            "effective_cycles_without_baseline": [
+              2
+            ],
+            "baseline_unrun_cycles": [
+              2,
+              3
+            ]
+          },
+          {
+            "seed": 22,
+            "arm": "original",
+            "matched_cycles": [
+              1,
+              2
+            ],
+            "baseline_completed_missing_from_effective": [],
+            "effective_cycles_without_baseline": [
+              3
+            ],
+            "baseline_unrun_cycles": [
+              3
+            ]
+          },
+          {
+            "seed": 22,
+            "arm": "static",
+            "matched_cycles": [
+              1
+            ],
+            "baseline_completed_missing_from_effective": [],
+            "effective_cycles_without_baseline": [
+              2
+            ],
+            "baseline_unrun_cycles": [
+              2,
+              3
+            ]
+          },
+          {
+            "seed": 22,
+            "arm": "learned",
+            "matched_cycles": [
+              1
+            ],
+            "baseline_completed_missing_from_effective": [],
+            "effective_cycles_without_baseline": [
+              2
+            ],
+            "baseline_unrun_cycles": [
+              2,
+              3
+            ]
+          },
+          {
+            "seed": 33,
+            "arm": "original",
+            "matched_cycles": [
+              1,
+              2
+            ],
+            "baseline_completed_missing_from_effective": [],
+            "effective_cycles_without_baseline": [
+              3
+            ],
+            "baseline_unrun_cycles": [
+              3
+            ]
+          },
+          {
+            "seed": 33,
+            "arm": "static",
+            "matched_cycles": [
+              1
+            ],
+            "baseline_completed_missing_from_effective": [],
+            "effective_cycles_without_baseline": [
+              2,
+              3
+            ],
+            "baseline_unrun_cycles": [
+              2,
+              3
+            ]
+          },
+          {
+            "seed": 33,
+            "arm": "learned",
+            "matched_cycles": [
+              1
+            ],
+            "baseline_completed_missing_from_effective": [],
+            "effective_cycles_without_baseline": [
+              2
+            ],
+            "baseline_unrun_cycles": [
+              2,
+              3
+            ]
+          }
+        ]
+      },
+      "decision": "KEEP",
+      "next_test": "Test a newly preregistered workload for further evaluation savings; do not claim solver or RSI gains",
+      "claim_limit": "Efficiency for the observed matched prefix only; full-study equivalence is UNKNOWN"
+    }
+  ]
+}

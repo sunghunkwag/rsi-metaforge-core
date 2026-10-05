@@ -1,0 +1,65 @@
+{
+  "independent_review_status": "PASS",
+  "source_sha256": {
+    "rsi2/research/budget_policy.py": "69f53cb5ba2c93f302a1bbb2270b80e8f3c67e4d3cd8407f4262ad1af025a279",
+    "rsi2/research/journal_checkpoint.py": "94a09c5058b7c49cbc9c1c5cde86eaea103259dee4d0e02f688857772604afd0",
+    "rsi2/research/screen_revision_run.py": "a8f81701c496a64e353163e8a0484d093ec435f3f386868de14fe248af6169ac"
+  },
+  "final_targeted_gate": {
+    "passed": 27,
+    "elapsed_report_seconds": 0.866,
+    "scope": "budget policy + driver restoration/completion + journal unit and synthetic controller callback tests"
+  },
+  "published_prefix_recovery": "post-rename fault and retry pass",
+  "actual_screen_audit": {
+    "status": "PASS",
+    "scope": "independent replay of actual stored TRAIN public trials/scorers and selected public+hidden proofs; no search/proposal/evaluation-partition loading",
+    "measurement_count": 14,
+    "task_searches": 56,
+    "candidate_trials": 686,
+    "reconstructed_descendant_edges": 231,
+    "public_example_replays": 5677,
+    "public_evaluator_steps": 111119,
+    "actual_heuristic_replays": 527,
+    "actual_heuristic_steps": 56466,
+    "selected_solution_proofs": 14,
+    "replay_bank_proofs": 2,
+    "counter_reconciliation": "all search/scorer counters and verification costs exact",
+    "all_original_descendants": 0,
+    "reserved_descendants_per_scorer": 33,
+    "six_proposals_change_actual_reserved_sequences": true,
+    "verified_screen_solved": {
+      "original": "1/4 for all scorers",
+      "reserved": "1/4 for all scorers"
+    },
+    "confirmation_rankings": {
+      "original": [
+        "0",
+        "1"
+      ],
+      "reserved": [
+        "0",
+        "1"
+      ]
+    },
+    "new_capability_or_RSI_gain": false,
+    "audit_cpu_seconds": 0.8722107100000001
+  },
+  "restored_frozen_state_exact": true,
+  "actual_persisted_completion_gate": true,
+  "cycle_report": {
+    "current_performance_summary": "Frozen real screen diagnostic: every scorer retains1/4 hidden-verified TRAIN successes; no task gains/losses.",
+    "main_failure_clusters": "Previous screens had no edits; all candidates exhausted B16 on initial roots. Repeated full-history writes consumed unnecessary pilot CPU.",
+    "deep_bottleneck_abstraction": "Evaluation budget allocation erased the scorer action being evaluated. Persistence cost grew with retained evidence size.",
+    "why_previous_improvement_attempts_were_insufficient": "Changing scorers cannot earn meaningful selection credit when no screen invokes their causal parent-selection stage; saving more evidence can prevent completing the loop.",
+    "proposed_intervention": "Cap combined initial roots atB/2 and bank roots atB/4, retain fresh enumeration; archive immutable searches/generations once and atomically commit a small live manifest.",
+    "expected_mechanism_of_improvement": "Expose descendant selection during B16 and amortize repeated persistence while preserving exact proof/counter/provenance values.",
+    "verification_plan": "Paired frozen-state screens; replay every stored candidate/scorer/proof and genealogy; exact serializer roundtrip; interruption and atomic-commit fault injection; per-call CPU debit and late-result rejection.",
+    "regression_risks": "Proof-ID prefix can indefinitely exclude later bank records. Early success or structural/compiler caps can stop reserved edits. Journal cache relies on immutable completed records and single-writer use; initial archive and reconstruction may be slower.",
+    "result_after_testing": "27 targeted tests pass;686 candidates and231 descendant edges replay exactly. All six proposals change actual descendant sequences, but verified success and top-two ranking remain unchanged. Real partial checkpoint reconstructs exact values/order.",
+    "keep_revert_revise_decision": "Keep causal screening implementation and lossless journal under documented conditions; reject capability/generalization/RSI claims from this diagnostic. Revise search/candidate generation next using unchanged frozen verifiers.",
+    "updated_rule_for_future_improvement_cycles": "An evaluation must exercise the intervention\u2019s downstream action within its real budget; evidence-preservation overhead and interruption losses must be measured explicitly."
+  },
+  "claim_scope": "Causal screening correctness and lossless persistence verified. Capability, generalization, cumulative autonomous loop improvement and original RSIa-e are not established.",
+  "verification_cost_scope": "Actual replay audit timer records verification-stage CPU0.87221071 after artifact parsing/state restoration/TRAIN loading; source/test review and serializer benchmarking costs reported separately, not included in54.494664425CPU campaign total."
+}

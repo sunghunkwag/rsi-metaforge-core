@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "seeds": [11, 22, 33],
+  "arms": ["original", "static", "learned"],
+  "cycles": 3,
+  "raw_enumeration_slots": 32,
+  "mutation_slots": 2,
+  "screen_slots": 6,
+  "confirmation_slots": 2,
+  "B_eval": 64,
+  "screen_budget": 16,
+  "screen_tasks": 4,
+  "search": {"max_size": 12, "max_expansions": 20000, "step_budget": 2000},
+  "cpu_limit_seconds": 7200,
+  "max_workers": 3,
+  "numpy_threads": 1
+}

@@ -1,0 +1,234 @@
+{
+  "current_performance_summary": {
+    "screen_tasks": 4,
+    "every_scorer_original_and_reserved_solved": 1
+  },
+  "main_failure_clusters": {
+    "original_descendants": 0,
+    "reserved_descendants_per_scorer": 33,
+    "verified_gains": [],
+    "verified_losses": []
+  },
+  "deep_bottleneck_abstraction": "The screen previously could not exercise causal parent selection. Correcting this reveals that the current scorers/candidate generator still do not solve the unsolved tasks.",
+  "why_previous_improvement_attempts_were_insufficient": "Reserved descendants expose real scorer action but screen solved sets and confirmation ordering remain unchanged. Prior root-only screens could not assign causal credit.",
+  "proposed_intervention": "Retain root reservation as a corrected evaluation mechanism; test a separately registered typed derivation-neighborhood generator.",
+  "expected_mechanism_of_improvement": "Preserve generated sibling arguments and jointly typed binder context while changing heads, argument orientation or unary contexts.",
+  "verification_plan": "Matched cold/prior-bank TRAIN searches, unchanged public+hidden verifier, exact complete/helper budgets, common scheduler, independent source and trial replay; heldout evaluation remains sealed.",
+  "regression_risks": [
+    "Deterministic proof-ID bank prefix can starve later records.",
+    "Reserved roots can remove useful root-only opportunities.",
+    "Scorer-dependent AST differences alone are not capability gains.",
+    "Journal initial write/reconstruction can be slower."
+  ],
+  "result_after_testing": {
+    "status": "complete",
+    "aggregate_cpu_seconds": 54.494664424999996,
+    "outcomes": [
+      {
+        "candidate": "incumbent",
+        "original": {
+          "solved": 1,
+          "solved_names": [
+            "bool-identify-k with k=1"
+          ],
+          "candidates": 49,
+          "descendants": 0,
+          "parent_selections": 0,
+          "sequence_differs_from_incumbent": false,
+          "kernel_cpu_seconds": 0.8943839280000001
+        },
+        "reserved": {
+          "solved": 1,
+          "solved_names": [
+            "bool-identify-k with k=1"
+          ],
+          "candidates": 49,
+          "descendants": 33,
+          "parent_selections": 183,
+          "sequence_differs_from_incumbent": false,
+          "kernel_cpu_seconds": 0.5424742700000005
+        },
+        "verified_gains": [],
+        "verified_losses": []
+      },
+      {
+        "candidate": "0",
+        "original": {
+          "solved": 1,
+          "solved_names": [
+            "bool-identify-k with k=1"
+          ],
+          "candidates": 49,
+          "descendants": 0,
+          "parent_selections": 0,
+          "sequence_differs_from_incumbent": false,
+          "kernel_cpu_seconds": 0.7288851980000022
+        },
+        "reserved": {
+          "solved": 1,
+          "solved_names": [
+            "bool-identify-k with k=1"
+          ],
+          "candidates": 49,
+          "descendants": 33,
+          "parent_selections": 195,
+          "sequence_differs_from_incumbent": true,
+          "kernel_cpu_seconds": 0.876222714999999
+        },
+        "verified_gains": [],
+        "verified_losses": []
+      },
+      {
+        "candidate": "1",
+        "original": {
+          "solved": 1,
+          "solved_names": [
+            "bool-identify-k with k=1"
+          ],
+          "candidates": 49,
+          "descendants": 0,
+          "parent_selections": 0,
+          "sequence_differs_from_incumbent": false,
+          "kernel_cpu_seconds": 1.06669604
+        },
+        "reserved": {
+          "solved": 1,
+          "solved_names": [
+            "bool-identify-k with k=1"
+          ],
+          "candidates": 49,
+          "descendants": 33,
+          "parent_selections": 201,
+          "sequence_differs_from_incumbent": true,
+          "kernel_cpu_seconds": 0.8566540029999992
+        },
+        "verified_gains": [],
+        "verified_losses": []
+      },
+      {
+        "candidate": "2",
+        "original": {
+          "solved": 1,
+          "solved_names": [
+            "bool-identify-k with k=1"
+          ],
+          "candidates": 49,
+          "descendants": 0,
+          "parent_selections": 0,
+          "sequence_differs_from_incumbent": false,
+          "kernel_cpu_seconds": 0.9212689330000003
+        },
+        "reserved": {
+          "solved": 1,
+          "solved_names": [
+            "bool-identify-k with k=1"
+          ],
+          "candidates": 49,
+          "descendants": 33,
+          "parent_selections": 111,
+          "sequence_differs_from_incumbent": true,
+          "kernel_cpu_seconds": 0.7821816619999993
+        },
+        "verified_gains": [],
+        "verified_losses": []
+      },
+      {
+        "candidate": "3",
+        "original": {
+          "solved": 1,
+          "solved_names": [
+            "bool-identify-k with k=1"
+          ],
+          "candidates": 49,
+          "descendants": 0,
+          "parent_selections": 0,
+          "sequence_differs_from_incumbent": false,
+          "kernel_cpu_seconds": 0.774357663
+        },
+        "reserved": {
+          "solved": 1,
+          "solved_names": [
+            "bool-identify-k with k=1"
+          ],
+          "candidates": 49,
+          "descendants": 33,
+          "parent_selections": 198,
+          "sequence_differs_from_incumbent": true,
+          "kernel_cpu_seconds": 0.7822300880000057
+        },
+        "verified_gains": [],
+        "verified_losses": []
+      },
+      {
+        "candidate": "4",
+        "original": {
+          "solved": 1,
+          "solved_names": [
+            "bool-identify-k with k=1"
+          ],
+          "candidates": 49,
+          "descendants": 0,
+          "parent_selections": 0,
+          "sequence_differs_from_incumbent": false,
+          "kernel_cpu_seconds": 0.7705520410000091
+        },
+        "reserved": {
+          "solved": 1,
+          "solved_names": [
+            "bool-identify-k with k=1"
+          ],
+          "candidates": 49,
+          "descendants": 33,
+          "parent_selections": 171,
+          "sequence_differs_from_incumbent": true,
+          "kernel_cpu_seconds": 0.507615555000001
+        },
+        "verified_gains": [],
+        "verified_losses": []
+      },
+      {
+        "candidate": "5",
+        "original": {
+          "solved": 1,
+          "solved_names": [
+            "bool-identify-k with k=1"
+          ],
+          "candidates": 49,
+          "descendants": 0,
+          "parent_selections": 0,
+          "sequence_differs_from_incumbent": false,
+          "kernel_cpu_seconds": 0.7584060619999988
+        },
+        "reserved": {
+          "solved": 1,
+          "solved_names": [
+            "bool-identify-k with k=1"
+          ],
+          "candidates": 49,
+          "descendants": 33,
+          "parent_selections": 129,
+          "sequence_differs_from_incumbent": true,
+          "kernel_cpu_seconds": 0.5054931709999977
+        },
+        "verified_gains": [],
+        "verified_losses": []
+      }
+    ],
+    "selected_confirmation_indices": {
+      "original": [
+        "0",
+        "1"
+      ],
+      "reserved": [
+        "0",
+        "1"
+      ]
+    },
+    "full_confirmations": "unrun in this diagnostic",
+    "independent_trial_replay": "PASS; see screen-actual-independent-audit.json"
+  },
+  "keep_revert_revise_decision": "KEEP causal-screen correctness and lossless evidence storage; REVISE candidate generation; reject capability/generalization/RSI claims.",
+  "updated_rule_for_future_improvement_cycles": "Screen the actual downstream action under its real budget, then separately demand hidden-verified solved-set expansion before claiming that selecting it improves capability.",
+  "rsi_success": false,
+  "scope": "TRAIN development only; human engineering correction, not autonomous recursion success"
+}

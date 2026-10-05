@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "rules": [
+    {
+      "active": true,
+      "backend": "shared_per_task",
+      "scope": "Two registered traces, three seeds; one bounded procedure refinement",
+      "lesson": "Identical task-scope overlap permits preserving verified per-task evidence; changed state, caps or examples require revalidation",
+      "certificate_enabled": false,
+      "id": "autonomously_admitted_exact_per_task_reuse",
+      "type": "loop",
+      "decision": "KEEP",
+      "criterion": "Actual logical work nonincrease and strict per-seed saving under exact scientific equality",
+      "physical_cpu_generalization": "not_supported; confirmation backend CPU increased about 13%",
+      "next_test": "Profile key construction and preregister a physical-cost comparison before claiming general throughput gains",
+      "evidence": "self_refinement_results/self_refinement.json",
+      "verifiers": "SELF_REFINEMENT_VERIFIERS.json"
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "status": "partial",
+  "config": {
+    "schema_version": 1,
+    "seeds": [
+      11,
+      22,
+      33
+    ],
+    "arms": [
+      "original",
+      "static",
+      "learned"
+    ],
+    "cycles": 3,
+    "raw_enumeration_slots": 32,
+    "mutation_slots": 2,
+    "screen_slots": 6,
+    "confirmation_slots": 2,
+    "B_eval": 64,
+    "screen_budget": 16,
+    "screen_tasks": 4,
+    "search": {
+      "max_size": 12,
+      "max_expansions": 20000,
+      "step_budget": 2000
+    },
+    "cpu_limit_seconds": 7200,
+    "max_workers": 3,
+    "numpy_threads": 1
+  },
+  "workers": 3,
+  "selection_frozen_before_audit": false,
+  "seeds": [
+    {
+      "seed": 11,
+      "status": "partial",
+      "cpu_seconds": 1800.51
+    },
+    {
+      "seed": 22,
+      "status": "partial",
+      "cpu_seconds": 1800.15
+    },
+    {
+      "seed": 33,
+      "status": "partial",
+      "cpu_seconds": 1800.47
+    }
+  ],
+  "audit": {
+    "status": "unrun",
+    "reason": "selection worker 11 did not finish",
+    "cpu_seconds": 0.0,
+    "candidate_evaluations": 0
+  },
+  "audit_cpu_seconds": 0.0,
+  "cpu_seconds": 5407.496820345,
+  "wall_seconds": 1801.8824009009986,
+  "actual_candidate_evaluations": 32324,
+  "cpu_accounting": "parent_process_and_reaped_children_plus_live_proc_cpu",
+  "cpu_poll_seconds": 0.25,
+  "cpu_cleanup_margin_seconds": 2.0,
+  "candidate_evaluations_scope": "completed_operations_lower_bound",
+  "stop_reason": "selection worker 11 did not finish"
+}

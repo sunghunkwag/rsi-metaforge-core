@@ -1,0 +1,8 @@
+{
+  "cpu_seconds": 0.5392724219999999,
+  "scope": "post-experiment archival, not search/learning gain",
+  "archives": [
+    "rsi2/research/recursive_bootstrap_results/FULL_seed11.json.gz",
+    "rsi2/research/screen_revision_results/screens.json.gz"
+  ]
+}

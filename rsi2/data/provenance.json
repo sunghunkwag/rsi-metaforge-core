@@ -1,0 +1,73 @@
+{
+  "source_repository": "https://github.com/ellisk42/ec",
+  "source_commit": "cb0e63f5c33cd2de360b791038b0f5272750270e",
+  "source_path": "data/list_tasks.json",
+  "source_url": "https://github.com/ellisk42/ec/blob/cb0e63f5c33cd2de360b791038b0f5272750270e/data/list_tasks.json",
+  "loader_source_url": "https://github.com/ellisk42/ec/blob/cb0e63f5c33cd2de360b791038b0f5272750270e/dreamcoder/domains/list/main.py",
+  "source_records": 217,
+  "eligible_records": 207,
+  "excluded": [
+    {
+      "name": "caesar-cipher-k-modulo-n with k=0 and n=1",
+      "distinct_inputs": 6,
+      "reason": "fewer than ten search inputs plus one disjoint hidden input"
+    },
+    {
+      "name": "caesar-cipher-k-modulo-n with k=0 and n=2",
+      "distinct_inputs": 10,
+      "reason": "fewer than ten search inputs plus one disjoint hidden input"
+    },
+    {
+      "name": "caesar-cipher-k-modulo-n with k=1 and n=1",
+      "distinct_inputs": 6,
+      "reason": "fewer than ten search inputs plus one disjoint hidden input"
+    },
+    {
+      "name": "caesar-cipher-k-modulo-n with k=2 and n=1",
+      "distinct_inputs": 6,
+      "reason": "fewer than ten search inputs plus one disjoint hidden input"
+    },
+    {
+      "name": "caesar-cipher-k-modulo-n with k=3 and n=1",
+      "distinct_inputs": 8,
+      "reason": "fewer than ten search inputs plus one disjoint hidden input"
+    },
+    {
+      "name": "caesar-cipher-k-modulo-n with k=4 and n=1",
+      "distinct_inputs": 6,
+      "reason": "fewer than ten search inputs plus one disjoint hidden input"
+    },
+    {
+      "name": "caesar-cipher-k-modulo-n with k=5 and n=1",
+      "distinct_inputs": 6,
+      "reason": "fewer than ten search inputs plus one disjoint hidden input"
+    },
+    {
+      "name": "fibonacci",
+      "distinct_inputs": 7,
+      "reason": "fewer than ten search inputs plus one disjoint hidden input"
+    },
+    {
+      "name": "prepend-k with k=2",
+      "distinct_inputs": 10,
+      "reason": "fewer than ten search inputs plus one disjoint hidden input"
+    },
+    {
+      "name": "range",
+      "distinct_inputs": 7,
+      "reason": "fewer than ten search inputs plus one disjoint hidden input"
+    }
+  ],
+  "source_license": "MIT; unchanged upstream LICENSE retained in data/LICENSE",
+  "preferred_source_attempts": [
+    "https://github.com/joshrule/list-function",
+    "https://github.com/joshrule/list-functions",
+    "https://github.com/joshrule/list_function"
+  ],
+  "preferred_source_result": "all returned repository not found through the configured HTTPS Git proxy",
+  "acquisition_method": "one sparse shallow HTTPS Git clone, then local Git object reads",
+  "fetched_date": "2026-10-02",
+  "normalization": "deduplicate identical input examples preserving original order; first ten distinct examples are search, all remaining distinct examples are hidden; use original declared input/output types",
+  "selection": "shuffle sorted eligible task identifiers once with random.Random(20261002); select first 60 and partition first36,next12,last12",
+  "runtime_network_access": false
+}

@@ -1,0 +1,60 @@
+{
+  "baseline_source_commit": "2562f564cb995fd9b6863d1fa4ef3de1d0d27a31",
+  "tested_source_commit": "6d609bd7e7efb92cc02709e8b0fe33c59bf234c8",
+  "regression_gate": {
+    "status": "passed",
+    "count": 219,
+    "command": "OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m unittest discover -s rsi2/tests -v"
+  },
+  "exact_reuse": {
+    "status": "passed",
+    "tests": [
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_all_certificate_scope_dependencies_require_new_measurement",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_budget_hit_cannot_hide_a_solution_at_larger_budget",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_certificate_is_only_reused_upwards_not_at_a_smaller_budget",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_completed_failed_space_certificate_equals_direct_higher_budget",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_empty_measurement_has_defined_zero_counts",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_expansion_cap_certificate_is_reused_but_changed_cap_misses",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_hidden_list_and_tuple_inputs_and_outputs_cannot_share_scope",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_hidden_verifier_failure_never_supplies_a_cross_budget_certificate",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_hit_wall_time_and_actual_counters_do_not_copy_historical_work",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_live_multitask_decomposition_equals_original_assessment",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_live_primitive_order_change_can_change_success_and_must_miss",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_partial_hit_and_duplicate_tasks_charge_only_new_task_work",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_public_list_and_tuple_arguments_cannot_share_a_scope",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_recognizer_parameter_changes_invalidate_exact_scope",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_shared_cross_arm_exact_hits_have_independent_actual_counters",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_shared_store_does_not_expose_mutable_report_aliases",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_typed_scope_keys_preserve_nested_containers_and_scalar_types",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_zero_candidate_certificate_records_saved_heuristic_work"
+    ],
+    "count": 18
+  },
+  "exhaustion_certificate": {
+    "status": "passed",
+    "tests": [
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_all_certificate_scope_dependencies_require_new_measurement",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_budget_hit_cannot_hide_a_solution_at_larger_budget",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_certificate_is_only_reused_upwards_not_at_a_smaller_budget",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_completed_failed_space_certificate_equals_direct_higher_budget",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_expansion_cap_certificate_is_reused_but_changed_cap_misses",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_hidden_verifier_failure_never_supplies_a_cross_budget_certificate",
+      "rsi2.tests.test_research_efficient_memory.EfficientMemoryTests.test_zero_candidate_certificate_records_saved_heuristic_work"
+    ],
+    "count": 7
+  },
+  "sealed_controller": {
+    "status": "passed",
+    "tests": [
+      "rsi2.tests.test_research_efficient_run.EfficientAuditTests.test_audit_uses_shared_backend_without_learning_or_cycle_calls",
+      "rsi2.tests.test_research_efficient_run.EfficientAuditTests.test_incomplete_selection_never_opens_audit_capability",
+      "rsi2.tests.test_research_efficient_run.EfficientControllerTests.test_aggregate_cap_after_freeze_prevents_audit_spawn",
+      "rsi2.tests.test_research_efficient_run.EfficientControllerTests.test_partial_audit_reconstructs_persisted_work_without_new_selection",
+      "rsi2.tests.test_research_efficient_run.EfficientControllerTests.test_partial_selection_skips_audit_and_preserves_lower_bound",
+      "rsi2.tests.test_research_efficient_run.EfficientControllerTests.test_reuses_original_watchdog_and_freezes_before_custom_audit_worker",
+      "rsi2.tests.test_research_efficient_run.EfficientSeedTests.test_original_per_seed_guard_stops_before_next_cycle",
+      "rsi2.tests.test_research_efficient_run.EfficientSeedTests.test_seed_keeps_cycle_order_settings_and_independent_shared_clients"
+    ],
+    "count": 8
+  }
+}

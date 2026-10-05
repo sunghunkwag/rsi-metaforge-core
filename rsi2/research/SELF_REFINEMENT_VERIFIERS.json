@@ -1,0 +1,41 @@
+{
+  "tested_source_commit": "da3062f3e5d07b8e1485d5643d59cf9a765c952c",
+  "regression_gate": {
+    "status": "passed",
+    "count": 250,
+    "command": "OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m unittest discover -s rsi2/tests -v"
+  },
+  "autonomous_admission": {
+    "status": "passed",
+    "count": 11,
+    "tests": [
+      "rsi2.tests.test_research_self_refinement.SelfRefinementTests.test_all_seed_presence_and_actual_seed_binding_are_required",
+      "rsi2.tests.test_research_self_refinement.SelfRefinementTests.test_certificate_requires_patterns_proof_and_actual_task_specific_reuse",
+      "rsi2.tests.test_research_self_refinement.SelfRefinementTests.test_factored_contexts_are_copy_isolated_and_conflicting_refs_rejected",
+      "rsi2.tests.test_research_self_refinement.SelfRefinementTests.test_live_all_seed_verification_then_preservation_changes_next_factory",
+      "rsi2.tests.test_research_self_refinement.SelfRefinementTests.test_missing_proofs_or_missing_history_never_activate",
+      "rsi2.tests.test_research_self_refinement.SelfRefinementTests.test_next_cycle_applies_rule_and_reverts_on_transfer_difference",
+      "rsi2.tests.test_research_self_refinement.SelfRefinementTests.test_observed_overlap_drives_proposal_and_skips_aliases_and_hits",
+      "rsi2.tests.test_research_self_refinement.SelfRefinementTests.test_registered_loop_durably_admits_before_next_partition_and_self_applies",
+      "rsi2.tests.test_research_self_refinement.SelfRefinementTests.test_scientific_comparator_does_not_ignore_unknown_or_type_fields",
+      "rsi2.tests.test_research_self_refinement.SelfRefinementTests.test_scientific_difference_and_work_regression_reject_even_with_savings",
+      "rsi2.tests.test_research_self_refinement.SelfRefinementTests.test_zero_saving_or_one_seed_without_saving_does_not_activate"
+    ]
+  },
+  "aggregate_cpu_control": {
+    "status": "passed",
+    "count": 10,
+    "tests": [
+      "rsi2.tests.test_research_self_refinement_run.SelfRefinementWrapperTests.test_cap_preserves_completed_checkpoint_and_labels_partial_counts",
+      "rsi2.tests.test_research_self_refinement_run.SelfRefinementWrapperTests.test_existing_output_is_rejected_without_altering_evidence",
+      "rsi2.tests.test_research_self_refinement_run.SelfRefinementWrapperTests.test_final_measured_cpu_at_ceiling_invalidates_terminal_success",
+      "rsi2.tests.test_research_self_refinement_run.SelfRefinementWrapperTests.test_parent_exception_is_rethrown_after_partial_summary_saved",
+      "rsi2.tests.test_research_self_refinement_run.SelfRefinementWrapperTests.test_protocol_changes_and_numeric_type_substitutions_are_rejected",
+      "rsi2.tests.test_research_self_refinement_run.SelfRefinementWrapperTests.test_reuses_watchdog_and_passes_registered_protocol_to_one_custom_worker",
+      "rsi2.tests.test_research_self_refinement_run.SelfRefinementWrapperTests.test_terminal_partial_never_becomes_complete",
+      "rsi2.tests.test_research_self_refinement_run.SelfRefinementWrapperTests.test_terminal_success_requires_matching_completed_checkpoint",
+      "rsi2.tests.test_research_self_refinement_run.SelfRefinementWrapperTests.test_worker_error_is_bounded_and_queue_is_flushed",
+      "rsi2.tests.test_research_self_refinement_run.SelfRefinementWrapperTests.test_worker_returns_only_status_and_flushes_terminal_queue"
+    ]
+  }
+}

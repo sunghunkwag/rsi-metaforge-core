@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "autonomous_evaluation_refinement",
+  "seeds": [11, 22, 33],
+  "B_eval": 64,
+  "search": {"max_size": 12, "max_expansions": 20000, "step_budget": 2000},
+  "cpu_limit_seconds": 300,
+  "source_results": "rsi2/research/results",
+  "verification": "rsi2/research/EFFICIENCY_VERIFIERS.json",
+  "cycles": [
+    {"cycle": 1, "partition": "validation", "prefix_tasks": 4, "full_tasks": 12},
+    {"cycle": 2, "partition": "confirmation", "prefix_tasks": 3, "full_tasks": 6}
+  ]
+}
