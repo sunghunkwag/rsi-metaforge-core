@@ -13,6 +13,13 @@ with parent and replacement provenance. Only selected complete solutions
 passing unchanged TRAIN public and hidden verification become learning or
 library labels. The prior-generation bank snapshot prevents task-order leakage.
 
+Population replacements set `force_wrapper_lambdas=True`: required local
+environment binders are exposed through the grammar's existing lambda
+productions before body enumeration. Root enumeration remains unrestricted;
+body productions keep their original probabilities. This removes rejected
+non-wrapper prefixes without installing task programs. Generic beta
+normalization is enabled and its node visits remain separately charged.
+
 Alternate guided and FIFO parent turns. An incumbent synthesized DSL scorer
 receives complete public outputs (empty on failure), targets, size and depth,
 under the unchanged four-argument contract. It chooses which parent generates

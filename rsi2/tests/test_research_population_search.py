@@ -1,15 +1,17 @@
 """Causal scorer influence, population provenance, and physical accounting."""
+import heapq
 import unittest
 from unittest.mock import patch
 
 from rsi2.enumeration import enumerate_programs
 from rsi2.evaluator import evaluate
 from rsi2.grammar import Grammar
-from rsi2.research.population_search import solve_population
+from rsi2.research.population_search import _WrapperGrammar, solve_population
+from rsi2.research.proposals import canonical_term
 from rsi2.research.repair_search import RepairSeed, beta_normal_form
 from rsi2.search import HEURISTIC_TYPE, verify
-from rsi2.terms import Int, Term, replace_subterm
-from rsi2.types import Arrow, INT, PRIMITIVE_TYPES
+from rsi2.terms import Int, Lam, Term, Var, replace_subterm
+from rsi2.types import Arrow, INT, ListOf, PRIMITIVE_TYPES, TVar, infer
 
 
 class PopulationSearchTests(unittest.TestCase):
@@ -76,7 +78,8 @@ class PopulationSearchTests(unittest.TestCase):
                                   Term.from_dict(trial["replacement"]))
             normalized = beta_normal_form(raw)
             self.assertTrue(normalized.complete)
-            self.assertEqual(normalized.term.to_dict(), trial["term"])
+            self.assertEqual(raw.to_dict(), trial["raw_term"])
+            self.assertEqual(canonical_term(normalized.term).to_dict(), trial["term"])
             self.assertEqual(parent["root_id"], trial["root_id"])
             self.assertEqual(parent["depth"] + 1, trial["depth"])
             descendant_depths.append(trial["depth"])
@@ -189,6 +192,143 @@ class PopulationSearchTests(unittest.TestCase):
                              accepted_seeds=(Int(1),))
         with self.assertRaises(TypeError):
             solve_population([((), 1)], INT, 1, self.arithmetic_grammar(), heuristic=Int(0))
+
+    def test_wrapper_constraint_keeps_original_probabilities_and_counts_expansions(self):
+        grammar = self.arithmetic_grammar()
+        charges = []
+        proxy = _WrapperGrammar(grammar, lambda: charges.append(1), binders=1)
+        request = Arrow(INT, INT)
+        original_lambda = next(p for p in grammar.productions(request) if p.is_lambda)
+        prefix = proxy.productions(request)
+        self.assertEqual(len(prefix), 1)
+        self.assertTrue(prefix[0].is_lambda)
+        self.assertEqual(prefix[0].log_probability, original_lambda.log_probability)
+        self.assertLess(prefix[0].log_probability, 0)  # No forced-choice renormalization.
+        summarize = lambda choices: [(p.name, p.arity, p.log_probability) for p in choices]
+        self.assertEqual(summarize(proxy.productions(INT, (INT,))),
+                         summarize(grammar.productions(INT, (INT,))))
+        self.assertEqual(len(charges), 2)
+
+    def test_forcing_wrappers_removes_rejected_prefix_work_and_records_the_policy(self):
+        ordinary = self.unsuccessful_search(force_wrapper_lambdas=False)
+        constrained = self.unsuccessful_search(force_wrapper_lambdas=True)
+        self.assertFalse(ordinary.force_wrapper_lambdas)
+        self.assertTrue(constrained.force_wrapper_lambdas)
+        self.assertGreater(ordinary.filtered_wrappers, 0)
+        self.assertEqual(constrained.filtered_wrappers, 0)
+        self.assertLess(constrained.expansions, ordinary.expansions)
+        self.assertEqual(constrained.trials, ordinary.trials)
+        self.assertEqual(constrained.evaluator_calls, ordinary.evaluator_calls)
+        self.assertEqual(constrained.evaluation_steps, ordinary.evaluation_steps)
+
+    def test_root_enumeration_is_unchanged_by_wrapper_policy(self):
+        args = ([((1,), 999)], Arrow(INT, INT), 4, self.arithmetic_grammar())
+        ordinary = solve_population(*args, seed_prefix=4, force_wrapper_lambdas=False)
+        constrained = solve_population(*args, seed_prefix=4, force_wrapper_lambdas=True)
+        self.assertEqual(ordinary.trials, constrained.trials)
+        self.assertEqual(ordinary.seed_records, constrained.seed_records)
+        self.assertEqual(ordinary.expansions, constrained.expansions)
+        self.assertEqual(ordinary.parent_selections, [])
+
+    def test_actual_heap_pops_obey_the_global_cap_for_paused_replacement_streams(self):
+        original = heapq.heappop
+        for cap in (2, 10, 17, 29, 50):
+            grammar = (Grammar(primitives={}, constants=(Int(0), Int(1)))
+                       if cap == 2 else self.arithmetic_grammar())
+            request = INT if cap == 2 else Arrow(INT, INT)
+            examples = [((), 99)] if cap == 2 else [((1,), 999)]
+            actual_pops = []
+
+            def recorded(queue):
+                actual_pops.append(1)
+                return original(queue)
+
+            with self.subTest(cap=cap), patch("rsi2.enumeration.heapq.heappop",
+                                              side_effect=recorded):
+                result = solve_population(
+                    examples, request, 64, grammar, beta_normalize=True,
+                    max_size=1 if cap == 2 else 12, max_expansions=cap,
+                    seed_prefix=2 if cap == 2 else 4)
+            self.assertEqual(len(actual_pops), cap)
+            self.assertEqual(result.expansions, len(actual_pops))
+            self.assertEqual(result.termination, "expansion_budget")
+            if cap >= 17:
+                self.assertGreater(len({s["parent_id"] for s in result.parent_selections}), 1)
+
+    def test_a_completed_pop_is_charged_even_if_the_next_cpu_check_interrupts(self):
+        original = heapq.heappop
+        now, actual_pops = [0.0], []
+
+        def overrun(queue):
+            popped = original(queue)
+            actual_pops.append(1)
+            now[0] = 2.0
+            return popped
+
+        with patch("rsi2.enumeration.heapq.heappop", side_effect=overrun), patch(
+                "rsi2.research.population_search.time.process_time",
+                side_effect=lambda: now[0]):
+            result = solve_population([((), 1)], INT, 64,
+                                      Grammar(primitives={}, constants=(Int(1),)),
+                                      max_cpu_seconds=1)
+        self.assertEqual(result.termination, "cpu_budget")
+        self.assertEqual(result.expansions, len(actual_pops))
+        self.assertEqual(result.expansions, 1)
+        self.assertEqual(result.candidates, 0)
+
+    def test_alpha_canonicalization_preserves_type_dependencies_and_evaluation(self):
+        first = Lam(TVar("generated_one"), Lam(TVar("generated_two"), Var(0)))
+        alias = Lam(TVar("other_one"), Lam(TVar("other_two"), Var(0)))
+        dependent = Lam(TVar("shared"), Lam(TVar("shared"), Var(0)))
+        self.assertEqual(canonical_term(first), canonical_term(alias))
+        self.assertNotEqual(canonical_term(first), canonical_term(dependent))
+        for raw in (first, alias, dependent):
+            normalized = canonical_term(raw)
+            self.assertEqual(infer(raw), infer(normalized))
+            before, after = evaluate(raw, (1, True)), evaluate(normalized, (1, True))
+            self.assertEqual(before.ok, after.ok)
+            self.assertEqual(before.value, after.value)
+        self.assertTrue(evaluate(canonical_term(first), (1, True)).ok)
+        self.assertFalse(evaluate(canonical_term(dependent), (1, True)).ok)
+
+    def test_population_never_spends_attempts_on_alpha_only_aliases(self):
+        grammar = Grammar(primitives={name: PRIMITIVE_TYPES[name] for name in ("map", "nil")},
+                          constants=(Int(0), Int(1)))
+        result = solve_population([(([1, 2],), [999])],
+                                  Arrow(ListOf(INT), ListOf(INT)), 64, grammar,
+                                  beta_normalize=True)
+        canonical = [canonical_term(Term.from_dict(t["term"])) for t in result.trials]
+        self.assertEqual(len(set(canonical)), result.candidates)
+        self.assertTrue(result.canonicalization_enabled)
+        self.assertGreater(result.canonicalization_steps, 0)
+        self.assertLessEqual(result.canonicalization_steps, result.normalization_steps)
+        self.assertGreater(result.candidates, 22)  # Original 64 attempts had only 22 forms.
+        for trial in result.trials:
+            self.assertEqual(canonical_term(Term.from_dict(trial["term"])).to_dict(),
+                             trial["term"])
+
+    def test_alpha_transform_work_is_capped_and_post_transform_cpu_checked(self):
+        grammar = Grammar(primitives={}, constants=(Int(1),))
+        limited = solve_population([((), 1)], INT, 1, grammar, max_normalization_steps=0)
+        self.assertEqual(limited.termination, "normalization_budget")
+        self.assertEqual(limited.candidates, 0)
+        self.assertEqual(limited.evaluator_calls, 0)
+        now = [0.0]
+
+        def overrun(term):
+            canonical = canonical_term(term)
+            now[0] = 2.0
+            return canonical
+
+        with patch("rsi2.research.population_search.canonical_term", side_effect=overrun), patch(
+                "rsi2.research.population_search.time.process_time",
+                side_effect=lambda: now[0]):
+            result = solve_population([((), 1)], INT, 1, grammar, max_cpu_seconds=1)
+        self.assertEqual(result.termination, "cpu_budget")
+        self.assertEqual(result.canonicalization_steps, 1)
+        self.assertEqual(result.normalization_steps, 1)
+        self.assertEqual(result.candidates, 0)
+        self.assertEqual(result.evaluator_calls, 0)
 
     def test_public_evaluator_overrun_is_charged_and_cannot_accept_a_solution(self):
         now = [0.0]

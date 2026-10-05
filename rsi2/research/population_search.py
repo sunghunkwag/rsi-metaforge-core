@@ -24,6 +24,7 @@ from .repair_search import (
     RepairResult, RepairSeed, _CountedGrammar, _CpuLimit, _ExpansionLimit,
     _NormalizationLimit, _ReplacementPool, _normalize_beta, typed_locations,
 )
+from .proposals import canonical_term
 
 
 @dataclass
@@ -35,6 +36,9 @@ class PopulationResult(RepairResult):
     parent_selections: list = field(default_factory=list)
     parent_records: list = field(default_factory=list)
     seed: int = 11
+    force_wrapper_lambdas: bool = True
+    canonicalization_enabled: bool = True
+    canonicalization_steps: int = 0
 
 
 @dataclass
@@ -48,11 +52,40 @@ class _Parent:
     last_turn: int = -1
 
 
+class _WrapperGrammar(_CountedGrammar):
+    """Require an open replacement's binders without refitting probabilities."""
+
+    def __init__(self, grammar, charge, binders):
+        super().__init__(grammar, charge)
+        self.binders = binders
+
+    def productions(self, *args, **kwargs):
+        choices = super().productions(*args, **kwargs)
+        env = args[1] if len(args) > 1 else kwargs.get("env", ())
+        if len(env) < self.binders:
+            return tuple(choice for choice in choices if choice.is_lambda)
+        return choices
+
+
+class _LiveExpansionLimit:
+    """Read the shared quota before every pop, including resumed iterators."""
+
+    def __init__(self, result, maximum, check):
+        self.result, self.maximum, self.check = result, maximum, check
+
+    def __lt__(self, other):
+        return self.maximum < other  # Frozen iterator validates its limit < 0.
+
+    def __gt__(self, _local_count):
+        self.check()
+        return self.result.expansions < self.maximum
+
+
 def solve_population(examples, request_type, budget, grammar, *,
                      accepted_seeds=(), heuristic=None, seed=11, seed_prefix=16,
                      max_size=12, max_expansions=20000, step_budget=2000,
                      max_cpu_seconds=None, beta_normalize=False,
-                     max_normalization_steps=20000):
+                     max_normalization_steps=20000, force_wrapper_lambdas=True):
     """Produce, evaluate, and recursively edit a budgeted program population.
 
     Every unique complete program attempted consumes one candidate evaluation.
@@ -70,6 +103,16 @@ def solve_population(examples, request_type, budget, grammar, *,
     explicit counters. Enumeration and normalization caps are global per task,
     including roots and all parents. The CPU guard preserves completed trials
     and marks any interrupted public-example assessment as incomplete.
+
+    ``force_wrapper_lambdas`` restricts replacement enumeration's declared
+    binder prefix to the grammar's existing lambda production. Its original
+    normalized log probability is retained. Root enumeration is unrestricted;
+    after the required binders, every original production remains available.
+
+    Type-variable alpha names are canonicalized before novelty, typing, and
+    scoring. A metered structural prewalk charges each canonicalizer AST/type
+    visit to the normalization quota; transformation and metering CPU are both
+    included. Raw roots, replacements, and full candidates remain in provenance.
     """
     started, cpu_started = time.perf_counter(), time.process_time()
     for name, value in (("budget", budget), ("seed_prefix", seed_prefix),
@@ -85,6 +128,8 @@ def solve_population(examples, request_type, budget, grammar, *,
         raise ValueError("seed must be an integer")
     if type(beta_normalize) is not bool:
         raise ValueError("beta_normalize must be a bool")
+    if type(force_wrapper_lambdas) is not bool:
+        raise ValueError("force_wrapper_lambdas must be a bool")
     if (max_cpu_seconds is not None and
             (type(max_cpu_seconds) not in (int, float) or
              not 0 <= max_cpu_seconds < float("inf"))):
@@ -99,7 +144,7 @@ def solve_population(examples, request_type, budget, grammar, *,
             raise TypeError("heuristic must be a DSL Term")
         unify(infer(heuristic, library=grammar.library), HEURISTIC_TYPE)
 
-    result = PopulationResult(seed=seed)
+    result = PopulationResult(seed=seed, force_wrapper_lambdas=force_wrapper_lambdas)
     seen, pools, active, fifo, heuristic_cache = set(), {}, {}, deque(), {}
     target = flatten([expected for _, expected in examples])
     turn = 0
@@ -110,10 +155,12 @@ def solve_population(examples, request_type, budget, grammar, *,
             raise _CpuLimit
 
     def charge_expansion():
-        check_cpu()
         if result.expansions >= max_expansions:
             raise _ExpansionLimit
         result.expansions += 1
+        # This state has already been popped. Preserve its charge if CPU
+        # expires before the following production expansion/materialization.
+        check_cpu()
 
     def charge_normalization():
         check_cpu()
@@ -124,17 +171,39 @@ def solve_population(examples, request_type, budget, grammar, *,
     def contraction():
         result.beta_reductions += 1
 
-    counted = _CountedGrammar(grammar, charge_expansion)
+    def canonicalize(term):
+        pending = [term]
+        while pending:
+            node = pending.pop()
+            charge_normalization()
+            result.canonicalization_steps += 1
+            pending.extend(node.children)
+            if node.tag in ("lam", "hole"):
+                types = [node.value]
+                while types:
+                    annotation = types.pop()
+                    charge_normalization()
+                    result.canonicalization_steps += 1
+                    if not annotation.is_variable:
+                        types.extend(annotation.args)
+        canonical = canonical_term(term)
+        check_cpu()
+        return canonical
 
     def complete_charge(state):
         if state.complete:
             charge_expansion()
         return 0.0
 
-    def stream(type_, size):
-        return iter(enumerate_programs(
-            type_, counted, max_size=size, max_expansions=None,
-            partial_heuristic=complete_charge, partial_features_only=True))
+    def stream(type_, size, binders=0):
+        counted = _WrapperGrammar(
+            grammar, charge_expansion, binders if force_wrapper_lambdas else 0)
+        live_limit = _LiveExpansionLimit(result, max_expansions, check_cpu)
+        yield from enumerate_programs(
+            type_, counted, max_size=size, max_expansions=live_limit,
+            partial_heuristic=complete_charge, partial_features_only=True)
+        if result.expansions >= max_expansions:
+            raise _ExpansionLimit
 
     def edits(parent_term):
         schedule = deque()
@@ -146,7 +215,7 @@ def solve_population(examples, request_type, budget, grammar, *,
             if key not in pools:
                 closed = arrows(*reversed(location.env), location.type)
                 pools[key] = _ReplacementPool(
-                    stream(closed, allowance + len(location.env)),
+                    stream(closed, allowance + len(location.env), len(location.env)),
                     location.env, grammar.library, result)
             schedule.append((location, pools[key], 0))
         while schedule:
@@ -191,6 +260,7 @@ def solve_population(examples, request_type, budget, grammar, *,
             return
         term = (_normalize_beta(raw, charge_normalization, contraction)
                 if beta_normalize else raw)
+        term = canonicalize(term)
         if term in seen:
             result.duplicate_candidates += 1
             return
@@ -229,7 +299,8 @@ def solve_population(examples, request_type, budget, grammar, *,
         except _CpuLimit:
             interrupted = True
         root_id = trial_id if parent is None else parent.root_id
-        trial = {"id": trial_id, "term": term.to_dict(), "source": source,
+        trial = {"id": trial_id, "term": term.to_dict(), "raw_term": raw.to_dict(),
+                 "source": source,
                  "parent_id": None if parent is None else parent.id,
                  "root_id": root_id, "depth": 0 if parent is None else parent.depth + 1,
                  "path": list(path),

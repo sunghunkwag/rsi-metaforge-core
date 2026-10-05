@@ -175,9 +175,18 @@ def _task(row, index, method, budget):
             "termination": reason, "termination_source": reason_source,
             "counters": counters, "counter_sources": sources, "alerts": alerts,
             "reported_cpu_above_nominal_cap": cpu > 10 if cpu is not None else None,
-            "trial_failure_evidence": dict(trial_evidence), "trials_recorded": len(trials),
-            "seed_size_evidence": dict(Counter(_size(s["term"]) for s in seeds if "term" in s)),
+            "trial_failure_evidence": dict(trial_evidence) if "trials" in search else None,
+            "trials_recorded": len(trials) if "trials" in search else None,
+            "trial_log_present": "trials" in search,
+            "seed_size_evidence": (dict(Counter(_size(s["term"]) for s in seeds if "term" in s))
+                                   if "seed_records" in search else None),
             "expansion_components": search.get("expansion_counts"),
+            "scalar_search": search.get("scalar_search"),
+            "nested_telemetry_scope": "Nested scalar costs are already included in outer counters",
+            "strata_count": len(search["strata"]) if isinstance(search.get("strata"), list) else None,
+            "trial_source_counts": dict(Counter(
+                str(trial.get("source", {}).get("stage", trial.get("stage", "unknown")))
+                for trial in trials if isinstance(trial.get("source", {}), dict))),
             "decomposition": search.get("decomposition"),
             "language_complete": search.get("language_complete"),
             "extra_search_scalars": {k: v for k, v in search.items()
@@ -207,7 +216,9 @@ def _cycle(path, raw):
     namespace = path.parts[path.parts.index("bootstrap_results") + 1:-1]
     frozen = namespace == ("frozen",)
     classification = "frozen_development" if frozen else "pilot"
-    if method == "observational" and not frozen:
+    if namespace and namespace[0] == "pre_live_cap":
+        classification = "invalid_pre_live_cap_pilot"
+    elif method == "observational" and not frozen:
         classification = "invalid_pre_scope_fix_pilot"
     tasks = [_task(row, index, method, budget) for index, row in enumerate(raw.get("tasks", []))]
     alerts = [f"task {t['name']}: {alert}" for t in tasks for alert in t["alerts"]]
@@ -221,13 +232,27 @@ def _cycle(path, raw):
     if "solutions" in raw and sorted(raw["solutions"]) != verified:
         alerts.append("top-level solutions differ from raw verifier rows")
     compression = raw.get("compression", {})
-    records = compression.get("records", [])
+    recorded = isinstance(compression.get("records"), list)
+    records = compression["records"] if recorded else []
     entries = compression.get("library")
     identity_records = sum(_identity(r.get("term_dict", {})) for r in records)
+    program_evidence = None
+    if isinstance(raw.get("solutions"), dict):
+        groups = {}
+        for name, term in sorted(raw["solutions"].items()):
+            key = json.dumps(term, sort_keys=True, separators=(",", ":"))
+            groups.setdefault(key, {"size": _size(term), "identity": _identity(term),
+                                    "term": term, "task_names": []})["task_names"].append(name)
+        program_evidence = {"total_solution_nodes": sum(_size(t) for t in raw["solutions"].values()),
+                            "unique_exact_ast_count": len(groups),
+                            "exact_ast_support": list(groups.values()),
+                            "scope": "Syntactic support only; no reusable-library capability inferred"}
     totals = _totals(tasks)
     termination = Counter(t["termination"] for t in tasks)
     complete = raw.get("status") == "complete" and len(tasks) == 36
     run_cpu = raw.get("cpu_seconds") if _number(raw.get("cpu_seconds")) else None
+    versions = Counter(t["extra_search_scalars"]["expansion_accounting"] for t in tasks
+                       if type(t["extra_search_scalars"].get("expansion_accounting")) is str)
     return {"source_path": str(path), "classification": classification,
             "eligible": frozen and complete and not alerts, "complete": complete,
             "status": raw.get("status", "unknown"), "method": method, "budget": budget,
@@ -238,6 +263,12 @@ def _cycle(path, raw):
             "run_wall_seconds": raw.get("wall_seconds") if _number(raw.get("wall_seconds")) else None,
             "cpu_scope": "Run CPU includes verification, serialization and compression; search CPU is separate",
             "totals": totals, "termination_counts": dict(termination), "alerts": alerts,
+            "accounting_provenance": {"namespace": list(namespace),
+                "reported_expansion_versions": dict(versions),
+                "version_unknown_rows": len(tasks) - sum(versions.values()),
+                "quarantined_pre_live_cap": classification == "invalid_pre_live_cap_pilot",
+                "policy": "pre_live_cap records remain invalid even if scalar results match a corrected rerun"},
+            "verified_program_evidence": program_evidence,
             "guard_evidence": {"unobserved_tasks": max(0, 36 - len(tasks)),
                 "cpu_budget_terminations": termination.get("cpu_budget", 0),
                 "expansion_budget_terminations": termination.get("expansion_budget", 0),
@@ -247,11 +278,12 @@ def _cycle(path, raw):
                 "run_cpu_above_nominal_total_cap": run_cpu > 1800 if run_cpu is not None else None,
                 "enforcement_claim": "Telemetry alone does not prove guard enforcement; legacy pilots may predate guards"},
             "tasks": tasks, "expansion_definition": EXPANSION_MEANINGS[method],
-            "compression": {"adoptions": len(records), "records": records,
+            "compression": {"adoptions": len(records) if recorded else None,
+                            "records": records if recorded else None,
                             "entries": len(entries) if isinstance(entries, dict) else None,
-                            "identity_macros": identity_records,
+                            "identity_macros": identity_records if recorded else None,
                             "mdl_delta": sum(r["delta"] for r in records)
-                                         if all(_number(r.get("delta")) for r in records) else None,
+                                         if recorded and all(_number(r.get("delta")) for r in records) else None,
                             "downstream_library_benefit": "unmeasured; tiny identity compression is insufficient"}}
 
 
@@ -278,7 +310,9 @@ def _compare(cycle, cycles):
 
 def _fields(cycle):
     comparison = cycle["baseline_comparison"]
-    if cycle["classification"] == "invalid_pre_scope_fix_pilot":
+    if cycle["classification"] == "invalid_pre_live_cap_pilot":
+        decision = "EXCLUDE_INVALID_PRE_LIVE_CAP_PILOT"
+    elif cycle["classification"] == "invalid_pre_scope_fix_pilot":
         decision = "EXCLUDE_INVALID_PILOT"
     elif cycle["classification"] == "pilot":
         decision = "PILOT_ONLY"
@@ -294,7 +328,14 @@ def _fields(cycle):
         decision = "KEEP_FOR_CAUSAL_TEST_ONLY"
     else:
         decision = "REVISE_NO_VERIFIED_CAPABILITY_GAIN"
+    trial_failures = Counter()
+    for task in cycle["tasks"]:
+        if task["trial_failure_evidence"] is not None:
+            trial_failures.update(task["trial_failure_evidence"])
     failures = {"search_termination": cycle["termination_counts"],
+                "trial_failure_labels_known": dict(trial_failures),
+                "tasks_without_trial_logs": sum(not task["trial_log_present"] for task in cycle["tasks"]),
+                "reported_runtime_failure_counter": cycle["totals"]["runtime_failures"],
                 "selected_verifier_failures": sum(t["public_match"] is True and t["verified"] is False
                                                   for t in cycle["tasks"]),
                 "unknown_verifier_rows": sum(t["verified"] is None for t in cycle["tasks"]),
@@ -311,12 +352,14 @@ def _fields(cycle):
         {"method": cycle["method"], "candidate_budget": cycle["budget"], "nominal_protocol_limits": LIMITS},
         MECHANISMS[cycle["method"]],
         {"raw_source": cycle["source_path"], "classification": cycle["classification"],
+         "accounting_provenance": cycle["accounting_provenance"],
          "public_search_then_separate_verifier": True, "reporter_executes_tasks": False},
         ["Finite coverage and public observational equivalence", "CPU/candidate/expansion limits",
          "Helper accounting differs; all recorded helper work remains charged",
          "No causal learned-library or synthesized-heuristic comparison"],
         {"complete": cycle["complete"], "eligible": cycle["eligible"], "baseline_comparison": comparison,
          "compression": cycle["compression"], "guard_evidence": cycle["guard_evidence"],
+         "verified_program_evidence": cycle["verified_program_evidence"],
          "original_criteria": "FAIL; preserved"},
         decision,
         {"status": decision, "activated": False,
@@ -380,14 +423,41 @@ def build_report(paths, scratch_paths=()):
     for cycle in cycles:
         cycle["baseline_comparison"] = _compare(cycle, cycles)
         cycle["eleven_fields"] = _fields(cycle)
+    summaries = []
+    for method, budget in sorted({(row["method"], row["budget"]) for row in cycles}):
+        measured = [row for row in cycles if row["method"] == method and row["budget"] == budget]
+        admitted = [row for row in measured if row["eligible"]]
+        seeds = sorted({row["seed"] for row in admitted})
+        if method == "enumeration":
+            status = "BASELINE_ONLY"
+        elif seeds != [11, 22, 33]:
+            status = "PENDING_MISSING_REGISTERED_SEEDS"
+        elif len(admitted) != 3:
+            status = "UNKNOWN_DUPLICATE_SEED_RECORDS"
+        elif any(row["baseline_comparison"]["status"] == "unavailable" for row in admitted):
+            status = "UNKNOWN_NO_PAIRED_BASELINES"
+        elif any(row["baseline_comparison"]["lost_verified_tasks"] for row in admitted):
+            status = "REVISE_REGRESSION"
+        elif all(row["baseline_comparison"]["new_verified_tasks"] for row in admitted):
+            status = "KEEP_FOR_CAUSAL_TEST_ONLY"
+        else:
+            status = "REVISE_NO_ALL_SEED_CAPABILITY_GAIN"
+        summaries.append({"method": method, "budget": budget, "eligible_seeds": seeds,
+            "pilot_records": sum(row["classification"] != "frozen_development" for row in measured),
+            "verified_solved_by_eligible_seed": {str(seed): [row["verified_solved"] for row in admitted
+                                                            if row["seed"] == seed] for seed in seeds},
+            "status": status, "activated": False,
+            "claim_scope": "Structural kernel evidence; learned library/scorer causal controls remain unrun"})
     return {"schema_version": 1, "scope": "TRAIN development bootstrap; raw artifact aggregation only",
             "original_criteria": {letter: "FAIL" for letter in "abcde"},
             "original_result_preserved": True, "rsi_claim": False, "activated_rules": [],
             "nominal_protocol_limits": LIMITS, "registered_seeds": [11, 22, 33],
             "eligible_observed_seeds": sorted({r["seed"] for r in cycles if r["eligible"]}),
-            "cycles": cycles, "diagnostics": [_diagnostic(path) for path in scratch_paths],
+            "cycles": cycles, "method_budget_summaries": summaries,
+            "diagnostics": [_diagnostic(path) for path in scratch_paths],
             "limitations": ["Earlier root/instrumented records are pilots",
                 "Pre-scope-fix observational pilots are invalid",
+                "pre_live_cap records are quarantined for stale shared caps or CPU-interrupt pop accounting",
                 "Missing counters are unknown, never zero-filled",
                 "Bounded enumeration exhaustion does not identify heap versus expansion-cap termination",
                 "Different expansion definitions prevent an equal-compute inference",
@@ -400,6 +470,25 @@ def _show(value):
     if value is None:
         return "unknown"
     return f"{value:.3f}" if type(value) is float else str(value)
+
+
+def _field_text(field, value):
+    if field == "current_performance":
+        counters = value["known_counters"]
+        measured = "; ".join(f"{name}={_show(counters[name]['value'])}" for name in (
+            "logical_program_attempts", "complete_program_attempts", "auxiliary_program_attempts",
+            "total_interpreter_calls", "total_interpreter_steps", "expansions"))
+        return (f"{value['verified_solved']}/{value['tasks_observed']} verified; "
+                f"run CPU {_show(value['run_cpu_seconds'])} s; {measured}.")
+    if field == "result":
+        compression = value["compression"]
+        short = {**value, "compression": {key: compression[key] for key in
+                 ("adoptions", "entries", "identity_macros", "mdl_delta", "downstream_library_benefit")}}
+        evidence = value["verified_program_evidence"]
+        short["verified_program_evidence"] = ({key: evidence[key] for key in
+            ("total_solution_nodes", "unique_exact_ast_count", "scope")} if evidence else None)
+        return json.dumps(short, ensure_ascii=False, separators=(",", ":"))
+    return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
 
 
 def markdown(report):
@@ -418,12 +507,17 @@ def markdown(report):
         lines.append("| " + " | ".join(_show(value) for value in values) + " |")
     lines += ["", "Run CPU includes verification, serialization and compression overhead. "
               "Search calls/steps exclude the separately reported verifier. "
-              "Unknown counters have known-only subtotals in JSON. Shared caps do not equalize work.", ""]
+              "Unknown counters have known-only subtotals in [the full structured report](BOOTSTRAP_RESULTS.json). "
+              "Shared caps do not equalize work.", ""]
+    for summary in report["method_budget_summaries"]:
+        lines.append(f"- {summary['method']} B{summary['budget']}: eligible seeds "
+                     f"{summary['eligible_seeds']}; {summary['status']}; no rule activated.")
+    lines.append("")
     for row in report["cycles"]:
         lines += [f"## {row['method']} B{row['budget']} seed {row['seed']} ({row['classification']})", "",
                   f"Raw evidence: `{row['source_path']}`. Expansion meaning: {row['expansion_definition']}.", ""]
         for field in FIELDS:
-            lines += [f"- **{field}**: " + json.dumps(row["eleven_fields"][field], ensure_ascii=False, separators=(",", ":"))]
+            lines += [f"- **{field}**: " + _field_text(field, row["eleven_fields"][field])]
         lines.append("")
     if report["diagnostics"]:
         lines += ["## Explicit scratch diagnostics", ""]

@@ -160,6 +160,16 @@ class BootstrapReportTests(unittest.TestCase):
         self.assertIn("unmeasured", compression["downstream_library_benefit"])
         self.assertEqual(set(result["original_criteria"].values()), {"FAIL"})
 
+    def test_exact_verified_program_support_is_explicit_syntactic_evidence(self):
+        source = artifact(solved=(0, 1, 2))
+        cycle = report.build_report([self.save(source, "support.json")])["cycles"][0]
+        evidence = cycle["verified_program_evidence"]
+        self.assertEqual(evidence["unique_exact_ast_count"], 1)
+        self.assertEqual(evidence["total_solution_nodes"], 6)
+        self.assertEqual(evidence["exact_ast_support"][0]["task_names"], ["task00", "task01", "task02"])
+        self.assertTrue(evidence["exact_ast_support"][0]["identity"])
+        self.assertIn("Syntactic support only", evidence["scope"])
+
     def test_explicit_scratch_diagnostics_preserve_novelty_and_scalar_input_bias(self):
         prefix = self.root / "prefix.json"
         prefix.write_text(json.dumps({"failed_request_types": {"list[int] -> int": 6},
@@ -204,6 +214,85 @@ class BootstrapReportTests(unittest.TestCase):
         self.assertEqual(cycle["eleven_fields"]["failure_clusters"]["unknown_verifier_rows"], 1)
         self.assertIn("task task02: missing selected-term telemetry", cycle["alerts"])
         self.assertEqual(cycle["guard_evidence"]["search_cpu_observed_rows"], 36)
+
+    def test_nested_scalar_costs_are_preserved_without_double_counting(self):
+        source = artifact("stratified_decomposition", search={"candidates": 3,
+            "helper_attempts": 2, "head_attempts": 1, "component_attempts": 1,
+            "root_attempts": 1, "example_evaluations": 6, "evaluator_steps": 49,
+            "scalar_search": {"baseline_attempts": 1, "stratum_attempts": 0, "cpu_seconds": 0.01}})
+        cycle = report.build_report([self.save(source, "nested.json")])["cycles"][0]
+        self.assertEqual(cycle["tasks"][0]["scalar_search"]["baseline_attempts"], 1)
+        self.assertEqual(cycle["totals"]["search_interpreter_calls"]["value"], 36 * 6)
+        self.assertEqual(cycle["totals"]["logical_program_attempts"]["value"], 36 * 3)
+
+    def test_missing_trial_and_compression_logs_are_unknown_not_zero(self):
+        source = artifact()
+        source.pop("compression")
+        cycle = report.build_report([self.save(source, "missing_logs.json")])["cycles"][0]
+        self.assertIsNone(cycle["tasks"][0]["trials_recorded"])
+        self.assertIsNone(cycle["tasks"][0]["trial_failure_evidence"])
+        self.assertIsNone(cycle["tasks"][0]["seed_size_evidence"])
+        self.assertIsNone(cycle["compression"]["adoptions"])
+        self.assertIsNone(cycle["compression"]["identity_macros"])
+        self.assertIsNone(cycle["compression"]["mdl_delta"])
+        self.assertEqual(cycle["eleven_fields"]["failure_clusters"]["tasks_without_trial_logs"], 36)
+
+    def test_method_budget_summary_requires_all_registered_seeds_and_still_no_activation(self):
+        paths = []
+        for seed in (11, 22, 33):
+            paths += [self.save(artifact(seed=seed), f"baseline{seed}.json"),
+                      self.save(artifact("stratified", seed=seed, solved=(0, 1)), f"candidate{seed}.json")]
+        partial = report.build_report(paths[:2])
+        summary = next(r for r in partial["method_budget_summaries"] if r["method"] == "stratified")
+        self.assertEqual(summary["status"], "PENDING_MISSING_REGISTERED_SEEDS")
+        complete = report.build_report(paths)
+        summary = next(r for r in complete["method_budget_summaries"] if r["method"] == "stratified")
+        self.assertEqual(summary["status"], "KEEP_FOR_CAUSAL_TEST_ONLY")
+        self.assertEqual(summary["eligible_seeds"], [11, 22, 33])
+        self.assertFalse(summary["activated"])
+        self.assertEqual(complete["activated_rules"], [])
+
+    def test_pre_live_cap_source_versions_are_quarantined_and_never_a_paired_baseline(self):
+        old_baseline = self.save(artifact(budget=640), "old_baseline.json", namespace="pre_live_cap")
+        old_bytes = old_baseline.read_bytes()
+        candidate = artifact("stratified", budget=640, solved=(0, 1))
+        for task in candidate["tasks"]:
+            task["search"]["expansion_accounting"] = "live_shared_global_cap_v2"
+        new_candidate = self.save(candidate, "corrected_candidate.json")
+        result = report.build_report([old_baseline, new_candidate])
+        old = next(c for c in result["cycles"] if c["method"] == "enumeration")
+        current = next(c for c in result["cycles"] if c["method"] == "stratified")
+        self.assertEqual(old["classification"], "invalid_pre_live_cap_pilot")
+        self.assertEqual(old["eleven_fields"]["keep_revert_revise"], "EXCLUDE_INVALID_PRE_LIVE_CAP_PILOT")
+        self.assertFalse(old["eligible"])
+        self.assertTrue(old["accounting_provenance"]["quarantined_pre_live_cap"])
+        self.assertEqual(old["accounting_provenance"]["version_unknown_rows"], 36)
+        self.assertEqual(old_baseline.read_bytes(), old_bytes)
+        self.assertTrue(current["eligible"])
+        self.assertEqual(current["accounting_provenance"]["reported_expansion_versions"],
+                         {"live_shared_global_cap_v2": 36})
+        self.assertEqual(current["baseline_comparison"]["status"], "unavailable")
+        corrected_baseline = artifact(budget=640)
+        for task in corrected_baseline["tasks"]:
+            task["search"]["expansion_accounting"] = "live_shared_global_cap_v2"
+        new_baseline = self.save(corrected_baseline, "corrected_baseline.json")
+        updated = report.build_report([old_baseline, new_candidate, new_baseline])
+        current = next(c for c in updated["cycles"] if c["method"] == "stratified")
+        self.assertEqual(current["baseline_comparison"]["baseline_path"], str(new_baseline))
+
+    def test_pre_live_cap_quarantine_applies_to_both_stratified_variants_even_with_v2_label(self):
+        paths = []
+        for method in ("stratified", "stratified_decomposition"):
+            raw = artifact(method)
+            for task in raw["tasks"]:
+                task["search"]["expansion_accounting"] = "live_shared_global_cap_v2"
+            paths.append(self.save(raw, f"{method}.json", namespace="pre_live_cap"))
+        result = report.build_report(paths)
+        for cycle in result["cycles"]:
+            self.assertFalse(cycle["eligible"])
+            self.assertEqual(cycle["classification"], "invalid_pre_live_cap_pilot")
+            self.assertEqual(cycle["eleven_fields"]["updated_rule"]["status"],
+                             "EXCLUDE_INVALID_PRE_LIVE_CAP_PILOT")
 
 
 if __name__ == "__main__":
