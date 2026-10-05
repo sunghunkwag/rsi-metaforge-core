@@ -1,0 +1,34 @@
+{
+  "status": "PASS",
+  "scope": "independent replay of actual stored TRAIN public trials/scorers and selected public+hidden proofs; no search/proposal/evaluation-partition loading",
+  "measurement_count": 14,
+  "task_searches": 56,
+  "candidate_trials": 686,
+  "reconstructed_descendant_edges": 231,
+  "public_example_replays": 5677,
+  "public_evaluator_steps": 111119,
+  "actual_heuristic_replays": 527,
+  "actual_heuristic_steps": 56466,
+  "selected_solution_proofs": 14,
+  "replay_bank_proofs": 2,
+  "counter_reconciliation": "all search/scorer counters and verification costs exact",
+  "all_original_descendants": 0,
+  "reserved_descendants_per_scorer": 33,
+  "six_proposals_change_actual_reserved_sequences": true,
+  "verified_screen_solved": {
+    "original": "1/4 for all scorers",
+    "reserved": "1/4 for all scorers"
+  },
+  "confirmation_rankings": {
+    "original": [
+      "0",
+      "1"
+    ],
+    "reserved": [
+      "0",
+      "1"
+    ]
+  },
+  "new_capability_or_RSI_gain": false,
+  "audit_cpu_seconds": 0.8722107100000001
+}

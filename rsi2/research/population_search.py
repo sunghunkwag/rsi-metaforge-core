@@ -85,7 +85,8 @@ def solve_population(examples, request_type, budget, grammar, *,
                      accepted_seeds=(), heuristic=None, seed=11, seed_prefix=16,
                      max_size=12, max_expansions=20000, step_budget=2000,
                      max_cpu_seconds=None, beta_normalize=False,
-                     max_normalization_steps=20000, force_wrapper_lambdas=True):
+                     max_normalization_steps=20000, force_wrapper_lambdas=True,
+                     edit_provider=None):
     """Produce, evaluate, and recursively edit a budgeted program population.
 
     Every unique complete program attempted consumes one candidate evaluation.
@@ -130,6 +131,8 @@ def solve_population(examples, request_type, budget, grammar, *,
         raise ValueError("beta_normalize must be a bool")
     if type(force_wrapper_lambdas) is not bool:
         raise ValueError("force_wrapper_lambdas must be a bool")
+    if edit_provider is not None and not callable(edit_provider):
+        raise TypeError("edit_provider must be callable or None")
     if (max_cpu_seconds is not None and
             (type(max_cpu_seconds) not in (int, float) or
              not 0 <= max_cpu_seconds < float("inf"))):
@@ -206,6 +209,14 @@ def solve_population(examples, request_type, budget, grammar, *,
             raise _ExpansionLimit
 
     def edits(parent_term):
+        if edit_provider is not None:
+            yield from edit_provider(
+                parent_term, request_type=request_type, grammar=grammar, max_size=max_size,
+                max_expansions=max_expansions,
+                max_normalization_steps=max_normalization_steps,
+                charge_expansion=charge_expansion,
+                charge_normalization=charge_normalization, check_cpu=check_cpu)
+            return
         schedule = deque()
         for location in typed_locations(parent_term, request_type, grammar.library):
             if not location.path:
@@ -311,6 +322,8 @@ def solve_population(examples, request_type, budget, grammar, *,
                  "log_probability": probability, "heuristic_score": None,
                  "heuristic_failure": None, "heuristic_incomplete": False}
         result.trials.append(trial)
+        if parent is not None and origin is not None:
+            trial["edit_provenance"] = origin
         if parent is None:
             result.seed_records.append({"trial_id": trial_id, "term": raw.to_dict(),
                                         **origin})
@@ -373,7 +386,9 @@ def solve_population(examples, request_type, budget, grammar, *,
             result.parent_selections.append(selection)
             turn += 1
             try:
-                candidate, path, replacement = next(selected.edits)
+                edit = next(selected.edits)
+                candidate, path, replacement = edit[:3]
+                provenance = edit[3] if len(edit) == 4 else None
             except StopIteration:
                 del active[selected.id]
                 continue
@@ -383,7 +398,7 @@ def solve_population(examples, request_type, budget, grammar, *,
             fifo.append(selected.id)
             previous_count = result.candidates
             attempt(candidate, "descendant", parent=selected,
-                    path=path, replacement=replacement)
+                    path=path, replacement=replacement, origin=provenance)
             if result.candidates > previous_count:
                 selection["child_trial_id"] = result.candidates - 1
         if result.term is not None:

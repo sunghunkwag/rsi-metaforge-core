@@ -38,6 +38,8 @@ def restore_state(source):
     state.raw_solutions = {name: Term.from_dict(term) for name, term in saved["raw_solutions"].items()}
     state.solutions = {name: Term.from_dict(term) for name, term in saved["solutions"].items()}
     state.acceptance_records = copy.deepcopy(saved["acceptance_records"])
+    state.library_history = copy.deepcopy(saved["library_history"])
+    state.heuristic_history = copy.deepcopy(saved["heuristic_history"])
     if set(state.raw_solutions) != set(state.acceptance_records):
         raise ValueError("source bank has missing verification provenance")
     for record in state.acceptance_records.values():
@@ -158,6 +160,32 @@ def worker(kind, key, output, config, records, events):
         events.join_thread()
 
 
+def complete_screen_record(record):
+    """A terminal event cannot certify a missing or truncated persisted run."""
+    if not isinstance(record, dict) or record.get("status") != "complete":
+        return False
+    rows = record.get("screens", [])
+    if [row.get("candidate") for row in rows] != ["incumbent", "0", "1", "2", "3", "4", "5"]:
+        return False
+    expected_names = None
+    for row in rows:
+        for method in ("original", "reserved"):
+            measurement = row.get(method, {})
+            tasks = measurement.get("records", [])
+            if (measurement.get("status") != "complete" or
+                    measurement.get("tasks_completed") != 4 or len(tasks) != 4 or
+                    any(type(task.get("solved")) is not bool for task in tasks)):
+                return False
+            names = [task.get("name") for task in tasks]
+            if len(set(names)) != 4 or any(type(name) is not str for name in names):
+                return False
+            if expected_names is None:
+                expected_names = names
+            if names != expected_names:
+                return False
+    return True
+
+
 def run(source_path, output):
     output = Path(output)
     if output.exists() and any(output.iterdir()):
@@ -169,10 +197,11 @@ def run(source_path, output):
     budget = CPUController(config["cpu_limit_seconds"])
     phase = _run_phase("screen_revision", [11], output, config, budget, workers=1, worker_target=worker)
     event = phase["results"].get(11, {})
-    complete = phase["reason"] is None and event.get("result", {}).get("status") == "complete"
     path = output / "screens.json"
+    record = json.loads(path.read_text()) if path.exists() else None
+    complete = (phase["reason"] is None and event.get("result", {}).get("status") == "complete"
+                and complete_screen_record(record) and budget.spent() < config["cpu_limit_seconds"])
     if not complete and path.exists():
-        record = json.loads(path.read_text())
         record.update(status="partial", candidate_evaluations_scope="completed_operations_lower_bound")
         atomic_write(path, record)
     summary = {"status": "complete" if complete else "partial", "config": config,

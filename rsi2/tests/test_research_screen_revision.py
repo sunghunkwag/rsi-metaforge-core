@@ -4,7 +4,7 @@ import unittest
 from rsi2.enumeration import enumerate_programs
 from rsi2.grammar import Grammar
 from rsi2.research.recursive_bootstrap import RecursiveState, jsonable, state_record
-from rsi2.research.screen_revision_run import restore_state
+from rsi2.research.screen_revision_run import complete_screen_record, restore_state
 from rsi2.types import Arrow, INT
 
 
@@ -37,6 +37,17 @@ class ScreenRevisionTests(unittest.TestCase):
             source["final_state"]["acceptance_records"]["own_generated"]["verification"] = verification
             with self.assertRaises(ValueError):
                 restore_state(source)
+
+    def test_completion_requires_every_persisted_screen_and_task(self):
+        record = {"status": "complete", "screens": [
+            {"candidate": label, **{method: {
+                "status": "complete", "tasks_completed": 4,
+                "records": [{"name": f"task{number}", "solved": False} for number in range(4)]}
+                for method in ("original", "reserved")}}
+            for label in ("incumbent", "0", "1", "2", "3", "4", "5")]}
+        self.assertTrue(complete_screen_record(record))
+        record["screens"][-1]["reserved"]["records"].pop()
+        self.assertFalse(complete_screen_record(record))
 
 
 if __name__ == "__main__":

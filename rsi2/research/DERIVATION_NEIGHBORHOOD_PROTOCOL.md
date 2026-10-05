@@ -68,3 +68,24 @@ attempts were insufficient, intervention, expected mechanism, verification
 plan, regression risks, observed result, keep/revert/revise decision and the
 updated reusable rule. Failed candidates remain diagnostic memory, never
 verified library labels. Successful rules must name their measured scope.
+
+## Matched diagnostic execution order
+
+Under the single600 aggregate CPU-second diagnostic ceiling, run four B64
+conditions in this order: cold population, cold coordinates, prior-bank
+population, prior-bank coordinates. Both receive the same frozen initial
+Grammar, root-reservation policy, zero scorer, seed and task order. The bank
+contains only raw verified programs from the earlier frozen recursive pilot;
+all are independently reverified before use and carry their original proof IDs.
+No fitted recognition/library/weights from that pilot enter this comparison.
+
+If a paired B64 condition shows a strict verified solved-set expansion without
+loss, choose bank if its condition passes, otherwise cold, for the two matched
+B640 follow-ups. Otherwise use cold B640 to diagnose search-space coverage.
+This development-stage choice never opens heldout evaluation. The watchdog
+shares its remaining budget across all phases; unstarted or truncated phases
+stay unrun/partial. New journal persistence preserves all completed trials and
+proofs; its physical work belongs to the same ceiling. Structural units for
+coordinate choice examination differ from heap-pop units, so the comparison
+claims equal candidate budgets and reports both work/CPU measures rather than
+asserting equal physical search work.

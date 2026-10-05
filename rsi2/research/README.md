@@ -85,3 +85,56 @@ scientific results on all three seeds. Confirmation CPU increased about 13%,
 so the retained rule does not establish general physical speed or task-solving
 RSI. Read `SELF_REFINEMENT_RESULTS.md` for every cycle's eleven evidence fields,
 raw measurements and limitations, and `SELF_REFINEMENT_RULES.json` for the rule.
+
+
+## Ongoing recursive-engine development
+
+The original study remains a measured null. New TRAIN-only methods and all
+failed cycles are preserved separately; none currently establishes RSI.
+`BOOTSTRAP_RESULTS.md` reports the distinct search diagnostics.
+`RECURSIVE_BOOTSTRAP_RESULTS.md` reports the frozen recursive pilot: only
+generation0 completed, generation1 wake remained5/36, and B16 screens never
+reached scorer-guided descendants. Its truthful partial artifact is
+`recursive_bootstrap_results/FULL_seed11.json.gz`.
+
+Read `SCREEN_CAUSALITY_REVISION_PROTOCOL.md`,
+`DERIVATION_NEIGHBORHOOD_PROTOCOL.md`, and the unrun
+`FAILURE_CREDIT_PROTOCOL.md` before further development. Revised B16 screening
+reaches33 descendants per scorer, but every screen still solves1/4 and its
+confirmation order remains unchanged. See `screen_revision_results/` for the
+independent replay and eleven-field cycle report. Lossless journal persistence
+is a measured storage correction; first-write/reconstruction overhead remains.
+
+A portable independent replay of the frozen partial pilot is:
+
+```sh
+python -m rsi2.research.recursive_pilot_audit \
+  --artifact rsi2/research/recursive_bootstrap_results/FULL_seed11.json.gz \
+  --summary rsi2/research/recursive_bootstrap_results/summary.json \
+  --output /tmp/recursive-pilot-independent-audit.json
+```
+
+The registered matched candidate-generator diagnostic uses a new empty output
+directory and one600 aggregate CPU-second watchdog:
+
+```sh
+python -m rsi2.research.coordinate_diagnostic_run \
+  --source rsi2/research/recursive_bootstrap_results/FULL_seed11.json.gz \
+  --output /workspace/scratch/rsi2/coordinate-reproduction
+```
+
+It compares cold/prior-bank population and typed derivation neighborhoods at
+B64, then the registered B640 follow-up. Each selected program is independently
+checked on all public AND hidden TRAIN examples. Every search receives the same
+fresh frozen grammar, zero scorer and root allocation. Recorded compiler work
+units differ across algorithms; equal candidate budgets do not imply equal
+physical work. No evaluation partitions are opened. Unrun/partial cases cannot
+support admission, an eight-generation claim, generalization or original a-e.
+`*.checkpoint.json` files are storage manifests; inspect their complete evidence
+using `rsi2.research.journal_checkpoint.reconstruct(path).record`.
+
+New methods preserve the frozen DSL, evaluator, original data/results,
+`rsi_levels_metaforge_unified.py` and existing `docs/`. Human-engineered kernels,
+causal wiring corrections and smaller ASTs remain distinct from engine-learned,
+verifier-admitted cumulative improvements. Keep iterating from measured TRAIN
+failures without using final evaluation outcomes to choose revisions.

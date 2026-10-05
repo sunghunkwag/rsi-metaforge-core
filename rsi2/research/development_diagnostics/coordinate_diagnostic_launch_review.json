@@ -1,0 +1,55 @@
+{
+  "status": "PASS: launch readiness only",
+  "review_scope": "Read-only source inspection, targeted verifier tests, frozen source gzip bank restoration/type checks; no actual diagnostic campaign or heldout loading.",
+  "targeted_tests": {
+    "passed": 45,
+    "elapsed_report_seconds": 4.997,
+    "modules": [
+      "coordinate_diagnostic_run",
+      "coordinate_population",
+      "derivation_neighborhood",
+      "journal_checkpoint"
+    ]
+  },
+  "source_sha256": {
+    "rsi2/research/coordinate_diagnostic_run.py": "f8a7818497668dbd70bb7b3db29e6240f3648f22d077c4315e33aeff579ff736",
+    "rsi2/research/coordinate_population.py": "3955eb437b3837737582b8449f3a5bbc9326c76e1c90b20f52935dc5bdc86908",
+    "rsi2/research/derivation_neighborhood.py": "bcc7ad383a0e1753490c08255931b29ef01db9c5b6bec9ec43a51db8cdde2e39",
+    "rsi2/research/population_search.py": "79bce8d48e10f4219b5f7d096f921574f87211f5cc5a7be4130b071a33d8c153",
+    "rsi2/research/journal_checkpoint.py": "94a09c5058b7c49cbc9c1c5cde86eaea103259dee4d0e02f688857772604afd0",
+    "rsi2/research/DERIVATION_NEIGHBORHOOD_PROTOCOL.md": "9ffda6b6b73fbc49ae8f9efb6b324ef10ed1a2921d68f2feac7e0d0cc5c99f3e",
+    "rsi2/tests/test_research_coordinate_diagnostic_run.py": "dc07a34519fdc7e1249895a88652d7802bbb61722a48bd2bcd2916cd2c04772d"
+  },
+  "frozen_source_sha256": "1c10ac15a3e90e8284dd8732760f91fda56cf1328c1ad5b47c966524d1ba9a14",
+  "frozen_raw_bank": {
+    "records": 5,
+    "unique_proof_ids": 5,
+    "all_empty_library_typechecks": true,
+    "accepted_generations": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "checks": {
+    "single600_cpu_watchdog_all_phases": true,
+    "registered_phase_order_and_B640_selection": true,
+    "fresh_default_grammar_zero_heuristic_each_search": true,
+    "matched_bank_allocation": true,
+    "raw_bank_public_hidden_verification_before_search": true,
+    "all36_tasks_and_typed_budget_persisted_completion_gate": true,
+    "proof_cost_and_work_reconciliation": true,
+    "lossless_journal_and_reconstruction_costs_in_cpu_ledger": true,
+    "partial_or_unrun_conditions_do_not_gain_credit": true,
+    "eleven_field_cycle_report": true
+  },
+  "limits": [
+    "Structural units differ across kernels; only candidate budgets are matched, not physical search work.",
+    "Verified proof-ID prefix allocation does not ensure eventual bank coverage.",
+    "Finite TRAIN gains are engineering evidence; seeds22/33, heldout generalization, cumulative autonomous loop learning and RSIa-e remain unverified."
+  ],
+  "blockers": [],
+  "edits_by_reviewer": []
+}
