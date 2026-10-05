@@ -256,18 +256,28 @@ def _measure(state, tasks, budget, heuristic, bank, generation, config,
     return report
 
 
-def _dreams(state, train, config, guard, work):
-    rng = random.Random(state.seed * 1000003 + state.generation)
+def _dreams(state, train, config, guard, work, destination=None):
+    rng_seed = state.seed * 1000003 + state.generation
+    rng = random.Random(rng_seed)
+    trials = [] if destination is None else destination
     pairs = []
     for index in range(config["dream_attempts"]):
         if len(pairs) >= config["dreams"]:
             break
         guard.check()
         task = train[rng.randrange(len(train))]
+        trial = {"sampler_index": index, "rng_seed": rng_seed,
+                 "task": task.name, "request_type": task.request_type.to_dict(),
+                 "term": None, "sampled": False, "sampling_completed": False,
+                 "evaluations": [], "completed": False, "accepted": False,
+                 "reason": "sampling_in_progress"}
+        trials.append(trial)
         work["dream_sampling_calls"] += 1
         term = sample_program(task.request_type, state.grammar, rng,
                               max_size=config["search"]["max_size"], max_attempts=20)
+        trial.update(term=term, sampled=term is not None, sampling_completed=True)
         if term is None:
+            trial.update(completed=True, reason="sampler_returned_none")
             continue
         work["dream_programs"] += 1
         examples = []
@@ -277,17 +287,25 @@ def _dreams(state, train, config, guard, work):
                               step_budget=config["search"]["step_budget"])
             work["dream_examples"] += 1
             work["dream_steps"] += result.steps
+            trial["evaluations"].append({
+                "public_example_index": len(trial["evaluations"]),
+                "inputs": inputs, "ok": result.ok, "value": result.value,
+                "error": result.error, "steps": result.steps})
             if not result.ok:
                 break
             examples.append((inputs, result.value))
-        if len(examples) == len(task.examples):
+        accepted = len(examples) == len(task.examples)
+        trial.update(completed=True, accepted=accepted,
+                     reason="accepted" if accepted else "public_runtime_failure")
+        if accepted:
             pairs.append((Task(f"dream_{index}", task.request_type, tuple(examples), ()), term))
     return pairs
 
 
 def _learn(state, train, config, guard, work, checkpoint=lambda: None, destination=None):
     report = {} if destination is None else destination
-    report.update(status="running", compression=None, grammar=None, recognition=None)
+    report.update(status="running", compression=None, grammar=None, recognition=None,
+                  dream_trials=[], dream_rng_seed=state.seed * 1000003 + state.generation)
     checkpoint()
     guard.check()
     compression = None
@@ -313,7 +331,7 @@ def _learn(state, train, config, guard, work, checkpoint=lambda: None, destinati
     checkpoint()
     recognition_metrics, dreams = None, []
     if state.arm != "NO_RECOGNITION":
-        dreams = _dreams(state, train, config, guard, work)
+        dreams = _dreams(state, train, config, guard, work, report["dream_trials"])
         guard.check()
         model = Recognition(state.seed * 1000003 + state.generation)
         recognition_metrics = model.fit(
