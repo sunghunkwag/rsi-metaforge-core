@@ -121,6 +121,14 @@ def search(method, task, budget, grammar, seed):
         from .decomposition_search import solve_decomposition
         return solve_decomposition(task.examples, task.request_type, budget, grammar,
                                    max_cpu_seconds=10, **limits)
+    if method == "stratified":
+        from .stratified_search import solve_stratified
+        return solve_stratified(task.examples, task.request_type, budget, grammar,
+                                max_cpu_seconds=10, **limits)
+    if method == "stratified_decomposition":
+        from .stratified_decomposition import solve_stratified_decomposition
+        return solve_stratified_decomposition(task.examples, task.request_type, budget,
+                                              grammar, max_cpu_seconds=10, **limits)
     raise ValueError("unregistered method")
 
 
@@ -183,7 +191,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--method", choices=("enumeration", "sampling", "adaptive",
                                             "repair", "repair_normalized",
-                                            "observational", "decomposition"),
+                                            "observational", "decomposition", "stratified",
+                                            "stratified_decomposition"),
                         required=True)
     parser.add_argument("--seed", type=int, default=11)
     parser.add_argument("--budget", type=int, default=64)
