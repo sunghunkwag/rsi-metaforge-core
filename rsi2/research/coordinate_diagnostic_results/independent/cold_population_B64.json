@@ -1,0 +1,1148 @@
+{
+  "status": "PASS",
+  "condition": "cold_population_B64",
+  "scope": "independent actual TRAIN evidence replay; no search/proposal/heldout loading",
+  "task_searches": 36,
+  "candidate_trials": 2016,
+  "reconstructed_edges": 1488,
+  "reconstructed_coordinate_edges": 0,
+  "public_example_calls": 10642,
+  "public_evaluator_steps": 314609,
+  "actual_heuristic_evaluations_replayed": 991,
+  "actual_heuristic_steps_replayed": 92278,
+  "proof_cost_and_work_reconciliation": "exact",
+  "solved_names": [
+    "bool-identify-k with k=1",
+    "caesar-cipher-k-modulo-n with k=0 and n=3",
+    "caesar-cipher-k-modulo-n with k=2 and n=2",
+    "caesar-cipher-k-modulo-n with k=5 and n=5",
+    "prepend-k with k=0"
+  ],
+  "interrupted_trials": [],
+  "coordinate_operators": {},
+  "task_coverage": [
+    {
+      "task": "append-index-k with k=1",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    },
+    {
+      "task": "append-k with k=1",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    },
+    {
+      "task": "append-k with k=4",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    },
+    {
+      "task": "bool-identify-k with k=1",
+      "solved": true,
+      "termination": "public_match",
+      "roots": 12,
+      "descendants": 0,
+      "attempted_application_arities": {
+        "1": 17
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 6,
+        "tail": 2,
+        "map": 6,
+        "eq": 3
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": null,
+      "compiler_steps": 110,
+      "expansions": 258
+    },
+    {
+      "task": "caesar-cipher-k-modulo-n with k=0 and n=3",
+      "solved": true,
+      "termination": "public_match",
+      "roots": 4,
+      "descendants": 0,
+      "attempted_application_arities": {
+        "1": 1
+      },
+      "root_application_arities": {
+        "1": 1
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 1
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": null,
+      "compiler_steps": 20,
+      "expansions": 47
+    },
+    {
+      "task": "caesar-cipher-k-modulo-n with k=1 and n=2",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    },
+    {
+      "task": "caesar-cipher-k-modulo-n with k=2 and n=2",
+      "solved": true,
+      "termination": "public_match",
+      "roots": 4,
+      "descendants": 0,
+      "attempted_application_arities": {
+        "1": 1
+      },
+      "root_application_arities": {
+        "1": 1
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 1
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": null,
+      "compiler_steps": 20,
+      "expansions": 47
+    },
+    {
+      "task": "caesar-cipher-k-modulo-n with k=5 and n=5",
+      "solved": true,
+      "termination": "public_match",
+      "roots": 4,
+      "descendants": 0,
+      "attempted_application_arities": {
+        "1": 1
+      },
+      "root_application_arities": {
+        "1": 1
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 1
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": null,
+      "compiler_steps": 20,
+      "expansions": 47
+    },
+    {
+      "task": "dup",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    },
+    {
+      "task": "has-head-in-tail",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 87,
+        "2": 26,
+        "3": 9
+      },
+      "root_application_arities": {
+        "1": 13,
+        "2": 3,
+        "3": 2
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 55,
+        "tail": 14,
+        "is_empty": 10,
+        "not": 5,
+        "cons": 5,
+        "fold": 6,
+        "if": 9,
+        "map": 6,
+        "and": 4,
+        "or": 4,
+        "range": 3,
+        "filter": 1
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": null,
+      "compiler_steps": 6695,
+      "expansions": 2227
+    },
+    {
+      "task": "has-k with k=3",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 87,
+        "2": 26,
+        "3": 9
+      },
+      "root_application_arities": {
+        "1": 13,
+        "2": 3,
+        "3": 2
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 55,
+        "tail": 14,
+        "is_empty": 10,
+        "not": 5,
+        "cons": 5,
+        "fold": 6,
+        "if": 9,
+        "map": 6,
+        "and": 4,
+        "or": 4,
+        "range": 3,
+        "filter": 1
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": null,
+      "compiler_steps": 6695,
+      "expansions": 2227
+    },
+    {
+      "task": "index-head",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 63,
+        "2": 32
+      },
+      "root_application_arities": {
+        "1": 5,
+        "2": 7
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 40,
+        "tail": 11,
+        "fold": 20,
+        "length": 4,
+        "map": 5,
+        "cons": 4,
+        "neg": 4,
+        "abs": 4,
+        "filter": 1,
+        "add": 2
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": null,
+      "compiler_steps": 6242,
+      "expansions": 1315
+    },
+    {
+      "task": "index-k with k=3",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 63,
+        "2": 32
+      },
+      "root_application_arities": {
+        "1": 5,
+        "2": 7
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 40,
+        "tail": 11,
+        "fold": 20,
+        "length": 4,
+        "map": 5,
+        "cons": 4,
+        "neg": 4,
+        "abs": 4,
+        "filter": 1,
+        "add": 2
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": null,
+      "compiler_steps": 6242,
+      "expansions": 1315
+    },
+    {
+      "task": "index-k with k=5",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 63,
+        "2": 32
+      },
+      "root_application_arities": {
+        "1": 5,
+        "2": 7
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 40,
+        "tail": 11,
+        "fold": 20,
+        "length": 4,
+        "map": 5,
+        "cons": 4,
+        "neg": 4,
+        "abs": 4,
+        "filter": 1,
+        "add": 2
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": null,
+      "compiler_steps": 6242,
+      "expansions": 1315
+    },
+    {
+      "task": "is-mod-k with k=5",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 87,
+        "2": 26,
+        "3": 9
+      },
+      "root_application_arities": {
+        "1": 13,
+        "2": 3,
+        "3": 2
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 55,
+        "tail": 14,
+        "is_empty": 10,
+        "not": 5,
+        "cons": 5,
+        "fold": 6,
+        "if": 9,
+        "map": 6,
+        "and": 4,
+        "or": 4,
+        "range": 3,
+        "filter": 1
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": null,
+      "compiler_steps": 6695,
+      "expansions": 2227
+    },
+    {
+      "task": "keep-mod-k with k=2",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    },
+    {
+      "task": "kth-largest with k=3",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 63,
+        "2": 32
+      },
+      "root_application_arities": {
+        "1": 5,
+        "2": 7
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 40,
+        "tail": 11,
+        "fold": 20,
+        "length": 4,
+        "map": 5,
+        "cons": 4,
+        "neg": 4,
+        "abs": 4,
+        "filter": 1,
+        "add": 2
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": null,
+      "compiler_steps": 6242,
+      "expansions": 1315
+    },
+    {
+      "task": "kth-largest with k=4",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 63,
+        "2": 32
+      },
+      "root_application_arities": {
+        "1": 5,
+        "2": 7
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 40,
+        "tail": 11,
+        "fold": 20,
+        "length": 4,
+        "map": 5,
+        "cons": 4,
+        "neg": 4,
+        "abs": 4,
+        "filter": 1,
+        "add": 2
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": null,
+      "compiler_steps": 6242,
+      "expansions": 1315
+    },
+    {
+      "task": "kth-smallest with k=2",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 63,
+        "2": 32
+      },
+      "root_application_arities": {
+        "1": 5,
+        "2": 7
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 40,
+        "tail": 11,
+        "fold": 20,
+        "length": 4,
+        "map": 5,
+        "cons": 4,
+        "neg": 4,
+        "abs": 4,
+        "filter": 1,
+        "add": 2
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": null,
+      "compiler_steps": 6242,
+      "expansions": 1315
+    },
+    {
+      "task": "modulo-k with k=2",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    },
+    {
+      "task": "modulo-k with k=3",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    },
+    {
+      "task": "prepend-index-k with k=2",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    },
+    {
+      "task": "prepend-index-k with k=5",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    },
+    {
+      "task": "prepend-k with k=0",
+      "solved": true,
+      "termination": "public_match",
+      "roots": 8,
+      "descendants": 0,
+      "attempted_application_arities": {
+        "1": 5
+      },
+      "root_application_arities": {
+        "1": 5
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 1,
+        "map": 2,
+        "cons": 2
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": null,
+      "compiler_steps": 44,
+      "expansions": 98
+    },
+    {
+      "task": "prepend-k with k=4",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    },
+    {
+      "task": "prepend-k with k=5",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    },
+    {
+      "task": "replace-all-with-index-k with k=1",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    },
+    {
+      "task": "replace-all-with-index-k with k=5",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    },
+    {
+      "task": "reverse",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    },
+    {
+      "task": "rotate-k with k=4",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    },
+    {
+      "task": "slice-k-n with k=1 and n=4",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    },
+    {
+      "task": "slice-k-n with k=2 and n=4",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    },
+    {
+      "task": "slice-k-n with k=4 and n=4",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    },
+    {
+      "task": "slice-k-n with k=5 and n=1",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    },
+    {
+      "task": "slice-k-n with k=5 and n=2",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    },
+    {
+      "task": "slice-k-n with k=5 and n=4",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 112,
+        "2": 10
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 50,
+        "map": 19,
+        "cons": 10,
+        "tail": 18,
+        "filter": 10,
+        "range": 5,
+        "add": 4,
+        "length": 1,
+        "sub": 2,
+        "neg": 2,
+        "eq": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": null,
+      "compiler_steps": 5980,
+      "expansions": 2368
+    }
+  ],
+  "audit_verification_cpu_seconds": 1.277880101
+}
