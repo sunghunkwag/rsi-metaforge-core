@@ -1,0 +1,254 @@
+{
+ "arm": "RSI2",
+ "seed": 33,
+ "config": {
+  "schema_version": 1,
+  "seeds": [
+   11,
+   22,
+   33
+  ],
+  "generations": 8,
+  "arms": [
+   "RSI2",
+   "RSI3",
+   "RSI3_NO_REPLAY",
+   "RSI3_NO_GENESIS",
+   "RSI3_UNIFORM"
+  ],
+  "B_wake": 64,
+  "B_eval": 64,
+  "dreams": 16,
+  "search": {
+   "max_size": 12,
+   "max_expansions": 20000,
+   "step_budget": 2000
+  },
+  "controller": {
+   "chunk": 32,
+   "exploration": 0.3,
+   "analog_neighbors": 2
+  },
+  "workers": 2
+ },
+ "status": "complete",
+ "generations": [
+  {
+   "generation": 1,
+   "train_solved": 6,
+   "wake": {
+    "budget": 2304,
+    "spent": 2006,
+    "verified_this_generation": 6,
+    "spent_on_unsolved_after": 1920,
+    "max_depth": 64
+   },
+   "sleep": {
+    "adopted_library": [],
+    "library_entries": 0,
+    "dream_candidate_evaluations": 23
+   },
+   "validation": {
+    "solved": 1,
+    "tasks": 12,
+    "solved_names": [
+     "caesar-cipher-k-modulo-n with k=3 and n=2"
+    ],
+    "candidate_evaluations": 706
+   },
+   "cpu_seconds": 33.980703033000054
+  },
+  {
+   "generation": 2,
+   "train_solved": 6,
+   "wake": {
+    "budget": 2304,
+    "spent": 1927,
+    "verified_this_generation": 6,
+    "spent_on_unsolved_after": 1920,
+    "max_depth": 64
+   },
+   "sleep": {
+    "adopted_library": [],
+    "library_entries": 0,
+    "dream_candidate_evaluations": 18
+   },
+   "validation": {
+    "solved": 1,
+    "tasks": 12,
+    "solved_names": [
+     "caesar-cipher-k-modulo-n with k=3 and n=2"
+    ],
+    "candidate_evaluations": 706
+   },
+   "cpu_seconds": 26.655292667999902
+  },
+  {
+   "generation": 3,
+   "train_solved": 6,
+   "wake": {
+    "budget": 2304,
+    "spent": 1927,
+    "verified_this_generation": 6,
+    "spent_on_unsolved_after": 1920,
+    "max_depth": 64
+   },
+   "sleep": {
+    "adopted_library": [],
+    "library_entries": 0,
+    "dream_candidate_evaluations": 24
+   },
+   "validation": {
+    "solved": 2,
+    "tasks": 12,
+    "solved_names": [
+     "caesar-cipher-k-modulo-n with k=3 and n=2",
+     "sum"
+    ],
+    "candidate_evaluations": 674
+   },
+   "cpu_seconds": 30.166092832999993
+  },
+  {
+   "generation": 4,
+   "train_solved": 6,
+   "wake": {
+    "budget": 2304,
+    "spent": 1928,
+    "verified_this_generation": 6,
+    "spent_on_unsolved_after": 1920,
+    "max_depth": 64
+   },
+   "sleep": {
+    "adopted_library": [],
+    "library_entries": 0,
+    "dream_candidate_evaluations": 21
+   },
+   "validation": {
+    "solved": 2,
+    "tasks": 12,
+    "solved_names": [
+     "caesar-cipher-k-modulo-n with k=3 and n=2",
+     "sum"
+    ],
+    "candidate_evaluations": 688
+   },
+   "cpu_seconds": 29.8825785250001
+  },
+  {
+   "generation": 5,
+   "train_solved": 6,
+   "wake": {
+    "budget": 2304,
+    "spent": 1927,
+    "verified_this_generation": 6,
+    "spent_on_unsolved_after": 1920,
+    "max_depth": 64
+   },
+   "sleep": {
+    "adopted_library": [],
+    "library_entries": 0,
+    "dream_candidate_evaluations": 25
+   },
+   "validation": {
+    "solved": 1,
+    "tasks": 12,
+    "solved_names": [
+     "caesar-cipher-k-modulo-n with k=3 and n=2"
+    ],
+    "candidate_evaluations": 706
+   },
+   "cpu_seconds": 28.997031077999964
+  },
+  {
+   "generation": 6,
+   "train_solved": 6,
+   "wake": {
+    "budget": 2304,
+    "spent": 1928,
+    "verified_this_generation": 6,
+    "spent_on_unsolved_after": 1920,
+    "max_depth": 64
+   },
+   "sleep": {
+    "adopted_library": [],
+    "library_entries": 0,
+    "dream_candidate_evaluations": 25
+   },
+   "validation": {
+    "solved": 1,
+    "tasks": 12,
+    "solved_names": [
+     "caesar-cipher-k-modulo-n with k=3 and n=2"
+    ],
+    "candidate_evaluations": 706
+   },
+   "cpu_seconds": 29.822322042999986
+  },
+  {
+   "generation": 7,
+   "train_solved": 6,
+   "wake": {
+    "budget": 2304,
+    "spent": 1928,
+    "verified_this_generation": 6,
+    "spent_on_unsolved_after": 1920,
+    "max_depth": 64
+   },
+   "sleep": {
+    "adopted_library": [],
+    "library_entries": 0,
+    "dream_candidate_evaluations": 25
+   },
+   "validation": {
+    "solved": 2,
+    "tasks": 12,
+    "solved_names": [
+     "caesar-cipher-k-modulo-n with k=3 and n=2",
+     "sum"
+    ],
+    "candidate_evaluations": 667
+   },
+   "cpu_seconds": 27.70121394900002
+  },
+  {
+   "generation": 8,
+   "train_solved": 6,
+   "wake": {
+    "budget": 2304,
+    "spent": 1929,
+    "verified_this_generation": 6,
+    "spent_on_unsolved_after": 1920,
+    "max_depth": 64
+   },
+   "sleep": {
+    "adopted_library": [],
+    "library_entries": 0,
+    "dream_candidate_evaluations": 21
+   },
+   "validation": {
+    "solved": 2,
+    "tasks": 12,
+    "solved_names": [
+     "caesar-cipher-k-modulo-n with k=3 and n=2",
+     "sum"
+    ],
+    "candidate_evaluations": 698
+   },
+   "cpu_seconds": 29.471606786000393
+  }
+ ],
+ "final": {
+  "train_solved": 6,
+  "solutions": [
+   "bool-identify-k with k=1",
+   "caesar-cipher-k-modulo-n with k=0 and n=3",
+   "caesar-cipher-k-modulo-n with k=1 and n=2",
+   "caesar-cipher-k-modulo-n with k=2 and n=2",
+   "caesar-cipher-k-modulo-n with k=5 and n=5",
+   "prepend-k with k=0"
+  ]
+ },
+ "cpu_seconds": 236.70387507299984,
+ "wall_seconds": 241.93007554899987
+}

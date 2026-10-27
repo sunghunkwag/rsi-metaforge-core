@@ -8,6 +8,11 @@ integrator, and a frozen external verifier — and measures, against
 pre-registered predictions, whether that changes hidden-example verified
 capability at equal logical budgets.
 
+**Measured outcome (RESULTS.md):** the learned controller matched RSI-2 at
+6/36 TRAIN on every seed and all five registered comparisons failed; the only
+gain, +1 TRAIN task on every seed, came from resumption with an even budget
+split. VALIDATION was unchanged. TEST was not opened.
+
 - [`OWNER_DIRECTIVE.md`](OWNER_DIRECTIVE.md) — scope and constraints
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — component map and the evidence behind each design decision
 - [`PREDICTIONS.md`](PREDICTIONS.md) — registered before the final runs
