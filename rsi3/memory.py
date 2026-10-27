@@ -11,6 +11,13 @@ consumers read it:
   (``replay`` = all generations; ``latest`` = most recent generation only);
 * pathway genesis reads verified solutions to create new dormant pathways.
 
+``FailureMemory`` (optional, per arm) is a fourth record: for each task, the
+programs that failed its public examples. It needs no verifier receipt because
+it is computed from the public examples the search already sees, and a public
+failure is final under any enumeration order. Searches consult it so that no
+pathway, and no grammar after a sleep phase, pays to evaluate a known failure
+again.
+
 Contamination guard: an episode labeled ``verified`` or ``rejected`` must carry
 an authentic verifier receipt for the same task and program digest whose
 verdict matches the label. Self-reported success raises ``ContaminationError``
@@ -30,6 +37,19 @@ class ContaminationError(ValueError):
     """An outcome label that the frozen verifier did not issue."""
 
 
+class FailureMemory:
+    """Per-task sets of programs that failed the task's public examples."""
+
+    def __init__(self):
+        self._sets: dict[str, set] = {}
+
+    def for_task(self, task: str) -> set:
+        return self._sets.setdefault(task, set())
+
+    def sizes(self) -> dict[str, int]:
+        return {task: len(failed) for task, failed in sorted(self._sets.items())}
+
+
 @dataclass(frozen=True)
 class Episode:
     generation: int
@@ -46,6 +66,7 @@ class Episode:
     cpu_seconds: float
     receipt_id: int | None = None
     skipped_equivalent: int = 0
+    skipped_known: int = 0
 
     def to_record(self) -> dict:
         record = asdict(self)

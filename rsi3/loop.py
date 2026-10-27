@@ -27,7 +27,7 @@ from rsi2.recognition import Recognition, task_features
 
 from .controller import Controller, Slot, probabilities_for
 from .integrator import BindingIntegrator
-from .memory import Episode, EpisodicMemory, SolutionRecord
+from .memory import Episode, EpisodicMemory, FailureMemory, SolutionRecord
 from .pathways import DESIGNER_KINDS, PathwayRegistry
 from .value_model import ValueModel, slot_features
 from .verifier import FrozenVerifier, public_view, term_digest
@@ -40,6 +40,7 @@ class ArmConfig:
     value_mode: str = "replay"         # "replay" | "latest"
     genesis: bool = True
     designer_kinds: tuple = DESIGNER_KINDS
+    failure_memory: bool = False       # carry public failures across grammars/pathways
 
 
 def standardized_features(public_tasks) -> dict:
@@ -91,11 +92,13 @@ class Runtime:
         self.state = State(seed)
         self.features = standardized_features(self.public)
         self.memory = EpisodicMemory(self.verifier)
+        self.failures = FailureMemory() if arm.failure_memory else None
         controller_config = config["controller"]
         self.registry = PathwayRegistry(
             self.public, self.features, genesis=arm.genesis,
             neighbors=controller_config["analog_neighbors"],
-            designer_kinds=arm.designer_kinds, search_config=search)
+            designer_kinds=arm.designer_kinds, search_config=search,
+            failure_memory=self.failures)
         self.value_model = ValueModel()
         self.controller = Controller(chunk=controller_config["chunk"],
                                      exploration=controller_config["exploration"], seed=seed)
@@ -148,7 +151,7 @@ class Runtime:
                           tuple(float(x) for x in features),
                           time.process_time() - cpu_started,
                           None if receipt is None else receipt.receipt_id,
-                          result.skipped_matches)
+                          result.skipped_matches, result.skipped_known)
         self.memory.record(episode, receipt)
         self.registry.pathways[pid].windows += 1
         log.append(episode.to_record())
@@ -184,6 +187,7 @@ class Runtime:
                               "start": e["start"]} for e in verified],
                 "rejected": sum(e["outcome"] == "rejected" for e in log),
                 "skipped_equivalent": sum(e["skipped_equivalent"] for e in log),
+                "skipped_known": sum(e["skipped_known"] for e in log),
                 "exhausted_windows": sum(e["exhausted"] for e in log),
                 "spent_by_kind": {kind: sum(e["evaluated"] for e in log if e["kind"] == kind)
                                   for kind in sorted({e["kind"] for e in log})},
@@ -202,7 +206,10 @@ class Runtime:
                                    [self.memory.label(e) for e in replayed])
         sleep = sleep_phase(self.state, self.public, self.config, generation)
         created = self.registry.genesis(self.state, generation)
+        failed = self.failures.sizes() if self.failures is not None else {}
         return {"generation": generation, "wake": wake, "value_fit": fit, "sleep": sleep,
+                "failure_memory": {"tasks": len(failed), "programs": sum(failed.values()),
+                                   "max_per_task": max(failed.values(), default=0)},
                 "genesis_created": created, "pathways": self.registry.summary(),
                 "train_solved": len(self.state.solutions),
                 "verifier_queries": self.verifier.queries,

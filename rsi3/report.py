@@ -11,11 +11,16 @@ import json
 from pathlib import Path
 from statistics import mean
 
-ARM_ORDER = ["RSI2", "RSI3", "RSI3_NO_REPLAY", "RSI3_NO_GENESIS", "RSI3_UNIFORM"]
+ARM_ORDER = ["RSI2", "RSI3", "RSI3_NO_REPLAY", "RSI3_NO_GENESIS", "RSI3_UNIFORM",
+             "RSI3_UNIFORM_FM", "RSI3_FM"]
 COMPARISONS = [
     ("C1", "RSI3", "RSI2", "train"), ("C2", "RSI3", "RSI3_UNIFORM", "train"),
     ("C3", "RSI3", "RSI3_NO_REPLAY", "train"), ("C4", "RSI3", "RSI3_NO_GENESIS", "train"),
     ("C5", "RSI3", "RSI2", "validation"),
+    # Failure-memory study (PREDICTIONS_FAILURE_MEMORY.md)
+    ("F1", "RSI3_UNIFORM_FM", "RSI3_UNIFORM", "train"), ("F2", "RSI3_FM", "RSI3", "train"),
+    ("F3", "RSI3_FM", "RSI3_UNIFORM_FM", "train"), ("F4", "RSI3_UNIFORM_FM", "RSI2", "train"),
+    ("F5", "RSI3_UNIFORM_FM", "RSI2", "validation"),
 ]
 
 
@@ -102,6 +107,13 @@ def render(runs: dict) -> str:
                    f"{dict(sorted(kinds.items()))}; verifier rejections {rejected}; "
                    f"integrator skips {skipped}; genesis pathways created {genesis}, "
                    f"woken {awake}.")
+        if any(r["final"].get("failure_memory") for r in records):
+            known = [sum(g["wake"].get("skipped_known", 0) for g in r["generations"])
+                     for r in records]
+            widest = [max(r["final"]["failure_memory"].values(), default=0) for r in records]
+            total = [sum(r["final"]["failure_memory"].values()) for r in records]
+            out.append(f"  - {arm} failure memory: known failures skipped free {known}; "
+                       f"distinct failed programs, largest task {widest}, all tasks {total}.")
     if baseline:
         base_cpu = mean(r["cpu_seconds"] for r in baseline)
         ratios = {arm: mean(runs[(arm, s)]["cpu_seconds"] for s in seeds if (arm, s) in runs) / base_cpu

@@ -10,6 +10,8 @@ Arms (see PREDICTIONS.md for what each one tests):
   RSI3_NO_GENESIS  designer pathways only.
   RSI3_UNIFORM     resumable search on the prior pathway with an even budget
                    split over unsolved tasks; no value model, no genesis.
+  RSI3_UNIFORM_FM  RSI3_UNIFORM plus failure memory (experiment_config_failure_memory.json).
+  RSI3_FM          RSI3 plus failure memory.
 
 Every arm receives the same per-generation cap of B_wake x |TRAIN| logical
 candidate evaluations, the same RSI-2 sleep phase, the same seeds, and the same
@@ -46,6 +48,11 @@ ARMS = {
     "RSI3_NO_GENESIS": ArmConfig("RSI3_NO_GENESIS", genesis=False),
     "RSI3_UNIFORM": ArmConfig("RSI3_UNIFORM", allocation="uniform", genesis=False,
                               designer_kinds=("prior",)),
+    # Failure-memory study (PREDICTIONS_FAILURE_MEMORY.md): the same two arms
+    # with public failures carried across grammar changes and pathways.
+    "RSI3_UNIFORM_FM": ArmConfig("RSI3_UNIFORM_FM", allocation="uniform", genesis=False,
+                                 designer_kinds=("prior",), failure_memory=True),
+    "RSI3_FM": ArmConfig("RSI3_FM", failure_memory=True),
 }
 BASELINE = "RSI2"
 
@@ -97,7 +104,9 @@ def run_one(arm: str, seed: int, config: dict) -> dict:
                  "memory": {"episodes": len(runtime.memory.episodes),
                             "verified": sum(e.outcome == "verified" for e in runtime.memory.episodes),
                             "rejected": sum(e.outcome == "rejected" for e in runtime.memory.episodes)},
-                 "verifier_queries": runtime.verifier.queries}
+                 "verifier_queries": runtime.verifier.queries,
+                 "failure_memory": (None if runtime.failures is None
+                                    else runtime.failures.sizes())}
     return {"arm": arm, "seed": seed, "config": config, "status": "complete",
             "generations": generations, "final": final,
             "cpu_seconds": time.process_time() - cpu_started,
