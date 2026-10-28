@@ -25,10 +25,12 @@ from rsi2.grammar import Grammar
 from rsi2.learning import State, dream_pairs
 from rsi2.recognition import Recognition, task_features
 
+from .continuity import ContinuityGuard, snapshot
 from .controller import Controller, Slot, probabilities_for
 from .integrator import BindingIntegrator
 from .memory import Episode, EpisodicMemory, FailureMemory, SolutionRecord
 from .pathways import DESIGNER_KINDS, PathwayRegistry
+from .selfmodel import CONCEPT_WEIGHT, SelfModel, references
 from .value_model import ValueModel, slot_features
 from .verifier import FrozenVerifier, public_view, term_digest
 
@@ -41,6 +43,8 @@ class ArmConfig:
     genesis: bool = True
     designer_kinds: tuple = DESIGNER_KINDS
     failure_memory: bool = False       # carry public failures across grammars/pathways
+    continuity: str = "off"            # "off" | "measure" | "restore" (continuity.py)
+    invention: bool = False            # self-model concept invention (selfmodel.py)
 
 
 def standardized_features(public_tasks) -> dict:
@@ -51,8 +55,12 @@ def standardized_features(public_tasks) -> dict:
     return {task.name: scaled[i] for i, task in enumerate(public_tasks)}
 
 
-def sleep_phase(state, public_train, config, generation) -> dict:
-    """RSI-2's post-wake learning, with RSI-2's arguments, on public task views."""
+def sleep_phase(state, public_train, config, generation, sink=None) -> dict:
+    """RSI-2's post-wake learning, with RSI-2's arguments, on public task views.
+
+    ``sink`` (optional dict) receives the dreamed pairs, so a later step can
+    refit recognition on exactly the same corpus. It changes nothing here.
+    """
     search = config["search"]
     solutions, library, adopted = learn_abstractions(state.solutions, state.grammar.library,
                                                      generation)
@@ -68,6 +76,8 @@ def sleep_phase(state, public_train, config, generation) -> dict:
                                             count=config.get("dreams", 16),
                                             max_size=search["max_size"],
                                             step_budget=search["step_budget"])
+    if sink is not None:
+        sink["dreams"] = list(dreams)
     pairs = [(lookup[name], term) for name, term in state.solutions.items()] + dreams
     model = Recognition(state.seed * 1000003 + generation)
     recognition_metrics = model.fit(pairs, state.grammar)
@@ -103,6 +113,20 @@ class Runtime:
         self.controller = Controller(chunk=controller_config["chunk"],
                                      exploration=controller_config["exploration"], seed=seed)
         self.integrator = BindingIntegrator(self.public, step_budget=search["step_budget"])
+        continuity = config.get("continuity", {})
+        self.continuity = ContinuityGuard(
+            arm.continuity, budget=continuity.get("audit_budget", config["B_eval"]),
+            rehearsal=continuity.get("rehearsal", 3), search_config=search,
+            integrator=BindingIntegrator(self.public, step_budget=search["step_budget"]),
+            exams_per_generation=continuity.get("exams_per_generation", 0),
+            exam_attempts=continuity.get("exam_attempts", 64),
+            exam_author=continuity.get("exam_author", "neutral"))
+        self.budget_debt = 0      # audit work charged to the next wake
+        invention = config.get("invention", {})
+        self.selfmodel = (SelfModel(self.public, caps=invention.get("caps"),
+                                    step_budget=search["step_budget"])
+                          if arm.invention else None)
+        self.adopted_concepts: dict[str, dict] = {}
 
     # ---- wake ------------------------------------------------------------
     def _slots(self, unsolved, pending, window) -> list[Slot]:
@@ -122,7 +146,7 @@ class Runtime:
 
     def _run_window(self, task, pid, similarity, budget, generation, pending, log) -> int:
         fingerprint, search = self.registry.search(task, pid, self.state, generation)
-        library = self.state.grammar.library
+        library = self.registry.library(self.state)
         kind = self.registry.pathways[pid].kind
         features = slot_features(self.features[task], kind, similarity, search.evaluated, budget)
         cpu_started = time.process_time()
@@ -135,6 +159,7 @@ class Runtime:
             pathway = self.registry.pathways[pid]
             if receipt.verdict:
                 outcome = "verified"
+                self._adopt(result.term, task, generation)
                 self.state.solutions[task] = result.term
                 record = SolutionRecord(task, digest, pid, kind, pathway.origin, generation,
                                         receipt.receipt_id)
@@ -157,8 +182,34 @@ class Runtime:
         log.append(episode.to_record())
         return result.evaluated
 
+    def _adopt(self, term, task, generation) -> None:
+        """A concept joins the language only through a verified program that uses it."""
+        used = sorted(n for n in references(term)
+                      if n in self.registry.extra_library and n not in self.state.grammar.library)
+        if not used:
+            return
+        library = dict(self.state.grammar.library)
+        for name in used:
+            library[name] = self.registry.extra_library[name]
+            self.adopted_concepts[name] = {"generation": generation, "task": task}
+        self.state.grammar = Grammar(library=library, weights=self.state.grammar.weights,
+                                     context_weights=self.state.grammar.context_weights)
+
+    def invent(self, generation) -> dict:
+        if self.selfmodel is None:
+            return {}
+        before = self.selfmodel.probe_evaluations
+        concepts = self.selfmodel.invent(self.state.solutions, self.state.grammar.library)
+        self.registry.extra_library = {c.name: c.term for c in concepts}
+        self.registry.concept_weight = self.config.get("invention", {}).get(
+            "concept_weight", CONCEPT_WEIGHT)
+        return {"proposed": [c.to_record() for c in concepts],
+                "probe_evaluations": self.selfmodel.probe_evaluations - before}
+
     def wake(self, generation) -> dict:
-        budget_total = self.config["B_wake"] * len(self.public)
+        budget_total = max(0, self.config["B_wake"] * len(self.public) - self.budget_debt)
+        self.budget_debt = 0
+        invention = self.invent(generation)
         unsolved = sorted(task.name for task in self.public if task.name not in self.state.solutions)
         pending, log = set(), []
         spent = 0
@@ -182,7 +233,9 @@ class Runtime:
             raise ValueError(f"unknown allocation {self.arm.allocation!r}")
         verified = [e for e in log if e["outcome"] == "verified"]
         return {"budget": budget_total, "spent": spent, "windows": len(log),
-                "unsolved_at_start": len(unsolved),
+                "unsolved_at_start": len(unsolved), "invention": invention,
+                "adopted": sorted(n for n, a in self.adopted_concepts.items()
+                                  if a["generation"] == generation),
                 "verified": [{"task": e["task"], "pathway": e["pathway"], "kind": e["kind"],
                               "start": e["start"]} for e in verified],
                 "rejected": sum(e["outcome"] == "rejected" for e in log),
@@ -204,10 +257,18 @@ class Runtime:
         replayed = self.memory.replay(self.arm.value_mode, generation)
         fit = self.value_model.fit([e.features for e in replayed],
                                    [self.memory.label(e) for e in replayed])
-        sleep = sleep_phase(self.state, self.public, self.config, generation)
+        before_rewrite = snapshot(self.state, "old")
+        sink = {}
+        sleep = sleep_phase(self.state, self.public, self.config, generation, sink=sink)
+        continuity = self.continuity.after_sleep(
+            self.state, before_rewrite, {t.name: t for t in self.public},
+            sink.get("dreams", ()), generation)
+        self.budget_debt = continuity["charged"]
+        self.state.logical_evaluations += continuity["charged"]
         created = self.registry.genesis(self.state, generation)
         failed = self.failures.sizes() if self.failures is not None else {}
         return {"generation": generation, "wake": wake, "value_fit": fit, "sleep": sleep,
+                "continuity": continuity,
                 "failure_memory": {"tasks": len(failed), "programs": sum(failed.values()),
                                    "max_per_task": max(failed.values(), default=0)},
                 "genesis_created": created, "pathways": self.registry.summary(),

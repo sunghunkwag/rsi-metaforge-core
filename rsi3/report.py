@@ -12,7 +12,8 @@ from pathlib import Path
 from statistics import mean
 
 ARM_ORDER = ["RSI2", "RSI3", "RSI3_NO_REPLAY", "RSI3_NO_GENESIS", "RSI3_UNIFORM",
-             "RSI3_UNIFORM_FM", "RSI3_FM"]
+             "RSI3_UNIFORM_FM", "RSI3_FM", "RSI3_UNIFORM_FM_SCM", "RSI3_UNIFORM_FM_SC",
+             "RSI3_UNIFORM_FM_INV"]
 COMPARISONS = [
     ("C1", "RSI3", "RSI2", "train"), ("C2", "RSI3", "RSI3_UNIFORM", "train"),
     ("C3", "RSI3", "RSI3_NO_REPLAY", "train"), ("C4", "RSI3", "RSI3_NO_GENESIS", "train"),
@@ -21,7 +22,84 @@ COMPARISONS = [
     ("F1", "RSI3_UNIFORM_FM", "RSI3_UNIFORM", "train"), ("F2", "RSI3_FM", "RSI3", "train"),
     ("F3", "RSI3_FM", "RSI3_UNIFORM_FM", "train"), ("F4", "RSI3_UNIFORM_FM", "RSI2", "train"),
     ("F5", "RSI3_UNIFORM_FM", "RSI2", "validation"),
+    # Self-continuity study (PREDICTIONS_SELF_CONTINUITY.md)
+    # The measure arm is trajectory-identical to RSI3_UNIFORM_FM (passive).
+    ("S1", "RSI3_UNIFORM_FM_SC", "RSI3_UNIFORM_FM_SCM", "train"),
+    ("S2", "RSI3_UNIFORM_FM_SC", "RSI3_UNIFORM_FM_SCM", "validation"),
+    # Concept-invention study (PREDICTIONS_INVENTION.md)
+    ("I1", "RSI3_UNIFORM_FM_INV", "RSI3_UNIFORM_FM", "train"),
+    ("I2", "RSI3_UNIFORM_FM_INV", "RSI3_UNIFORM_FM", "validation"),
 ]
+
+
+def validation_drops(record) -> int:
+    """Generation-to-generation decreases in VALIDATION solved."""
+    values = [g["validation"]["solved"] for g in record["generations"]]
+    return sum(1 for a, b in zip(values, values[1:]) if b < a)
+
+
+def continuity_lines(arm, records) -> list[str]:
+    lines = []
+    if not records or "continuity" not in records[0]["generations"][0]:
+        return lines
+    for r in records:
+        rows = [g["continuity"] for g in r["generations"]]
+        if rows[0].get("mode") in (None, "off"):
+            return lines
+        retained = [f"{c.get('retained', 0)}/{c.get('audited', 0)}" for c in rows]
+        exams = [f"{c['old']['exam']['count']}->{c['new']['exam']['count']}/"
+                 f"{c['new']['exam']['sat']}" if "old" in c else "-" for c in rows]
+        lost = [len(c.get("lost", [])) for c in rows]
+        lost_exams = [len(c.get("lost_exams", [])) for c in rows]
+        flagged = [int(bool(c.get("old_better"))) for c in rows]
+        decisions = [c.get("decision", "-") for c in rows]
+        charged = sum(c.get("charged", 0) for c in rows)
+        lines.append(f"  - {arm} seed {r['seed']}: TRAIN retained per generation {retained}; "
+                     f"exams passed old->new/sat {exams}; TRAIN lost {lost}; exams lost "
+                     f"{lost_exams}; old self scored higher {flagged}; decisions {decisions}; "
+                     f"audit and exam work charged {charged}; VALIDATION per generation "
+                     f"{[g['validation']['solved'] for g in r['generations']]}, "
+                     f"drops {validation_drops(r)}.")
+    return lines
+
+
+def alignment_lines(records) -> list[str]:
+    """Does the passive guard's alarm coincide with VALIDATION drops? (R3)"""
+    flagged = drops = both = 0
+    for r in records:
+        gens = r["generations"]
+        for previous, g in zip(gens, gens[1:]):
+            alarm = bool(g["continuity"].get("old_better"))
+            drop = g["validation"]["solved"] < previous["validation"]["solved"]
+            flagged += alarm
+            drops += drop
+            both += alarm and drop
+    if not records:
+        return []
+    precision = f"{both}/{flagged}" if flagged else "void (no alarms)"
+    recall = f"{both}/{drops}" if drops else "void (no drops)"
+    return ["Alarm alignment in the measure arm (R3), generations 2-8 pooled over seeds: "
+            f"alarms that coincide with a VALIDATION drop {precision}; VALIDATION drops "
+            f"that coincide with an alarm {recall}.", ""]
+
+
+def invention_lines(arm, records) -> list[str]:
+    lines = []
+    for r in records:
+        adopted = r["final"].get("adopted_concepts")
+        if adopted is None or not any("invention" in g["wake"] and g["wake"]["invention"]
+                                      for g in r["generations"]):
+            continue
+        library = r["final"].get("library", {})
+        items = "; ".join(f"g{a['generation']} via {a['task']}: {library.get(name, name)}"
+                          for name, a in sorted(adopted.items(),
+                                                key=lambda kv: kv[1]["generation"]))
+        proposed = [len(g["wake"]["invention"].get("proposed", [])) for g in r["generations"]]
+        mdl = sum(len(g["sleep"]["adopted_library"]) for g in r["generations"])
+        lines.append(f"  - {arm} seed {r['seed']}: concepts adopted {len(adopted)} "
+                     f"({items or 'none'}); proposed per generation {proposed}; "
+                     f"RSI-2 MDL library adoptions {mdl}.")
+    return lines
 
 
 def load(directory: Path) -> dict:
@@ -81,6 +159,24 @@ def render(runs: dict) -> str:
         out.append(f"| {cid} | {left} > {right} ({metric}) | {detail} | {verdict} |")
     out.append("")
 
+    if any(k[0] == "RSI3_UNIFORM_FM_SC" for k in runs):
+        pairs = [(s, validation_drops(runs[("RSI3_UNIFORM_FM_SC", s)]),
+                  validation_drops(runs[("RSI3_UNIFORM_FM_SCM", s)]))
+                 for s in seeds if ("RSI3_UNIFORM_FM_SC", s) in runs
+                 and ("RSI3_UNIFORM_FM_SCM", s) in runs]
+        if pairs:
+            verdict = "PASS" if all(a < b for _, a, b in pairs) else "FAIL"
+            detail = "; ".join(f"{s}: {a} vs {b}" for s, a, b in pairs)
+            out.append("Generation-to-generation VALIDATION drops (S3, fewer is better):\n")
+            out.append("| ID | Comparison | Per seed | Result |")
+            out.append("| --- | --- | --- | --- |")
+            out.append(f"| S3 | RSI3_UNIFORM_FM_SC drops < RSI3_UNIFORM_FM_SCM drops | {detail} "
+                       f"| {verdict} |")
+            out.append("")
+
+    out.extend(alignment_lines([runs[("RSI3_UNIFORM_FM_SCM", s)] for s in seeds
+                                if ("RSI3_UNIFORM_FM_SCM", s) in runs]))
+
     out.append("## Mechanism readouts\n")
     baseline = [runs[("RSI2", s)] for s in seeds if ("RSI2", s) in runs]
     if baseline:
@@ -114,6 +210,8 @@ def render(runs: dict) -> str:
             total = [sum(r["final"]["failure_memory"].values()) for r in records]
             out.append(f"  - {arm} failure memory: known failures skipped free {known}; "
                        f"distinct failed programs, largest task {widest}, all tasks {total}.")
+        out.extend(continuity_lines(arm, records))
+        out.extend(invention_lines(arm, records))
     if baseline:
         base_cpu = mean(r["cpu_seconds"] for r in baseline)
         ratios = {arm: mean(runs[(arm, s)]["cpu_seconds"] for s in seeds if (arm, s) in runs) / base_cpu
