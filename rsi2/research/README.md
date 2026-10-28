@@ -133,6 +133,14 @@ support admission, an eight-generation claim, generalization or original a-e.
 `*.checkpoint.json` files are storage manifests; inspect their complete evidence
 using `rsi2.research.journal_checkpoint.reconstruct(path).record`.
 
+That diagnostic has now completed all six conditions in 487.17 aggregate CPU
+seconds. Independent replay checked all 16,067 candidates and 12,951 descendant
+edges. Both methods solve the same five TRAIN tasks at B64. At cold B640,
+population solves six and coordinates five, so the coordinate change fails its
+admission gate. See `COORDINATE_DIAGNOSTIC_RESULTS.md` and
+`coordinate_diagnostic_results/independent/` for the complete negative result
+and portable replay. Completion and valid evidence do not imply improvement.
+
 New methods preserve the frozen DSL, evaluator, original data/results,
 `rsi_levels_metaforge_unified.py` and existing `docs/`. Human-engineered kernels,
 causal wiring corrections and smaller ASTs remain distinct from engine-learned,

@@ -1,0 +1,1694 @@
+{
+  "status": "PASS",
+  "condition": "cold_coordinates_B64",
+  "scope": "independent actual TRAIN evidence replay; no search/proposal/heldout loading",
+  "task_searches": 36,
+  "candidate_trials": 2016,
+  "reconstructed_edges": 1488,
+  "reconstructed_coordinate_edges": 1488,
+  "public_example_calls": 13742,
+  "public_evaluator_steps": 545278,
+  "actual_heuristic_evaluations_replayed": 1273,
+  "actual_heuristic_steps_replayed": 119441,
+  "proof_cost_and_work_reconciliation": "exact",
+  "solved_names": [
+    "bool-identify-k with k=1",
+    "caesar-cipher-k-modulo-n with k=0 and n=3",
+    "caesar-cipher-k-modulo-n with k=2 and n=2",
+    "caesar-cipher-k-modulo-n with k=5 and n=5",
+    "prepend-k with k=0"
+  ],
+  "interrupted_trials": [],
+  "coordinate_operators": {
+    "unary_insert": 849,
+    "unary_remove": 191,
+    "head": 421,
+    "permutation": 27
+  },
+  "task_coverage": [
+    {
+      "task": "append-index-k with k=1",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    },
+    {
+      "task": "append-k with k=1",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    },
+    {
+      "task": "append-k with k=4",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    },
+    {
+      "task": "bool-identify-k with k=1",
+      "solved": true,
+      "termination": "public_match",
+      "roots": 12,
+      "descendants": 0,
+      "attempted_application_arities": {
+        "1": 17
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 6,
+        "tail": 2,
+        "map": 6,
+        "eq": 3
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 0,
+        "compiler_steps": 0,
+        "grammar_queries": 0,
+        "production_choices_created": 0,
+        "type_checks": 0,
+        "generated": 0,
+        "duplicates": 0,
+        "oversized": 0,
+        "ill_typed": 0,
+        "eta_views": 0
+      },
+      "compiler_steps": 110,
+      "expansions": 258
+    },
+    {
+      "task": "caesar-cipher-k-modulo-n with k=0 and n=3",
+      "solved": true,
+      "termination": "public_match",
+      "roots": 4,
+      "descendants": 0,
+      "attempted_application_arities": {
+        "1": 1
+      },
+      "root_application_arities": {
+        "1": 1
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 1
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 0,
+        "compiler_steps": 0,
+        "grammar_queries": 0,
+        "production_choices_created": 0,
+        "type_checks": 0,
+        "generated": 0,
+        "duplicates": 0,
+        "oversized": 0,
+        "ill_typed": 0,
+        "eta_views": 0
+      },
+      "compiler_steps": 20,
+      "expansions": 47
+    },
+    {
+      "task": "caesar-cipher-k-modulo-n with k=1 and n=2",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    },
+    {
+      "task": "caesar-cipher-k-modulo-n with k=2 and n=2",
+      "solved": true,
+      "termination": "public_match",
+      "roots": 4,
+      "descendants": 0,
+      "attempted_application_arities": {
+        "1": 1
+      },
+      "root_application_arities": {
+        "1": 1
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 1
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 0,
+        "compiler_steps": 0,
+        "grammar_queries": 0,
+        "production_choices_created": 0,
+        "type_checks": 0,
+        "generated": 0,
+        "duplicates": 0,
+        "oversized": 0,
+        "ill_typed": 0,
+        "eta_views": 0
+      },
+      "compiler_steps": 20,
+      "expansions": 47
+    },
+    {
+      "task": "caesar-cipher-k-modulo-n with k=5 and n=5",
+      "solved": true,
+      "termination": "public_match",
+      "roots": 4,
+      "descendants": 0,
+      "attempted_application_arities": {
+        "1": 1
+      },
+      "root_application_arities": {
+        "1": 1
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 1
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 0,
+        "compiler_steps": 0,
+        "grammar_queries": 0,
+        "production_choices_created": 0,
+        "type_checks": 0,
+        "generated": 0,
+        "duplicates": 0,
+        "oversized": 0,
+        "ill_typed": 0,
+        "eta_views": 0
+      },
+      "compiler_steps": 20,
+      "expansions": 47
+    },
+    {
+      "task": "dup",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    },
+    {
+      "task": "has-head-in-tail",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 138,
+        "2": 17,
+        "3": 7
+      },
+      "root_application_arities": {
+        "1": 13,
+        "2": 3,
+        "3": 2
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 73,
+        "tail": 21,
+        "is_empty": 15,
+        "not": 29,
+        "cons": 8,
+        "fold": 9,
+        "if": 7
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 2451,
+        "compiler_steps": 11615,
+        "grammar_queries": 490,
+        "production_choices_created": 4956,
+        "type_checks": 443,
+        "generated": 479,
+        "duplicates": 43,
+        "oversized": 54,
+        "ill_typed": 246,
+        "eta_views": 63
+      },
+      "compiler_steps": 13909,
+      "expansions": 2887
+    },
+    {
+      "task": "has-k with k=3",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 138,
+        "2": 17,
+        "3": 7
+      },
+      "root_application_arities": {
+        "1": 13,
+        "2": 3,
+        "3": 2
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 73,
+        "tail": 21,
+        "is_empty": 15,
+        "not": 29,
+        "cons": 8,
+        "fold": 9,
+        "if": 7
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 2451,
+        "compiler_steps": 11615,
+        "grammar_queries": 490,
+        "production_choices_created": 4956,
+        "type_checks": 443,
+        "generated": 479,
+        "duplicates": 43,
+        "oversized": 54,
+        "ill_typed": 246,
+        "eta_views": 63
+      },
+      "compiler_steps": 13909,
+      "expansions": 2887
+    },
+    {
+      "task": "index-head",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 56,
+        "2": 43
+      },
+      "root_application_arities": {
+        "1": 5,
+        "2": 7
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "tail": 3,
+        "fold": 27,
+        "neg": 16,
+        "sub": 8,
+        "add": 11,
+        "length": 6,
+        "abs": 6
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1473,
+        "compiler_steps": 8322,
+        "grammar_queries": 494,
+        "production_choices_created": 6337,
+        "type_checks": 304,
+        "generated": 275,
+        "duplicates": 10,
+        "oversized": 24,
+        "ill_typed": 117,
+        "eta_views": 54
+      },
+      "compiler_steps": 10297,
+      "expansions": 1665
+    },
+    {
+      "task": "index-k with k=3",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 56,
+        "2": 43
+      },
+      "root_application_arities": {
+        "1": 5,
+        "2": 7
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "tail": 3,
+        "fold": 27,
+        "neg": 16,
+        "sub": 8,
+        "add": 11,
+        "length": 6,
+        "abs": 6
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1473,
+        "compiler_steps": 8322,
+        "grammar_queries": 494,
+        "production_choices_created": 6337,
+        "type_checks": 304,
+        "generated": 275,
+        "duplicates": 10,
+        "oversized": 24,
+        "ill_typed": 117,
+        "eta_views": 54
+      },
+      "compiler_steps": 10297,
+      "expansions": 1665
+    },
+    {
+      "task": "index-k with k=5",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 56,
+        "2": 43
+      },
+      "root_application_arities": {
+        "1": 5,
+        "2": 7
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "tail": 3,
+        "fold": 27,
+        "neg": 16,
+        "sub": 8,
+        "add": 11,
+        "length": 6,
+        "abs": 6
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1473,
+        "compiler_steps": 8322,
+        "grammar_queries": 494,
+        "production_choices_created": 6337,
+        "type_checks": 304,
+        "generated": 275,
+        "duplicates": 10,
+        "oversized": 24,
+        "ill_typed": 117,
+        "eta_views": 54
+      },
+      "compiler_steps": 10297,
+      "expansions": 1665
+    },
+    {
+      "task": "is-mod-k with k=5",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 138,
+        "2": 17,
+        "3": 7
+      },
+      "root_application_arities": {
+        "1": 13,
+        "2": 3,
+        "3": 2
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 73,
+        "tail": 21,
+        "is_empty": 15,
+        "not": 29,
+        "cons": 8,
+        "fold": 9,
+        "if": 7
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 2451,
+        "compiler_steps": 11615,
+        "grammar_queries": 490,
+        "production_choices_created": 4956,
+        "type_checks": 443,
+        "generated": 479,
+        "duplicates": 43,
+        "oversized": 54,
+        "ill_typed": 246,
+        "eta_views": 63
+      },
+      "compiler_steps": 13909,
+      "expansions": 2887
+    },
+    {
+      "task": "keep-mod-k with k=2",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    },
+    {
+      "task": "kth-largest with k=3",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 56,
+        "2": 43
+      },
+      "root_application_arities": {
+        "1": 5,
+        "2": 7
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "tail": 3,
+        "fold": 27,
+        "neg": 16,
+        "sub": 8,
+        "add": 11,
+        "length": 6,
+        "abs": 6
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1473,
+        "compiler_steps": 8322,
+        "grammar_queries": 494,
+        "production_choices_created": 6337,
+        "type_checks": 304,
+        "generated": 275,
+        "duplicates": 10,
+        "oversized": 24,
+        "ill_typed": 117,
+        "eta_views": 54
+      },
+      "compiler_steps": 10297,
+      "expansions": 1665
+    },
+    {
+      "task": "kth-largest with k=4",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 56,
+        "2": 43
+      },
+      "root_application_arities": {
+        "1": 5,
+        "2": 7
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "tail": 3,
+        "fold": 27,
+        "neg": 16,
+        "sub": 8,
+        "add": 11,
+        "length": 6,
+        "abs": 6
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1473,
+        "compiler_steps": 8322,
+        "grammar_queries": 494,
+        "production_choices_created": 6337,
+        "type_checks": 304,
+        "generated": 275,
+        "duplicates": 10,
+        "oversized": 24,
+        "ill_typed": 117,
+        "eta_views": 54
+      },
+      "compiler_steps": 10297,
+      "expansions": 1665
+    },
+    {
+      "task": "kth-smallest with k=2",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 56,
+        "2": 43
+      },
+      "root_application_arities": {
+        "1": 5,
+        "2": 7
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "tail": 3,
+        "fold": 27,
+        "neg": 16,
+        "sub": 8,
+        "add": 11,
+        "length": 6,
+        "abs": 6
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1473,
+        "compiler_steps": 8322,
+        "grammar_queries": 494,
+        "production_choices_created": 6337,
+        "type_checks": 304,
+        "generated": 275,
+        "duplicates": 10,
+        "oversized": 24,
+        "ill_typed": 117,
+        "eta_views": 54
+      },
+      "compiler_steps": 10297,
+      "expansions": 1665
+    },
+    {
+      "task": "modulo-k with k=2",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    },
+    {
+      "task": "modulo-k with k=3",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    },
+    {
+      "task": "prepend-index-k with k=2",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    },
+    {
+      "task": "prepend-index-k with k=5",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    },
+    {
+      "task": "prepend-k with k=0",
+      "solved": true,
+      "termination": "public_match",
+      "roots": 8,
+      "descendants": 0,
+      "attempted_application_arities": {
+        "1": 5
+      },
+      "root_application_arities": {
+        "1": 5
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 1,
+        "map": 2,
+        "cons": 2
+      },
+      "new_high_arity_support": [],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 0,
+        "compiler_steps": 0,
+        "grammar_queries": 0,
+        "production_choices_created": 0,
+        "type_checks": 0,
+        "generated": 0,
+        "duplicates": 0,
+        "oversized": 0,
+        "ill_typed": 0,
+        "eta_views": 0
+      },
+      "compiler_steps": 44,
+      "expansions": 98
+    },
+    {
+      "task": "prepend-k with k=4",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    },
+    {
+      "task": "prepend-k with k=5",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    },
+    {
+      "task": "replace-all-with-index-k with k=1",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    },
+    {
+      "task": "replace-all-with-index-k with k=5",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    },
+    {
+      "task": "reverse",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    },
+    {
+      "task": "rotate-k with k=4",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    },
+    {
+      "task": "slice-k-n with k=1 and n=4",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    },
+    {
+      "task": "slice-k-n with k=2 and n=4",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    },
+    {
+      "task": "slice-k-n with k=4 and n=4",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    },
+    {
+      "task": "slice-k-n with k=5 and n=1",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    },
+    {
+      "task": "slice-k-n with k=5 and n=2",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    },
+    {
+      "task": "slice-k-n with k=5 and n=4",
+      "solved": false,
+      "termination": "candidate_budget",
+      "roots": 16,
+      "descendants": 48,
+      "attempted_application_arities": {
+        "1": 73,
+        "2": 31
+      },
+      "root_application_arities": {
+        "1": 17
+      },
+      "attempted_primitive_spine_heads": {
+        "head": 22,
+        "map": 16,
+        "cons": 34,
+        "tail": 20,
+        "filter": 2,
+        "neg": 7,
+        "eq": 1,
+        "add": 1,
+        "abs": 1
+      },
+      "new_high_arity_support": [
+        2
+      ],
+      "neighborhood_work": {
+        "schema_version": 1,
+        "eta_exposure": true,
+        "structural_unit": "examined grammar choices/permutations/removals and eta views",
+        "compiler_unit": "reconstruction/shift/prewalk AST and type visits plus compiler invocations",
+        "all_compiler_and_grammar_cpu_in_search_guard": true,
+        "semantic_evaluator_calls": 0,
+        "structural_states": 1095,
+        "compiler_steps": 6414,
+        "grammar_queries": 315,
+        "production_choices_created": 3480,
+        "type_checks": 279,
+        "generated": 233,
+        "duplicates": 2,
+        "oversized": 0,
+        "ill_typed": 154,
+        "eta_views": 31
+      },
+      "compiler_steps": 7516,
+      "expansions": 1323
+    }
+  ],
+  "audit_verification_cpu_seconds": 2.7349450939999995
+}

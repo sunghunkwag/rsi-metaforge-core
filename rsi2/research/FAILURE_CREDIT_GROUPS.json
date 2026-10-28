@@ -1,0 +1,230 @@
+{
+  "schema_version": 1,
+  "rule": "SHA256(UTF-8 task name before first \" with \") as big-endian integer modulo 3",
+  "shadow_groups": [
+    0
+  ],
+  "fitting_groups": [
+    1,
+    2
+  ],
+  "tasks": [
+    {
+      "name": "append-index-k with k=1",
+      "family": "append-index-k",
+      "family_sha256": "c085449bbcf4f877752192bd50bde85840974470778325abd105ce334af4cafe",
+      "group": 1
+    },
+    {
+      "name": "append-k with k=1",
+      "family": "append-k",
+      "family_sha256": "c052f8933e61275d95eaa217efbc26e9bc5ad545050b7b9a4891cb9c0cd73a8b",
+      "group": 2
+    },
+    {
+      "name": "append-k with k=4",
+      "family": "append-k",
+      "family_sha256": "c052f8933e61275d95eaa217efbc26e9bc5ad545050b7b9a4891cb9c0cd73a8b",
+      "group": 2
+    },
+    {
+      "name": "bool-identify-k with k=1",
+      "family": "bool-identify-k",
+      "family_sha256": "6d5357878fdba31c01ba46bb2135e544dcfcb666846467c9b1bc4cb03232cc36",
+      "group": 2
+    },
+    {
+      "name": "caesar-cipher-k-modulo-n with k=0 and n=3",
+      "family": "caesar-cipher-k-modulo-n",
+      "family_sha256": "9fefd36f1aa4cf781cfab06981f5d2a0bd91675d4528c493ef7a1a1793e4cd91",
+      "group": 1
+    },
+    {
+      "name": "caesar-cipher-k-modulo-n with k=1 and n=2",
+      "family": "caesar-cipher-k-modulo-n",
+      "family_sha256": "9fefd36f1aa4cf781cfab06981f5d2a0bd91675d4528c493ef7a1a1793e4cd91",
+      "group": 1
+    },
+    {
+      "name": "caesar-cipher-k-modulo-n with k=2 and n=2",
+      "family": "caesar-cipher-k-modulo-n",
+      "family_sha256": "9fefd36f1aa4cf781cfab06981f5d2a0bd91675d4528c493ef7a1a1793e4cd91",
+      "group": 1
+    },
+    {
+      "name": "caesar-cipher-k-modulo-n with k=5 and n=5",
+      "family": "caesar-cipher-k-modulo-n",
+      "family_sha256": "9fefd36f1aa4cf781cfab06981f5d2a0bd91675d4528c493ef7a1a1793e4cd91",
+      "group": 1
+    },
+    {
+      "name": "dup",
+      "family": "dup",
+      "family_sha256": "9eb6203435cb3e0033f544e3bf6f1b74b138c765fc489a38a092e8f7adbd9638",
+      "group": 1
+    },
+    {
+      "name": "has-head-in-tail",
+      "family": "has-head-in-tail",
+      "family_sha256": "22aa775fca5b928f88842d9b57b7c27ccb576fe8681b4a7b2832826ab3ca0adb",
+      "group": 2
+    },
+    {
+      "name": "has-k with k=3",
+      "family": "has-k",
+      "family_sha256": "fe0111c90d7c0166f5e31d23930ccf3d039bdcd5c806bad7797c9f522e64c977",
+      "group": 1
+    },
+    {
+      "name": "index-head",
+      "family": "index-head",
+      "family_sha256": "f51b11d8227700c1e84bb7d74fb6b1039e61cceab52d5a318e8d44319acfeaa9",
+      "group": 1
+    },
+    {
+      "name": "index-k with k=3",
+      "family": "index-k",
+      "family_sha256": "23ae31eea82e1904385e5de6bc1b31f6f29698c7fbb50de25bdc9cf2cb0cfa41",
+      "group": 1
+    },
+    {
+      "name": "index-k with k=5",
+      "family": "index-k",
+      "family_sha256": "23ae31eea82e1904385e5de6bc1b31f6f29698c7fbb50de25bdc9cf2cb0cfa41",
+      "group": 1
+    },
+    {
+      "name": "is-mod-k with k=5",
+      "family": "is-mod-k",
+      "family_sha256": "9001e0dcf84d191b267723005b87e4945817a22b410ccae6ecb76525271c3202",
+      "group": 0
+    },
+    {
+      "name": "keep-mod-k with k=2",
+      "family": "keep-mod-k",
+      "family_sha256": "3835ad1d6baab108b4f9bb33413a03bd5355bb401a2c94bb18a5b01c84918eae",
+      "group": 1
+    },
+    {
+      "name": "kth-largest with k=3",
+      "family": "kth-largest",
+      "family_sha256": "1b129b56b589de7ffc04497d7b2ab0f27121fdabbdcd978b8a874399e26be794",
+      "group": 0
+    },
+    {
+      "name": "kth-largest with k=4",
+      "family": "kth-largest",
+      "family_sha256": "1b129b56b589de7ffc04497d7b2ab0f27121fdabbdcd978b8a874399e26be794",
+      "group": 0
+    },
+    {
+      "name": "kth-smallest with k=2",
+      "family": "kth-smallest",
+      "family_sha256": "5eb2f422b3aa321a432f0a1f13e747bed803b174c52c86fddd30d061c5bf1b8f",
+      "group": 1
+    },
+    {
+      "name": "modulo-k with k=2",
+      "family": "modulo-k",
+      "family_sha256": "81e55c483d998a9ae9205406c40722fdb4b27dee13a6bfa3d0fc336ae3fef98f",
+      "group": 0
+    },
+    {
+      "name": "modulo-k with k=3",
+      "family": "modulo-k",
+      "family_sha256": "81e55c483d998a9ae9205406c40722fdb4b27dee13a6bfa3d0fc336ae3fef98f",
+      "group": 0
+    },
+    {
+      "name": "prepend-index-k with k=2",
+      "family": "prepend-index-k",
+      "family_sha256": "00ed2b8d854f1bd880a1750fa900d65ba8823a3f2fcb6c611fb5d951da47bbe4",
+      "group": 1
+    },
+    {
+      "name": "prepend-index-k with k=5",
+      "family": "prepend-index-k",
+      "family_sha256": "00ed2b8d854f1bd880a1750fa900d65ba8823a3f2fcb6c611fb5d951da47bbe4",
+      "group": 1
+    },
+    {
+      "name": "prepend-k with k=0",
+      "family": "prepend-k",
+      "family_sha256": "f2c83384753d35f23492dbf5a38800ec545ada040af1be147318ded5efe7b18c",
+      "group": 1
+    },
+    {
+      "name": "prepend-k with k=4",
+      "family": "prepend-k",
+      "family_sha256": "f2c83384753d35f23492dbf5a38800ec545ada040af1be147318ded5efe7b18c",
+      "group": 1
+    },
+    {
+      "name": "prepend-k with k=5",
+      "family": "prepend-k",
+      "family_sha256": "f2c83384753d35f23492dbf5a38800ec545ada040af1be147318ded5efe7b18c",
+      "group": 1
+    },
+    {
+      "name": "replace-all-with-index-k with k=1",
+      "family": "replace-all-with-index-k",
+      "family_sha256": "aaad296557809ede2d06ade06d5b9f60756bafbe2ce0103caeda6f91adb817e8",
+      "group": 0
+    },
+    {
+      "name": "replace-all-with-index-k with k=5",
+      "family": "replace-all-with-index-k",
+      "family_sha256": "aaad296557809ede2d06ade06d5b9f60756bafbe2ce0103caeda6f91adb817e8",
+      "group": 0
+    },
+    {
+      "name": "reverse",
+      "family": "reverse",
+      "family_sha256": "b2d7f24e833051d5fc296d4a747281e9d155ecfb636b983cfd70b51ed9b45a32",
+      "group": 0
+    },
+    {
+      "name": "rotate-k with k=4",
+      "family": "rotate-k",
+      "family_sha256": "709a8e5b51936d151fac718a747432589438a7c0f9eb7c99efa424cf97f4397f",
+      "group": 0
+    },
+    {
+      "name": "slice-k-n with k=1 and n=4",
+      "family": "slice-k-n",
+      "family_sha256": "c36e61355e8a046bf567f24149030eaad7e8337c6fa06acab0209b7951a0db1e",
+      "group": 0
+    },
+    {
+      "name": "slice-k-n with k=2 and n=4",
+      "family": "slice-k-n",
+      "family_sha256": "c36e61355e8a046bf567f24149030eaad7e8337c6fa06acab0209b7951a0db1e",
+      "group": 0
+    },
+    {
+      "name": "slice-k-n with k=4 and n=4",
+      "family": "slice-k-n",
+      "family_sha256": "c36e61355e8a046bf567f24149030eaad7e8337c6fa06acab0209b7951a0db1e",
+      "group": 0
+    },
+    {
+      "name": "slice-k-n with k=5 and n=1",
+      "family": "slice-k-n",
+      "family_sha256": "c36e61355e8a046bf567f24149030eaad7e8337c6fa06acab0209b7951a0db1e",
+      "group": 0
+    },
+    {
+      "name": "slice-k-n with k=5 and n=2",
+      "family": "slice-k-n",
+      "family_sha256": "c36e61355e8a046bf567f24149030eaad7e8337c6fa06acab0209b7951a0db1e",
+      "group": 0
+    },
+    {
+      "name": "slice-k-n with k=5 and n=4",
+      "family": "slice-k-n",
+      "family_sha256": "c36e61355e8a046bf567f24149030eaad7e8337c6fa06acab0209b7951a0db1e",
+      "group": 0
+    }
+  ],
+  "names_groups_sha256": "7f9936bde114ece33c5add6b0140bd067410f66d1399e3f0f5ea09f25b34d641"
+}
