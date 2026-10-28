@@ -1,5 +1,13 @@
 # Self-continuity study: pre-registered predictions
 
+> **Status: abandoned on 2026-10-29.** The final runs were stopped by the
+> repository owner's decision before any run finished. No registered-seed
+> result was produced or inspected. The owner's reason was that a guard that
+> only prevents losses cannot, by construction, produce a capability leap.
+> Work moved to concept invention (`selfmodel.py`, PREDICTIONS_INVENTION.md).
+> The guard's code and tests remain in the repository, with `continuity` off
+> in every other arm. These predictions are kept unscored.
+
 Registered 2026-10-29, before any run of the two new arms on the registered
 seeds (11/22/33). This file is committed together with the code
 (`continuity.py`) and `experiment_config_self_continuity.json`. That config

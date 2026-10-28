@@ -97,6 +97,9 @@ class PathwayRegistry:
         self.pathways: dict[str, Pathway] = {}
         for kind in self.designer_kinds:
             self.pathways[kind] = Pathway(kind, kind, "designer", 0, status="active")
+        # Concepts the self-model invented for this generation (selfmodel.py):
+        # library entries every pathway may use until the generation ends.
+        self.extra_library: dict = {}
         self._live: dict[tuple[str, str], tuple[str, ResumableSearch]] = {}
         self._analog_grammar: dict[str, tuple[str, Grammar]] = {}
         self._generation_cache: dict[tuple[str, str], tuple[str, Grammar]] = {}
@@ -142,17 +145,29 @@ class PathwayRegistry:
         return result
 
     # ---- grammars and live searches ------------------------------------
+    def base_grammar(self, state) -> Grammar:
+        """The current prior, with this generation's invented concepts if any."""
+        if not self.extra_library:
+            return state.grammar
+        return Grammar(library={**state.grammar.library, **self.extra_library},
+                       weights=state.grammar.weights,
+                       context_weights=state.grammar.context_weights)
+
+    def library(self, state) -> dict:
+        return {**state.grammar.library, **self.extra_library}
+
     def grammar(self, pid: str, task: str, state) -> Grammar:
         pathway = self.pathways[pid]
         if pathway.kind == "prior":
-            return state.grammar
+            return self.base_grammar(state)
         if pathway.kind == "recognized":
-            return state.condition(self.tasks[task])
-        library_key = grammar_fingerprint(Grammar(library=state.grammar.library))
+            return state.condition(self.tasks[task], self.base_grammar(state))
+        library = self.library(state)
+        library_key = grammar_fingerprint(Grammar(library=library))
         cached = self._analog_grammar.get(pid)
         if cached is None or cached[0] != library_key:
             source = self.tasks[pathway.source_task]
-            grammar = Grammar(library=state.grammar.library)
+            grammar = Grammar(library=library)
             grammar.fit([(state.solutions[pathway.source_task], source.request_type)])
             cached = (library_key, grammar)
             self._analog_grammar[pid] = cached

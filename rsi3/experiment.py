@@ -15,6 +15,8 @@ Arms (see PREDICTIONS.md for what each one tests):
   RSI3_UNIFORM_FM_SCM  RSI3_UNIFORM_FM, auditing each self-rewrite (passive, uncharged).
   RSI3_UNIFORM_FM_SC   RSI3_UNIFORM_FM, auditing and restoring lost abilities (charged)
                        (experiment_config_self_continuity.json).
+  RSI3_UNIFORM_FM_INV  RSI3_UNIFORM_FM with self-model concept invention
+                       (experiment_config_invention.json).
 
 Every arm receives the same per-generation cap of B_wake x |TRAIN| logical
 candidate evaluations, the same RSI-2 sleep phase, the same seeds, and the same
@@ -42,6 +44,7 @@ import time
 from rsi2.corpus import load_train, load_validation
 from rsi2.learning import State, wake_sleep
 from rsi2.measurement import assess
+from rsi2.terms import pretty
 
 from .loop import ArmConfig, Runtime
 
@@ -64,6 +67,11 @@ ARMS = {
     "RSI3_UNIFORM_FM_SC": ArmConfig("RSI3_UNIFORM_FM_SC", allocation="uniform", genesis=False,
                                     designer_kinds=("prior",), failure_memory=True,
                                     continuity="restore"),
+    # Concept-invention study (PREDICTIONS_INVENTION.md): the same arm with a
+    # self-model that invents library concepts from its own verified programs.
+    "RSI3_UNIFORM_FM_INV": ArmConfig("RSI3_UNIFORM_FM_INV", allocation="uniform", genesis=False,
+                                     designer_kinds=("prior",), failure_memory=True,
+                                     invention=True),
 }
 BASELINE = "RSI2"
 
@@ -105,7 +113,8 @@ def run_one(arm: str, seed: int, config: dict) -> dict:
     else:
         runtime = Runtime(seed, train, ARMS[arm],
                           rsi2_config | {"controller": config["controller"],
-                                         "continuity": config.get("continuity", {})})
+                                         "continuity": config.get("continuity", {}),
+                                         "invention": config.get("invention", {})})
         for _ in range(config["generations"]):
             record = runtime.generation()
             record["validation"] = _validation(runtime.state, validation, rsi2_config)
@@ -119,7 +128,10 @@ def run_one(arm: str, seed: int, config: dict) -> dict:
                             "rejected": sum(e.outcome == "rejected" for e in runtime.memory.episodes)},
                  "verifier_queries": runtime.verifier.queries,
                  "failure_memory": (None if runtime.failures is None
-                                    else runtime.failures.sizes())}
+                                    else runtime.failures.sizes()),
+                 "library": {name: pretty(term)
+                             for name, term in sorted(runtime.state.grammar.library.items())},
+                 "adopted_concepts": runtime.adopted_concepts}
     return {"arm": arm, "seed": seed, "config": config, "status": "complete",
             "generations": generations, "final": final,
             "cpu_seconds": time.process_time() - cpu_started,
