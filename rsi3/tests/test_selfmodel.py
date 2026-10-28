@@ -121,6 +121,25 @@ class AdoptionTests(unittest.TestCase):
         # The verifier accepted it on hidden examples (one receipt per task per generation).
         self.assertEqual(runtime.verifier.queries, 1)
 
+    def test_unadopted_concepts_enter_the_search_at_a_tenth_of_the_pseudocount(self):
+        train = _train()
+        config = {"B_wake": 8, "B_eval": 8, "dreams": 2, "search": SEARCH,
+                  "controller": {"chunk": 8, "exploration": 0.3, "analog_neighbors": 2},
+                  "invention": {}}
+        arm = ArmConfig("inv", allocation="uniform", genesis=False, designer_kinds=("prior",),
+                        failure_memory=True, invention=True)
+        runtime = Runtime(11, [train["index-k with k=3"], train["index-k with k=5"]], arm, config)
+        runtime.state.solutions["index-k with k=3"] = _solve(train["index-k with k=3"])
+        runtime.invent(1)
+        grammar = runtime.registry.base_grammar(runtime.state)
+        self.assertTrue(runtime.registry.extra_library)
+        for name in runtime.registry.extra_library:
+            self.assertEqual(grammar.weights[name], 0.1)
+            self.assertNotIn(name, runtime.state.grammar.library)
+        concepts = runtime.invent(1)["proposed"]
+        whole = pretty(runtime.state.solutions["index-k with k=3"])
+        self.assertNotIn(whole, {c["body"] for c in concepts if c["kind"] == "part"})
+
     def test_without_invention_the_prior_grammar_is_the_state_grammar(self):
         train = _train()
         config = {"B_wake": 8, "B_eval": 8, "dreams": 2, "search": SEARCH,

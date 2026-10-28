@@ -64,6 +64,13 @@ from rsi2.types import (PRIMITIVE_TYPES, Type, TypeInferenceError, function_part
 KINDS = ("constant", "power", "compose", "part")
 BASE_CONSTANTS = (-1, 0, 1, 2)
 DEFAULT_CAPS = {"constant": 4, "power": 6, "compose": 6, "part": 8}
+MIN_PART_SIZE = 4
+# Prior weight of a concept not yet adopted. RSI-2 gives an unused production
+# pseudocount 1; at 1 the 14 concepts invented from the first six (trivial)
+# solutions pushed index-k (k=3) from rank 273 to 820 under the generation-2
+# grammar, at 0.1 to 317 (development measurement, PREDICTIONS_INVENTION.md).
+# An adopted concept is refit by RSI-2's sleep like any library entry.
+CONCEPT_WEIGHT = 0.1
 
 
 @dataclass(frozen=True)
@@ -270,6 +277,7 @@ class SelfModel:
                 continue
         known = self._known_behaviours(library)
         parts = self.parts(solutions, library)
+        whole = {pretty(normalize(term)) for term in solutions.values()}
         unary = []          # (term, argument type, result type, sources)
         int_functions = []
         proposals = {kind: [] for kind in KINDS}
@@ -280,7 +288,12 @@ class SelfModel:
                 if type_.tag == "int":
                     proposals["constant"].append((term, type_, sources))
                 continue
-            proposals["part"].append((term, type_, sources))
+            # A part is worth a production only if naming it saves search: at
+            # least four nodes, and not a whole solved program (that task is
+            # already solved; its use inside other programs is covered by
+            # powers and compositions).
+            if term.size >= MIN_PART_SIZE and pretty(normalize(term)) not in whole:
+                proposals["part"].append((term, type_, sources))
             if len(arguments) == 1 and normalize(term) != Lam(arguments[0], Var(0)):
                 unary.append((term, arguments[0], result, sources))
                 if arguments[0].tag == "int" and result.tag == "int":

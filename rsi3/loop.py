@@ -30,7 +30,7 @@ from .controller import Controller, Slot, probabilities_for
 from .integrator import BindingIntegrator
 from .memory import Episode, EpisodicMemory, FailureMemory, SolutionRecord
 from .pathways import DESIGNER_KINDS, PathwayRegistry
-from .selfmodel import SelfModel, references
+from .selfmodel import CONCEPT_WEIGHT, SelfModel, references
 from .value_model import ValueModel, slot_features
 from .verifier import FrozenVerifier, public_view, term_digest
 
@@ -201,6 +201,8 @@ class Runtime:
         before = self.selfmodel.probe_evaluations
         concepts = self.selfmodel.invent(self.state.solutions, self.state.grammar.library)
         self.registry.extra_library = {c.name: c.term for c in concepts}
+        self.registry.concept_weight = self.config.get("invention", {}).get(
+            "concept_weight", CONCEPT_WEIGHT)
         return {"proposed": [c.to_record() for c in concepts],
                 "probe_evaluations": self.selfmodel.probe_evaluations - before}
 

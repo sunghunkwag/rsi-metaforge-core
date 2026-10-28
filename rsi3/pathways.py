@@ -100,6 +100,7 @@ class PathwayRegistry:
         # Concepts the self-model invented for this generation (selfmodel.py):
         # library entries every pathway may use until the generation ends.
         self.extra_library: dict = {}
+        self.concept_weight = 0.1
         self._live: dict[tuple[str, str], tuple[str, ResumableSearch]] = {}
         self._analog_grammar: dict[str, tuple[str, Grammar]] = {}
         self._generation_cache: dict[tuple[str, str], tuple[str, Grammar]] = {}
@@ -149,9 +150,10 @@ class PathwayRegistry:
         """The current prior, with this generation's invented concepts if any."""
         if not self.extra_library:
             return state.grammar
+        weights = dict(state.grammar.weights)
+        weights.update({name: self.concept_weight for name in self.extra_library})
         return Grammar(library={**state.grammar.library, **self.extra_library},
-                       weights=state.grammar.weights,
-                       context_weights=state.grammar.context_weights)
+                       weights=weights, context_weights=state.grammar.context_weights)
 
     def library(self, state) -> dict:
         return {**state.grammar.library, **self.extra_library}
