@@ -12,7 +12,8 @@ from pathlib import Path
 from statistics import mean
 
 ARM_ORDER = ["RSI2", "RSI3", "RSI3_NO_REPLAY", "RSI3_NO_GENESIS", "RSI3_UNIFORM",
-             "RSI3_UNIFORM_FM", "RSI3_FM", "RSI3_UNIFORM_FM_SCM", "RSI3_UNIFORM_FM_SC"]
+             "RSI3_UNIFORM_FM", "RSI3_FM", "RSI3_UNIFORM_FM_SCM", "RSI3_UNIFORM_FM_SC",
+             "RSI3_UNIFORM_FM_INV"]
 COMPARISONS = [
     ("C1", "RSI3", "RSI2", "train"), ("C2", "RSI3", "RSI3_UNIFORM", "train"),
     ("C3", "RSI3", "RSI3_NO_REPLAY", "train"), ("C4", "RSI3", "RSI3_NO_GENESIS", "train"),
@@ -25,6 +26,9 @@ COMPARISONS = [
     # The measure arm is trajectory-identical to RSI3_UNIFORM_FM (passive).
     ("S1", "RSI3_UNIFORM_FM_SC", "RSI3_UNIFORM_FM_SCM", "train"),
     ("S2", "RSI3_UNIFORM_FM_SC", "RSI3_UNIFORM_FM_SCM", "validation"),
+    # Concept-invention study (PREDICTIONS_INVENTION.md)
+    ("I1", "RSI3_UNIFORM_FM_INV", "RSI3_UNIFORM_FM", "train"),
+    ("I2", "RSI3_UNIFORM_FM_INV", "RSI3_UNIFORM_FM", "validation"),
 ]
 
 
@@ -77,6 +81,25 @@ def alignment_lines(records) -> list[str]:
     return ["Alarm alignment in the measure arm (R3), generations 2-8 pooled over seeds: "
             f"alarms that coincide with a VALIDATION drop {precision}; VALIDATION drops "
             f"that coincide with an alarm {recall}.", ""]
+
+
+def invention_lines(arm, records) -> list[str]:
+    lines = []
+    for r in records:
+        adopted = r["final"].get("adopted_concepts")
+        if adopted is None or not any("invention" in g["wake"] and g["wake"]["invention"]
+                                      for g in r["generations"]):
+            continue
+        library = r["final"].get("library", {})
+        items = "; ".join(f"g{a['generation']} via {a['task']}: {library.get(name, name)}"
+                          for name, a in sorted(adopted.items(),
+                                                key=lambda kv: kv[1]["generation"]))
+        proposed = [len(g["wake"]["invention"].get("proposed", [])) for g in r["generations"]]
+        mdl = sum(len(g["sleep"]["adopted_library"]) for g in r["generations"])
+        lines.append(f"  - {arm} seed {r['seed']}: concepts adopted {len(adopted)} "
+                     f"({items or 'none'}); proposed per generation {proposed}; "
+                     f"RSI-2 MDL library adoptions {mdl}.")
+    return lines
 
 
 def load(directory: Path) -> dict:
@@ -188,6 +211,7 @@ def render(runs: dict) -> str:
             out.append(f"  - {arm} failure memory: known failures skipped free {known}; "
                        f"distinct failed programs, largest task {widest}, all tasks {total}.")
         out.extend(continuity_lines(arm, records))
+        out.extend(invention_lines(arm, records))
     if baseline:
         base_cpu = mean(r["cpu_seconds"] for r in baseline)
         ratios = {arm: mean(runs[(arm, s)]["cpu_seconds"] for s in seeds if (arm, s) in runs) / base_cpu
