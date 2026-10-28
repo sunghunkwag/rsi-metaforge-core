@@ -12,7 +12,7 @@ from pathlib import Path
 from statistics import mean
 
 ARM_ORDER = ["RSI2", "RSI3", "RSI3_NO_REPLAY", "RSI3_NO_GENESIS", "RSI3_UNIFORM",
-             "RSI3_UNIFORM_FM", "RSI3_FM"]
+             "RSI3_UNIFORM_FM", "RSI3_FM", "RSI3_UNIFORM_FM_SCM", "RSI3_UNIFORM_FM_SC"]
 COMPARISONS = [
     ("C1", "RSI3", "RSI2", "train"), ("C2", "RSI3", "RSI3_UNIFORM", "train"),
     ("C3", "RSI3", "RSI3_NO_REPLAY", "train"), ("C4", "RSI3", "RSI3_NO_GENESIS", "train"),
@@ -21,7 +21,37 @@ COMPARISONS = [
     ("F1", "RSI3_UNIFORM_FM", "RSI3_UNIFORM", "train"), ("F2", "RSI3_FM", "RSI3", "train"),
     ("F3", "RSI3_FM", "RSI3_UNIFORM_FM", "train"), ("F4", "RSI3_UNIFORM_FM", "RSI2", "train"),
     ("F5", "RSI3_UNIFORM_FM", "RSI2", "validation"),
+    # Self-continuity study (PREDICTIONS_SELF_CONTINUITY.md)
+    ("S1", "RSI3_UNIFORM_FM_SC", "RSI3_UNIFORM_FM", "train"),
+    ("S2", "RSI3_UNIFORM_FM_SC", "RSI3_UNIFORM_FM", "validation"),
 ]
+
+
+def validation_drops(record) -> int:
+    """Generation-to-generation decreases in VALIDATION solved."""
+    values = [g["validation"]["solved"] for g in record["generations"]]
+    return sum(1 for a, b in zip(values, values[1:]) if b < a)
+
+
+def continuity_lines(arm, records) -> list[str]:
+    lines = []
+    if not records or "continuity" not in records[0]["generations"][0]:
+        return lines
+    for r in records:
+        rows = [g["continuity"] for g in r["generations"]]
+        if rows[0].get("mode") in (None, "off"):
+            return lines
+        retained = [f"{c.get('retained', 0)}/{c.get('audited', 0)}" for c in rows]
+        lost = [len(c.get("lost", [])) for c in rows]
+        decisions = [c.get("decision", "-") if isinstance(c.get("decision"), str) else "-"
+                     for c in rows]
+        charged = sum(c.get("charged", 0) for c in rows)
+        lines.append(f"  - {arm} seed {r['seed']}: retained per generation {retained}; "
+                     f"lost {lost}; decisions {decisions}; audit work charged {charged}; "
+                     f"VALIDATION per generation "
+                     f"{[g['validation']['solved'] for g in r['generations']]}, "
+                     f"drops {validation_drops(r)}.")
+    return lines
 
 
 def load(directory: Path) -> dict:
@@ -114,6 +144,7 @@ def render(runs: dict) -> str:
             total = [sum(r["final"]["failure_memory"].values()) for r in records]
             out.append(f"  - {arm} failure memory: known failures skipped free {known}; "
                        f"distinct failed programs, largest task {widest}, all tasks {total}.")
+        out.extend(continuity_lines(arm, records))
     if baseline:
         base_cpu = mean(r["cpu_seconds"] for r in baseline)
         ratios = {arm: mean(runs[(arm, s)]["cpu_seconds"] for s in seeds if (arm, s) in runs) / base_cpu
