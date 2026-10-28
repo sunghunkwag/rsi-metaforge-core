@@ -41,7 +41,7 @@ from rsi2.types import TypeInferenceError, instantiate, unify
 from .resumable import ResumableSearch
 
 DESIGNER_KINDS = ("prior", "recognized")
-KINDS = DESIGNER_KINDS + ("analog",)
+KINDS = DESIGNER_KINDS + ("analog", "invented")
 
 
 def grammar_fingerprint(grammar: Grammar) -> str:
@@ -101,6 +101,7 @@ class PathwayRegistry:
         # library entries every pathway may use until the generation ends.
         self.extra_library: dict = {}
         self.concept_weight = 0.1
+        self.concepts_in_prior = True
         self._live: dict[tuple[str, str], tuple[str, ResumableSearch]] = {}
         self._analog_grammar: dict[str, tuple[str, Grammar]] = {}
         self._generation_cache: dict[tuple[str, str], tuple[str, Grammar]] = {}
@@ -146,6 +147,11 @@ class PathwayRegistry:
         return result
 
     # ---- grammars and live searches ------------------------------------
+    def add_invented_pathway(self) -> None:
+        """A separate pathway searching with this generation's concepts at full weight."""
+        self.pathways.setdefault("invented", Pathway("invented", "invented", "designer", 0,
+                                                     status="dormant"))
+
     def base_grammar(self, state) -> Grammar:
         """The current prior, with this generation's invented concepts if any."""
         if not self.extra_library:
@@ -160,8 +166,11 @@ class PathwayRegistry:
 
     def grammar(self, pid: str, task: str, state) -> Grammar:
         pathway = self.pathways[pid]
+        if pathway.kind == "invented":
+            return Grammar(library=self.library(state), weights=state.grammar.weights,
+                           context_weights=state.grammar.context_weights)
         if pathway.kind == "prior":
-            return self.base_grammar(state)
+            return self.base_grammar(state) if self.concepts_in_prior else state.grammar
         if pathway.kind == "recognized":
             return state.condition(self.tasks[task], self.base_grammar(state))
         library = self.library(state)

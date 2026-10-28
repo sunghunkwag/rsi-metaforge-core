@@ -155,3 +155,37 @@ class AdoptionTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class InventedPathwayTests(unittest.TestCase):
+    """Concepts in their own pathway: the prior pathway stays undiluted."""
+
+    def test_split_arm_keeps_the_prior_grammar_and_solves_through_the_invented_pathway(self):
+        from rsi3.experiment import ARMS
+        train = _train()
+        config = {"B_wake": 64, "B_eval": 64, "dreams": 4, "search": SEARCH,
+                  "controller": {"chunk": 32, "exploration": 0.3, "analog_neighbors": 2},
+                  "invention": {}}
+        runtime = Runtime(11, [train["index-k with k=3"], train["index-k with k=5"]],
+                          ARMS["RSI3_UNIFORM_FM_INVP"], config)
+        runtime.state.solutions["index-k with k=3"] = _solve(train["index-k with k=3"])
+        record = runtime.generation()
+        episodes = record["wake"]["episodes"]
+        self.assertEqual([e["pathway"] for e in episodes], ["prior", "invented"])
+        self.assertEqual(episodes[1]["outcome"], "verified")
+        self.assertTrue(record["wake"]["adopted"])
+        # One verification per task per generation, even with two pathways.
+        self.assertEqual(runtime.verifier.queries, 1)
+        runtime.registry.begin_generation()
+        runtime.invent(2)
+        self.assertIs(runtime.registry.grammar("prior", "index-k with k=5", runtime.state),
+                      runtime.state.grammar)
+
+    def test_other_arms_have_no_invented_pathway(self):
+        from rsi3.experiment import ARMS
+        train = _train()
+        config = {"B_wake": 8, "B_eval": 8, "dreams": 2, "search": SEARCH,
+                  "controller": {"chunk": 8, "exploration": 0.3, "analog_neighbors": 2}}
+        for arm in ("RSI3_UNIFORM_FM", "RSI3_UNIFORM_FM_INV", "RSI3"):
+            runtime = Runtime(11, [train["index-k with k=3"]], ARMS[arm], config)
+            self.assertNotIn("invented", runtime.registry.pathways)

@@ -45,6 +45,10 @@ class ArmConfig:
     failure_memory: bool = False       # carry public failures across grammars/pathways
     continuity: str = "off"            # "off" | "measure" | "restore" (continuity.py)
     invention: bool = False            # self-model concept invention (selfmodel.py)
+    # Fraction of each task's uniform budget given to a separate "invented"
+    # pathway (concepts at full weight); 0 puts the concepts into the prior
+    # pathway at CONCEPT_WEIGHT instead.
+    invention_split: float = 0.0
 
 
 def standardized_features(public_tasks) -> dict:
@@ -127,6 +131,8 @@ class Runtime:
                                     step_budget=search["step_budget"])
                           if arm.invention else None)
         self.adopted_concepts: dict[str, dict] = {}
+        if arm.invention and arm.invention_split > 0:
+            self.registry.add_invented_pathway()
 
     # ---- wake ------------------------------------------------------------
     def _slots(self, unsolved, pending, window) -> list[Slot]:
@@ -201,6 +207,7 @@ class Runtime:
         before = self.selfmodel.probe_evaluations
         concepts = self.selfmodel.invent(self.state.solutions, self.state.grammar.library)
         self.registry.extra_library = {c.name: c.term for c in concepts}
+        self.registry.concepts_in_prior = self.arm.invention_split <= 0
         self.registry.concept_weight = self.config.get("invention", {}).get(
             "concept_weight", CONCEPT_WEIGHT)
         return {"proposed": [c.to_record() for c in concepts],
@@ -214,8 +221,16 @@ class Runtime:
         pending, log = set(), []
         spent = 0
         if self.arm.allocation == "uniform":
+            split = self.arm.invention_split if self.registry.extra_library else 0.0
             for task, budget in Controller.uniform_split(budget_total, unsolved).items():
-                spent += self._run_window(task, "prior", 0.0, budget, generation, pending, log)
+                invented = int(budget * split)
+                spent += self._run_window(task, "prior", 0.0, budget - invented, generation,
+                                          pending, log)
+                # The prior window runs first, so the invented pathway skips
+                # (free, through failure memory) every program it already failed.
+                if invented and task not in pending:
+                    spent += self._run_window(task, "invented", 0.0, invented, generation,
+                                              pending, log)
         elif self.arm.allocation == "learned":
             chunk = self.controller.chunk
             while spent < budget_total:

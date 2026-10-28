@@ -72,6 +72,12 @@ ARMS = {
     "RSI3_UNIFORM_FM_INV": ArmConfig("RSI3_UNIFORM_FM_INV", allocation="uniform", genesis=False,
                                      designer_kinds=("prior",), failure_memory=True,
                                      invention=True),
+    # Compounding study: concepts searched in their own pathway at full weight
+    # with half of each task's budget; the prior pathway is left undiluted.
+    "RSI3_UNIFORM_FM_INVP": ArmConfig("RSI3_UNIFORM_FM_INVP", allocation="uniform",
+                                      genesis=False, designer_kinds=("prior",),
+                                      failure_memory=True, invention=True,
+                                      invention_split=0.5),
 }
 BASELINE = "RSI2"
 
