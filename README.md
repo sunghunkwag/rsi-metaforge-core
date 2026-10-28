@@ -88,17 +88,18 @@ Two standalone packages ask the same question on an external corpus (60 DreamCod
 | Package | What it tests | Measured outcome |
 | --- | --- | --- |
 | [`rsi2/`](rsi2/) | A typed functional DSL with wake–sleep library learning, a recognition model, and a search heuristic the system synthesizes for itself | Null: 2/12 TEST on every arm and seed; no library entry and no heuristic adopted; criteria (a)–(e) fail ([`rsi2/RESULTS.md`](rsi2/RESULTS.md)) |
-| [`rsi3/`](rsi3/) | A memory-feedback core on RSI-2's frozen synthesizer: a frozen external verifier with receipts, episodic memory, a replay-trained value model, a budget controller, dormant pathways created from verified solutions, resumable search, and a binding integrator | First study: learned controller null, 6/36 TRAIN on every seed, equal to RSI-2; resumption alone with an even budget split, 7/36; all five pre-registered comparisons fail ([`rsi3/RESULTS.md`](rsi3/RESULTS.md)). Failure-memory study: keeping each task's public failures across grammar changes and pathways reaches **8/36 on every seed** at the same budget; the learned controller rises to 7/8/7, and a pathway created from the system's own earlier solution produces a verified solve on every seed; all 12 pre-registered predictions hit ([`rsi3/FAILURE_MEMORY_RESULTS.md`](rsi3/FAILURE_MEMORY_RESULTS.md)). VALIDATION unchanged in both studies |
+| [`rsi3/`](rsi3/) | A memory-feedback core on RSI-2's frozen synthesizer: a frozen external verifier with receipts, episodic memory, a replay-trained value model, a budget controller, dormant pathways created from verified solutions, resumable search, a binding integrator, failure memory, and a self-model that invents library concepts from the system's own verified programs | First study: learned controller null, 6/36 TRAIN on every seed, equal to RSI-2; resumption alone with an even budget split, 7/36; all five pre-registered comparisons fail ([`rsi3/RESULTS.md`](rsi3/RESULTS.md)). Failure-memory study: keeping each task's public failures across grammar changes and pathways reaches **8/36 on every seed** at the same budget; all 12 pre-registered predictions hit ([`rsi3/FAILURE_MEMORY_RESULTS.md`](rsi3/FAILURE_MEMORY_RESULTS.md)). Concept-invention study: the first library growth in any RSI-2/RSI-3 run — the system invents `tail^4` and `add 2 . add 2` from parts of its own programs, and the frozen verifier admits them through solves of index-k (k=5) and prepend-k (k=5), never reached before; **10/36 vs 9/36** at 12 generations and equal logical budget; all 16 pre-registered predictions hit ([`rsi3/INVENTION_RESULTS.md`](rsi3/INVENTION_RESULTS.md)). Registered VALIDATION comparisons fail in every study; one seed solved a never-before-solved VALIDATION task (`add-k k=5`) after adopting `add 2 . add 2`, reported as an observation. A self-continuity study was abandoned before any registered run |
 
-RSI-3 replicates RSI-2's measured waste exactly — 99.1% of RSI-2's wake candidates go to tasks it leaves unsolved — and records its open problems as target properties with criteria. Its choice of experience replay over parameter anchoring comes from a separate regulation study ([`rsi3/studies/REGULATION_TOY_RESULTS.md`](rsi3/studies/REGULATION_TOY_RESULTS.md)). Predictions were committed before each study's final runs ([`rsi3/PREDICTIONS.md`](rsi3/PREDICTIONS.md), [`rsi3/PREDICTIONS_FAILURE_MEMORY.md`](rsi3/PREDICTIONS_FAILURE_MEMORY.md)).
+RSI-3 replicates RSI-2's measured waste exactly — 99.1% of RSI-2's wake candidates go to tasks it leaves unsolved — and records its open problems as target properties with criteria. Its choice of experience replay over parameter anchoring comes from a separate regulation study ([`rsi3/studies/REGULATION_TOY_RESULTS.md`](rsi3/studies/REGULATION_TOY_RESULTS.md)). Predictions were committed before each study's final runs ([`rsi3/PREDICTIONS.md`](rsi3/PREDICTIONS.md), [`rsi3/PREDICTIONS_FAILURE_MEMORY.md`](rsi3/PREDICTIONS_FAILURE_MEMORY.md), [`rsi3/PREDICTIONS_INVENTION.md`](rsi3/PREDICTIONS_INVENTION.md)).
 
 ```bash
 pip install numpy   # rsi2/ and rsi3/ need NumPy; the unified runtime does not
 export PYTHONPATH=$PWD OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
 python -m unittest discover -s rsi2/tests        # 470 tests
-python -m unittest discover -s rsi3/tests -t .   # 39 tests
+python -m unittest discover -s rsi3/tests -t .   # 53 tests
 python -m rsi3.experiment --config rsi3/experiment_config.json --output NEW_EMPTY_DIR
 python -m rsi3.experiment --config rsi3/experiment_config_failure_memory.json --output NEW_EMPTY_DIR2
+python -m rsi3.experiment --config rsi3/experiment_config_invention.json --output NEW_EMPTY_DIR3
 ```
 
 ---
@@ -188,7 +189,7 @@ Explore interactively on **[DeepWiki](https://deepwiki.com/sunghunkwag/rsi-metaf
 | [Limitations](docs/05_limitations.md) | Where does it stop? |
 | [General-Domain RSI](rsi_levels_metaforge_unified.py) | What domains beyond integer tasks are covered? (Section 11, line ~3384) |
 | [RSI-2](rsi2/RESULTS.md) | Does a self-improving program synthesizer compound on external tasks? |
-| [RSI-3](rsi3/ARCHITECTURE.md) | Does memory-regulated compute allocation change verified capability? |
+| [RSI-3](rsi3/ARCHITECTURE.md) | Does memory-regulated compute allocation change verified capability? Can the system grow its own language from a model of its verified programs? |
 
 The Phases 0–I record — frozen instruments, registered predictions, per-phase reports, and final evaluations — lives under [`docs/`](docs/), starting from [`SEQUENCING_RESULT.md`](docs/SEQUENCING_RESULT.md). The Phase J record (certified-boundary crossing) runs from the gap analysis ([`ISA_GAP_J.md`](docs/ISA_GAP_J.md)) and the frozen, user-approved extension spec ([`ISA_EXTENSION_SPEC.md`](docs/ISA_EXTENSION_SPEC.md)) through the frozen evaluation instrument ([`frozen_holdout_extJ.json`](docs/frozen_holdout_extJ.json)), the pre-registered predictions ([`PREDICTIONS_J.md`](docs/PREDICTIONS_J.md)), and the final result with its committed artifact ([`CROSSING_RESULT.md`](docs/CROSSING_RESULT.md), [`final_live_phaseJ.json`](docs/final_live_phaseJ.json)).
 
