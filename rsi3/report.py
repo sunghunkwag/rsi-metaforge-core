@@ -59,6 +59,26 @@ def continuity_lines(arm, records) -> list[str]:
     return lines
 
 
+def alignment_lines(records) -> list[str]:
+    """Does the passive guard's alarm coincide with VALIDATION drops? (R3)"""
+    flagged = drops = both = 0
+    for r in records:
+        gens = r["generations"]
+        for previous, g in zip(gens, gens[1:]):
+            alarm = bool(g["continuity"].get("old_better"))
+            drop = g["validation"]["solved"] < previous["validation"]["solved"]
+            flagged += alarm
+            drops += drop
+            both += alarm and drop
+    if not records:
+        return []
+    precision = f"{both}/{flagged}" if flagged else "void (no alarms)"
+    recall = f"{both}/{drops}" if drops else "void (no drops)"
+    return ["Alarm alignment in the measure arm (R3), generations 2-8 pooled over seeds: "
+            f"alarms that coincide with a VALIDATION drop {precision}; VALIDATION drops "
+            f"that coincide with an alarm {recall}.", ""]
+
+
 def load(directory: Path) -> dict:
     runs = {}
     for path in sorted(directory.glob("*_seed*.json")):
@@ -115,6 +135,24 @@ def render(runs: dict) -> str:
         detail = "; ".join(f"{s}: {a} vs {b}" for s, a, b in pairs)
         out.append(f"| {cid} | {left} > {right} ({metric}) | {detail} | {verdict} |")
     out.append("")
+
+    if any(k[0] == "RSI3_UNIFORM_FM_SC" for k in runs):
+        pairs = [(s, validation_drops(runs[("RSI3_UNIFORM_FM_SC", s)]),
+                  validation_drops(runs[("RSI3_UNIFORM_FM_SCM", s)]))
+                 for s in seeds if ("RSI3_UNIFORM_FM_SC", s) in runs
+                 and ("RSI3_UNIFORM_FM_SCM", s) in runs]
+        if pairs:
+            verdict = "PASS" if all(a < b for _, a, b in pairs) else "FAIL"
+            detail = "; ".join(f"{s}: {a} vs {b}" for s, a, b in pairs)
+            out.append("Generation-to-generation VALIDATION drops (S3, fewer is better):\n")
+            out.append("| ID | Comparison | Per seed | Result |")
+            out.append("| --- | --- | --- | --- |")
+            out.append(f"| S3 | RSI3_UNIFORM_FM_SC drops < RSI3_UNIFORM_FM_SCM drops | {detail} "
+                       f"| {verdict} |")
+            out.append("")
+
+    out.extend(alignment_lines([runs[("RSI3_UNIFORM_FM_SCM", s)] for s in seeds
+                                if ("RSI3_UNIFORM_FM_SCM", s) in runs]))
 
     out.append("## Mechanism readouts\n")
     baseline = [runs[("RSI2", s)] for s in seeds if ("RSI2", s) in runs]
