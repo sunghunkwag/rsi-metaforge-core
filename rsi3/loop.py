@@ -115,7 +115,10 @@ class Runtime:
         self.continuity = ContinuityGuard(
             arm.continuity, budget=continuity.get("audit_budget", config["B_eval"]),
             rehearsal=continuity.get("rehearsal", 3), search_config=search,
-            integrator=BindingIntegrator(self.public, step_budget=search["step_budget"]))
+            integrator=BindingIntegrator(self.public, step_budget=search["step_budget"]),
+            exams_per_generation=continuity.get("exams_per_generation", 0),
+            exam_attempts=continuity.get("exam_attempts", 64),
+            exam_author=continuity.get("exam_author", "neutral"))
         self.budget_debt = 0      # audit work charged to the next wake
 
     # ---- wake ------------------------------------------------------------

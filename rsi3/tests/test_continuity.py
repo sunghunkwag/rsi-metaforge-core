@@ -6,7 +6,10 @@ from rsi2.grammar import Grammar
 from rsi2.learning import State
 from rsi2.search import solve
 
-from rsi3.continuity import ContinuityGuard, SelfSnapshot, audit, snapshot
+import random
+
+from rsi3.continuity import (ContinuityGuard, Exam, SelfSnapshot, audit, sit_exams, snapshot,
+                             write_exams)
 from rsi3.integrator import BindingIntegrator
 from rsi3.loop import ArmConfig, Runtime
 from rsi3.verifier import public_view
@@ -14,7 +17,8 @@ from rsi3.verifier import public_view
 SEARCH = {"step_budget": 2000, "max_size": 12, "max_expansions": 20000}
 CONFIG = {"B_wake": 12, "B_eval": 12, "dreams": 4, "search": SEARCH,
           "controller": {"chunk": 6, "exploration": 0.3, "analog_neighbors": 2},
-          "continuity": {"audit_budget": 12, "rehearsal": 3}}
+          "continuity": {"audit_budget": 12, "rehearsal": 3, "exams_per_generation": 2,
+                         "exam_attempts": 32, "exam_author": "self"}}
 
 
 def _subset():
@@ -71,18 +75,21 @@ class ContinuityTests(unittest.TestCase):
     def test_restore_charges_the_next_wake_and_never_loses_against_old(self):
         runtime = Runtime(11, self.tasks, _arm("restore"), CONFIG)
         cap = CONFIG["B_wake"] * len(self.tasks)
-        previous_charge = 0
+        previous_charge, bank = 0, 0
         for _ in range(3):
             record = runtime.generation()
             self.assertEqual(record["wake"]["budget"], max(0, cap - previous_charge))
             c = record["continuity"]
-            if "old" in c:
-                # The chosen self never retains less than the unmodified new self,
-                # and is charged at least the two audits it ran.
-                self.assertGreaterEqual(c["retained"], c["new"]["count"])
-                self.assertGreaterEqual(c["charged"], c["old"]["spent"] + c["new"]["spent"])
-                if not c["lost"]:
-                    self.assertEqual(c["decision"], "accept_new")
+            # Exams join the bank only after the comparison that preceded them.
+            self.assertEqual(c["exams_sat"], bank)
+            bank += len(c["exams_written"])
+            # The chosen self never scores less than the unmodified new self,
+            # and is charged at least the two judgements and the exam writing.
+            self.assertGreaterEqual(c["score"], c["new"]["score"])
+            self.assertGreaterEqual(c["charged"], c["old"]["spent"] + c["new"]["spent"]
+                                    + c["exam_writing_spent"])
+            if not c["lost"] and not c["lost_exams"]:
+                self.assertEqual(c["decision"], "accept_new")
             previous_charge = c["charged"]
 
     def test_guard_reverts_when_the_new_self_forgets(self):
@@ -101,8 +108,51 @@ class ContinuityTests(unittest.TestCase):
         record = guard.after_sleep(state, old, self.public, (), generation=1)
         self.assertTrue(record["lost"], "the planted rewrite should lose abilities")
         self.assertIn(record["decision"], ("rehearse", "revert"))
-        self.assertGreater(record["retained"], record["new"]["count"])
+        self.assertGreater(record["score"], record["new"]["score"])
         self.assertGreater(record["charged"], 0)
+
+    def _self_exams(self, author, keep=3):
+        integrator = BindingIntegrator(list(self.public.values()))
+        templates = [self.public[name] for name in sorted(self.public)]
+        exams, spent = write_exams(author, templates, random.Random(5), generation=1, keep=keep,
+                                   attempts=64, integrator=integrator, budget=12,
+                                   search_config=SEARCH, library={}, known=set(),
+                                   require_author_pass=True)
+        return integrator, exams, spent
+
+    def test_exams_have_answer_keys_the_author_passes_and_the_searcher_never_sees(self):
+        author = SelfSnapshot("old", Grammar(), None)
+        integrator, exams, spent = self._self_exams(author)
+        self.assertTrue(exams)
+        self.assertGreater(spent, 0)
+        for exam in exams:
+            self.assertEqual(exam.task.hidden, ())
+            self.assertEqual(integrator.signature(exam.template, exam.answer, {}), exam.signature)
+            outputs = {repr(value) for _, value in exam.task.examples}
+            self.assertGreater(len(outputs), 1, "constant exams are excluded")
+        self.assertEqual(sit_exams(author, exams, integrator, 12, SEARCH, {})["count"],
+                         len(exams))
+        # A program with the same public outputs but other behaviour fails the key.
+        wrong = Exam("x", exams[0].template, exams[0].task, exams[0].answer, "different", 1)
+        self.assertEqual(sit_exams(author, [wrong], integrator, 12, SEARCH, {})["count"], 0)
+
+    def test_an_exam_loss_alone_reverts_the_rewrite(self):
+        """No TRAIN task is lost (none is solved); only the exams detect the loss."""
+        old = SelfSnapshot("old", Grammar(), None)
+        integrator, exams, _ = self._self_exams(old)
+        guard = ContinuityGuard("restore", budget=12, rehearsal=3, search_config=SEARCH,
+                                integrator=integrator)
+        guard.bank = list(exams)
+        state = State(11)
+        forgetful = Grammar(weights={"range": 1e6, "mod": 1e6, "filter": 1e6})
+        state.grammar = forgetful
+        record = guard.after_sleep(state, old, self.public, (), generation=2)
+        self.assertEqual(record["lost"], [])
+        self.assertTrue(record["lost_exams"])
+        self.assertEqual(record["decision"], "revert")
+        self.assertNotIn("rehearsed", record, "exams are never rehearsed")
+        self.assertEqual(state.grammar.weights, old.grammar.weights)
+        self.assertIsNot(state.grammar, forgetful)
 
 
 if __name__ == "__main__":

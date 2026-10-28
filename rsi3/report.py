@@ -22,8 +22,9 @@ COMPARISONS = [
     ("F3", "RSI3_FM", "RSI3_UNIFORM_FM", "train"), ("F4", "RSI3_UNIFORM_FM", "RSI2", "train"),
     ("F5", "RSI3_UNIFORM_FM", "RSI2", "validation"),
     # Self-continuity study (PREDICTIONS_SELF_CONTINUITY.md)
-    ("S1", "RSI3_UNIFORM_FM_SC", "RSI3_UNIFORM_FM", "train"),
-    ("S2", "RSI3_UNIFORM_FM_SC", "RSI3_UNIFORM_FM", "validation"),
+    # The measure arm is trajectory-identical to RSI3_UNIFORM_FM (passive).
+    ("S1", "RSI3_UNIFORM_FM_SC", "RSI3_UNIFORM_FM_SCM", "train"),
+    ("S2", "RSI3_UNIFORM_FM_SC", "RSI3_UNIFORM_FM_SCM", "validation"),
 ]
 
 
@@ -42,13 +43,17 @@ def continuity_lines(arm, records) -> list[str]:
         if rows[0].get("mode") in (None, "off"):
             return lines
         retained = [f"{c.get('retained', 0)}/{c.get('audited', 0)}" for c in rows]
+        exams = [f"{c['old']['exam']['count']}->{c['new']['exam']['count']}/"
+                 f"{c['new']['exam']['sat']}" if "old" in c else "-" for c in rows]
         lost = [len(c.get("lost", [])) for c in rows]
-        decisions = [c.get("decision", "-") if isinstance(c.get("decision"), str) else "-"
-                     for c in rows]
+        lost_exams = [len(c.get("lost_exams", [])) for c in rows]
+        flagged = [int(bool(c.get("old_better"))) for c in rows]
+        decisions = [c.get("decision", "-") for c in rows]
         charged = sum(c.get("charged", 0) for c in rows)
-        lines.append(f"  - {arm} seed {r['seed']}: retained per generation {retained}; "
-                     f"lost {lost}; decisions {decisions}; audit work charged {charged}; "
-                     f"VALIDATION per generation "
+        lines.append(f"  - {arm} seed {r['seed']}: TRAIN retained per generation {retained}; "
+                     f"exams passed old->new/sat {exams}; TRAIN lost {lost}; exams lost "
+                     f"{lost_exams}; old self scored higher {flagged}; decisions {decisions}; "
+                     f"audit and exam work charged {charged}; VALIDATION per generation "
                      f"{[g['validation']['solved'] for g in r['generations']]}, "
                      f"drops {validation_drops(r)}.")
     return lines
