@@ -80,6 +80,18 @@ solved nowhere else in the repository: not in RSI-2's 891 committed
 assessment records of it, and not in any earlier RSI-3 run. It appeared in
 the generation in which `add 2 . add 2` was adopted.
 
+A deterministic replay of the seed-11 run, which reads VALIDATION after each
+generation for this analysis only, shows the program:
+
+    map (add (c_4152c76895 1))        c_4152c76895 = lambda x. add 2 (add 2 x)
+
+That is `map (add 5)`, with 5 built as the invented +4 applied to 1. It was
+found at candidate 54 of 64 and accepted on the hidden examples. In
+generations 1–11 the replay's VALIDATION search spent all 64 candidates on
+this task without a match. The held-out solve therefore uses the concept
+the system invented from its own TRAIN program and admitted through a
+TRAIN solve: invented on TRAIN, transferred to a task it never saw.
+
 On seeds 22 and 33 the same library did not reach it within B_eval = 64.
 Those seeds differ only in the recognition model that conditions the
 grammar. On seed 11 the same generation also lost `sum`, so its VALIDATION
