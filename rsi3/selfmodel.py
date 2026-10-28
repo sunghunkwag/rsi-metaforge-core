@@ -61,12 +61,12 @@ import json
 from rsi2.abstraction import lift_subtree
 from rsi2.evaluator import evaluate
 from rsi2.terms import App, Lam, Term, Var, pretty, shift
-from rsi2.types import (PRIMITIVE_TYPES, Type, TypeInferenceError, function_parts, infer,
-                        instantiate, unify)
+from rsi2.types import (INT, PRIMITIVE_TYPES, Type, TypeInferenceError, function_parts,
+                        infer, instantiate, unify)
 
-KINDS = ("constant", "power", "compose", "part")
+KINDS = ("constant", "iterate", "power", "compose", "part")
 BASE_CONSTANTS = (-1, 0, 1, 2)
-DEFAULT_CAPS = {"constant": 4, "power": 6, "compose": 6, "part": 8}
+DEFAULT_CAPS = {"constant": 4, "iterate": 3, "power": 6, "compose": 6, "part": 8}
 MIN_PART_SIZE = 4
 MIN_WHOLE_SIZE = 6
 # Prior weight of a concept not yet adopted. RSI-2 gives an unused production
@@ -162,6 +162,33 @@ def _used_binary_int_ops(solutions: dict) -> list[tuple[str, tuple]]:
             if node.tag == "prim" and node.value in binary:
                 used.setdefault(node.value, set()).add(task)
     return [(op, tuple(sorted(tasks))) for op, tasks in sorted(used.items())]
+
+
+def _closed(term: Term) -> bool:
+    return not any(_free(term, i) for i in range(_max_var(term) + 1))
+
+
+def _max_var(term: Term, depth: int = 0) -> int:
+    if term.tag == "var":
+        return term.value - depth
+    return max((_max_var(child, depth + (term.tag == "lam")) for child in term.children),
+               default=-1)
+
+
+def _repeated_functions(solutions: dict, library: dict) -> list[tuple[Term, tuple]]:
+    """Closed functions applied to their own output: ``f (f x)``."""
+    found: dict[str, list] = {}
+    sources = [(task, term) for task, term in sorted(solutions.items())]
+    sources += [(f"library:{name}", term) for name, term in sorted(library.items())]
+    for origin, term in sources:
+        for node, _ in _walk(term):
+            if node.tag != "app" or node.children[1].tag != "app":
+                continue
+            outer, inner = node.children[0], node.children[1].children[0]
+            if outer == inner and _closed(outer):
+                key = pretty(outer)
+                found.setdefault(key, [outer, set()])[1].add(origin)
+    return [(term, tuple(sorted(origins))) for _, (term, origins) in sorted(found.items())]
 
 
 def _walk(term, env=()):
@@ -323,6 +350,25 @@ class SelfModel:
                 unary.append((term, arguments[0], result, sources))
                 if arguments[0].tag == "int" and result.tag == "int":
                     int_functions.append((term, sources))
+
+        # Repetition the system has itself used, generalized: a closed
+        # function applied to its own output inside a verified program or an
+        # adopted concept (tail (tail x), or tail^4) becomes a loop over a
+        # count, ``lambda n x. fold (lambda acc _. f acc) x (range n)``. The
+        # count, fixed in every program it has, becomes an argument.
+        for f, sources in _repeated_functions(solutions, library):
+            try:
+                f_type = infer(f, library=library)
+            except (TypeInferenceError, RecursionError):
+                continue
+            arguments, result = function_parts(f_type)
+            if len(arguments) != 1 or not _unifies(arguments[0], result):
+                continue
+            a = arguments[0]
+            step = Lam(a, Lam(INT, App(f, Var(1))))
+            loop = Lam(INT, Lam(a, App(App(App(Term("prim", "fold"), step), Var(0)),
+                                       App(Term("prim", "range"), Var(1)))))
+            proposals["iterate"].append((loop, None, sources))
 
         for term, argument, result, sources in unary:
             if not _unifies(argument, result):
