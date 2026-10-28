@@ -136,9 +136,11 @@ class AdoptionTests(unittest.TestCase):
         for name in runtime.registry.extra_library:
             self.assertEqual(grammar.weights[name], 0.1)
             self.assertNotIn(name, runtime.state.grammar.library)
-        concepts = runtime.invent(1)["proposed"]
-        whole = pretty(runtime.state.solutions["index-k with k=3"])
-        self.assertNotIn(whole, {c["body"] for c in concepts if c["kind"] == "part"})
+        runtime.state.solutions["prepend-k with k=0"] = _solve(train["prepend-k with k=0"])
+        parts = {c["body"] for c in runtime.invent(1)["proposed"] if c["kind"] == "part"}
+        # A non-trivial solved program is a building block; a trivial one is not.
+        self.assertIn(pretty(runtime.state.solutions["index-k with k=3"]), parts)
+        self.assertNotIn(pretty(runtime.state.solutions["prepend-k with k=0"]), parts)
 
     def test_without_invention_the_prior_grammar_is_the_state_grammar(self):
         train = _train()

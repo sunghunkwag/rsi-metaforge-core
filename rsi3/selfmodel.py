@@ -27,9 +27,12 @@ It then invents concepts from its own parts:
                 (``tail . tail`` becomes ``tail . tail . tail . tail``).
 * ``compose``   one part applied to another part's output.
 * ``constant``  a closed integer the vocabulary cannot name directly: a
-                closed integer part, or an int -> int part applied to a
-                constant, such as ``add 2 2`` = 4. The frozen grammar names
-                only -1, 0, 1 and 2.
+                closed integer part; an int -> int part applied to a constant,
+                such as ``add 2 2`` = 4; or an int -> int -> int primitive the
+                system has used in a verified program, applied to two
+                constants it can already name, such as ``sub 2 -1`` = 3.
+                Smallest magnitude first. The frozen grammar names only -1,
+                0, 1 and 2.
 
 Proposals are beta-eta normalized; eta-expanded primitives are dropped. Up to a
 fixed number of each kind, smallest (most general) first, join the search
@@ -65,6 +68,7 @@ KINDS = ("constant", "power", "compose", "part")
 BASE_CONSTANTS = (-1, 0, 1, 2)
 DEFAULT_CAPS = {"constant": 4, "power": 6, "compose": 6, "part": 8}
 MIN_PART_SIZE = 4
+MIN_WHOLE_SIZE = 6
 # Prior weight of a concept not yet adopted. RSI-2 gives an unused production
 # pseudocount 1; at 1 the 14 concepts invented from the first six (trivial)
 # solutions pushed index-k (k=3) from rank 273 to 820 under the generation-2
@@ -140,6 +144,24 @@ def is_eta_atom(term: Term) -> bool:
         return False
     arguments.reverse()
     return arguments == [Var(depth - 1 - i) for i in range(depth)]
+
+
+def _is_int_constant(name, library) -> bool:
+    try:
+        return infer(Term("ref", name), library=library).tag == "int"
+    except (TypeInferenceError, RecursionError):
+        return False
+
+
+def _used_binary_int_ops(solutions: dict) -> list[tuple[str, tuple]]:
+    binary = {name for name, signature in PRIMITIVE_TYPES.items()
+              if str(signature) == "int -> int -> int"}
+    used: dict[str, set] = {}
+    for task in sorted(solutions):
+        for node, _ in _walk(solutions[task]):
+            if node.tag == "prim" and node.value in binary:
+                used.setdefault(node.value, set()).add(task)
+    return [(op, tuple(sorted(tasks))) for op, tasks in sorted(used.items())]
 
 
 def _walk(term, env=()):
@@ -289,10 +311,13 @@ class SelfModel:
                     proposals["constant"].append((term, type_, sources))
                 continue
             # A part is worth a production only if naming it saves search: at
-            # least four nodes, and not a whole solved program (that task is
-            # already solved; its use inside other programs is covered by
-            # powers and compositions).
-            if term.size >= MIN_PART_SIZE and pretty(normalize(term)) not in whole:
+            # least four nodes. A whole solved program is a part only if it is
+            # not trivial (six nodes or more): knowing how to do one task is a
+            # building block for another (index-k becomes a word inside
+            # prepend-index-k), but ``cons 0`` or ``map (eq 1)`` named again
+            # only widens the search.
+            minimum = MIN_WHOLE_SIZE if pretty(normalize(term)) in whole else MIN_PART_SIZE
+            if term.size >= minimum:
                 proposals["part"].append((term, type_, sources))
             if len(arguments) == 1 and normalize(term) != Lam(arguments[0], Var(0)):
                 unary.append((term, arguments[0], result, sources))
@@ -315,6 +340,17 @@ class SelfModel:
         for f, sources in int_functions:
             for value in sorted(constants):
                 proposals["constant"].append((App(f, Term("int", value)), None, sources))
+        # Arithmetic the system has itself used: an int -> int -> int primitive
+        # that heads an application in a verified program, applied to two
+        # constants it can already name (the frozen ones and its own).
+        named = [Term("int", v) for v in BASE_CONSTANTS] + [
+            Term("ref", name) for name in sorted(library)
+            if _is_int_constant(name, library)]
+        for op, sources in _used_binary_int_ops(solutions):
+            for left in named:
+                for right in named:
+                    proposals["constant"].append(
+                        (App(App(Term("prim", op), left), right), None, sources))
 
         chosen, seen_bodies, seen_behaviour = [], set(existing), set(known)
         seen_values = set(constants)
@@ -328,11 +364,18 @@ class SelfModel:
                     type_ = infer(term, library=library)
                 except (TypeInferenceError, RecursionError):
                     continue
-                ranked.append((term.size, pretty(term), term, type_, sources))
+                order = term.size
+                if kind == "constant":
+                    # Smallest magnitude first, as the frozen constants are.
+                    value = self._run(term, (), library)
+                    order = (abs(value), value < 0, term.size) if type(value) is int else None
+                    if order is None:
+                        continue
+                ranked.append((order, pretty(term), term, type_, sources))
             # Most general first: smaller concepts are reused in more programs.
             ranked.sort(key=lambda item: item[:2])
             taken = 0
-            for size, key, term, type_, sources in ranked:
+            for order, key, term, type_, sources in ranked:
                 if taken >= self.caps.get(kind, 0):
                     break
                 if key in seen_bodies or term.size < 2:
@@ -351,7 +394,7 @@ class SelfModel:
                         seen_behaviour.add(behaviour)
                 seen_bodies.add(key)
                 chosen.append(Concept(concept_name(term), term, kind, str(type_),
-                                      size - 1, tuple(sorted(sources)), value))
+                                      term.size - 1, tuple(sorted(sources)), value))
                 taken += 1
         return chosen
 
