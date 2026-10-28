@@ -131,6 +131,28 @@ def normalize(term: Term) -> Term:
     return App(function, argument)
 
 
+def canonical_types(term: Term) -> Term:
+    """Rename type variables in lambda annotations in first-occurrence order.
+
+    Inferred types carry globally fresh variable names; a concept's name is
+    derived from its text, so the text must not depend on that counter.
+    """
+    names: dict[str, Type] = {}
+
+    def rename(type_: Type) -> Type:
+        if type_.is_variable:
+            if type_.name not in names:
+                names[type_.name] = Type("var", (f"_c{len(names)}",))
+            return names[type_.name]
+        return Type(type_.tag, tuple(rename(arg) for arg in type_.args))
+
+    def visit(node: Term) -> Term:
+        value = rename(node.value) if node.tag == "lam" else node.value
+        return Term(node.tag, value, tuple(visit(child) for child in node.children))
+
+    return visit(term)
+
+
 def is_eta_atom(term: Term) -> bool:
     """``lambda ... lambda. p x_k ... x_0`` for a primitive or library atom p."""
     depth = 0
@@ -403,7 +425,7 @@ class SelfModel:
         for kind in KINDS:
             ranked = []
             for term, type_, sources in proposals[kind]:
-                term = normalize(term)
+                term = canonical_types(normalize(term))
                 if is_eta_atom(term):
                     continue
                 try:
