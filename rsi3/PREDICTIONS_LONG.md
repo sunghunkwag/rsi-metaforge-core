@@ -57,6 +57,43 @@ therefore run into its own empty directory, and the nine JSON files are then
 copied into `results_long/`. The code and configuration are the same for
 every job.
 
+## Execution amendment (2026-10-29, before any 30-generation result)
+
+The first two jobs ran together and failed on memory. The INVP seed-11 job
+was killed by the machine's memory limit (about 6 GB in total). The INV
+seed-11 job, running alone, passed 5.7 GB by minute 33 and was stopped.
+Each task keeps a live enumeration frontier that grows with search depth.
+Neither job produced a result file.
+
+The jobs are now run with `python -m rsi3.longrun`. The predictions, arms
+and configuration are unchanged. The runner differs in three ways:
+
+1. **Compact searches.** Each live search is released after its window and
+   rebuilt by fast-forwarding. Memory stays bounded and the logical
+   behaviour is the same:
+   - `tests/test_resumable.py` checks that a rebuilt search continues
+     identically, and that three arms over three generations produce
+     identical episodes;
+   - a full 12-generation RSI3_UNIFORM_FM seed-11 run in this mode
+     reproduced the committed run's wake episodes and VALIDATION exactly.
+   The cost is CPU: re-enumeration grows with depth, from 20 s to 204 s per
+   generation over 12 generations.
+2. **One TRAIN trajectory per arm.** In these arms the wake never reads the
+   recognition model, so TRAIN is the same for every seed. The runner
+   computes the trajectory once with seed 11. After each generation it
+   refits seeds 22 and 33's dreams and recognition exactly as RSI-2's sleep
+   would, then measures their VALIDATION. `tests/test_longrun.py` checks
+   that this equals separate runs.
+3. **Checkpoints.** The runtime is checkpointed after every generation,
+   because one background job may run for at most two hours. A job resumes
+   exactly from its checkpoint, which the same test checks.
+
+Generations 1–12 of the UFM and INV outputs will also be compared with the
+committed `results_invention/` runs on all three seeds: TRAIN, wake episodes,
+and VALIDATION per seed. This is P0, extended to INV and to per-seed
+VALIDATION. A mismatch would invalidate the run, and it would be reported
+as such.
+
 ## Disclosure: development before registration
 
 All on seed 44, at most 12 generations:
