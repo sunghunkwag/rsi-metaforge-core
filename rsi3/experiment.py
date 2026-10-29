@@ -149,6 +149,15 @@ ARMS = {
                                     meta_extended=True, meta_selfplay=True,
                                     decomposition_conjugate=True, behave=True,
                                     behave_folds=True),
+    # Honest self-play (PREDICTIONS_HONEST.md): RSI3_META_BEH_FOLD, with every
+    # action credited by its actual one-chunk outcome on the imagined task.
+    "RSI3_META_HONEST": ArmConfig("RSI3_META_HONEST", allocation="meta", genesis=False,
+                                  designer_kinds=("prior",), failure_memory=True,
+                                  invention=True, invention_near_misses=True,
+                                  invention_meta=True, decomposition_fold=True,
+                                  meta_extended=True, meta_selfplay=True,
+                                  decomposition_conjugate=True, behave=True,
+                                  behave_folds=True, selfplay_honest=True),
 }
 BASELINE = "RSI2"
 
