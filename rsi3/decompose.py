@@ -174,9 +174,47 @@ class AllElem(Skeleton):          # lambda l. is_empty (filter (lambda x. not (h
             _prim("filter"), Lam(INT, App(_prim("not"), App(h, Var(0))))), Var(0))))
 
 
-def skeletons_for(examples) -> list[Skeleton]:
-    """The skeletons whose shape the public examples have, in a fixed order."""
+class Fold(Skeleton):
+    """fold h init: a catamorphism over the input list (lambda-squared style).
+
+    The hole ``h : acc -> element -> acc`` is the step; ``init`` is the
+    empty-list answer of the output type (nil, 0, true or false).
+    """
+
+    def __init__(self, name, hole_type, init: Term):
+        object.__setattr__(self, "name", name)
+        object.__setattr__(self, "hole_type", hole_type)
+        object.__setattr__(self, "init", init)
+
+    def build(self, h):
+        return App(App(_prim("fold"), h), self.init)
+
+
+def _list_to(examples, kind) -> bool:
+    return all(len(inputs) == 1 and _is_int_list(inputs[0]) and kind(out)
+               for inputs, out in examples)
+
+
+def fold_skeletons(examples) -> list[Skeleton]:
+    """Fold skeletons for every list-input task, keyed by output type."""
     found = []
+    if _list_to(examples, _is_int_list):
+        found.append(Fold("fold_nil", Arrow(LIST, Arrow(INT, LIST)), _prim("nil")))
+    if _list_to(examples, lambda o: type(o) is int):
+        found.append(Fold("fold_zero", Arrow(INT, Arrow(INT, INT)), Term("int", 0)))
+    if _list_to(examples, lambda o: type(o) is bool):
+        found.append(Fold("fold_true", Arrow(BOOL, Arrow(INT, BOOL)), Term("bool", True)))
+        found.append(Fold("fold_false", Arrow(BOOL, Arrow(INT, BOOL)), Term("bool", False)))
+    return found
+
+
+def skeletons_for(examples, fold: bool = False) -> list[Skeleton]:
+    """The skeletons whose shape the public examples have, in a fixed order.
+
+    ``fold=True`` adds the fold skeletons (``fold_skeletons``), which fit
+    every list-input task; arms without the flag see exactly the earlier set.
+    """
+    found = fold_skeletons(examples) if fold else []
     if _same_length(examples):
         element = _element_type(examples)
         if _elementwise_function(examples):

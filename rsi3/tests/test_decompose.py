@@ -45,3 +45,16 @@ class DecomposeTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FoldSkeletonTests(unittest.TestCase):
+    def test_fold_skeletons_are_opt_in_and_reach_reverse(self):
+        train = {t.name: t for t in load_train()}
+        task = train["reverse"]
+        self.assertNotIn("fold_nil", [s.name for s in skeletons_for(task.examples)])
+        fold = {s.name: s for s in skeletons_for(task.examples, fold=True)}["fold_nil"]
+        result = ResumableSearch(task.examples, fold.hole_type, Grammar(), compose=fold.compose,
+                                 **SEARCH).run(300)
+        self.assertIsNotNone(result.term)
+        self.assertTrue(FrozenVerifier([task]).verify(task.name, result.term, {}, 1).verdict)
+        self.assertIsNone(solve(task.examples, task.request_type, 300, Grammar(), **SEARCH).term)

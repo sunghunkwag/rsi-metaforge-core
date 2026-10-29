@@ -153,10 +153,10 @@ class PathwayRegistry:
         return result
 
     # ---- grammars and live searches ------------------------------------
-    def add_decompose_pathways(self) -> None:
+    def add_decompose_pathways(self, fold: bool = False) -> None:
         """One pathway per skeleton that some task's public examples fit (decompose.py)."""
         from .decompose import skeletons_for
-        self.skeletons = {name: {sk.name: sk for sk in skeletons_for(task.examples)}
+        self.skeletons = {name: {sk.name: sk for sk in skeletons_for(task.examples, fold)}
                           for name, task in self.tasks.items()}
         for names in self.skeletons.values():
             for sk in names:

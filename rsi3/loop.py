@@ -63,6 +63,8 @@ class ArmConfig:
     # Meta-RL allocation only: refit the policy on the current generation
     # instead of the full replay (the wiped-memory control).
     meta_wipe: bool = False
+    # Add the fold (catamorphism) skeletons to decomposition (decompose.py).
+    decomposition_fold: bool = False
 
 
 def standardized_features(public_tasks) -> dict:
@@ -149,7 +151,7 @@ class Runtime:
         if arm.invention and (arm.invention_split > 0 or meta):
             self.registry.add_invented_pathway()
         if arm.decomposition_split > 0 or meta:
-            self.registry.add_decompose_pathways()
+            self.registry.add_decompose_pathways(fold=arm.decomposition_fold)
         self.metapolicy = MetaPolicy(wipe=arm.meta_wipe) if meta else None
         self.shapes = {task.name: shape_features(task.examples) for task in self.public}
         self.chunks_spent: dict[str, dict[str, int]] = {}   # task -> action -> chunks, all generations

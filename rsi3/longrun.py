@@ -105,7 +105,7 @@ def agent_validation(runtime, model, validation, config: dict, verifier,
         searches = {"prior": ResumableSearch(public.examples, public.request_type,
                                              prior_grammar, **search)}
         if decomposes:
-            for sk in skeletons_for(public.examples):
+            for sk in skeletons_for(public.examples, arm.decomposition_fold):
                 searches[f"decompose:{sk.name}"] = ResumableSearch(
                     public.examples, sk.hole_type, runtime.state.grammar, compose=sk.compose,
                     **search)

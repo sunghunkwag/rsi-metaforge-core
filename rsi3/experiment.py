@@ -106,6 +106,11 @@ ARMS = {
                                 designer_kinds=("prior",), failure_memory=True, invention=True,
                                 invention_near_misses=True, invention_meta=True,
                                 meta_wipe=True),
+    # Fold-cascade study: RSI3_META plus fold (catamorphism) skeletons.
+    "RSI3_META_FOLD": ArmConfig("RSI3_META_FOLD", allocation="meta", genesis=False,
+                                designer_kinds=("prior",), failure_memory=True, invention=True,
+                                invention_near_misses=True, invention_meta=True,
+                                decomposition_fold=True),
 }
 BASELINE = "RSI2"
 
