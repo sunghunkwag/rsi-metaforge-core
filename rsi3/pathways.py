@@ -103,6 +103,11 @@ class PathwayRegistry:
         self.concept_weight = 0.1
         self.concepts_in_prior = True
         self._live: dict[tuple[str, str], tuple[str, ResumableSearch]] = {}
+        # Execution option, not part of any arm: release each live search after
+        # its window and rebuild it on next use by fast-forwarding (bounded
+        # memory, identical logical behaviour; tests/test_resumable.py).
+        self.compact = False
+        self._parked: dict[tuple[str, str], tuple] = {}
         self._analog_grammar: dict[str, tuple[str, Grammar]] = {}
         self._generation_cache: dict[tuple[str, str], tuple[str, Grammar]] = {}
 
@@ -206,6 +211,9 @@ class PathwayRegistry:
                 max_expansions=self.search_config["max_expansions"],
                 known_failures=(None if self.failure_memory is None
                                 else self.failure_memory.for_task(task))))
+            parked = self._parked.pop((task, pid), None)
+            if parked is not None and parked[0] == fingerprint:
+                cached[1].fast_forward(*parked[1:5])
             self._live[(task, pid)] = cached
         pathway = self.pathways[pid]
         if pathway.status == "dormant":
@@ -213,11 +221,24 @@ class PathwayRegistry:
             pathway.awakened_generation = generation
         return cached
 
+    def release(self, task: str, pid: str) -> None:
+        """Compact mode: drop the live search, keeping what is needed to rebuild it."""
+        cached = self._live.pop((task, pid), None)
+        if cached is not None:
+            fingerprint, search = cached
+            self._parked[(task, pid)] = (fingerprint, search.position, search.evaluated,
+                                         search.skipped_known, search.evaluation_steps,
+                                         search.exhausted)
+
     def peek(self, task: str, pid: str, state) -> tuple[int, bool]:
         """Depth already searched and exhaustion under the *current* grammar."""
         cached = self._live.get((task, pid))
         if cached is None:
-            return 0, False
+            parked = self._parked.get((task, pid))
+            if parked is None:
+                return 0, False
+            fingerprint, _ = self.grammar_and_fingerprint(task, pid, state)
+            return (parked[2], parked[5]) if parked[0] == fingerprint else (0, False)
         fingerprint, _ = self.grammar_and_fingerprint(task, pid, state)
         if cached[0] != fingerprint:
             return 0, False
@@ -226,6 +247,8 @@ class PathwayRegistry:
     def drop_task(self, task: str) -> None:
         for key in [key for key in self._live if key[0] == task]:
             del self._live[key]
+        for key in [key for key in self._parked if key[0] == task]:
+            del self._parked[key]
 
     def summary(self) -> dict:
         counts = {"designer": 0, "genesis": 0, "dormant": 0, "active": 0}

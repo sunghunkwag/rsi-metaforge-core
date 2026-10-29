@@ -133,6 +133,7 @@ class Runtime:
         self.adopted_concepts: dict[str, dict] = {}
         if arm.invention and arm.invention_split > 0:
             self.registry.add_invented_pathway()
+        self.registry.compact = bool(config.get("compact_searches", False))
 
     # ---- wake ------------------------------------------------------------
     def _slots(self, unsolved, pending, window) -> list[Slot]:
@@ -186,6 +187,8 @@ class Runtime:
         self.memory.record(episode, receipt)
         self.registry.pathways[pid].windows += 1
         log.append(episode.to_record())
+        if self.registry.compact:
+            self.registry.release(task, pid)
         return result.evaluated
 
     def _adopt(self, term, task, generation) -> None:

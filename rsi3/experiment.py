@@ -120,7 +120,9 @@ def run_one(arm: str, seed: int, config: dict) -> dict:
         runtime = Runtime(seed, train, ARMS[arm],
                           rsi2_config | {"controller": config["controller"],
                                          "continuity": config.get("continuity", {}),
-                                         "invention": config.get("invention", {})})
+                                         "invention": config.get("invention", {}),
+                                         "compact_searches": config.get("compact_searches",
+                                                                        False)})
         for _ in range(config["generations"]):
             record = runtime.generation()
             record["validation"] = _validation(runtime.state, validation, rsi2_config)
@@ -160,10 +162,16 @@ def main(argv=None):
     parser.add_argument("--seeds", nargs="*", type=int, default=None)
     parser.add_argument("--generations", type=int, default=None,
                         help="development smoke runs only; finals use the config value")
+    parser.add_argument("--compact-searches", action="store_true",
+                        help="release live searches between windows and rebuild them by "
+                             "fast-forwarding; bounds memory, same logical behaviour "
+                             "(recorded in each run's config)")
     args = parser.parse_args(argv)
     config = json.loads(args.config.read_text(encoding="utf-8"))
     if args.generations is not None:
         config["generations"] = args.generations
+    if args.compact_searches:
+        config["compact_searches"] = True
     arms = args.arms or config["arms"]
     seeds = args.seeds or config["seeds"]
     unknown = [arm for arm in arms if arm != BASELINE and arm not in ARMS]

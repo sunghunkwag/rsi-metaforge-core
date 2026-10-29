@@ -64,6 +64,31 @@ class ResumableSearch:
         self.exhausted = False
         self.evaluation_steps = 0
 
+    def fast_forward(self, position: int, evaluated: int, skipped_known: int,
+                     evaluation_steps: int) -> None:
+        """Re-create the state of a search that had passed ``position`` distinct programs.
+
+        For a fixed grammar the enumeration order is deterministic, so passing
+        the same number of distinct programs again, without evaluating them,
+        rebuilds the same frontier and the same set of seen programs. Only
+        the counters are restored; nothing is evaluated or charged. This lets
+        the owner release a live search between windows (to bound memory)
+        and resume it later exactly where it stopped.
+        """
+        passed = 0
+        while passed < position:
+            try:
+                candidate = next(self._iterator)
+            except StopIteration:
+                self.exhausted = True
+                break
+            if candidate.term in self._seen:
+                continue
+            self._seen.add(candidate.term)
+            passed += 1
+        self.evaluated, self.skipped_known = evaluated, skipped_known
+        self.evaluation_steps = evaluation_steps
+
     @property
     def position(self) -> int:
         """Distinct programs passed in this grammar's order, evaluated or skipped."""

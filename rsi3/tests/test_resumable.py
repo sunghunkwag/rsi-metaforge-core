@@ -80,3 +80,48 @@ class ResumableSearchTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FastForwardTests(unittest.TestCase):
+    """A released search rebuilt by fast-forwarding continues exactly where it stopped."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tasks, cls.names = _tasks()
+
+    def test_fast_forward_continues_the_same_order(self):
+        grammar = Grammar()
+        for name in self.names:
+            task = self.tasks[name]
+            live = ResumableSearch(task.examples, task.request_type, grammar, **SEARCH)
+            first = live.run(20)
+            if first.term is not None:
+                continue
+            rebuilt = ResumableSearch(task.examples, task.request_type, grammar, **SEARCH)
+            rebuilt.fast_forward(live.position, live.evaluated, live.skipped_known,
+                                 live.evaluation_steps)
+            a, b = live.run(30), rebuilt.run(30)
+            self.assertEqual((a.term, a.start, a.evaluated, a.exhausted),
+                             (b.term, b.start, b.evaluated, b.exhausted), name)
+            self.assertEqual(live._seen, rebuilt._seen, name)
+
+    def test_compact_runtime_matches_the_live_runtime(self):
+        from rsi3.experiment import ARMS
+        from rsi3.loop import Runtime
+        train = [self.tasks[name] for name in sorted(self.tasks)][:10]
+        base = {"B_wake": 16, "B_eval": 16, "dreams": 4, "search": SEARCH,
+                "controller": {"chunk": 8, "exploration": 0.3, "analog_neighbors": 2},
+                "invention": {}}
+        for arm in ("RSI3_UNIFORM_FM", "RSI3_UNIFORM_FM_INVP", "RSI3_FM"):
+            live = Runtime(11, train, ARMS[arm], base)
+            compact = Runtime(11, train, ARMS[arm], base | {"compact_searches": True})
+            self.assertTrue(compact.registry.compact)
+            for _ in range(3):
+                a, b = live.generation(), compact.generation()
+                strip = lambda r: [(e["task"], e["pathway"], e["start"], e["evaluated"],
+                                    e["outcome"], e["digest"], e["skipped_known"])
+                                   for e in r["wake"]["episodes"]]
+                self.assertEqual(strip(a), strip(b), arm)
+                self.assertEqual(a["train_solved"], b["train_solved"], arm)
+            self.assertEqual(live.state.solutions, compact.state.solutions, arm)
+            self.assertFalse(compact.registry._live, "compact mode keeps no live search")
