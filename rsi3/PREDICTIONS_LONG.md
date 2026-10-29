@@ -1,5 +1,14 @@
 # Long-horizon compounding study: pre-registered predictions
 
+> **Status: suspended on 2026-10-29. Unscored.** The INV and INVP jobs were
+> checkpointed at generation 18 or 19, and the UFM job was never started.
+> The owner then redirected the work to decomposition and meta-RL
+> (PREDICTIONS_METARL.md, METARL_RESULTS.md). The checkpoints were not
+> committed, so resuming means re-running. Partial observation, not scored:
+> through generation 18, INV stayed at 10/36 from generation 12 and INVP
+> stayed at 10/36 from generation 10. That is the plateau outcome described
+> below.
+
 Registered 2026-10-29, before any run longer than 12 generations of any arm
 on any seed. This file is committed together with
 `experiment_config_long.json`. That config matches
