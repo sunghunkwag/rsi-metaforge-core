@@ -26,12 +26,14 @@ capability at equal logical budgets.
 
 | **Behavioural search** ([BEHAVE_RESULTS.md](BEHAVE_RESULTS.md)) | Bottom-up search that keeps one program per behaviour on the public inputs (observational equivalence), with deduction through `cons`, `not` and witness functions that compute a binary operation's constant argument. One meta-RL action per problem. Built from the system's own library: **25/36 TRAIN** (all six slices, `keep-mod-k`, `is-mod-k`), but the reverse cascade is lost and held-out drops to **4/12**. The same search from RSI-2's primitives only: 21/36 TRAIN and **7/12 held-out on every seed**, the best held-out score so far, with two caesar tasks no run had solved. The library helps where budget accumulates (TRAIN) and hurts at 64 candidates per held-out task. 4 of 8 predictions hit; every open forecast about the library arm's held-out score missed. |
 
+| **Behavioural fold** ([BEHAVE_FOLD_RESULTS.md](BEHAVE_FOLD_RESULTS.md)) | One more designer-given action: closed fold steps built bottom up by behaviour and folded over pool lists. Reverse returns (g12), and the system's own conjugation rebuilds the append cascade on it (g13, g15) while RSI-2's MDL learner compresses it: **29/36 TRAIN**, the most so far, and held-out 5/12 on every seed. 3 of 6 predictions hit (the three determined ones); every open held-out forecast missed. |
+
 Plain VALIDATION (RSI-2's `assess`) did not improve on the registered comparison of any study. Held-out gains appear only when the learned solver is used at test time (`validation_agent`). TEST was not opened.
 
 - [`OWNER_DIRECTIVE.md`](OWNER_DIRECTIVE.md) — scope and constraints
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — component map and the evidence behind each design decision
-- [`PREDICTIONS.md`](PREDICTIONS.md), [`PREDICTIONS_FAILURE_MEMORY.md`](PREDICTIONS_FAILURE_MEMORY.md), [`PREDICTIONS_SELF_CONTINUITY.md`](PREDICTIONS_SELF_CONTINUITY.md) (abandoned), [`PREDICTIONS_INVENTION.md`](PREDICTIONS_INVENTION.md), [`PREDICTIONS_LONG.md`](PREDICTIONS_LONG.md) (suspended), [`PREDICTIONS_METARL.md`](PREDICTIONS_METARL.md), [`PREDICTIONS_CASCADE.md`](PREDICTIONS_CASCADE.md), [`PREDICTIONS_BEHAVE.md`](PREDICTIONS_BEHAVE.md) — registered before each study's final runs
-- [`RESULTS.md`](RESULTS.md), [`FAILURE_MEMORY_RESULTS.md`](FAILURE_MEMORY_RESULTS.md), [`INVENTION_RESULTS.md`](INVENTION_RESULTS.md), [`METARL_RESULTS.md`](METARL_RESULTS.md), [`CASCADE_RESULTS.md`](CASCADE_RESULTS.md), [`BEHAVE_RESULTS.md`](BEHAVE_RESULTS.md) — measured outcomes, predictions scored
+- [`PREDICTIONS.md`](PREDICTIONS.md), [`PREDICTIONS_FAILURE_MEMORY.md`](PREDICTIONS_FAILURE_MEMORY.md), [`PREDICTIONS_SELF_CONTINUITY.md`](PREDICTIONS_SELF_CONTINUITY.md) (abandoned), [`PREDICTIONS_INVENTION.md`](PREDICTIONS_INVENTION.md), [`PREDICTIONS_LONG.md`](PREDICTIONS_LONG.md) (suspended), [`PREDICTIONS_METARL.md`](PREDICTIONS_METARL.md), [`PREDICTIONS_CASCADE.md`](PREDICTIONS_CASCADE.md), [`PREDICTIONS_BEHAVE.md`](PREDICTIONS_BEHAVE.md), [`PREDICTIONS_BEHAVE_FOLD.md`](PREDICTIONS_BEHAVE_FOLD.md) — registered before each study's final runs
+- [`RESULTS.md`](RESULTS.md), [`FAILURE_MEMORY_RESULTS.md`](FAILURE_MEMORY_RESULTS.md), [`INVENTION_RESULTS.md`](INVENTION_RESULTS.md), [`METARL_RESULTS.md`](METARL_RESULTS.md), [`CASCADE_RESULTS.md`](CASCADE_RESULTS.md), [`BEHAVE_RESULTS.md`](BEHAVE_RESULTS.md), [`BEHAVE_FOLD_RESULTS.md`](BEHAVE_FOLD_RESULTS.md) — measured outcomes, predictions scored
 - [`studies/REGULATION_TOY_RESULTS.md`](studies/REGULATION_TOY_RESULTS.md) — the study behind design decision D1
 
 Nothing in `rsi2/`, `docs/`, or `rsi_levels_metaforge_unified.py` is modified.
@@ -65,6 +67,8 @@ done
 for arm in RSI3_META_BEH RSI3_META_BEH_BASE; do
   python -m rsi3.longrun --config rsi3/experiment_config_behave.json --arm $arm --output NEW_DIR6
 done
+# the behavioural fold follow-up (16 generations)
+python -m rsi3.longrun --config rsi3/experiment_config_behave_fold.json --arm RSI3_META_BEH_FOLD --output NEW_DIR7
 python -m rsi3.report --results NEW_EMPTY_DIR --output report.md
 ```
 
