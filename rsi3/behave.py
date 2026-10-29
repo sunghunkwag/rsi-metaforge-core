@@ -30,12 +30,20 @@ What it builds from:
 
 - the hole's variables;
 - RSI-2's constants;
-- RSI-2's first-order primitives (no ``if``, ``range`` or ``fold``);
+- RSI-2's first-order primitives (no ``if`` or ``range``; ``fold`` only in
+  the separate fold action below);
 - ``map`` and ``filter`` with a function argument that is a unary library
   entry or a partially applied primitive;
 - every first-order library entry the system has. These are RSI-2's MDL
   abstractions and the self-model's concepts, so what the system learned
   makes behavioural search shorter.
+
+**The fold action** (``folds=True``, its own meta-RL action). After the
+pool's sizes 1-2, closed steps ``lambda acc x. body`` grow by size
+(``StepPool``, one body per behaviour on probe pairs from the public
+inputs), and each step is folded from every init and over every list of
+size 1-2 in the pool. A fold over the input with ``cons x acc`` is reverse;
+with ``add x acc`` and init 0, a sum.
 
 **Accounting.** Every behaviour added to the pool is charged one logical
 candidate evaluation. So is every assembled program checked on the public
@@ -227,8 +235,10 @@ class Problem:
     """
 
     def __init__(self, name, variables, envs, binders, *, skeleton=None, targets=None,
-                 unroll=0, groups=None, quantifier=None):
+                 unroll=0, groups=None, quantifier=None, folds=False):
         self.name = name
+        # Whether the pool also builds ``fold h init L`` (behave.StepPool).
+        self.folds = bool(folds)
         self.variables = variables
         self.envs = envs
         self.binders = tuple(binders)
@@ -277,8 +287,8 @@ class Problem:
         return roles
 
 
-def whole_problem(examples, request_type, max_unroll: int = 6):
-    """The whole program, with cons deduction for list outputs."""
+def whole_problem(examples, request_type, max_unroll: int = 6, folds: bool = False):
+    """The whole program, with cons deduction for list outputs (and folds, if asked)."""
     arguments, result = function_parts(request_type)
     tags = [tag_of(_ground(a)) for a in arguments]
     out_tag = tag_of(_ground(result))
@@ -303,8 +313,11 @@ def whole_problem(examples, request_type, max_unroll: int = 6):
     else:
         targets[(out_tag, tuple(outputs))] = [("R", 0)]
 
-    return Problem("whole", variables, envs, [_ground(a) for a in arguments],
-                   targets=targets, unroll=unroll)
+    if folds and "l" not in tags:
+        return None
+    return Problem("fold" if folds else "whole", variables, envs,
+                   [_ground(a) for a in arguments], targets=targets, unroll=unroll,
+                   folds=folds)
 
 
 def hole_problem(skeleton, examples):
@@ -520,6 +533,115 @@ def library_components(library: dict):
     return found
 
 
+_MAX_FOLD_LIST = 256
+
+
+def _fold_vector(fn, init_vector, list_vector):
+    out = []
+    for acc, sequence in zip(init_vector, list_vector):
+        for element in sequence:
+            acc = fn(acc, element)
+            if acc is _ERR or (type(acc) is tuple and len(acc) > _MAX_FOLD_LIST):
+                return None
+        out.append(acc)
+    return tuple(out)
+
+
+def _compose(impl, children):
+    def run(acc, x):
+        values = []
+        for child in children:
+            value = child(acc, x)
+            if value is _ERR:
+                return _ERR
+            values.append(value)
+        return impl(*values)
+    return run
+
+
+class StepPool:
+    """Closed fold steps ``lambda acc x. body`` with a given accumulator type.
+
+    Built bottom up from ``acc``, ``x``, RSI-2's constants and first-order
+    primitives, keeping one body per behaviour on probe pairs (acc, x)
+    drawn from the task's public inputs. Each body also carries a Python
+    function, so a fold over a list behaviour is computed directly. Every
+    step behaviour kept is charged like any other pool behaviour.
+    """
+
+    def __init__(self, acc_tag: str, envs, search):
+        self.acc_tag = acc_tag
+        self.search = search
+        lists = [env[0] for env in envs if env and type(env[0]) is tuple]
+        elements = sorted({e for xs in lists for e in xs})[:4] or [0]
+        if acc_tag == "l":
+            accs = [()] + [xs[:3] for xs in lists[:3]]
+        elif acc_tag == "i":
+            accs = [0, 1, -1, 3] + elements[:2]
+        else:
+            accs = [False, True]
+        self.probes = [(a, x) for a in accs for x in elements + [0]]
+        self.by: dict[int, list] = {}
+        self.typed: dict[tuple[str, int], list] = {}
+        self.seen: set = set()
+        self.built = 0
+        self.exhausted = False
+
+    def _admit(self, tag, size, body, fn):
+        vector = []
+        for a, x in self.probes:
+            value = fn(a, x)
+            if value is _ERR:
+                return None
+            vector.append(value)
+        vector = tuple(vector)
+        key = (tag, vector)
+        if key in self.seen:
+            return None
+        self.seen.add(key)
+        self.typed.setdefault((tag, size), []).append((body, fn))
+        if tag == self.acc_tag:
+            self.by.setdefault(size, []).append((body, fn, vector))
+        return ("s" + self.acc_tag + tag, body, vector, "new")
+
+    def grow(self, upto: int):
+        """Build step sizes up to ``upto``; yield one charged event per new behaviour."""
+        while self.built < upto:
+            size = self.built + 1
+            if size == 1:
+                leaves = [("l" if self.acc_tag == "l" else self.acc_tag, Var(1),
+                           lambda a, x: a), ("i", Var(0), lambda a, x: x)]
+                leaves += [("i", Term("int", v), (lambda v: lambda a, x: v)(v))
+                           for v in (-1, 0, 1, 2)]
+                leaves += [("b", Term("bool", v), (lambda v: lambda a, x: v)(v))
+                           for v in (False, True)]
+                leaves.append(("l", _prim("nil"), lambda a, x: ()))
+                for tag, body, fn in leaves:
+                    event = self._admit(tag, 1, body, fn)
+                    if event:
+                        yield event
+            else:
+                for name, args, res, impl in FIRST_ORDER:
+                    if "lb" in args or res == "lb":
+                        continue
+                    for split in _splits(size - 1, len(args)):
+                        groups = [self.typed.get((args[i], split[i]), [])
+                                  for i in range(len(args))]
+                        if any(not g for g in groups):
+                            continue
+                        for combo in _product(groups):
+                            if self.search.combinations > self.search.combo_limit:
+                                self.exhausted = True
+                                return
+                            self.search.combinations += 1
+                            fn = _compose(impl, [c[1] for c in combo])
+                            event = self._admit(res, size, _apply(_prim(name),
+                                                                  *[c[0] for c in combo]), fn)
+                            if event:
+                                yield event
+            self.built = size
+
+
 class BehaviouralSearch:
     """A resumable behavioural search for one problem (the ResumableSearch interface)."""
 
@@ -624,6 +746,8 @@ class BehaviouralSearch:
             return self.combinations > self.combo_limit
 
         envs = problem.envs
+        steps = ({acc: StepPool(acc, problem.envs, self) for acc in ("l", "i", "b")}
+                 if problem.folds else {})
         # size 1: variables, then constants, nil and library constants by weight
         leaves = [(term, tag, tuple(env[i] for env in envs))
                   for i, (term, tag) in enumerate(problem.variables) if tag in relevant]
@@ -643,7 +767,7 @@ class BehaviouralSearch:
         # Constants first, so witnesses see them; variables follow at size 1.
         for term, tag, vector in [c[:3] for c in constant_leaves] + leaves:
             yield from admit(tag, 1, term, vector)
-        for size in range(2, self.max_size + 1):
+        for size in range(2, (2 if problem.folds else self.max_size) + 1):
             for head, args, res, fn, name in operations:
                 for split in _splits(size - 1, len(args)):
                     groups = [pool.get((args[i], split[i]), []) for i in range(len(args))]
@@ -714,6 +838,31 @@ class BehaviouralSearch:
                             tag = (_LIST_OF[res] if higher == "map" else "l")
                             yield from admit(tag, size, _apply(_prim(higher), function,
                                                                list_term), vector)
+        if problem.folds:
+            # The fold action: after the pool's sizes 1-2, steps grow by size;
+            # each closed step h (StepPool) is folded from every init and over
+            # every list of size 1-2 in the pool: fold h init L.
+            for step_size in range(1, self.max_size - 1):
+                for acc in ("l", "i", "b"):
+                    if acc not in relevant:
+                        continue
+                    yield from steps[acc].grow(step_size)
+                    if steps[acc].exhausted:
+                        self.exhausted = True
+                        return
+                    for body, fn, _ in steps[acc].by.get(step_size, []):
+                        step = Lam(_TYPES[acc], Lam(INT, body))
+                        for init_size in (1, 2):
+                            for init_term, init_vector in pool.get((acc, init_size), []):
+                                for list_size in (1, 2):
+                                    for list_term, list_vector in pool.get(("l", list_size), []):
+                                        if count():
+                                            self.exhausted = True
+                                            return
+                                        yield from admit(
+                                            acc, 1 + step_size + init_size + list_size,
+                                            _apply(_prim("fold"), step, init_term, list_term),
+                                            _fold_vector(fn, init_vector, list_vector))
         self.exhausted = True
 
     # -- assembly -------------------------------------------------------
@@ -830,12 +979,18 @@ def _product(groups):
             yield (first,) + rest
 
 
-def problems_for(examples, request_type, skeletons, max_unroll: int = 6) -> dict:
-    """Behavioural problems for a task: the whole program, and each pointwise hole."""
+def problems_for(examples, request_type, skeletons, max_unroll: int = 6,
+                 folds: bool = False) -> dict:
+    """Behavioural problems for a task: the whole program, each pointwise hole, and,
+    with ``folds``, the whole program with ``fold`` (a separate action)."""
     found = {}
     whole = whole_problem(examples, request_type, max_unroll)
     if whole is not None:
         found["whole"] = whole
+    if folds:
+        folded = whole_problem(examples, request_type, max_unroll, folds=True)
+        if folded is not None:
+            found["fold"] = folded
     for skeleton in skeletons:
         if skeleton.name in POINTWISE:
             problem = hole_problem(skeleton, examples)

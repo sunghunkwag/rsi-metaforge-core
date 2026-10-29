@@ -115,7 +115,8 @@ def agent_validation(runtime, model, validation, config: dict, verifier,
             settings = config.get("behave", {})
             problems = problems_for(public.examples, public.request_type,
                                     skeletons_for(public.examples, False),
-                                    int(settings.get("max_unroll", 6)))
+                                    int(settings.get("max_unroll", 6)),
+                                    getattr(arm, "behave_folds", False))
             for kind, problem in problems.items():
                 searches[f"behave:{kind}"] = BehaviouralSearch(
                     problem, library if arm.behave_library else {}, public.examples,
