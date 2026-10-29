@@ -187,7 +187,7 @@ class PathwayRegistry:
         return added
 
     def add_behave_pathways(self, settings: dict, use_library: bool = True,
-                            folds: bool = False) -> None:
+                            folds: bool = False, dual: bool = False) -> None:
         """One behavioural-search pathway per problem kind some task has (behave.py)."""
         from .behave import problems_for
         from .decompose import skeletons_for
@@ -201,8 +201,9 @@ class PathwayRegistry:
                                     int(settings.get("max_unroll", 6)), folds)
             self.behave_problems[name] = problems
             for kind in problems:
-                self.pathways.setdefault(f"behave:{kind}", Pathway(
-                    f"behave:{kind}", "behave", "designer", 0, status="dormant"))
+                for prefix in (("behave", "behave0") if dual else ("behave",)):
+                    self.pathways.setdefault(f"{prefix}:{kind}", Pathway(
+                        f"{prefix}:{kind}", "behave", "designer", 0, status="dormant"))
 
     def add_invented_pathway(self) -> None:
         """A separate pathway searching with this generation's concepts at full weight."""
@@ -227,7 +228,7 @@ class PathwayRegistry:
             # The pool builds from the whole current library (adopted entries
             # and this generation's concepts) and follows the fitted grammar;
             # the designer-only control uses neither.
-            if not self.behave_library:
+            if not self.behave_library or pid.startswith("behave0:"):
                 return Grammar()
             return Grammar(library=self.library(state), weights=state.grammar.weights,
                            context_weights=state.grammar.context_weights)
@@ -273,7 +274,8 @@ class PathwayRegistry:
                 max_size=int(settings.get("max_size", 10)),
                 combo_limit=int(settings.get("combo_limit", 2_000_000)),
                 known=self.behave_known.setdefault((task, pid), set()),
-                weights=grammar.weights if self.behave_library else None)
+                weights=(grammar.weights if self.behave_library
+                         and not pid.startswith("behave0:") else None))
             cached = (fingerprint, search)
             parked = self._parked.pop((task, pid), None)
             if parked is not None and parked[0] == fingerprint:

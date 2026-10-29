@@ -61,10 +61,11 @@ def _relations(examples) -> list[bool]:
     return [False, False, False, False, member]
 
 
-def shape_features(examples, extended: bool = False) -> np.ndarray:
+def shape_features(examples, extended: bool = False, fixed_length: bool = False) -> np.ndarray:
     """Public shape of a task: decomposition preconditions and output type.
 
-    ``extended`` adds five relation flags (output a permutation of the input,
+    ``fixed_length`` adds one flag: every output is a list of one common
+    nonzero length. ``extended`` adds five relation flags (output a permutation of the input,
     its elements a subset of the input's, longer, shorter, an integer output
     that is an input element) for arms that set ``meta_extended``.
     """
@@ -83,6 +84,11 @@ def shape_features(examples, extended: bool = False) -> np.ndarray:
     ]
     if extended:
         flags += _relations(examples)
+    if fixed_length:
+        # Every output is a list of one common nonzero length (a slice, a
+        # pair, a fixed window), which filters and maps do not guarantee.
+        lengths = {len(o) for o in outputs} if is_list else set()
+        flags.append(len(lengths) == 1 and 0 not in lengths)
     return np.asarray([1.0 if f else 0.0 for f in flags])
 
 
