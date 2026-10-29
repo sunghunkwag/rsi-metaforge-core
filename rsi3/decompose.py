@@ -233,3 +233,20 @@ def skeletons_for(examples, fold: bool = False) -> list[Skeleton]:
         found.append(AllElem("all", Arrow(INT, BOOL)))
         found.append(AnyList("any_list", Arrow(LIST, Arrow(INT, BOOL))))
     return found
+
+
+# Every skeleton instance, for imagining tasks (loop.Runtime._self_play).
+ALL_SKELETONS = [
+    MapElem("map", Arrow(INT, INT)), MapElem("map", Arrow(INT, BOOL)),
+    MapConst("map_const", Arrow(LIST, INT)),
+    MapList("map_list", Arrow(LIST, Arrow(INT, INT))),
+    FilterElem("filter", Arrow(INT, BOOL)),
+    FilterList("filter_list", Arrow(LIST, Arrow(INT, BOOL))),
+    PrependOf("prepend_of", Arrow(LIST, INT)),
+    AnyElem("any", Arrow(INT, BOOL)), AllElem("all", Arrow(INT, BOOL)),
+    AnyList("any_list", Arrow(LIST, Arrow(INT, BOOL))),
+    Fold("fold_nil", Arrow(LIST, Arrow(INT, LIST)), _prim("nil")),
+    Fold("fold_zero", Arrow(INT, Arrow(INT, INT)), Term("int", 0)),
+    Fold("fold_true", Arrow(BOOL, Arrow(INT, BOOL)), Term("bool", True)),
+    Fold("fold_false", Arrow(BOOL, Arrow(INT, BOOL)), Term("bool", False)),
+]

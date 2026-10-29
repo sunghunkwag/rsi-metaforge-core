@@ -111,6 +111,13 @@ ARMS = {
                                 designer_kinds=("prior",), failure_memory=True, invention=True,
                                 invention_near_misses=True, invention_meta=True,
                                 decomposition_fold=True),
+    # Self-play meta-RL: RSI3_META_FOLD plus relation features and imagined
+    # tasks that give the policy dense training signal.
+    "RSI3_META_PLAY": ArmConfig("RSI3_META_PLAY", allocation="meta", genesis=False,
+                                designer_kinds=("prior",), failure_memory=True, invention=True,
+                                invention_near_misses=True, invention_meta=True,
+                                decomposition_fold=True, meta_extended=True,
+                                meta_selfplay=True),
 }
 BASELINE = "RSI2"
 
