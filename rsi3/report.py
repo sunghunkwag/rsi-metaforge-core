@@ -13,7 +13,8 @@ from statistics import mean
 
 ARM_ORDER = ["RSI2", "RSI3", "RSI3_NO_REPLAY", "RSI3_NO_GENESIS", "RSI3_UNIFORM",
              "RSI3_UNIFORM_FM", "RSI3_FM", "RSI3_UNIFORM_FM_SCM", "RSI3_UNIFORM_FM_SC",
-             "RSI3_UNIFORM_FM_INV", "RSI3_UNIFORM_FM_INVP"]
+             "RSI3_UNIFORM_FM_INV", "RSI3_UNIFORM_FM_INVP", "RSI3_UNIFORM_FM_DEC",
+             "RSI3_META", "RSI3_META_WIPE"]
 COMPARISONS = [
     ("C1", "RSI3", "RSI2", "train"), ("C2", "RSI3", "RSI3_UNIFORM", "train"),
     ("C3", "RSI3", "RSI3_NO_REPLAY", "train"), ("C4", "RSI3", "RSI3_NO_GENESIS", "train"),
@@ -34,6 +35,12 @@ COMPARISONS = [
     ("L2", "RSI3_UNIFORM_FM_INV", "RSI3_UNIFORM_FM", "train"),
     ("L3", "RSI3_UNIFORM_FM_INVP", "RSI3_UNIFORM_FM_INV", "train"),
     ("L4", "RSI3_UNIFORM_FM_INVP", "RSI3_UNIFORM_FM", "validation"),
+    # Meta-RL study (PREDICTIONS_METARL.md); "agent" = validation_agent, the
+    # arm's own solver on VALIDATION (equal to VALIDATION for prior-only arms).
+    ("X1", "RSI3_META", "RSI3_UNIFORM_FM", "agent"),
+    ("X2", "RSI3_META", "RSI3_UNIFORM_FM_DEC", "agent"),
+    ("X3", "RSI3_META", "RSI3_META_WIPE", "agent"),
+    ("X4", "RSI3_META", "RSI3_UNIFORM_FM", "validation"),
 ]
 
 
@@ -121,7 +128,13 @@ def load(directory: Path) -> dict:
 
 def final(record, metric):
     last = record["generations"][-1]
-    return last["train_solved"] if metric == "train" else last["validation"]["solved"]
+    if metric == "train":
+        return last["train_solved"]
+    if metric == "agent":
+        # Prior-only arms have no validation_agent; theirs equals VALIDATION
+        # (tests/test_metarl.py::test_agent_validation_equals_validation...).
+        return last.get("validation_agent", last["validation"])["solved"]
+    return last["validation"]["solved"]
 
 
 def render(runs: dict) -> str:
