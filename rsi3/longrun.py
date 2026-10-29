@@ -1,0 +1,181 @@
+"""Long-horizon runner: one TRAIN trajectory per arm, every seed's VALIDATION, checkpoints.
+
+    python -m rsi3.longrun --config rsi3/experiment_config_long.json \\
+        --arm RSI3_UNIFORM_FM_INVP --output DIR [--max-minutes 100]
+
+Why a separate runner. In the uniform, prior-only arms (RSI3_UNIFORM_FM and
+its invention variants) the wake phase never reads the recognition model:
+every window searches the prior pathway (or the invented pathway), whose
+grammar does not depend on recognition. The seed enters a run only through
+the sleep phase's dreams and recognition model, which these arms use only to
+measure VALIDATION. Their TRAIN trajectory is therefore identical for every
+seed (observed in every committed run of these arms). This runner computes
+that trajectory once with the first seed and, after each generation, refits
+each other seed's dreams and recognition model exactly as RSI-2's sleep would
+have, on the same solutions and grammar, then measures that seed's
+VALIDATION. The per-seed records have the same schema as ``rsi3.experiment``'s
+and are checked against committed 12-generation runs
+(``tests/test_longrun.py`` and LONG_RESULTS.md).
+
+Searches are always compact (released between windows and rebuilt by
+fast-forwarding), so the runtime holds no generator and can be checkpointed
+after every generation. A job stops cleanly after the generation in which
+``--max-minutes`` is exceeded and resumes from its checkpoint when run again
+with the same arguments.
+"""
+from __future__ import annotations
+
+import os
+
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+
+import argparse
+import copy
+import json
+from pathlib import Path
+import pickle
+import random
+import time
+
+from rsi2.corpus import load_train, load_validation
+from rsi2.learning import dream_pairs
+from rsi2.measurement import assess
+from rsi2.recognition import Recognition
+from rsi2.terms import pretty
+
+from .experiment import ARMS
+from .loop import Runtime
+
+
+def shared_trajectory_ok(arm) -> bool:
+    return (arm.allocation == "uniform" and tuple(arm.designer_kinds) == ("prior",)
+            and not arm.genesis and arm.continuity == "off")
+
+
+def seed_recognition(state, public, config: dict, seed: int, generation: int):
+    """The dreams and recognition model RSI-2's sleep would fit for ``seed``."""
+    search = config["search"]
+    rng = random.Random(seed * 1000003 + generation)
+    dreams, evaluations = dream_pairs(public, state.grammar, rng, count=config.get("dreams", 16),
+                                      max_size=search["max_size"],
+                                      step_budget=search["step_budget"])
+    lookup = {task.name: task for task in public}
+    pairs = [(lookup[name], term) for name, term in state.solutions.items()] + dreams
+    model = Recognition(seed * 1000003 + generation)
+    metrics = model.fit(pairs, state.grammar)
+    return model, {"dreams": len(dreams), "dream_candidate_evaluations": evaluations,
+                   "recognition_examples": metrics["examples"]}
+
+
+def validation_record(state, model, validation, config: dict) -> dict:
+    conditioner = None if model is None else (lambda task, grammar: model.grammar_for(task, grammar))
+    result = assess(validation, state.grammar, None, config["B_eval"], config["search"],
+                    conditioner=conditioner)
+    return {"solved": result["solved"], "tasks": result["tasks"],
+            "solved_names": [r["name"] for r in result["records"] if r["solved"]],
+            "candidate_evaluations": result["candidate_evaluations"]}
+
+
+def final_record(runtime) -> dict:
+    return {"train_solved": len(runtime.state.solutions),
+            "solutions": sorted(runtime.state.solutions),
+            "provenance": runtime.integrator.provenance,
+            "pathways": {pid: p.to_record() for pid, p in runtime.registry.pathways.items()},
+            "memory": {"episodes": len(runtime.memory.episodes),
+                       "verified": sum(e.outcome == "verified" for e in runtime.memory.episodes),
+                       "rejected": sum(e.outcome == "rejected" for e in runtime.memory.episodes)},
+            "verifier_queries": runtime.verifier.queries,
+            "failure_memory": (None if runtime.failures is None else runtime.failures.sizes()),
+            "library": {name: pretty(term)
+                        for name, term in sorted(runtime.state.grammar.library.items())},
+            "adopted_concepts": runtime.adopted_concepts}
+
+
+def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = None, *,
+        train=None, validation=None) -> bool:
+    """Advance the job; return True when all generations are done.
+
+    ``train`` and ``validation`` default to the corpus splits (tests pass subsets).
+    """
+    arm = ARMS[arm_name]
+    if not shared_trajectory_ok(arm):
+        raise SystemExit(f"{arm_name} reads recognition during wake; use rsi3.experiment")
+    seeds = list(config["seeds"])
+    output.mkdir(parents=True, exist_ok=True)
+    checkpoint = output / f"{arm_name}.checkpoint.pkl"
+    wall_started = time.perf_counter()
+    train = load_train() if train is None else train
+    validation = load_validation() if validation is None else validation
+    rsi2_config = {"B_wake": config["B_wake"], "B_eval": config["B_eval"],
+                   "dreams": config["dreams"], "search": dict(config["search"])}
+    run_config = dict(config, compact_searches=True)
+    if checkpoint.exists():
+        with checkpoint.open("rb") as handle:
+            saved = pickle.load(handle)
+        runtime, records, cpu = saved["runtime"], saved["records"], saved["cpu"]
+    else:
+        runtime = Runtime(seeds[0], train, arm,
+                          rsi2_config | {"controller": config["controller"],
+                                         "continuity": config.get("continuity", {}),
+                                         "invention": config.get("invention", {}),
+                                         "compact_searches": True})
+        records, cpu = {seed: [] for seed in seeds}, {seed: 0.0 for seed in seeds}
+    while len(records[seeds[0]]) < config["generations"]:
+        started = time.process_time()
+        record = runtime.generation()
+        generation = record["generation"]
+        shared = time.process_time() - started
+        for seed in seeds:
+            seed_started = time.process_time()
+            seed_record = copy.deepcopy(record)
+            if seed == seeds[0]:
+                model = runtime.state.recognition
+            else:
+                model, sleep = seed_recognition(runtime.state, runtime.public, rsi2_config,
+                                                seed, generation)
+                seed_record["sleep"].update(sleep)
+            seed_record["validation"] = validation_record(runtime.state, model, validation,
+                                                          rsi2_config)
+            seed_record["cpu_seconds"] = record["cpu_seconds"] + (
+                time.process_time() - seed_started)
+            records[seed].append(seed_record)
+            cpu[seed] += shared + (time.process_time() - seed_started)
+        temporary = checkpoint.with_suffix(".tmp")
+        with temporary.open("wb") as handle:
+            pickle.dump({"runtime": runtime, "records": records, "cpu": cpu}, handle)
+        temporary.replace(checkpoint)
+        print(f"{arm_name} generation {generation}: TRAIN {record['train_solved']}, "
+              f"VALIDATION {[records[s][-1]['validation']['solved'] for s in seeds]}, "
+              f"cpu {shared:.0f}s", flush=True)
+        if max_minutes is not None and time.perf_counter() - wall_started > 60 * max_minutes:
+            if len(records[seeds[0]]) < config["generations"]:
+                return False
+    final = final_record(runtime)
+    for seed in seeds:
+        path = output / f"{arm_name}_seed{seed}.json"
+        payload = {"arm": arm_name, "seed": seed, "config": run_config, "status": "complete",
+                   "generations": records[seed], "final": final, "cpu_seconds": cpu[seed],
+                   "shared_trajectory": {"primary_seed": seeds[0], "seeds": seeds}}
+        path.write_text(json.dumps(payload, indent=1, default=str) + "\n", encoding="utf-8")
+    return True
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    parser.add_argument("--config", type=Path, required=True)
+    parser.add_argument("--arm", required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--max-minutes", type=float, default=None)
+    parser.add_argument("--generations", type=int, default=None,
+                        help="checks against shorter committed runs only")
+    args = parser.parse_args(argv)
+    config = json.loads(args.config.read_text(encoding="utf-8"))
+    if args.generations is not None:
+        config["generations"] = args.generations
+    done = run(args.arm, config, args.output, args.max_minutes)
+    print(json.dumps({"arm": args.arm, "complete": done}))
+
+
+if __name__ == "__main__":
+    main()
