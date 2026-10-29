@@ -72,6 +72,14 @@ class ArmConfig:
     # Conjugate skeletons: transform an unsolved task by one of the system's
     # own involutive list programs (decompose.conjugate_skeletons).
     decomposition_conjugate: bool = False
+    # Behavioural search (behave.py): bottom-up search by observational
+    # equivalence with deduction, one meta-RL action per problem (the whole
+    # program, and each pointwise skeleton hole).
+    behave: bool = False
+    # Whether behavioural search builds from the system's own library and is
+    # ordered by its fitted grammar (False: RSI-2's primitives and constants
+    # only, in a fixed order; the designer-only control).
+    behave_library: bool = True
 
 
 def standardized_features(public_tasks) -> dict:
@@ -159,6 +167,8 @@ class Runtime:
             self.registry.add_invented_pathway()
         if arm.decomposition_split > 0 or meta:
             self.registry.add_decompose_pathways(fold=arm.decomposition_fold)
+        if arm.behave:
+            self.registry.add_behave_pathways(config.get("behave", {}), arm.behave_library)
         self.metapolicy = MetaPolicy(wipe=arm.meta_wipe) if meta else None
         self.shapes = {task.name: shape_features(task.examples, arm.meta_extended)
                        for task in self.public}
@@ -276,6 +286,8 @@ class Runtime:
         if "invented" in self.registry.pathways and self.registry.extra_library:
             actions.append("invented")
         actions += [f"decompose:{name}" for name in sorted(self.registry.skeletons.get(task, {}))]
+        actions += [f"behave:{name}"
+                    for name in sorted(getattr(self.registry, "behave_problems", {}).get(task, {}))]
         return [a for a in actions if not self.registry.peek(task, a, self.state)[1]]
 
     def _meta_wake(self, budget_total, unsolved, generation, pending, log) -> int:
@@ -334,7 +346,7 @@ class Runtime:
         templates = [t for t in sorted(self.public, key=lambda t: t.name)
                      if all(len(i) == 1 and isinstance(i[0], (list, tuple))
                             for i, _ in t.examples)]
-        made, runs = 0, 0
+        made, runs, practice = 0, 0, 0
         for _ in range(count):
             skeleton = family[rng.randrange(len(family))]
             hole = sample_program(skeleton.hole_type, self.state.grammar, rng, max_size=8,
@@ -363,7 +375,45 @@ class Runtime:
             self.metapolicy.record(generation, f"decompose:{skeleton.name}",
                                    context(shape, 0, 0), 1)
             made += 1
-        return {"imagined": made, "program_runs": runs}
+            if self.arm.behave:
+                practice += self._practice(examples, shape, generation)
+        return {"imagined": made, "program_runs": runs,
+                "practice_evaluations": practice if self.arm.behave else None}
+
+    def _practice(self, examples, shape, generation) -> int:
+        """Run each behavioural action on an imagined task for one chunk; record the outcome.
+
+        Unlike the skeleton credit above, which is known by construction,
+        these episodes are the action's actual result: whether behavioural
+        search, built from the current library, finds a program matching the
+        imagined examples within one chunk. Imagined tasks have no hidden
+        examples and are never verified; their evaluations are reported and
+        are not wake budget.
+        """
+        from rsi2.corpus import infer_request_type
+        from .behave import BehaviouralSearch, problems_for
+        from .decompose import skeletons_for
+        settings = self.config.get("behave", {})
+        chunk = int(self.config.get("meta", {}).get("chunk", 16))
+        try:
+            request = infer_request_type(examples)
+        except ValueError:
+            return 0
+        library = self.registry.library(self.state) if self.arm.behave_library else {}
+        weights = self.state.grammar.weights if self.arm.behave_library else None
+        spent = 0
+        for kind, problem in problems_for(examples, request, skeletons_for(examples, False),
+                                          int(settings.get("max_unroll", 6))).items():
+            search = BehaviouralSearch(problem, library, examples,
+                                       step_budget=self.config["search"]["step_budget"],
+                                       max_size=int(settings.get("max_size", 10)),
+                                       combo_limit=int(settings.get("combo_limit", 2_000_000)),
+                                       weights=weights)
+            result = search.run(chunk)
+            spent += result.evaluated
+            self.metapolicy.record(generation, f"behave:{kind}", context(shape, 0, 0),
+                                   int(result.term is not None))
+        return spent
 
     def wake(self, generation) -> dict:
         budget_total = max(0, self.config["B_wake"] * len(self.public) - self.budget_debt)

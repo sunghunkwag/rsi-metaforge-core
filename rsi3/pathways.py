@@ -186,6 +186,23 @@ class PathwayRegistry:
                 added += 1
         return added
 
+    def add_behave_pathways(self, settings: dict, use_library: bool = True) -> None:
+        """One behavioural-search pathway per problem kind some task has (behave.py)."""
+        from .behave import problems_for
+        from .decompose import skeletons_for
+        self.behave_settings = dict(settings)
+        self.behave_library = bool(use_library)
+        self.behave_known: dict = {}
+        self.behave_problems = {}
+        for name, task in self.tasks.items():
+            problems = problems_for(task.examples, task.request_type,
+                                    skeletons_for(task.examples, False),
+                                    int(settings.get("max_unroll", 6)))
+            self.behave_problems[name] = problems
+            for kind in problems:
+                self.pathways.setdefault(f"behave:{kind}", Pathway(
+                    f"behave:{kind}", "behave", "designer", 0, status="dormant"))
+
     def add_invented_pathway(self) -> None:
         """A separate pathway searching with this generation's concepts at full weight."""
         self.pathways.setdefault("invented", Pathway("invented", "invented", "designer", 0,
@@ -205,6 +222,14 @@ class PathwayRegistry:
 
     def grammar(self, pid: str, task: str, state) -> Grammar:
         pathway = self.pathways[pid]
+        if pathway.kind == "behave":
+            # The pool builds from the whole current library (adopted entries
+            # and this generation's concepts) and follows the fitted grammar;
+            # the designer-only control uses neither.
+            if not self.behave_library:
+                return Grammar()
+            return Grammar(library=self.library(state), weights=state.grammar.weights,
+                           context_weights=state.grammar.context_weights)
         if pathway.kind in ("invented", "decompose"):
             # Decomposition holes use the same grammar as the invented pathway:
             # the generation's concepts at full weight (none without invention).
@@ -238,6 +263,21 @@ class PathwayRegistry:
         """Return the live search for this slot, creating (awakening) it if needed."""
         fingerprint, grammar = self.grammar_and_fingerprint(task, pid, state)
         cached = self._live.get((task, pid))
+        if (cached is None or cached[0] != fingerprint) and self.pathways[pid].kind == "behave":
+            from .behave import BehaviouralSearch
+            settings = self.behave_settings
+            search = BehaviouralSearch(
+                self.behave_problems[task][pid.split(":", 1)[1]], grammar.library,
+                self.tasks[task].examples, step_budget=self.search_config["step_budget"],
+                max_size=int(settings.get("max_size", 10)),
+                combo_limit=int(settings.get("combo_limit", 2_000_000)),
+                known=self.behave_known.setdefault((task, pid), set()),
+                weights=grammar.weights if self.behave_library else None)
+            cached = (fingerprint, search)
+            parked = self._parked.pop((task, pid), None)
+            if parked is not None and parked[0] == fingerprint:
+                search.fast_forward(*parked[1:5])
+            self._live[(task, pid)] = cached
         if cached is None or cached[0] != fingerprint:
             public = self.tasks[task]
             skeleton = (self.skeletons[task][pid.split(":", 1)[1]]
@@ -292,6 +332,8 @@ class PathwayRegistry:
         return cached[1].evaluated, cached[1].exhausted
 
     def drop_task(self, task: str) -> None:
+        for key in [key for key in getattr(self, "behave_known", {}) if key[0] == task]:
+            del self.behave_known[key]
         for key in [key for key in self._live if key[0] == task]:
             del self._live[key]
         for key in [key for key in self._parked if key[0] == task]:
