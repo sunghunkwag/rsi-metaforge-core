@@ -12,6 +12,11 @@ Arms (see PREDICTIONS.md for what each one tests):
                    split over unsolved tasks; no value model, no genesis.
   RSI3_UNIFORM_FM  RSI3_UNIFORM plus failure memory (experiment_config_failure_memory.json).
   RSI3_FM          RSI3 plus failure memory.
+  RSI3_UNIFORM_FM_SCM  RSI3_UNIFORM_FM, auditing each self-rewrite (passive, uncharged).
+  RSI3_UNIFORM_FM_SC   RSI3_UNIFORM_FM, auditing and restoring lost abilities (charged)
+                       (experiment_config_self_continuity.json).
+  RSI3_UNIFORM_FM_INV  RSI3_UNIFORM_FM with self-model concept invention
+                       (experiment_config_invention.json).
 
 Every arm receives the same per-generation cap of B_wake x |TRAIN| logical
 candidate evaluations, the same RSI-2 sleep phase, the same seeds, and the same
@@ -39,6 +44,7 @@ import time
 from rsi2.corpus import load_train, load_validation
 from rsi2.learning import State, wake_sleep
 from rsi2.measurement import assess
+from rsi2.terms import pretty
 
 from .loop import ArmConfig, Runtime
 
@@ -53,6 +59,53 @@ ARMS = {
     "RSI3_UNIFORM_FM": ArmConfig("RSI3_UNIFORM_FM", allocation="uniform", genesis=False,
                                  designer_kinds=("prior",), failure_memory=True),
     "RSI3_FM": ArmConfig("RSI3_FM", failure_memory=True),
+    # Self-continuity study (PREDICTIONS_SELF_CONTINUITY.md): the best arm so
+    # far, with the rewritten self audited (passive) or audited and restored.
+    "RSI3_UNIFORM_FM_SCM": ArmConfig("RSI3_UNIFORM_FM_SCM", allocation="uniform", genesis=False,
+                                     designer_kinds=("prior",), failure_memory=True,
+                                     continuity="measure"),
+    "RSI3_UNIFORM_FM_SC": ArmConfig("RSI3_UNIFORM_FM_SC", allocation="uniform", genesis=False,
+                                    designer_kinds=("prior",), failure_memory=True,
+                                    continuity="restore"),
+    # Concept-invention study (PREDICTIONS_INVENTION.md): the same arm with a
+    # self-model that invents library concepts from its own verified programs.
+    "RSI3_UNIFORM_FM_INV": ArmConfig("RSI3_UNIFORM_FM_INV", allocation="uniform", genesis=False,
+                                     designer_kinds=("prior",), failure_memory=True,
+                                     invention=True),
+    # Compounding study: concepts searched in their own pathway at full weight
+    # with half of each task's budget; the prior pathway is left undiluted.
+    "RSI3_UNIFORM_FM_INVP": ArmConfig("RSI3_UNIFORM_FM_INVP", allocation="uniform",
+                                      genesis=False, designer_kinds=("prior",),
+                                      failure_memory=True, invention=True,
+                                      invention_split=0.5),
+    # Self-directed arm: INVP plus near-miss parts (structure from programs
+    # that almost solved an unsolved task) and a meta-learned inventor (the
+    # share of proposal slots per kind follows that kind's adoption record).
+    "RSI3_UNIFORM_FM_INVX": ArmConfig("RSI3_UNIFORM_FM_INVX", allocation="uniform",
+                                      genesis=False, designer_kinds=("prior",),
+                                      failure_memory=True, invention=True,
+                                      invention_split=0.5, invention_near_misses=True,
+                                      invention_meta=True),
+    # Backward decomposition (decompose.py, ported from verified-code-rsi):
+    # alone, and with every self-directed mechanism.
+    "RSI3_UNIFORM_FM_DEC": ArmConfig("RSI3_UNIFORM_FM_DEC", allocation="uniform", genesis=False,
+                                     designer_kinds=("prior",), failure_memory=True,
+                                     decomposition_split=0.5),
+    "RSI3_UNIFORM_FM_INVXD": ArmConfig("RSI3_UNIFORM_FM_INVXD", allocation="uniform",
+                                       genesis=False, designer_kinds=("prior",),
+                                       failure_memory=True, invention=True,
+                                       invention_split=1 / 3, invention_near_misses=True,
+                                       invention_meta=True, decomposition_split=1 / 3),
+    # Meta-RL study (PREDICTIONS_METARL.md): every mechanism, with a meta-learned
+    # policy choosing prior / invented / skeleton chunks inside each task's
+    # share (metarl.py), and its wiped-memory control.
+    "RSI3_META": ArmConfig("RSI3_META", allocation="meta", genesis=False,
+                           designer_kinds=("prior",), failure_memory=True, invention=True,
+                           invention_near_misses=True, invention_meta=True),
+    "RSI3_META_WIPE": ArmConfig("RSI3_META_WIPE", allocation="meta", genesis=False,
+                                designer_kinds=("prior",), failure_memory=True, invention=True,
+                                invention_near_misses=True, invention_meta=True,
+                                meta_wipe=True),
 }
 BASELINE = "RSI2"
 
@@ -92,7 +145,12 @@ def run_one(arm: str, seed: int, config: dict) -> dict:
                 "cpu_seconds": time.process_time() - started})
         final = {"train_solved": len(state.solutions), "solutions": sorted(state.solutions)}
     else:
-        runtime = Runtime(seed, train, ARMS[arm], rsi2_config | {"controller": config["controller"]})
+        runtime = Runtime(seed, train, ARMS[arm],
+                          rsi2_config | {"controller": config["controller"],
+                                         "continuity": config.get("continuity", {}),
+                                         "invention": config.get("invention", {}),
+                                         "compact_searches": config.get("compact_searches",
+                                                                        False)})
         for _ in range(config["generations"]):
             record = runtime.generation()
             record["validation"] = _validation(runtime.state, validation, rsi2_config)
@@ -106,7 +164,10 @@ def run_one(arm: str, seed: int, config: dict) -> dict:
                             "rejected": sum(e.outcome == "rejected" for e in runtime.memory.episodes)},
                  "verifier_queries": runtime.verifier.queries,
                  "failure_memory": (None if runtime.failures is None
-                                    else runtime.failures.sizes())}
+                                    else runtime.failures.sizes()),
+                 "library": {name: pretty(term)
+                             for name, term in sorted(runtime.state.grammar.library.items())},
+                 "adopted_concepts": runtime.adopted_concepts}
     return {"arm": arm, "seed": seed, "config": config, "status": "complete",
             "generations": generations, "final": final,
             "cpu_seconds": time.process_time() - cpu_started,
@@ -129,10 +190,16 @@ def main(argv=None):
     parser.add_argument("--seeds", nargs="*", type=int, default=None)
     parser.add_argument("--generations", type=int, default=None,
                         help="development smoke runs only; finals use the config value")
+    parser.add_argument("--compact-searches", action="store_true",
+                        help="release live searches between windows and rebuild them by "
+                             "fast-forwarding; bounds memory, same logical behaviour "
+                             "(recorded in each run's config)")
     args = parser.parse_args(argv)
     config = json.loads(args.config.read_text(encoding="utf-8"))
     if args.generations is not None:
         config["generations"] = args.generations
+    if args.compact_searches:
+        config["compact_searches"] = True
     arms = args.arms or config["arms"]
     seeds = args.seeds or config["seeds"]
     unknown = [arm for arm in arms if arm != BASELINE and arm not in ARMS]

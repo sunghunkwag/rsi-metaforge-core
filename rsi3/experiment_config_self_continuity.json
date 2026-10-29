@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "seeds": [11, 22, 33],
+  "generations": 8,
+  "arms": ["RSI3_UNIFORM_FM_SCM", "RSI3_UNIFORM_FM_SC"],
+  "B_wake": 64,
+  "B_eval": 64,
+  "dreams": 16,
+  "search": {"max_size": 12, "max_expansions": 20000, "step_budget": 2000},
+  "controller": {"chunk": 32, "exploration": 0.3, "analog_neighbors": 2},
+  "continuity": {"audit_budget": 64, "rehearsal": 3, "exams_per_generation": 3,
+                 "exam_attempts": 64, "exam_author": "neutral"},
+  "workers": 2
+}

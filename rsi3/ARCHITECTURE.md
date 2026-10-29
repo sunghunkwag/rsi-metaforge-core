@@ -49,6 +49,12 @@ can measure is the candidate budget; that is what RSI-3 regulates.
 | Processor controller | `controller`, `loop.Runtime.wake` | allocates the per-generation cap B_wake × \|TRAIN\|; solved tasks and exhausted slots get nothing; one verification per task per generation | does not change the cap |
 | Binding integrator | `integrator.BindingIntegrator` | binds a new public match to remembered behaviour by probe signature; a match equivalent to a verifier-rejected program is skipped and the search continues; verified solutions are bound with provenance | never submits more than one program per task per generation |
 | Independent verifier | `verifier.FrozenVerifier` | the only module that reads hidden examples; issues receipts; one query per task per generation | is never updated, tuned, or selected by any outcome |
+| Failure memory | `memory.FailureMemory`, `resumable.ResumableSearch` | per task, the programs that failed its public examples; skipped without charge by every pathway and across grammar changes | never skips a program that has not failed that task's public examples |
+| Self-model and concept invention | `selfmodel.SelfModel`, `loop.Runtime.invent`, `PathwayRegistry.base_grammar` | decomposes the system's verified programs into parts and runs candidate concepts on probe inputs; invents parts, powers, compositions and unnamed integers from them; adds them to the generation's search grammar at a tenth of the pseudocount; adopts a concept into the library only when a program using it is verified | adds no primitive; reads no hidden example, VALIDATION or TEST; keeps no concept that has not earned a verified solve |
+| Backward decomposition | `decompose.py`, `PathwayRegistry.add_decompose_pathways` | ported from `verified-code-rsi`: `map` / `filter` / `any` / `all` / prepend skeletons applied when a task's public examples have their shape; the typed hole is enumerated by RSI-2's enumerator, and each composite costs one candidate evaluation | names no task and contains no solution; every skeleton has a hole that search must fill |
+| Meta-RL search policy | `metarl.MetaPolicy`, `loop.Runtime._meta_wake` | inside each task's even share, chooses prior / invented / skeleton chunks from the task's public shape and its own history there; fitted across tasks on the full replay of chunk episodes (verifier receipts as reward); `meta_wipe` refits on one generation only | is never fitted on VALIDATION outcomes |
+| Transfer measurement | `longrun.agent_validation` | the arm's own TRAIN-trained solver on each VALIDATION task at B_eval, with one verifier query; equals VALIDATION for prior-only arms | is not used by any learning component |
+| Self-continuity guard | `continuity.ContinuityGuard` | audits each self-rewrite: the new self must re-derive solved TRAIN tasks and pass self-written exams; in `restore` mode it can rehearse or revert | off in every registered arm; its study was abandoned before any registered run (PREDICTIONS_SELF_CONTINUITY.md) |
 
 ## Design decisions and their evidence
 
@@ -91,7 +97,10 @@ CPU is reported per arm.
   heuristic while consuming 8,518 of FULL's 11,358 CPU seconds; RSI-3 runs with
   the constant-zero heuristic, i.e. RSI-2's NO_HEURISTIC configuration, in every
   arm including the RSI-2 baseline.
-- Any change to the language, evaluator, corpus, splits, or TEST.
+- Any change to the frozen primitives, constants, evaluator, corpus, splits, or
+  TEST. The library is the only part of the language that grows: through
+  RSI-2's unchanged MDL learner in every arm, and, in the invention arm, through
+  concepts the system invented and the frozen verifier confirmed by a solve.
 - Any claim that budget reallocation is recursive self-improvement. The loop
   improves how a fixed search procedure spends its budget, using a learned
   model trained on its own verified outcomes. Whether that changes certified

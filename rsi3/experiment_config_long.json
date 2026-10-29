@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "seeds": [11, 22, 33],
+  "generations": 30,
+  "arms": ["RSI3_UNIFORM_FM", "RSI3_UNIFORM_FM_INV", "RSI3_UNIFORM_FM_INVP"],
+  "B_wake": 64,
+  "B_eval": 64,
+  "dreams": 16,
+  "search": {"max_size": 12, "max_expansions": 20000, "step_budget": 2000},
+  "controller": {"chunk": 32, "exploration": 0.3, "analog_neighbors": 2},
+  "invention": {"concept_weight": 0.1},
+  "workers": 2
+}

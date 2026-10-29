@@ -41,7 +41,7 @@ from rsi2.types import TypeInferenceError, instantiate, unify
 from .resumable import ResumableSearch
 
 DESIGNER_KINDS = ("prior", "recognized")
-KINDS = DESIGNER_KINDS + ("analog",)
+KINDS = DESIGNER_KINDS + ("analog", "invented", "decompose")
 
 
 def grammar_fingerprint(grammar: Grammar) -> str:
@@ -97,7 +97,18 @@ class PathwayRegistry:
         self.pathways: dict[str, Pathway] = {}
         for kind in self.designer_kinds:
             self.pathways[kind] = Pathway(kind, kind, "designer", 0, status="active")
+        # Concepts the self-model invented for this generation (selfmodel.py):
+        # library entries every pathway may use until the generation ends.
+        self.extra_library: dict = {}
+        self.concept_weight = 0.1
+        self.concepts_in_prior = True
+        self.near_miss_memory = None      # memory.NearMissMemory, set by the runtime
         self._live: dict[tuple[str, str], tuple[str, ResumableSearch]] = {}
+        # Execution option, not part of any arm: release each live search after
+        # its window and rebuild it on next use by fast-forwarding (bounded
+        # memory, identical logical behaviour; tests/test_resumable.py).
+        self.compact = False
+        self._parked: dict[tuple[str, str], tuple] = {}
         self._analog_grammar: dict[str, tuple[str, Grammar]] = {}
         self._generation_cache: dict[tuple[str, str], tuple[str, Grammar]] = {}
 
@@ -142,17 +153,50 @@ class PathwayRegistry:
         return result
 
     # ---- grammars and live searches ------------------------------------
+    def add_decompose_pathways(self) -> None:
+        """One pathway per skeleton that some task's public examples fit (decompose.py)."""
+        from .decompose import skeletons_for
+        self.skeletons = {name: {sk.name: sk for sk in skeletons_for(task.examples)}
+                          for name, task in self.tasks.items()}
+        for names in self.skeletons.values():
+            for sk in names:
+                self.pathways.setdefault(f"decompose:{sk}", Pathway(
+                    f"decompose:{sk}", "decompose", "designer", 0, status="dormant"))
+
+    def add_invented_pathway(self) -> None:
+        """A separate pathway searching with this generation's concepts at full weight."""
+        self.pathways.setdefault("invented", Pathway("invented", "invented", "designer", 0,
+                                                     status="dormant"))
+
+    def base_grammar(self, state) -> Grammar:
+        """The current prior, with this generation's invented concepts if any."""
+        if not self.extra_library:
+            return state.grammar
+        weights = dict(state.grammar.weights)
+        weights.update({name: self.concept_weight for name in self.extra_library})
+        return Grammar(library={**state.grammar.library, **self.extra_library},
+                       weights=weights, context_weights=state.grammar.context_weights)
+
+    def library(self, state) -> dict:
+        return {**state.grammar.library, **self.extra_library}
+
     def grammar(self, pid: str, task: str, state) -> Grammar:
         pathway = self.pathways[pid]
+        if pathway.kind in ("invented", "decompose"):
+            # Decomposition holes use the same grammar as the invented pathway:
+            # the generation's concepts at full weight (none without invention).
+            return Grammar(library=self.library(state), weights=state.grammar.weights,
+                           context_weights=state.grammar.context_weights)
         if pathway.kind == "prior":
-            return state.grammar
+            return self.base_grammar(state) if self.concepts_in_prior else state.grammar
         if pathway.kind == "recognized":
-            return state.condition(self.tasks[task])
-        library_key = grammar_fingerprint(Grammar(library=state.grammar.library))
+            return state.condition(self.tasks[task], self.base_grammar(state))
+        library = self.library(state)
+        library_key = grammar_fingerprint(Grammar(library=library))
         cached = self._analog_grammar.get(pid)
         if cached is None or cached[0] != library_key:
             source = self.tasks[pathway.source_task]
-            grammar = Grammar(library=state.grammar.library)
+            grammar = Grammar(library=library)
             grammar.fit([(state.solutions[pathway.source_task], source.request_type)])
             cached = (library_key, grammar)
             self._analog_grammar[pid] = cached
@@ -173,13 +217,22 @@ class PathwayRegistry:
         cached = self._live.get((task, pid))
         if cached is None or cached[0] != fingerprint:
             public = self.tasks[task]
+            skeleton = (self.skeletons[task][pid.split(":", 1)[1]]
+                        if self.pathways[pid].kind == "decompose" else None)
             cached = (fingerprint, ResumableSearch(
-                public.examples, public.request_type, grammar,
+                public.examples,
+                public.request_type if skeleton is None else skeleton.hole_type, grammar,
+                compose=None if skeleton is None else skeleton.compose,
                 step_budget=self.search_config["step_budget"],
                 max_size=self.search_config["max_size"],
                 max_expansions=self.search_config["max_expansions"],
                 known_failures=(None if self.failure_memory is None
-                                else self.failure_memory.for_task(task))))
+                                else self.failure_memory.for_task(task)),
+                near_misses=(None if self.near_miss_memory is None
+                             else self.near_miss_memory.recorder(task))))
+            parked = self._parked.pop((task, pid), None)
+            if parked is not None and parked[0] == fingerprint:
+                cached[1].fast_forward(*parked[1:5])
             self._live[(task, pid)] = cached
         pathway = self.pathways[pid]
         if pathway.status == "dormant":
@@ -187,11 +240,29 @@ class PathwayRegistry:
             pathway.awakened_generation = generation
         return cached
 
+    def release_task(self, task: str) -> None:
+        """Compact mode: release every live search of one task (after its turn)."""
+        for key in [key for key in self._live if key[0] == task]:
+            self.release(*key)
+
+    def release(self, task: str, pid: str) -> None:
+        """Compact mode: drop the live search, keeping what is needed to rebuild it."""
+        cached = self._live.pop((task, pid), None)
+        if cached is not None:
+            fingerprint, search = cached
+            self._parked[(task, pid)] = (fingerprint, search.position, search.evaluated,
+                                         search.skipped_known, search.evaluation_steps,
+                                         search.exhausted)
+
     def peek(self, task: str, pid: str, state) -> tuple[int, bool]:
         """Depth already searched and exhaustion under the *current* grammar."""
         cached = self._live.get((task, pid))
         if cached is None:
-            return 0, False
+            parked = self._parked.get((task, pid))
+            if parked is None:
+                return 0, False
+            fingerprint, _ = self.grammar_and_fingerprint(task, pid, state)
+            return (parked[2], parked[5]) if parked[0] == fingerprint else (0, False)
         fingerprint, _ = self.grammar_and_fingerprint(task, pid, state)
         if cached[0] != fingerprint:
             return 0, False
@@ -200,6 +271,8 @@ class PathwayRegistry:
     def drop_task(self, task: str) -> None:
         for key in [key for key in self._live if key[0] == task]:
             del self._live[key]
+        for key in [key for key in self._parked if key[0] == task]:
+            del self._parked[key]
 
     def summary(self) -> dict:
         counts = {"designer": 0, "genesis": 0, "dormant": 0, "active": 0}
