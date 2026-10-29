@@ -69,6 +69,9 @@ class ArmConfig:
     # self-play episodes from tasks the system imagines through its skeletons.
     meta_extended: bool = False
     meta_selfplay: bool = False
+    # Conjugate skeletons: transform an unsolved task by one of the system's
+    # own involutive list programs (decompose.conjugate_skeletons).
+    decomposition_conjugate: bool = False
 
 
 def standardized_features(public_tasks) -> dict:
@@ -278,6 +281,9 @@ class Runtime:
     def _meta_wake(self, budget_total, unsolved, generation, pending, log) -> int:
         """Each task's even share, spent in chunks on actions the meta-policy picks."""
         chunk = int(self.config.get("meta", {}).get("chunk", 16))
+        if self.arm.decomposition_conjugate:
+            self.conjugates = self.registry.refresh_conjugates(
+                self.state, self.config["search"]["step_budget"], self.arm.decomposition_fold)
         spent = 0
         for task, budget in Controller.uniform_split(budget_total, unsolved).items():
             history = self.chunks_spent.setdefault(task, {})
@@ -413,6 +419,7 @@ class Runtime:
                 "meta": (None if self.metapolicy is None else
                          {"fit": self.meta_fit,
                           "selfplay": getattr(self, "selfplay", None),
+                          "conjugate_skeletons": getattr(self, "conjugates", None),
                           "chosen": {a: sum(1 for e in log if e["pathway"] == a)
                                      for a in sorted({e["pathway"] for e in log})}}),
                 "adopted": sorted(n for n, a in self.adopted_concepts.items()

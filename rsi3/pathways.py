@@ -163,6 +163,29 @@ class PathwayRegistry:
                 self.pathways.setdefault(f"decompose:{sk}", Pathway(
                     f"decompose:{sk}", "decompose", "designer", 0, status="dormant"))
 
+    def refresh_conjugates(self, state, step_budget: int, fold: bool) -> int:
+        """Per generation: conjugate skeletons from the system's current programs."""
+        from .decompose import conjugate_skeletons
+        from rsi2.types import ListOf, INT, Arrow
+        from .selfmodel import normalize
+        list_type = str(Arrow(ListOf(INT), ListOf(INT)))
+        programs = {name: normalize(term) for name, term in state.solutions.items()
+                    if str(self.tasks[name].request_type) == list_type}
+        added = 0
+        for task_name, task in self.tasks.items():
+            if task_name in state.solutions:
+                continue
+            current = self.skeletons.setdefault(task_name, {})
+            for name in [n for n in current if n.startswith("conj")]:
+                del current[name]
+            for sk in conjugate_skeletons(task.examples, programs, state.grammar.library,
+                                          step_budget, fold):
+                current[sk.name] = sk
+                self.pathways.setdefault(f"decompose:{sk.name}", Pathway(
+                    f"decompose:{sk.name}", "decompose", "designer", 0, status="dormant"))
+                added += 1
+        return added
+
     def add_invented_pathway(self) -> None:
         """A separate pathway searching with this generation's concepts at full weight."""
         self.pathways.setdefault("invented", Pathway("invented", "invented", "designer", 0,

@@ -250,3 +250,59 @@ ALL_SKELETONS = [
     Fold("fold_true", Arrow(BOOL, Arrow(INT, BOOL)), Term("bool", True)),
     Fold("fold_false", Arrow(BOOL, Arrow(INT, BOOL)), Term("bool", False)),
 ]
+
+
+class Conjugate(Skeleton):
+    """lambda l. C (S[h] (C l)) for a program C the system can already run.
+
+    Problem transformation by a symmetry the system itself has: if one of its
+    verified list -> list programs C is an involution on a task's public data
+    (C (C x) = x for every input and output), the task (x, y) becomes the task
+    (C x, C y). A base skeleton S that fits the transformed task, with hole h,
+    solves the original as C . S[h] . C. Reverse, once the system has found
+    it, turns "append k" into "prepend k", which it already solves.
+    """
+
+    def __init__(self, name, base: Skeleton, conjugator: Term):
+        object.__setattr__(self, "name", name)
+        object.__setattr__(self, "hole_type", base.hole_type)
+        object.__setattr__(self, "base", base)
+        object.__setattr__(self, "conjugator", conjugator)
+
+    def build(self, h):
+        return Lam(LIST, App(self.conjugator, App(self.base.build(h), App(self.conjugator,
+                                                                        Var(0)))))
+
+
+def conjugate_skeletons(examples, programs: dict, library: dict, step_budget: int = 2000,
+                        fold: bool = False) -> list[Skeleton]:
+    """Conjugates by every list -> list program that is an involution on these examples."""
+    from rsi2.evaluator import evaluate
+    from .selfmodel import concept_name
+    if not all(len(i) == 1 and _is_int_list(i[0]) and _is_int_list(o) for i, o in examples):
+        return []
+    found = []
+    for origin in sorted(programs):
+        program = programs[origin]
+
+        def run(value):
+            result = evaluate(program, (value,), library=library, step_budget=step_budget)
+            return result.value if result.ok else None
+
+        transformed, involution = [], True
+        for (x,), y in examples:
+            cx, cy = run(x), run(y)
+            if (cx is None or cy is None or not _is_int_list(cx) or not _is_int_list(cy)
+                    or run(cx) != list(x) and run(cx) != x or run(cy) != list(y) and run(cy) != y):
+                involution = False
+                break
+            transformed.append(((cx,), cy))
+        if not involution or all(list(t[0][0]) == list(e[0][0])
+                                 for t, e in zip(transformed, examples)):
+            continue                      # not an involution, or the identity on this task
+        tag = concept_name(program)[2:8]
+        for base in skeletons_for(transformed, fold):
+            if base.name.startswith("conj"):
+                continue
+            found.append(Conjugate(f"conj{tag}_{base.name}", base, program))
+    return found

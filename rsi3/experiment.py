@@ -118,6 +118,12 @@ ARMS = {
                                 invention_near_misses=True, invention_meta=True,
                                 decomposition_fold=True, meta_extended=True,
                                 meta_selfplay=True),
+    # Problem transformation: RSI3_META_PLAY plus conjugate skeletons.
+    "RSI3_META_CONJ": ArmConfig("RSI3_META_CONJ", allocation="meta", genesis=False,
+                                designer_kinds=("prior",), failure_memory=True, invention=True,
+                                invention_near_misses=True, invention_meta=True,
+                                decomposition_fold=True, meta_extended=True,
+                                meta_selfplay=True, decomposition_conjugate=True),
 }
 BASELINE = "RSI2"
 
