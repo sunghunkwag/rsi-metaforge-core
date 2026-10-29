@@ -14,7 +14,8 @@ from statistics import mean
 ARM_ORDER = ["RSI2", "RSI3", "RSI3_NO_REPLAY", "RSI3_NO_GENESIS", "RSI3_UNIFORM",
              "RSI3_UNIFORM_FM", "RSI3_FM", "RSI3_UNIFORM_FM_SCM", "RSI3_UNIFORM_FM_SC",
              "RSI3_UNIFORM_FM_INV", "RSI3_UNIFORM_FM_INVP", "RSI3_UNIFORM_FM_DEC",
-             "RSI3_META", "RSI3_META_WIPE", "RSI3_META_FOLD", "RSI3_META_PLAY", "RSI3_META_CONJ"]
+             "RSI3_META", "RSI3_META_WIPE", "RSI3_META_FOLD", "RSI3_META_PLAY", "RSI3_META_CONJ",
+             "RSI3_META_BEH", "RSI3_META_BEH_BASE"]
 COMPARISONS = [
     ("C1", "RSI3", "RSI2", "train"), ("C2", "RSI3", "RSI3_UNIFORM", "train"),
     ("C3", "RSI3", "RSI3_NO_REPLAY", "train"), ("C4", "RSI3", "RSI3_NO_GENESIS", "train"),
@@ -47,6 +48,11 @@ COMPARISONS = [
     ("Z3", "RSI3_META_CONJ", "RSI3_META", "agent"),
     ("Z4", "RSI3_META_CONJ", "RSI3_META_PLAY", "agent"),
     ("Z6", "RSI3_META_PLAY", "RSI3_META_FOLD", "agent"),
+    # Behavioural-search study (PREDICTIONS_BEHAVE.md)
+    ("B1", "RSI3_META_BEH", "RSI3_META_CONJ", "train"),
+    ("B2", "RSI3_META_BEH", "RSI3_META_CONJ", "agent"),
+    ("B3", "RSI3_META_BEH", "RSI3_META_BEH_BASE", "train"),
+    ("B4", "RSI3_META_BEH", "RSI3_META_BEH_BASE", "agent"),
 ]
 
 
@@ -259,10 +265,14 @@ def render(runs: dict) -> str:
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Render RSI-3 results")
-    parser.add_argument("--results", type=Path, required=True)
+    parser.add_argument("--results", type=Path, nargs="+", required=True,
+                        help="one or more result directories (later ones add arms)")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
-    args.output.write_text(render(load(args.results)), encoding="utf-8")
+    runs = {}
+    for directory in args.results:
+        runs.update(load(directory))
+    args.output.write_text(render(runs), encoding="utf-8")
 
 
 if __name__ == "__main__":

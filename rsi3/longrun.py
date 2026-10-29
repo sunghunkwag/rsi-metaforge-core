@@ -84,7 +84,8 @@ def agent_validation(runtime, model, validation, config: dict, verifier,
     Same budget as VALIDATION (B_eval per task). Actions: the prior,
     recognition-conditioned exactly as in RSI-2's ``assess``, plus, for arms
     that decompose, every skeleton the task's public examples fit, searched
-    with the adopted library. The arm's own policy decides how the budget is
+    with the adopted library, and for arms with behavioural search, its
+    problems for the task (behave.py), built from the adopted library. The arm's own policy decides how the budget is
     spent: the meta-policy for meta arms (applied, never trained, on these
     tasks), a fixed split otherwise. One verifier query per task. For an arm
     that only searches the prior this equals VALIDATION exactly.
@@ -109,6 +110,19 @@ def agent_validation(runtime, model, validation, config: dict, verifier,
                 searches[f"decompose:{sk.name}"] = ResumableSearch(
                     public.examples, sk.hole_type, runtime.state.grammar, compose=sk.compose,
                     **search)
+        if getattr(arm, "behave", False):
+            from .behave import BehaviouralSearch, problems_for
+            settings = config.get("behave", {})
+            problems = problems_for(public.examples, public.request_type,
+                                    skeletons_for(public.examples, False),
+                                    int(settings.get("max_unroll", 6)))
+            for kind, problem in problems.items():
+                searches[f"behave:{kind}"] = BehaviouralSearch(
+                    problem, library if arm.behave_library else {}, public.examples,
+                    step_budget=search["step_budget"],
+                    max_size=int(settings.get("max_size", 10)),
+                    combo_limit=int(settings.get("combo_limit", 2_000_000)),
+                    weights=runtime.state.grammar.weights if arm.behave_library else None)
         found, spent, used_by = None, 0, {}
         if runtime.metapolicy is not None:
             shape, history = shape_features(public.examples, arm.meta_extended), {}
@@ -164,10 +178,13 @@ def final_record(runtime) -> dict:
 
 
 def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = None, *,
-        train=None, validation=None) -> bool:
+        train=None, validation=None, skip_validation: bool = False) -> bool:
     """Advance the job; return True when all generations are done.
 
     ``train`` and ``validation`` default to the corpus splits (tests pass subsets).
+    ``skip_validation`` runs TRAIN only and never loads VALIDATION: for
+    development runs, so that VALIDATION outcomes stay unseen until the
+    registered runs.
     """
     arm = ARMS[arm_name]
     if not shared_trajectory_ok(arm):
@@ -177,7 +194,10 @@ def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = N
     checkpoint = output / f"{arm_name}.checkpoint.pkl"
     wall_started = time.perf_counter()
     train = load_train() if train is None else train
-    validation = load_validation() if validation is None else validation
+    if skip_validation:
+        validation = []
+    elif validation is None:
+        validation = load_validation()
     rsi2_config = {"B_wake": config["B_wake"], "B_eval": config["B_eval"],
                    "dreams": config["dreams"], "search": dict(config["search"])}
     run_config = dict(config, compact_searches=True)
@@ -191,7 +211,8 @@ def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = N
                                          "continuity": config.get("continuity", {}),
                                          "invention": config.get("invention", {}),
                                          "compact_searches": True,
-                                         "meta": config.get("meta", {})})
+                                         "meta": config.get("meta", {}),
+                                         "behave": config.get("behave", {})})
         records, cpu = {seed: [] for seed in seeds}, {seed: 0.0 for seed in seeds}
     from .verifier import FrozenVerifier
     agent_verifiers = {seed: FrozenVerifier(validation, step_budget=config["search"]["step_budget"])
@@ -204,6 +225,11 @@ def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = N
         for seed in seeds:
             seed_started = time.process_time()
             seed_record = copy.deepcopy(record)
+            if skip_validation:
+                seed_record["validation"] = seed_record["validation_agent"] = None
+                records[seed].append(seed_record)
+                cpu[seed] += shared
+                continue
             if seed == seeds[0]:
                 model = runtime.state.recognition
             else:
@@ -213,7 +239,8 @@ def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = N
             seed_record["validation"] = validation_record(runtime.state, model, validation,
                                                           rsi2_config)
             seed_record["validation_agent"] = agent_validation(
-                runtime, model, validation, rsi2_config | {"meta": config.get("meta", {})},
+                runtime, model, validation, rsi2_config | {"meta": config.get("meta", {}),
+                                                           "behave": config.get("behave", {})},
                 agent_verifiers[seed], generation)
             seed_record["cpu_seconds"] = record["cpu_seconds"] + (
                 time.process_time() - seed_started)
@@ -224,7 +251,7 @@ def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = N
             pickle.dump({"runtime": runtime, "records": records, "cpu": cpu}, handle)
         temporary.replace(checkpoint)
         print(f"{arm_name} generation {generation}: TRAIN {record['train_solved']}, "
-              f"VALIDATION {[records[s][-1]['validation']['solved'] for s in seeds]}, "
+              f"VALIDATION {[(records[s][-1]['validation'] or {}).get('solved') for s in seeds]}, "
               f"cpu {shared:.0f}s", flush=True)
         if max_minutes is not None and time.perf_counter() - wall_started > 60 * max_minutes:
             if len(records[seeds[0]]) < config["generations"]:
@@ -247,11 +274,18 @@ def main(argv=None):
     parser.add_argument("--max-minutes", type=float, default=None)
     parser.add_argument("--generations", type=int, default=None,
                         help="checks against shorter committed runs only")
+    parser.add_argument("--seeds", type=str, default=None,
+                        help="comma-separated seeds overriding the config (development)")
+    parser.add_argument("--skip-validation", action="store_true",
+                        help="TRAIN only; VALIDATION is never loaded (development)")
     args = parser.parse_args(argv)
     config = json.loads(args.config.read_text(encoding="utf-8"))
     if args.generations is not None:
         config["generations"] = args.generations
-    done = run(args.arm, config, args.output, args.max_minutes)
+    if args.seeds is not None:
+        config["seeds"] = [int(x) for x in args.seeds.split(",")]
+    done = run(args.arm, config, args.output, args.max_minutes,
+               skip_validation=args.skip_validation)
     print(json.dumps({"arm": args.arm, "complete": done}))
 
 

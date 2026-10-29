@@ -124,6 +124,22 @@ ARMS = {
                                 invention_near_misses=True, invention_meta=True,
                                 decomposition_fold=True, meta_extended=True,
                                 meta_selfplay=True, decomposition_conjugate=True),
+    # Behavioural-search study (PREDICTIONS_BEHAVE.md): RSI3_META_CONJ plus
+    # behavioural search (behave.py) as meta-RL actions, building from the
+    # system's own library and ordered by its fitted grammar; and the same
+    # search from RSI-2's primitives only (the designer-only control).
+    "RSI3_META_BEH": ArmConfig("RSI3_META_BEH", allocation="meta", genesis=False,
+                               designer_kinds=("prior",), failure_memory=True, invention=True,
+                               invention_near_misses=True, invention_meta=True,
+                               decomposition_fold=True, meta_extended=True,
+                               meta_selfplay=True, decomposition_conjugate=True, behave=True),
+    "RSI3_META_BEH_BASE": ArmConfig("RSI3_META_BEH_BASE", allocation="meta", genesis=False,
+                                    designer_kinds=("prior",), failure_memory=True,
+                                    invention=True, invention_near_misses=True,
+                                    invention_meta=True, decomposition_fold=True,
+                                    meta_extended=True, meta_selfplay=True,
+                                    decomposition_conjugate=True, behave=True,
+                                    behave_library=False),
 }
 BASELINE = "RSI2"
 
