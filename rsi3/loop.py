@@ -162,6 +162,11 @@ class Runtime:
             self.selfmodel.meta = bool(arm.invention_meta)
         self._concept_kinds: dict[str, str] = {}
         self.registry.compact = bool(config.get("compact_searches", False))
+        # In the per-task allocations a task's searches are released once,
+        # after all of its windows, instead of after every window: a rebuild
+        # fast-forwards through the whole searched prefix, so per-window
+        # release made many short chunks cost quadratic CPU. Logic is unchanged.
+        self._task_turn = False
 
     # ---- wake ------------------------------------------------------------
     def _slots(self, unsolved, pending, window) -> list[Slot]:
@@ -215,7 +220,7 @@ class Runtime:
         self.memory.record(episode, receipt)
         self.registry.pathways[pid].windows += 1
         log.append(episode.to_record())
-        if self.registry.compact:
+        if self.registry.compact and not self._task_turn:
             self.registry.release(task, pid)
         return result.evaluated
 
@@ -270,6 +275,7 @@ class Runtime:
         for task, budget in Controller.uniform_split(budget_total, unsolved).items():
             history = self.chunks_spent.setdefault(task, {})
             remaining = budget
+            self._task_turn = True
             while remaining > 0 and task not in pending:
                 actions = self.meta_actions(task)
                 if not actions:
@@ -284,6 +290,9 @@ class Runtime:
                 history[action] = history.get(action, 0) + 1
                 spent += used
                 remaining -= max(used, 1)
+            self._task_turn = False
+            if self.registry.compact:
+                self.registry.release_task(task)
         self.meta_fit = self.metapolicy.fit(generation)
         return spent
 
@@ -297,6 +306,7 @@ class Runtime:
         if self.arm.allocation == "uniform":
             split = self.arm.invention_split if self.registry.extra_library else 0.0
             for task, budget in Controller.uniform_split(budget_total, unsolved).items():
+                self._task_turn = True
                 invented = int(budget * split)
                 skeletons = (sorted(self.registry.skeletons.get(task, {}))
                              if self.arm.decomposition_split > 0 else [])
@@ -314,6 +324,9 @@ class Runtime:
                     if share and task not in pending:
                         spent += self._run_window(task, f"decompose:{name}", 0.0, share,
                                                   generation, pending, log)
+                self._task_turn = False
+                if self.registry.compact:
+                    self.registry.release_task(task)
         elif self.arm.allocation == "meta":
             spent += self._meta_wake(budget_total, unsolved, generation, pending, log)
         elif self.arm.allocation == "learned":

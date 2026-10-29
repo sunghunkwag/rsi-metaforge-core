@@ -240,6 +240,11 @@ class PathwayRegistry:
             pathway.awakened_generation = generation
         return cached
 
+    def release_task(self, task: str) -> None:
+        """Compact mode: release every live search of one task (after its turn)."""
+        for key in [key for key in self._live if key[0] == task]:
+            self.release(*key)
+
     def release(self, task: str, pid: str) -> None:
         """Compact mode: drop the live search, keeping what is needed to rebuild it."""
         cached = self._live.pop((task, pid), None)

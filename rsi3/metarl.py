@@ -86,6 +86,7 @@ class MetaPolicy:
         self.wipe = bool(wipe)
         self.episodes: list[tuple] = []        # (generation, action, context, reward)
         self.models: dict[str, tuple] = {}     # action -> (weights | None, prior)
+        self.base_rate = 0.5
         self.last_fit: dict = {}
 
     # ---- learning --------------------------------------------------------
@@ -99,6 +100,11 @@ class MetaPolicy:
             by_action.setdefault(action, []).append((x, r))
         self.models = {}
         summary = {}
+        rewards = sum(r for _, _, _, r in replay)
+        # An action never tried starts at the overall reward rate, not at an
+        # optimistic 0.5 (which made a newly available action take every chunk
+        # of a generation); the exploration bonus is what gets it tried.
+        self.base_rate = (rewards + 1.0) / (len(replay) + 2.0)
         for action, rows in sorted(by_action.items()):
             X = np.stack([x for x, _ in rows])
             y = np.asarray([r for _, r in rows], dtype=np.float64)
@@ -118,8 +124,7 @@ class MetaPolicy:
         return self.last_fit
 
     def probability(self, action: str, x: np.ndarray) -> float:
-        # An action never tried has the optimistic prior 0.5, so it is explored.
-        weights, prior = self.models.get(action, (None, 0.5))
+        weights, prior = self.models.get(action, (None, self.base_rate))
         if weights is None:
             return prior
         return float(_sigmoid(x @ weights))
