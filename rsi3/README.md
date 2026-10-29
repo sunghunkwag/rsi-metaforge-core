@@ -24,12 +24,14 @@ capability at equal logical budgets.
 
 | **Cascade** ([CASCADE_RESULTS.md](CASCADE_RESULTS.md)) | Fold skeletons, self-play meta-RL (the policy trains on tasks it imagines through its own skeletons) and conjugation (an unsolved task is transformed by one of the system's own verified involutions). The first cascade: reverse (g13) → append-k ×2 by conjugation (g14) → append-index-k (g16), while RSI-2's MDL learner compresses the shared structure into a library (first `lambda acc x. cons x acc`, then reverse built on it). **21/36 TRAIN**; held-out 5/12 on every seed (+1, `sum`, from the fold skeleton; the cascade itself transfers nothing). All 12 registered predictions hit. |
 
+| **Behavioural search** ([BEHAVE_RESULTS.md](BEHAVE_RESULTS.md)) | Bottom-up search that keeps one program per behaviour on the public inputs (observational equivalence), with deduction through `cons`, `not` and witness functions that compute a binary operation's constant argument. One meta-RL action per problem. Built from the system's own library: **25/36 TRAIN** (all six slices, `keep-mod-k`, `is-mod-k`), but the reverse cascade is lost and held-out drops to **4/12**. The same search from RSI-2's primitives only: 21/36 TRAIN and **7/12 held-out on every seed**, the best held-out score so far, with two caesar tasks no run had solved. The library helps where budget accumulates (TRAIN) and hurts at 64 candidates per held-out task. 4 of 8 predictions hit; every open forecast about the library arm's held-out score missed. |
+
 Plain VALIDATION (RSI-2's `assess`) did not improve on the registered comparison of any study. Held-out gains appear only when the learned solver is used at test time (`validation_agent`). TEST was not opened.
 
 - [`OWNER_DIRECTIVE.md`](OWNER_DIRECTIVE.md) — scope and constraints
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — component map and the evidence behind each design decision
-- [`PREDICTIONS.md`](PREDICTIONS.md), [`PREDICTIONS_FAILURE_MEMORY.md`](PREDICTIONS_FAILURE_MEMORY.md), [`PREDICTIONS_SELF_CONTINUITY.md`](PREDICTIONS_SELF_CONTINUITY.md) (abandoned), [`PREDICTIONS_INVENTION.md`](PREDICTIONS_INVENTION.md), [`PREDICTIONS_LONG.md`](PREDICTIONS_LONG.md) (suspended), [`PREDICTIONS_METARL.md`](PREDICTIONS_METARL.md), [`PREDICTIONS_CASCADE.md`](PREDICTIONS_CASCADE.md) — registered before each study's final runs
-- [`RESULTS.md`](RESULTS.md), [`FAILURE_MEMORY_RESULTS.md`](FAILURE_MEMORY_RESULTS.md), [`INVENTION_RESULTS.md`](INVENTION_RESULTS.md), [`METARL_RESULTS.md`](METARL_RESULTS.md), [`CASCADE_RESULTS.md`](CASCADE_RESULTS.md) — measured outcomes, predictions scored
+- [`PREDICTIONS.md`](PREDICTIONS.md), [`PREDICTIONS_FAILURE_MEMORY.md`](PREDICTIONS_FAILURE_MEMORY.md), [`PREDICTIONS_SELF_CONTINUITY.md`](PREDICTIONS_SELF_CONTINUITY.md) (abandoned), [`PREDICTIONS_INVENTION.md`](PREDICTIONS_INVENTION.md), [`PREDICTIONS_LONG.md`](PREDICTIONS_LONG.md) (suspended), [`PREDICTIONS_METARL.md`](PREDICTIONS_METARL.md), [`PREDICTIONS_CASCADE.md`](PREDICTIONS_CASCADE.md), [`PREDICTIONS_BEHAVE.md`](PREDICTIONS_BEHAVE.md) — registered before each study's final runs
+- [`RESULTS.md`](RESULTS.md), [`FAILURE_MEMORY_RESULTS.md`](FAILURE_MEMORY_RESULTS.md), [`INVENTION_RESULTS.md`](INVENTION_RESULTS.md), [`METARL_RESULTS.md`](METARL_RESULTS.md), [`CASCADE_RESULTS.md`](CASCADE_RESULTS.md), [`BEHAVE_RESULTS.md`](BEHAVE_RESULTS.md) — measured outcomes, predictions scored
 - [`studies/REGULATION_TOY_RESULTS.md`](studies/REGULATION_TOY_RESULTS.md) — the study behind design decision D1
 
 Nothing in `rsi2/`, `docs/`, or `rsi_levels_metaforge_unified.py` is modified.
@@ -58,6 +60,10 @@ done
 # the cascade study (16 generations)
 for arm in RSI3_META RSI3_META_FOLD RSI3_META_PLAY RSI3_META_CONJ; do
   python -m rsi3.longrun --config rsi3/experiment_config_cascade.json --arm $arm --output NEW_DIR5
+done
+# the behavioural-search study (16 generations; comparator: the cascade study's CONJ runs)
+for arm in RSI3_META_BEH RSI3_META_BEH_BASE; do
+  python -m rsi3.longrun --config rsi3/experiment_config_behave.json --arm $arm --output NEW_DIR6
 done
 python -m rsi3.report --results NEW_EMPTY_DIR --output report.md
 ```
