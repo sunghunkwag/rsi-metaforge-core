@@ -147,3 +147,36 @@ class ResumptionTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FoldTests(unittest.TestCase):
+    def test_fold_action_finds_reverse(self):
+        examples = _task(lambda xs: list(reversed(xs)), seed=11)
+        problems = problems_for(examples, Arrow(LIST, LIST), skeletons_for(examples), folds=True)
+        self.assertIn("fold", problems)
+        result = BehaviouralSearch(problems["fold"], {}, examples, known=set()).run(1000)
+        self.assertIsNotNone(result.term)
+        for inputs, expected in examples:
+            self.assertEqual(evaluate(result.term, inputs, step_budget=2000).value, expected)
+
+    def test_fold_vectors_are_what_the_evaluator_computes(self):
+        examples = _task(lambda xs: sum(xs), seed=12)
+        problem = whole_problem(examples, Arrow(LIST, INT), folds=True)
+        search = BehaviouralSearch(problem, {}, examples, known=set())
+        checked = 0
+        for tag, term, vector, kind in search._events:
+            if tag not in ("i", "l", "b") or kind != "new" or "fold" not in repr(term):
+                continue
+            program = problem.wrap(term)
+            for (inputs, _), value in zip(examples, vector):
+                result = evaluate(program, inputs, step_budget=20000)
+                self.assertTrue(result.ok, (term, result.error))
+                self.assertEqual(frozen(result.value), value, term)
+            checked += 1
+            if checked >= 150:
+                break
+        self.assertGreaterEqual(checked, 150)
+
+    def test_without_folds_there_is_no_fold_problem(self):
+        examples = _task(lambda xs: list(reversed(xs)), seed=11)
+        self.assertNotIn("fold", problems_for(examples, Arrow(LIST, LIST), skeletons_for(examples)))

@@ -186,7 +186,8 @@ class PathwayRegistry:
                 added += 1
         return added
 
-    def add_behave_pathways(self, settings: dict, use_library: bool = True) -> None:
+    def add_behave_pathways(self, settings: dict, use_library: bool = True,
+                            folds: bool = False) -> None:
         """One behavioural-search pathway per problem kind some task has (behave.py)."""
         from .behave import problems_for
         from .decompose import skeletons_for
@@ -197,7 +198,7 @@ class PathwayRegistry:
         for name, task in self.tasks.items():
             problems = problems_for(task.examples, task.request_type,
                                     skeletons_for(task.examples, False),
-                                    int(settings.get("max_unroll", 6)))
+                                    int(settings.get("max_unroll", 6)), folds)
             self.behave_problems[name] = problems
             for kind in problems:
                 self.pathways.setdefault(f"behave:{kind}", Pathway(

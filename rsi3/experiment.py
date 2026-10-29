@@ -140,6 +140,15 @@ ARMS = {
                                     meta_extended=True, meta_selfplay=True,
                                     decomposition_conjugate=True, behave=True,
                                     behave_library=False),
+    # Fold follow-up (PREDICTIONS_BEHAVE_FOLD.md): RSI3_META_BEH plus the
+    # behavioural fold action (closed steps folded over pool lists).
+    "RSI3_META_BEH_FOLD": ArmConfig("RSI3_META_BEH_FOLD", allocation="meta", genesis=False,
+                                    designer_kinds=("prior",), failure_memory=True,
+                                    invention=True, invention_near_misses=True,
+                                    invention_meta=True, decomposition_fold=True,
+                                    meta_extended=True, meta_selfplay=True,
+                                    decomposition_conjugate=True, behave=True,
+                                    behave_folds=True),
 }
 BASELINE = "RSI2"
 

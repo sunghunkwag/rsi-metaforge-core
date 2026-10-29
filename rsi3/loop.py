@@ -80,6 +80,9 @@ class ArmConfig:
     # ordered by its fitted grammar (False: RSI-2's primitives and constants
     # only, in a fixed order; the designer-only control).
     behave_library: bool = True
+    # Behavioural search also builds ``fold h init L`` with closed steps, as
+    # a separate action (behave.StepPool).
+    behave_folds: bool = False
 
 
 def standardized_features(public_tasks) -> dict:
@@ -168,7 +171,8 @@ class Runtime:
         if arm.decomposition_split > 0 or meta:
             self.registry.add_decompose_pathways(fold=arm.decomposition_fold)
         if arm.behave:
-            self.registry.add_behave_pathways(config.get("behave", {}), arm.behave_library)
+            self.registry.add_behave_pathways(config.get("behave", {}), arm.behave_library,
+                                              arm.behave_folds)
         self.metapolicy = MetaPolicy(wipe=arm.meta_wipe) if meta else None
         self.shapes = {task.name: shape_features(task.examples, arm.meta_extended)
                        for task in self.public}
@@ -403,7 +407,8 @@ class Runtime:
         weights = self.state.grammar.weights if self.arm.behave_library else None
         spent = 0
         for kind, problem in problems_for(examples, request, skeletons_for(examples, False),
-                                          int(settings.get("max_unroll", 6))).items():
+                                          int(settings.get("max_unroll", 6)),
+                                          self.arm.behave_folds).items():
             search = BehaviouralSearch(problem, library, examples,
                                        step_budget=self.config["search"]["step_budget"],
                                        max_size=int(settings.get("max_size", 10)),
