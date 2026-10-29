@@ -15,7 +15,7 @@ ARM_ORDER = ["RSI2", "RSI3", "RSI3_NO_REPLAY", "RSI3_NO_GENESIS", "RSI3_UNIFORM"
              "RSI3_UNIFORM_FM", "RSI3_FM", "RSI3_UNIFORM_FM_SCM", "RSI3_UNIFORM_FM_SC",
              "RSI3_UNIFORM_FM_INV", "RSI3_UNIFORM_FM_INVP", "RSI3_UNIFORM_FM_DEC",
              "RSI3_META", "RSI3_META_WIPE", "RSI3_META_FOLD", "RSI3_META_PLAY", "RSI3_META_CONJ",
-             "RSI3_META_BEH", "RSI3_META_BEH_BASE", "RSI3_META_BEH_FOLD"]
+             "RSI3_META_BEH", "RSI3_META_BEH_BASE", "RSI3_META_BEH_FOLD", "RSI3_META_HONEST"]
 COMPARISONS = [
     ("C1", "RSI3", "RSI2", "train"), ("C2", "RSI3", "RSI3_UNIFORM", "train"),
     ("C3", "RSI3", "RSI3_NO_REPLAY", "train"), ("C4", "RSI3", "RSI3_NO_GENESIS", "train"),
@@ -57,6 +57,9 @@ COMPARISONS = [
     ("R1", "RSI3_META_BEH_FOLD", "RSI3_META_BEH", "train"),
     ("R2", "RSI3_META_BEH_FOLD", "RSI3_META_BEH", "agent"),
     ("R3", "RSI3_META_BEH_FOLD", "RSI3_META_CONJ", "train"),
+    # Honest self-play (PREDICTIONS_HONEST.md)
+    ("H1", "RSI3_META_HONEST", "RSI3_META_BEH_FOLD", "agent"),
+    ("H2", "RSI3_META_HONEST", "RSI3_META_CONJ", "agent"),
 ]
 
 
