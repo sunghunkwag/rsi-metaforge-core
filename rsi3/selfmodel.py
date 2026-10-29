@@ -64,9 +64,10 @@ from rsi2.terms import App, Lam, Term, Var, pretty, shift
 from rsi2.types import (INT, PRIMITIVE_TYPES, Type, TypeInferenceError, function_parts,
                         infer, instantiate, unify)
 
-KINDS = ("constant", "iterate", "nearmiss", "power", "compose", "part")
+KINDS = ("constant", "iterate", "nearmiss", "abstract", "power", "compose", "part")
 BASE_CONSTANTS = (-1, 0, 1, 2)
-DEFAULT_CAPS = {"constant": 4, "iterate": 3, "nearmiss": 0, "power": 6, "compose": 6, "part": 8}
+DEFAULT_CAPS = {"constant": 4, "iterate": 3, "nearmiss": 0, "abstract": 0, "power": 6, "compose": 6,
+                "part": 8}
 MIN_PART_SIZE = 4
 MIN_WHOLE_SIZE = 6
 # Prior weight of a concept not yet adopted. RSI-2 gives an unused production
@@ -211,6 +212,43 @@ def _repeated_functions(solutions: dict, library: dict) -> list[tuple[Term, tupl
                 key = pretty(outer)
                 found.setdefault(key, [outer, set()])[1].add(origin)
     return [(term, tuple(sorted(origins))) for _, (term, origins) in sorted(found.items())]
+
+
+def _paths(term, path=(), depth=0):
+    yield term, path, depth
+    for index, child in enumerate(term.children):
+        yield from _paths(child, path + (index,), depth + (term.tag == "lam"))
+
+
+def _replace(term, path, replacement):
+    if not path:
+        return replacement
+    children = list(term.children)
+    children[path[0]] = _replace(children[path[0]], path[1:], replacement)
+    return Term(term.tag, term.value, tuple(children))
+
+
+def _abstractions(program: Term, library: dict) -> list[Term]:
+    """lambda h. program[h / s] for every closed subterm s of two or more nodes."""
+    program = normalize(program)
+    found = []
+    for node, path, depth in _paths(program):
+        if not path or node.size < 2 or not _closed(node):
+            continue
+        if program.size - node.size + 1 < 4:      # too little scaffold to be worth naming
+            continue
+        try:
+            hole_type = infer(node, library=library)
+        except (TypeInferenceError, RecursionError):
+            continue
+        body = _replace(program, path, Var(depth))
+        concept = Lam(hole_type, body)
+        try:
+            infer(concept, library=library)
+        except (TypeInferenceError, RecursionError):
+            continue
+        found.append(concept)
+    return found
 
 
 def _walk(term, env=()):
@@ -386,6 +424,17 @@ class SelfModel:
         unary = []          # (term, argument type, result type, sources)
         int_functions = []
         proposals = {kind: [] for kind in KINDS}
+
+        # Skeletons the system abstracts from its own programs (kind
+        # "abstract", off unless its cap is set): a closed subterm of a
+        # verified program becomes a parameter, and the rest of the program
+        # becomes a higher-order concept, e.g. lambda h. fold h nil from
+        # fold (lambda acc x. cons x acc) nil. Searching a small hole inside a
+        # scaffold it has already used is the system's own decomposition.
+        if self.caps.get("abstract", 0) > 0:
+            for task in sorted(solutions):
+                for concept in _abstractions(solutions[task], library):
+                    proposals["abstract"].append((concept, None, (task,)))
 
         for term, type_, sources in parts:
             arguments, result = function_parts(type_)

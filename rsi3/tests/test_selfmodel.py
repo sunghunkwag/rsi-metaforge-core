@@ -189,3 +189,16 @@ class InventedPathwayTests(unittest.TestCase):
         for arm in ("RSI3_UNIFORM_FM", "RSI3_UNIFORM_FM_INV", "RSI3"):
             runtime = Runtime(11, [train["index-k with k=3"]], ARMS[arm], config)
             self.assertNotIn("invented", runtime.registry.pathways)
+
+
+class AbstractionTests(unittest.TestCase):
+    def test_the_system_abstracts_a_skeleton_from_its_own_program(self):
+        from rsi3.selfmodel import _abstractions
+        from rsi2.types import ListOf
+        L = ListOf(INT)
+        reverse = App(App(Prim("fold"), Lam(L, Lam(INT, App(App(Prim("cons"), Var(0)),
+                                                             Var(1))))), Prim("nil"))
+        bodies = [pretty(c) for c in _abstractions(reverse, {})]
+        self.assertIn("(lambda x0: list[int] -> int -> list[int]. ((fold x0) nil))", bodies)
+        off = SelfModel([public_view(t) for t in load_train()]).invent({"reverse": reverse}, {})
+        self.assertFalse([c for c in off if c.kind == "abstract"], "off unless its cap is set")
