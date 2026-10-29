@@ -106,6 +106,24 @@ ARMS = {
                                 designer_kinds=("prior",), failure_memory=True, invention=True,
                                 invention_near_misses=True, invention_meta=True,
                                 meta_wipe=True),
+    # Fold-cascade study: RSI3_META plus fold (catamorphism) skeletons.
+    "RSI3_META_FOLD": ArmConfig("RSI3_META_FOLD", allocation="meta", genesis=False,
+                                designer_kinds=("prior",), failure_memory=True, invention=True,
+                                invention_near_misses=True, invention_meta=True,
+                                decomposition_fold=True),
+    # Self-play meta-RL: RSI3_META_FOLD plus relation features and imagined
+    # tasks that give the policy dense training signal.
+    "RSI3_META_PLAY": ArmConfig("RSI3_META_PLAY", allocation="meta", genesis=False,
+                                designer_kinds=("prior",), failure_memory=True, invention=True,
+                                invention_near_misses=True, invention_meta=True,
+                                decomposition_fold=True, meta_extended=True,
+                                meta_selfplay=True),
+    # Problem transformation: RSI3_META_PLAY plus conjugate skeletons.
+    "RSI3_META_CONJ": ArmConfig("RSI3_META_CONJ", allocation="meta", genesis=False,
+                                designer_kinds=("prior",), failure_memory=True, invention=True,
+                                invention_near_misses=True, invention_meta=True,
+                                decomposition_fold=True, meta_extended=True,
+                                meta_selfplay=True, decomposition_conjugate=True),
 }
 BASELINE = "RSI2"
 

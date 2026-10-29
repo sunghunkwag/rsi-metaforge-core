@@ -63,6 +63,15 @@ class ArmConfig:
     # Meta-RL allocation only: refit the policy on the current generation
     # instead of the full replay (the wiped-memory control).
     meta_wipe: bool = False
+    # Add the fold (catamorphism) skeletons to decomposition (decompose.py).
+    decomposition_fold: bool = False
+    # Meta-RL: extended relation features in the policy's task shape, and
+    # self-play episodes from tasks the system imagines through its skeletons.
+    meta_extended: bool = False
+    meta_selfplay: bool = False
+    # Conjugate skeletons: transform an unsolved task by one of the system's
+    # own involutive list programs (decompose.conjugate_skeletons).
+    decomposition_conjugate: bool = False
 
 
 def standardized_features(public_tasks) -> dict:
@@ -149,9 +158,10 @@ class Runtime:
         if arm.invention and (arm.invention_split > 0 or meta):
             self.registry.add_invented_pathway()
         if arm.decomposition_split > 0 or meta:
-            self.registry.add_decompose_pathways()
+            self.registry.add_decompose_pathways(fold=arm.decomposition_fold)
         self.metapolicy = MetaPolicy(wipe=arm.meta_wipe) if meta else None
-        self.shapes = {task.name: shape_features(task.examples) for task in self.public}
+        self.shapes = {task.name: shape_features(task.examples, arm.meta_extended)
+                       for task in self.public}
         self.chunks_spent: dict[str, dict[str, int]] = {}   # task -> action -> chunks, all generations
         self.near_misses = None
         if arm.invention and arm.invention_near_misses:
@@ -271,6 +281,9 @@ class Runtime:
     def _meta_wake(self, budget_total, unsolved, generation, pending, log) -> int:
         """Each task's even share, spent in chunks on actions the meta-policy picks."""
         chunk = int(self.config.get("meta", {}).get("chunk", 16))
+        if self.arm.decomposition_conjugate:
+            self.conjugates = self.registry.refresh_conjugates(
+                self.state, self.config["search"]["step_budget"], self.arm.decomposition_fold)
         spent = 0
         for task, budget in Controller.uniform_split(budget_total, unsolved).items():
             history = self.chunks_spent.setdefault(task, {})
@@ -293,8 +306,64 @@ class Runtime:
             self._task_turn = False
             if self.registry.compact:
                 self.registry.release_task(task)
+        if self.arm.meta_selfplay:
+            self.selfplay = self._self_play(generation)
         self.meta_fit = self.metapolicy.fit(generation)
         return spent
+
+    def _self_play(self, generation: int) -> dict:
+        """Imagine tasks through the skeletons and teach the policy their shapes.
+
+        Each imagined task is a skeleton with a hole sampled from the current
+        grammar, run on the public inputs of a TRAIN task. The skeleton that
+        generated it is known, so the policy receives a rewarded episode for
+        that skeleton on that shape: dense meta-training signal from the
+        system's own imagination, in place of the scarce verifier rewards.
+        Imagined tasks are never verified, never solved by search and never
+        added to anything but the policy's replay. Their program runs are
+        counted, and are not candidate evaluations. The random stream depends
+        on the generation only, so TRAIN stays seed-independent.
+        """
+        from rsi2.evaluator import evaluate
+        from rsi2.sampling import sample_program
+        from .decompose import ALL_SKELETONS, skeletons_for
+        count = int(self.config.get("meta", {}).get("selfplay", 96))
+        rng = random.Random(f"rsi3-selfplay-{generation}")
+        family = [sk for sk in ALL_SKELETONS if self.arm.decomposition_fold
+                  or not sk.name.startswith("fold")]
+        templates = [t for t in sorted(self.public, key=lambda t: t.name)
+                     if all(len(i) == 1 and isinstance(i[0], (list, tuple))
+                            for i, _ in t.examples)]
+        made, runs = 0, 0
+        for _ in range(count):
+            skeleton = family[rng.randrange(len(family))]
+            hole = sample_program(skeleton.hole_type, self.state.grammar, rng, max_size=8,
+                                  max_attempts=20)
+            if hole is None:
+                continue
+            program = skeleton.compose(hole)
+            template = templates[rng.randrange(len(templates))]
+            examples = []
+            for inputs, _ in template.examples:
+                runs += 1
+                result = evaluate(program, inputs, library=self.state.grammar.library,
+                                  step_budget=self.config["search"]["step_budget"])
+                if not result.ok:
+                    break
+                examples.append((inputs, result.value))
+            if len(examples) != len(template.examples):
+                continue
+            outputs = [repr(o) for _, o in examples]
+            if len(set(outputs)) == 1 or all(repr(o) == repr(i[0]) for i, o in examples):
+                continue
+            if skeleton.name not in {sk.name for sk in skeletons_for(
+                    examples, self.arm.decomposition_fold)}:
+                continue
+            shape = shape_features(examples, self.arm.meta_extended)
+            self.metapolicy.record(generation, f"decompose:{skeleton.name}",
+                                   context(shape, 0, 0), 1)
+            made += 1
+        return {"imagined": made, "program_runs": runs}
 
     def wake(self, generation) -> dict:
         budget_total = max(0, self.config["B_wake"] * len(self.public) - self.budget_debt)
@@ -349,6 +418,8 @@ class Runtime:
                 "unsolved_at_start": len(unsolved), "invention": invention,
                 "meta": (None if self.metapolicy is None else
                          {"fit": self.meta_fit,
+                          "selfplay": getattr(self, "selfplay", None),
+                          "conjugate_skeletons": getattr(self, "conjugates", None),
                           "chosen": {a: sum(1 for e in log if e["pathway"] == a)
                                      for a in sorted({e["pathway"] for e in log})}}),
                 "adopted": sorted(n for n, a in self.adopted_concepts.items()

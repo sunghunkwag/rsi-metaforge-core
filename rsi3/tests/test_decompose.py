@@ -45,3 +45,39 @@ class DecomposeTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FoldSkeletonTests(unittest.TestCase):
+    def test_fold_skeletons_are_opt_in_and_reach_reverse(self):
+        train = {t.name: t for t in load_train()}
+        task = train["reverse"]
+        self.assertNotIn("fold_nil", [s.name for s in skeletons_for(task.examples)])
+        fold = {s.name: s for s in skeletons_for(task.examples, fold=True)}["fold_nil"]
+        result = ResumableSearch(task.examples, fold.hole_type, Grammar(), compose=fold.compose,
+                                 **SEARCH).run(300)
+        self.assertIsNotNone(result.term)
+        self.assertTrue(FrozenVerifier([task]).verify(task.name, result.term, {}, 1).verdict)
+        self.assertIsNone(solve(task.examples, task.request_type, 300, Grammar(), **SEARCH).term)
+
+
+class ConjugateTests(unittest.TestCase):
+    def test_reverse_turns_append_into_prepend(self):
+        from rsi2.terms import App, Lam, Prim, Var
+        from rsi2.types import INT, ListOf
+        from rsi3.decompose import conjugate_skeletons
+        L = ListOf(INT)
+        reverse = App(App(Prim("fold"), Lam(L, Lam(INT, App(App(Prim("cons"), Var(0)),
+                                                             Var(1))))), Prim("nil"))
+        train = {t.name: t for t in load_train()}
+        task = train["append-k with k=1"]
+        skeletons = conjugate_skeletons(task.examples, {"reverse": reverse}, {})
+        prepend = [s for s in skeletons if s.name.endswith("prepend_of")]
+        self.assertTrue(prepend)
+        result = ResumableSearch(task.examples, prepend[0].hole_type, Grammar(),
+                                 compose=prepend[0].compose, **SEARCH).run(100)
+        self.assertIsNotNone(result.term)
+        self.assertTrue(FrozenVerifier([task]).verify(task.name, result.term, {}, 1).verdict)
+        # The identity is not a conjugator, and a non-involution is rejected.
+        identity = Lam(L, Var(0))
+        self.assertEqual(conjugate_skeletons(task.examples, {"id": identity}, {}), [])
+        self.assertEqual(conjugate_skeletons(task.examples, {"tail": Prim("tail")}, {}), [])

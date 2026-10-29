@@ -128,7 +128,13 @@ calls for which skeleton.
 | 8 | iterate | modulo-k (k=2) | `lambda n x. fold (lambda acc _. sub 1 acc) x (range n)`, a loop generalized from a repetition |
 
 Two of the seven are built from concepts the system had already admitted,
-which is compounding. RSI-2's MDL learner still adopted nothing.
+which is compounding. RSI-2's MDL learner adopted nothing in META.
+
+Correction, added 2026-10-30: in DEC, RSI-2's own MDL learner made its first
+adoption in any committed run, at generation 9 on every seed:
+`learned_g9_0 = lambda l. head (tail^4 l)`, compressing three solutions
+(index-k k=5, prepend-index-k k=5 and replace-all-with-index-k k=5) by 12
+nodes. The first version of this file missed it.
 
 ## Predictions scored
 

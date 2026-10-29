@@ -45,8 +45,29 @@ STEPS = 300
 L2 = 1e-1
 
 
-def shape_features(examples) -> np.ndarray:
-    """Public shape of a task: decomposition preconditions and output type."""
+def _relations(examples) -> list[bool]:
+    """How outputs relate to inputs as multisets and sets (extended shape)."""
+    lists = all(len(i) == 1 and isinstance(i[0], (list, tuple)) for i, _ in examples)
+    outs_list = all(isinstance(o, (list, tuple)) for _, o in examples)
+    if not lists:
+        return [False] * 5
+    if outs_list:
+        permutation = all(sorted(map(repr, o)) == sorted(map(repr, i[0])) for i, o in examples)
+        subset = all(set(map(repr, o)) <= set(map(repr, i[0])) for i, o in examples)
+        longer = all(len(o) > len(i[0]) for i, o in examples)
+        shorter = all(len(o) < len(i[0]) for i, o in examples)
+        return [permutation, subset, longer, shorter, False]
+    member = all(type(o) is int and o in i[0] for i, o in examples)
+    return [False, False, False, False, member]
+
+
+def shape_features(examples, extended: bool = False) -> np.ndarray:
+    """Public shape of a task: decomposition preconditions and output type.
+
+    ``extended`` adds five relation flags (output a permutation of the input,
+    its elements a subset of the input's, longer, shorter, an integer output
+    that is an input element) for arms that set ``meta_extended``.
+    """
     outputs = [out for _, out in examples]
     is_list = all(isinstance(o, (list, tuple)) for o in outputs)
     is_bool = all(type(o) is bool for o in outputs)
@@ -60,6 +81,8 @@ def shape_features(examples) -> np.ndarray:
         _is_filter(examples), _is_filter(examples) and _filter_consistent(examples),
         _prepends_one(examples), _bool_of_list(examples),
     ]
+    if extended:
+        flags += _relations(examples)
     return np.asarray([1.0 if f else 0.0 for f in flags])
 
 
@@ -114,7 +137,7 @@ class MetaPolicy:
             if 0 < positives < n:
                 curvature = 0.25 * float(np.linalg.eigvalsh(X.T @ X / n).max())
                 rate = 1.0 / (curvature + L2)
-                w = np.zeros(DIM)
+                w = np.zeros(X.shape[1])
                 for _ in range(STEPS):
                     w -= rate * (X.T @ (_sigmoid(X @ w) - y) / n + L2 * w)
                 weights = w

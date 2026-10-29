@@ -22,12 +22,14 @@ capability at equal logical budgets.
 | Long horizon ([PREDICTIONS_LONG.md](PREDICTIONS_LONG.md)) | Suspended at generation 18–19 and unscored: the invention arms stayed at 10/36 from generation 10–12, a plateau. |
 | **Meta-RL, decomposition and transfer** ([METARL_RESULTS.md](METARL_RESULTS.md)) | Backward decomposition (from `verified-code-rsi`) plus a meta-RL policy over prior / invented / skeleton chunks. The policy is fitted across tasks on persistent replay, with a wiped-memory control (from `gated-self-improvement` v3). Results: **17/36 TRAIN** (the previous best was 9). The TRAIN-trained solver on VALIDATION at the same budget solved **4/12 on every seed**: fixed language 1, skeletons with a fixed split 3, wiped memory 3. Two of the four tasks had never been solved by any run, and all three non-trivial solves use concepts the system invented. Plain VALIDATION did not move. All 12 registered predictions hit. |
 
+| **Cascade** ([CASCADE_RESULTS.md](CASCADE_RESULTS.md)) | Fold skeletons, self-play meta-RL (the policy trains on tasks it imagines through its own skeletons) and conjugation (an unsolved task is transformed by one of the system's own verified involutions). The first cascade: reverse (g13) → append-k ×2 by conjugation (g14) → append-index-k (g16), while RSI-2's MDL learner compresses the shared structure into a library (first `lambda acc x. cons x acc`, then reverse built on it). **21/36 TRAIN**; held-out 5/12 on every seed (+1, `sum`, from the fold skeleton; the cascade itself transfers nothing). All 12 registered predictions hit. |
+
 Plain VALIDATION (RSI-2's `assess`) did not improve on the registered comparison of any study. Held-out gains appear only when the learned solver is used at test time (`validation_agent`). TEST was not opened.
 
 - [`OWNER_DIRECTIVE.md`](OWNER_DIRECTIVE.md) — scope and constraints
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — component map and the evidence behind each design decision
-- [`PREDICTIONS.md`](PREDICTIONS.md), [`PREDICTIONS_FAILURE_MEMORY.md`](PREDICTIONS_FAILURE_MEMORY.md), [`PREDICTIONS_SELF_CONTINUITY.md`](PREDICTIONS_SELF_CONTINUITY.md) (abandoned), [`PREDICTIONS_INVENTION.md`](PREDICTIONS_INVENTION.md), [`PREDICTIONS_LONG.md`](PREDICTIONS_LONG.md) (suspended), [`PREDICTIONS_METARL.md`](PREDICTIONS_METARL.md) — registered before each study's final runs
-- [`RESULTS.md`](RESULTS.md), [`FAILURE_MEMORY_RESULTS.md`](FAILURE_MEMORY_RESULTS.md), [`INVENTION_RESULTS.md`](INVENTION_RESULTS.md), [`METARL_RESULTS.md`](METARL_RESULTS.md) — measured outcomes, predictions scored
+- [`PREDICTIONS.md`](PREDICTIONS.md), [`PREDICTIONS_FAILURE_MEMORY.md`](PREDICTIONS_FAILURE_MEMORY.md), [`PREDICTIONS_SELF_CONTINUITY.md`](PREDICTIONS_SELF_CONTINUITY.md) (abandoned), [`PREDICTIONS_INVENTION.md`](PREDICTIONS_INVENTION.md), [`PREDICTIONS_LONG.md`](PREDICTIONS_LONG.md) (suspended), [`PREDICTIONS_METARL.md`](PREDICTIONS_METARL.md), [`PREDICTIONS_CASCADE.md`](PREDICTIONS_CASCADE.md) — registered before each study's final runs
+- [`RESULTS.md`](RESULTS.md), [`FAILURE_MEMORY_RESULTS.md`](FAILURE_MEMORY_RESULTS.md), [`INVENTION_RESULTS.md`](INVENTION_RESULTS.md), [`METARL_RESULTS.md`](METARL_RESULTS.md), [`CASCADE_RESULTS.md`](CASCADE_RESULTS.md) — measured outcomes, predictions scored
 - [`studies/REGULATION_TOY_RESULTS.md`](studies/REGULATION_TOY_RESULTS.md) — the study behind design decision D1
 
 Nothing in `rsi2/`, `docs/`, or `rsi_levels_metaforge_unified.py` is modified.
@@ -52,6 +54,10 @@ python -m rsi3.experiment --config rsi3/experiment_config_invention.json --outpu
 # checkpointed; rerun the same command to resume a stopped job)
 for arm in RSI3_UNIFORM_FM_DEC RSI3_META RSI3_META_WIPE; do
   python -m rsi3.longrun --config rsi3/experiment_config_metarl.json --arm $arm --output NEW_DIR4
+done
+# the cascade study (16 generations)
+for arm in RSI3_META RSI3_META_FOLD RSI3_META_PLAY RSI3_META_CONJ; do
+  python -m rsi3.longrun --config rsi3/experiment_config_cascade.json --arm $arm --output NEW_DIR5
 done
 python -m rsi3.report --results NEW_EMPTY_DIR --output report.md
 ```

@@ -14,7 +14,7 @@ from statistics import mean
 ARM_ORDER = ["RSI2", "RSI3", "RSI3_NO_REPLAY", "RSI3_NO_GENESIS", "RSI3_UNIFORM",
              "RSI3_UNIFORM_FM", "RSI3_FM", "RSI3_UNIFORM_FM_SCM", "RSI3_UNIFORM_FM_SC",
              "RSI3_UNIFORM_FM_INV", "RSI3_UNIFORM_FM_INVP", "RSI3_UNIFORM_FM_DEC",
-             "RSI3_META", "RSI3_META_WIPE"]
+             "RSI3_META", "RSI3_META_WIPE", "RSI3_META_FOLD", "RSI3_META_PLAY", "RSI3_META_CONJ"]
 COMPARISONS = [
     ("C1", "RSI3", "RSI2", "train"), ("C2", "RSI3", "RSI3_UNIFORM", "train"),
     ("C3", "RSI3", "RSI3_NO_REPLAY", "train"), ("C4", "RSI3", "RSI3_NO_GENESIS", "train"),
@@ -41,6 +41,12 @@ COMPARISONS = [
     ("X2", "RSI3_META", "RSI3_UNIFORM_FM_DEC", "agent"),
     ("X3", "RSI3_META", "RSI3_META_WIPE", "agent"),
     ("X4", "RSI3_META", "RSI3_UNIFORM_FM", "validation"),
+    # Cascade study (PREDICTIONS_CASCADE.md)
+    ("Z1", "RSI3_META_CONJ", "RSI3_META", "train"),
+    ("Z2", "RSI3_META_CONJ", "RSI3_META_PLAY", "train"),
+    ("Z3", "RSI3_META_CONJ", "RSI3_META", "agent"),
+    ("Z4", "RSI3_META_CONJ", "RSI3_META_PLAY", "agent"),
+    ("Z6", "RSI3_META_PLAY", "RSI3_META_FOLD", "agent"),
 ]
 
 
