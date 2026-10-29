@@ -78,6 +78,34 @@ ARMS = {
                                       genesis=False, designer_kinds=("prior",),
                                       failure_memory=True, invention=True,
                                       invention_split=0.5),
+    # Self-directed arm: INVP plus near-miss parts (structure from programs
+    # that almost solved an unsolved task) and a meta-learned inventor (the
+    # share of proposal slots per kind follows that kind's adoption record).
+    "RSI3_UNIFORM_FM_INVX": ArmConfig("RSI3_UNIFORM_FM_INVX", allocation="uniform",
+                                      genesis=False, designer_kinds=("prior",),
+                                      failure_memory=True, invention=True,
+                                      invention_split=0.5, invention_near_misses=True,
+                                      invention_meta=True),
+    # Backward decomposition (decompose.py, ported from verified-code-rsi):
+    # alone, and with every self-directed mechanism.
+    "RSI3_UNIFORM_FM_DEC": ArmConfig("RSI3_UNIFORM_FM_DEC", allocation="uniform", genesis=False,
+                                     designer_kinds=("prior",), failure_memory=True,
+                                     decomposition_split=0.5),
+    "RSI3_UNIFORM_FM_INVXD": ArmConfig("RSI3_UNIFORM_FM_INVXD", allocation="uniform",
+                                       genesis=False, designer_kinds=("prior",),
+                                       failure_memory=True, invention=True,
+                                       invention_split=1 / 3, invention_near_misses=True,
+                                       invention_meta=True, decomposition_split=1 / 3),
+    # Meta-RL study (PREDICTIONS_METARL.md): every mechanism, with a meta-learned
+    # policy choosing prior / invented / skeleton chunks inside each task's
+    # share (metarl.py), and its wiped-memory control.
+    "RSI3_META": ArmConfig("RSI3_META", allocation="meta", genesis=False,
+                           designer_kinds=("prior",), failure_memory=True, invention=True,
+                           invention_near_misses=True, invention_meta=True),
+    "RSI3_META_WIPE": ArmConfig("RSI3_META_WIPE", allocation="meta", genesis=False,
+                                designer_kinds=("prior",), failure_memory=True, invention=True,
+                                invention_near_misses=True, invention_meta=True,
+                                meta_wipe=True),
 }
 BASELINE = "RSI2"
 

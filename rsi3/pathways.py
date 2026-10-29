@@ -41,7 +41,7 @@ from rsi2.types import TypeInferenceError, instantiate, unify
 from .resumable import ResumableSearch
 
 DESIGNER_KINDS = ("prior", "recognized")
-KINDS = DESIGNER_KINDS + ("analog", "invented")
+KINDS = DESIGNER_KINDS + ("analog", "invented", "decompose")
 
 
 def grammar_fingerprint(grammar: Grammar) -> str:
@@ -102,6 +102,7 @@ class PathwayRegistry:
         self.extra_library: dict = {}
         self.concept_weight = 0.1
         self.concepts_in_prior = True
+        self.near_miss_memory = None      # memory.NearMissMemory, set by the runtime
         self._live: dict[tuple[str, str], tuple[str, ResumableSearch]] = {}
         # Execution option, not part of any arm: release each live search after
         # its window and rebuild it on next use by fast-forwarding (bounded
@@ -152,6 +153,16 @@ class PathwayRegistry:
         return result
 
     # ---- grammars and live searches ------------------------------------
+    def add_decompose_pathways(self) -> None:
+        """One pathway per skeleton that some task's public examples fit (decompose.py)."""
+        from .decompose import skeletons_for
+        self.skeletons = {name: {sk.name: sk for sk in skeletons_for(task.examples)}
+                          for name, task in self.tasks.items()}
+        for names in self.skeletons.values():
+            for sk in names:
+                self.pathways.setdefault(f"decompose:{sk}", Pathway(
+                    f"decompose:{sk}", "decompose", "designer", 0, status="dormant"))
+
     def add_invented_pathway(self) -> None:
         """A separate pathway searching with this generation's concepts at full weight."""
         self.pathways.setdefault("invented", Pathway("invented", "invented", "designer", 0,
@@ -171,7 +182,9 @@ class PathwayRegistry:
 
     def grammar(self, pid: str, task: str, state) -> Grammar:
         pathway = self.pathways[pid]
-        if pathway.kind == "invented":
+        if pathway.kind in ("invented", "decompose"):
+            # Decomposition holes use the same grammar as the invented pathway:
+            # the generation's concepts at full weight (none without invention).
             return Grammar(library=self.library(state), weights=state.grammar.weights,
                            context_weights=state.grammar.context_weights)
         if pathway.kind == "prior":
@@ -204,13 +217,19 @@ class PathwayRegistry:
         cached = self._live.get((task, pid))
         if cached is None or cached[0] != fingerprint:
             public = self.tasks[task]
+            skeleton = (self.skeletons[task][pid.split(":", 1)[1]]
+                        if self.pathways[pid].kind == "decompose" else None)
             cached = (fingerprint, ResumableSearch(
-                public.examples, public.request_type, grammar,
+                public.examples,
+                public.request_type if skeleton is None else skeleton.hole_type, grammar,
+                compose=None if skeleton is None else skeleton.build,
                 step_budget=self.search_config["step_budget"],
                 max_size=self.search_config["max_size"],
                 max_expansions=self.search_config["max_expansions"],
                 known_failures=(None if self.failure_memory is None
-                                else self.failure_memory.for_task(task))))
+                                else self.failure_memory.for_task(task)),
+                near_misses=(None if self.near_miss_memory is None
+                             else self.near_miss_memory.recorder(task))))
             parked = self._parked.pop((task, pid), None)
             if parked is not None and parked[0] == fingerprint:
                 cached[1].fast_forward(*parked[1:5])

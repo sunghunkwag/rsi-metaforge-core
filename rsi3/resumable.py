@@ -49,7 +49,8 @@ class WindowResult:
 
 class ResumableSearch:
     def __init__(self, examples, request_type, grammar, *, step_budget=2000,
-                 max_size=12, max_expansions=20000, known_failures=None):
+                 max_size=12, max_expansions=20000, known_failures=None, near_misses=None,
+                 compose=None):
         self.examples = tuple(examples)
         self.library = grammar.library
         self.step_budget = int(step_budget)
@@ -59,6 +60,13 @@ class ResumableSearch:
             partial_features_only=True)
         self._seen: set = set()
         self.known_failures = known_failures
+        # Optional callback(term, matched, total): a failed candidate is then
+        # run on every public example so its match count can be recorded. The
+        # match decision is the same as stopping at the first mismatch.
+        self.near_misses = near_misses
+        # Optional skeleton (decompose.py): the enumerated program is a HOLE,
+        # and ``compose(hole)`` is the candidate checked, remembered and returned.
+        self.compose = compose
         self.evaluated = 0
         self.skipped_known = 0
         self.exhausted = False
@@ -82,9 +90,10 @@ class ResumableSearch:
             except StopIteration:
                 self.exhausted = True
                 break
-            if candidate.term in self._seen:
+            term = candidate.term if self.compose is None else self.compose(candidate.term)
+            if term in self._seen:
                 continue
-            self._seen.add(candidate.term)
+            self._seen.add(term)
             passed += 1
         self.evaluated, self.skipped_known = evaluated, skipped_known
         self.evaluation_steps = evaluation_steps
@@ -95,12 +104,23 @@ class ResumableSearch:
         return self.evaluated + self.skipped_known
 
     def _matches(self, term) -> bool:
+        if self.near_misses is None:
+            for inputs, expected in self.examples:
+                result = evaluate(term, inputs, library=self.library,
+                                  step_budget=self.step_budget)
+                self.evaluation_steps += result.steps
+                if not result.ok or result.value != expected:
+                    return False
+            return True
+        matched = 0
         for inputs, expected in self.examples:
             result = evaluate(term, inputs, library=self.library, step_budget=self.step_budget)
             self.evaluation_steps += result.steps
-            if not result.ok or result.value != expected:
-                return False
-        return True
+            matched += bool(result.ok and result.value == expected)
+        if matched == len(self.examples):
+            return True
+        self.near_misses(term, matched, len(self.examples))
+        return False
 
     def run(self, budget: int, skip_match=None) -> WindowResult:
         """Evaluate up to ``budget`` new distinct candidates; stop at the first kept match."""
@@ -116,7 +136,7 @@ class ResumableSearch:
             except StopIteration:
                 self.exhausted = True
                 break
-            term = candidate.term
+            term = candidate.term if self.compose is None else self.compose(candidate.term)
             if term in self._seen:
                 continue
             self._seen.add(term)
@@ -135,7 +155,8 @@ class ResumableSearch:
             if self.known_failures is not None:
                 self.known_failures.add(term)
         return WindowResult(
-            term=None if found is None else found.term,
+            term=None if found is None else (
+                found.term if self.compose is None else self.compose(found.term)),
             log_probability=None if found is None else found.log_probability,
             start=start, evaluated=used, exhausted=self.exhausted,
             evaluation_steps=self.evaluation_steps - steps_before,

@@ -5,7 +5,10 @@ import unittest
 
 PACKAGE = Path(__file__).resolve().parents[1]
 SOURCES = sorted(p for p in PACKAGE.glob("*.py"))
-LEARNING = [p for p in SOURCES if p.name not in ("experiment.py", "verifier.py", "__init__.py")]
+# Runners load the splits to drive and measure runs; nothing they load is
+# passed to a learning component except TRAIN public views.
+RUNNERS = ("experiment.py", "longrun.py")
+LEARNING = [p for p in SOURCES if p.name not in (*RUNNERS, "verifier.py", "__init__.py")]
 
 
 def _tree(path):

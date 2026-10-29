@@ -49,7 +49,7 @@ from .loop import Runtime
 
 
 def shared_trajectory_ok(arm) -> bool:
-    return (arm.allocation == "uniform" and tuple(arm.designer_kinds) == ("prior",)
+    return (arm.allocation in ("uniform", "meta") and tuple(arm.designer_kinds) == ("prior",)
             and not arm.genesis and arm.continuity == "off")
 
 
@@ -75,6 +75,77 @@ def validation_record(state, model, validation, config: dict) -> dict:
     return {"solved": result["solved"], "tasks": result["tasks"],
             "solved_names": [r["name"] for r in result["records"] if r["solved"]],
             "candidate_evaluations": result["candidate_evaluations"]}
+
+
+def agent_validation(runtime, model, validation, config: dict, verifier,
+                     generation: int) -> dict:
+    """Transfer test: the arm's own TRAIN-trained solver on unseen VALIDATION tasks.
+
+    Same budget as VALIDATION (B_eval per task). Actions: the prior,
+    recognition-conditioned exactly as in RSI-2's ``assess``, plus, for arms
+    that decompose, every skeleton the task's public examples fit, searched
+    with the adopted library. The arm's own policy decides how the budget is
+    spent: the meta-policy for meta arms (applied, never trained, on these
+    tasks), a fixed split otherwise. One verifier query per task. For an arm
+    that only searches the prior this equals VALIDATION exactly.
+    """
+    from .decompose import skeletons_for
+    from .metarl import context, shape_features
+    from .resumable import ResumableSearch
+    search = config["search"]
+    budget, chunk = config["B_eval"], int(config.get("meta", {}).get("chunk", 16))
+    arm = runtime.arm
+    decomposes = arm.decomposition_split > 0 or arm.allocation == "meta"
+    solved, records = [], []
+    library = runtime.state.grammar.library
+    for task in validation:
+        public = runtime_public(task)
+        prior_grammar = (runtime.state.grammar if model is None
+                         else model.grammar_for(public, runtime.state.grammar))
+        searches = {"prior": ResumableSearch(public.examples, public.request_type,
+                                             prior_grammar, **search)}
+        if decomposes:
+            for sk in skeletons_for(public.examples):
+                searches[f"decompose:{sk.name}"] = ResumableSearch(
+                    public.examples, sk.hole_type, runtime.state.grammar, compose=sk.build,
+                    **search)
+        found, spent, used_by = None, 0, {}
+        if runtime.metapolicy is not None:
+            shape, history = shape_features(public.examples), {}
+            while spent < budget and found is None:
+                live = [a for a, s in searches.items() if not s.exhausted]
+                if not live:
+                    break
+                action = runtime.metapolicy.choose(live, shape, history, sum(history.values()))
+                window = min(chunk, budget - spent)
+                result = searches[action].run(window)
+                spent += max(result.evaluated, 1)
+                history[action] = history.get(action, 0) + 1
+                used_by[action] = used_by.get(action, 0) + result.evaluated
+                found = result.term
+        else:
+            skeleton_ids = [a for a in searches if a != "prior"]
+            share = int(budget * arm.decomposition_split) if skeleton_ids else 0
+            plan = [("prior", budget - share)] + [
+                (a, share // len(skeleton_ids) + (1 if i < share % len(skeleton_ids) else 0))
+                for i, a in enumerate(skeleton_ids)]
+            for action, window in plan:
+                if found is None and window:
+                    result = searches[action].run(window)
+                    used_by[action] = result.evaluated
+                    found = result.term
+        verdict = False
+        if found is not None:
+            verdict = verifier.verify(task.name, found, library, generation).verdict
+        if verdict:
+            solved.append(task.name)
+        records.append({"name": task.name, "solved": verdict, "spent": used_by})
+    return {"solved": len(solved), "solved_names": solved, "tasks": records}
+
+
+def runtime_public(task):
+    from .verifier import public_view
+    return public_view(task)
 
 
 def final_record(runtime) -> dict:
@@ -119,8 +190,12 @@ def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = N
                           rsi2_config | {"controller": config["controller"],
                                          "continuity": config.get("continuity", {}),
                                          "invention": config.get("invention", {}),
-                                         "compact_searches": True})
+                                         "compact_searches": True,
+                                         "meta": config.get("meta", {})})
         records, cpu = {seed: [] for seed in seeds}, {seed: 0.0 for seed in seeds}
+    from .verifier import FrozenVerifier
+    agent_verifiers = {seed: FrozenVerifier(validation, step_budget=config["search"]["step_budget"])
+                       for seed in seeds}
     while len(records[seeds[0]]) < config["generations"]:
         started = time.process_time()
         record = runtime.generation()
@@ -137,6 +212,9 @@ def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = N
                 seed_record["sleep"].update(sleep)
             seed_record["validation"] = validation_record(runtime.state, model, validation,
                                                           rsi2_config)
+            seed_record["validation_agent"] = agent_validation(
+                runtime, model, validation, rsi2_config | {"meta": config.get("meta", {})},
+                agent_verifiers[seed], generation)
             seed_record["cpu_seconds"] = record["cpu_seconds"] + (
                 time.process_time() - seed_started)
             records[seed].append(seed_record)

@@ -28,8 +28,9 @@ from rsi2.recognition import Recognition, task_features
 from .continuity import ContinuityGuard, snapshot
 from .controller import Controller, Slot, probabilities_for
 from .integrator import BindingIntegrator
-from .memory import Episode, EpisodicMemory, FailureMemory, SolutionRecord
+from .memory import Episode, EpisodicMemory, FailureMemory, NearMissMemory, SolutionRecord
 from .pathways import DESIGNER_KINDS, PathwayRegistry
+from .metarl import MetaPolicy, context, shape_features
 from .selfmodel import CONCEPT_WEIGHT, SelfModel, references
 from .value_model import ValueModel, slot_features
 from .verifier import FrozenVerifier, public_view, term_digest
@@ -38,7 +39,7 @@ from .verifier import FrozenVerifier, public_view, term_digest
 @dataclass(frozen=True)
 class ArmConfig:
     name: str
-    allocation: str = "learned"        # "learned" | "uniform"
+    allocation: str = "learned"        # "learned" | "uniform" | "meta" (metarl.py)
     value_mode: str = "replay"         # "replay" | "latest"
     genesis: bool = True
     designer_kinds: tuple = DESIGNER_KINDS
@@ -49,6 +50,19 @@ class ArmConfig:
     # pathway (concepts at full weight); 0 puts the concepts into the prior
     # pathway at CONCEPT_WEIGHT instead.
     invention_split: float = 0.0
+    # Near-miss parts: failed programs that matched some public examples of
+    # an unsolved task become invention material (memory.NearMissMemory).
+    invention_near_misses: bool = False
+    # Meta-learning of the inventor: proposal slots per kind follow each kind's
+    # adoption record (a bandit whose reward is a verified adoption).
+    invention_meta: bool = False
+    # Fraction of each task's uniform budget given to backward decomposition
+    # (decompose.py), shared equally by the skeletons the task's public
+    # examples fit. Runs after the prior and invented windows.
+    decomposition_split: float = 0.0
+    # Meta-RL allocation only: refit the policy on the current generation
+    # instead of the full replay (the wiped-memory control).
+    meta_wipe: bool = False
 
 
 def standardized_features(public_tasks) -> dict:
@@ -131,8 +145,22 @@ class Runtime:
                                     step_budget=search["step_budget"])
                           if arm.invention else None)
         self.adopted_concepts: dict[str, dict] = {}
-        if arm.invention and arm.invention_split > 0:
+        meta = arm.allocation == "meta"
+        if arm.invention and (arm.invention_split > 0 or meta):
             self.registry.add_invented_pathway()
+        if arm.decomposition_split > 0 or meta:
+            self.registry.add_decompose_pathways()
+        self.metapolicy = MetaPolicy(wipe=arm.meta_wipe) if meta else None
+        self.shapes = {task.name: shape_features(task.examples) for task in self.public}
+        self.chunks_spent: dict[str, dict[str, int]] = {}   # task -> action -> chunks, all generations
+        self.near_misses = None
+        if arm.invention and arm.invention_near_misses:
+            self.near_misses = NearMissMemory()
+            self.registry.near_miss_memory = self.near_misses
+            self.selfmodel.caps["nearmiss"] = invention.get("nearmiss_cap", 6)
+        if self.selfmodel is not None:
+            self.selfmodel.meta = bool(arm.invention_meta)
+        self._concept_kinds: dict[str, str] = {}
         self.registry.compact = bool(config.get("compact_searches", False))
 
     # ---- wake ------------------------------------------------------------
@@ -200,7 +228,10 @@ class Runtime:
         library = dict(self.state.grammar.library)
         for name in used:
             library[name] = self.registry.extra_library[name]
-            self.adopted_concepts[name] = {"generation": generation, "task": task}
+            kind = self._concept_kinds.get(name)
+            self.adopted_concepts[name] = {"generation": generation, "task": task, "kind": kind}
+            if self.selfmodel is not None and kind is not None:
+                self.selfmodel.record_adoption(kind)
         self.state.grammar = Grammar(library=library, weights=self.state.grammar.weights,
                                      context_weights=self.state.grammar.context_weights)
 
@@ -208,13 +239,53 @@ class Runtime:
         if self.selfmodel is None:
             return {}
         before = self.selfmodel.probe_evaluations
-        concepts = self.selfmodel.invent(self.state.solutions, self.state.grammar.library)
+        near = None
+        if self.near_misses is not None:
+            near = {task.name: self.near_misses.best(task.name) for task in self.public
+                    if task.name not in self.state.solutions}
+        concepts = self.selfmodel.invent(self.state.solutions, self.state.grammar.library,
+                                         near_misses=near)
+        self._concept_kinds = {c.name: c.kind for c in concepts}
         self.registry.extra_library = {c.name: c.term for c in concepts}
-        self.registry.concepts_in_prior = self.arm.invention_split <= 0
+        self.registry.concepts_in_prior = not (self.arm.invention_split > 0
+                                               or self.arm.allocation == "meta")
         self.registry.concept_weight = self.config.get("invention", {}).get(
             "concept_weight", CONCEPT_WEIGHT)
         return {"proposed": [c.to_record() for c in concepts],
-                "probe_evaluations": self.selfmodel.probe_evaluations - before}
+                "probe_evaluations": self.selfmodel.probe_evaluations - before,
+                "caps": dict(getattr(self.selfmodel, "last_caps", {})),
+                "near_miss_tasks": (0 if near is None else sum(1 for v in near.values() if v))}
+
+    def meta_actions(self, task: str) -> list[str]:
+        actions = ["prior"]
+        if "invented" in self.registry.pathways and self.registry.extra_library:
+            actions.append("invented")
+        actions += [f"decompose:{name}" for name in sorted(self.registry.skeletons.get(task, {}))]
+        return [a for a in actions if not self.registry.peek(task, a, self.state)[1]]
+
+    def _meta_wake(self, budget_total, unsolved, generation, pending, log) -> int:
+        """Each task's even share, spent in chunks on actions the meta-policy picks."""
+        chunk = int(self.config.get("meta", {}).get("chunk", 16))
+        spent = 0
+        for task, budget in Controller.uniform_split(budget_total, unsolved).items():
+            history = self.chunks_spent.setdefault(task, {})
+            remaining = budget
+            while remaining > 0 and task not in pending:
+                actions = self.meta_actions(task)
+                if not actions:
+                    break
+                total = sum(history.values())
+                action = self.metapolicy.choose(actions, self.shapes[task], history, total)
+                x = context(self.shapes[task], history.get(action, 0), total)
+                window = min(chunk, remaining)
+                used = self._run_window(task, action, 0.0, window, generation, pending, log)
+                reward = int(task in self.state.solutions and task in pending)
+                self.metapolicy.record(generation, action, x, reward)
+                history[action] = history.get(action, 0) + 1
+                spent += used
+                remaining -= max(used, 1)
+        self.meta_fit = self.metapolicy.fit(generation)
+        return spent
 
     def wake(self, generation) -> dict:
         budget_total = max(0, self.config["B_wake"] * len(self.public) - self.budget_debt)
@@ -227,13 +298,24 @@ class Runtime:
             split = self.arm.invention_split if self.registry.extra_library else 0.0
             for task, budget in Controller.uniform_split(budget_total, unsolved).items():
                 invented = int(budget * split)
-                spent += self._run_window(task, "prior", 0.0, budget - invented, generation,
-                                          pending, log)
+                skeletons = (sorted(self.registry.skeletons.get(task, {}))
+                             if self.arm.decomposition_split > 0 else [])
+                decomposed = int(budget * self.arm.decomposition_split) if skeletons else 0
+                spent += self._run_window(task, "prior", 0.0, budget - invented - decomposed,
+                                          generation, pending, log)
                 # The prior window runs first, so the invented pathway skips
                 # (free, through failure memory) every program it already failed.
                 if invented and task not in pending:
                     spent += self._run_window(task, "invented", 0.0, invented, generation,
                                               pending, log)
+                for index, name in enumerate(skeletons):
+                    share = decomposed // len(skeletons) + (
+                        1 if index < decomposed % len(skeletons) else 0)
+                    if share and task not in pending:
+                        spent += self._run_window(task, f"decompose:{name}", 0.0, share,
+                                                  generation, pending, log)
+        elif self.arm.allocation == "meta":
+            spent += self._meta_wake(budget_total, unsolved, generation, pending, log)
         elif self.arm.allocation == "learned":
             chunk = self.controller.chunk
             while spent < budget_total:
@@ -252,6 +334,10 @@ class Runtime:
         verified = [e for e in log if e["outcome"] == "verified"]
         return {"budget": budget_total, "spent": spent, "windows": len(log),
                 "unsolved_at_start": len(unsolved), "invention": invention,
+                "meta": (None if self.metapolicy is None else
+                         {"fit": self.meta_fit,
+                          "chosen": {a: sum(1 for e in log if e["pathway"] == a)
+                                     for a in sorted({e["pathway"] for e in log})}}),
                 "adopted": sorted(n for n, a in self.adopted_concepts.items()
                                   if a["generation"] == generation),
                 "verified": [{"task": e["task"], "pathway": e["pathway"], "kind": e["kind"],

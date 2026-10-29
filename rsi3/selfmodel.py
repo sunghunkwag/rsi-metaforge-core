@@ -64,9 +64,9 @@ from rsi2.terms import App, Lam, Term, Var, pretty, shift
 from rsi2.types import (INT, PRIMITIVE_TYPES, Type, TypeInferenceError, function_parts,
                         infer, instantiate, unify)
 
-KINDS = ("constant", "iterate", "power", "compose", "part")
+KINDS = ("constant", "iterate", "nearmiss", "power", "compose", "part")
 BASE_CONSTANTS = (-1, 0, 1, 2)
-DEFAULT_CAPS = {"constant": 4, "iterate": 3, "power": 6, "compose": 6, "part": 8}
+DEFAULT_CAPS = {"constant": 4, "iterate": 3, "nearmiss": 0, "power": 6, "compose": 6, "part": 8}
 MIN_PART_SIZE = 4
 MIN_WHOLE_SIZE = 6
 # Prior weight of a concept not yet adopted. RSI-2 gives an unused production
@@ -256,7 +256,13 @@ def _type_kind(type_: Type):
 class SelfModel:
     def __init__(self, public_tasks, *, caps=None, step_budget: int = 2000,
                  probes_per_kind: int = 12):
-        self.caps = dict(DEFAULT_CAPS if caps is None else caps)
+        self.caps = dict(DEFAULT_CAPS)
+        self.caps.update(caps or {})
+        # Meta-learning (``meta=True``): each kind's share of the proposal
+        # slots follows its own adoption record, so the system learns which of
+        # its ways of inventing actually pay. history[kind] = [proposed, adopted].
+        self.meta = False
+        self.history = {kind: [0, 0] for kind in KINDS}
         self.step_budget = int(step_budget)
         self.probe_evaluations = 0
         pool = {"int": [], "bool": [], "list[int]": []}
@@ -335,7 +341,35 @@ class SelfModel:
         return [tuple(item) for _, item in sorted(found.items())]
 
     # ---- invention -----------------------------------------------------
-    def invent(self, solutions: dict, library: dict) -> list[Concept]:
+    def generation_caps(self) -> dict:
+        """Proposal slots per kind; with meta-learning, shared by adoption rate.
+
+        Every enabled kind keeps one slot (it can always earn more); the rest of
+        the fixed total goes to kinds in proportion to the posterior mean
+        adoption rate, Beta(1, 1) prior: (adopted + 1) / (proposed + 2).
+        """
+        enabled = [kind for kind in KINDS if self.caps.get(kind, 0) > 0]
+        if not self.meta or not enabled:
+            return dict(self.caps)
+        total = sum(self.caps[kind] for kind in enabled)
+        rates = {kind: (self.history[kind][1] + 1) / (self.history[kind][0] + 2)
+                 for kind in enabled}
+        spare = total - len(enabled)
+        norm = sum(rates.values())
+        shares = {kind: 1 + spare * rates[kind] / norm for kind in enabled}
+        caps = {kind: int(shares[kind]) for kind in enabled}
+        # Largest remainders take the slots lost to rounding.
+        for kind in sorted(enabled, key=lambda k: (-(shares[k] - caps[k]), k)):
+            if sum(caps.values()) >= total:
+                break
+            caps[kind] += 1
+        return {kind: caps.get(kind, 0) for kind in KINDS}
+
+    def record_adoption(self, kind: str) -> None:
+        self.history[kind][1] += 1
+
+    def invent(self, solutions: dict, library: dict, near_misses=None) -> list[Concept]:
+        """``near_misses``: {unsolved task: [(matched examples, program), ...]}."""
         existing = {pretty(term) for term in library.values()}
         constants = set(BASE_CONSTANTS)
         for name in sorted(library):
@@ -420,6 +454,21 @@ class SelfModel:
                     proposals["constant"].append(
                         (App(App(Term("prim", op), left), right), None, sources))
 
+        # Programs that almost solved a task the system cannot solve yet,
+        # and their parts: structure its own solutions do not contain.
+        for task in sorted(near_misses or {}):
+            for matched, program in near_misses[task]:
+                candidates = [(program, ())]
+                candidates += [(node, env) for node, env in _walk(program) if node.size >= 3]
+                for node, env in candidates:
+                    try:
+                        entry, _ = lift_subtree(node, env, ())
+                    except (TypeInferenceError, RecursionError):
+                        continue
+                    proposals["nearmiss"].append((entry, None, (task,)))
+
+        caps = self.generation_caps()
+        self.last_caps = caps
         chosen, seen_bodies, seen_behaviour = [], set(existing), set(known)
         seen_values = set(constants)
         for kind in KINDS:
@@ -444,7 +493,7 @@ class SelfModel:
             ranked.sort(key=lambda item: item[:2])
             taken = 0
             for order, key, term, type_, sources in ranked:
-                if taken >= self.caps.get(kind, 0):
+                if taken >= caps.get(kind, 0):
                     break
                 if key in seen_bodies or term.size < 2:
                     continue
@@ -464,6 +513,8 @@ class SelfModel:
                 chosen.append(Concept(concept_name(term), term, kind, str(type_),
                                       term.size - 1, tuple(sorted(sources)), value))
                 taken += 1
+        for concept in chosen:
+            self.history[concept.kind][0] += 1
         return chosen
 
 

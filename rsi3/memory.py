@@ -50,6 +50,47 @@ class FailureMemory:
         return {task: len(failed) for task, failed in sorted(self._sets.items())}
 
 
+class NearMissMemory:
+    """Per task, the failed programs that matched the most public examples.
+
+    Recorded at evaluation time by a search that evaluates every public
+    example of a failed candidate instead of stopping at the first mismatch.
+    The match decision, and therefore the logical budget, is unchanged.
+    """
+
+    def __init__(self, keep: int = 4):
+        self.keep = int(keep)
+        self._best: dict[str, list] = {}
+        self._serial = 0
+
+    def record(self, task: str, term, matched: int, total: int) -> None:
+        if matched <= 0 or matched >= total:
+            return
+        entries = self._best.setdefault(task, [])
+        if any(entry[3] == term for entry in entries):
+            return
+        self._serial += 1
+        entries.append((matched / total, -self._serial, matched, term))
+        entries.sort(key=lambda entry: (-entry[0], -entry[1]))
+        del entries[self.keep:]
+
+    def best(self, task: str) -> list[tuple[int, object]]:
+        return [(entry[2], entry[3]) for entry in self._best.get(task, [])]
+
+    def recorder(self, task: str) -> "NearMissRecorder":
+        return NearMissRecorder(self, task)
+
+
+class NearMissRecorder:
+    """A picklable callback bound to one task."""
+
+    def __init__(self, memory: NearMissMemory, task: str):
+        self.memory, self.task = memory, task
+
+    def __call__(self, term, matched: int, total: int) -> None:
+        self.memory.record(self.task, term, matched, total)
+
+
 @dataclass(frozen=True)
 class Episode:
     generation: int
