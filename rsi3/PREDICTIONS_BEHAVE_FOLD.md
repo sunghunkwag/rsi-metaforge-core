@@ -2,8 +2,19 @@
 
 Registered 2026-10-30, before any run of RSI3_META_BEH_FOLD on the
 registered seeds (11/22/33). It is also registered before the registered
-RSI3_META_BEH runs (PREDICTIONS_BEHAVE.md) finished: no VALIDATION outcome
-of any behavioural arm had been seen when this file was committed. The
+RSI3_META_BEH runs (PREDICTIONS_BEHAVE.md) finished.
+
+Correction, made in the commit after the registration commit and before
+any FOLD run: the first version said no VALIDATION outcome of a
+behavioural arm had been seen. That was wrong. The progress lines of the
+registered BEH and BASE runs print plain VALIDATION (RSI-2's `assess`),
+and I saw them through about generation 12:
+
+- BEH: 1 / 1 / 1;
+- BASE: 2 / 2 / 2.
+
+Their `validation_agent` outcomes, on which R2, R4 and R5 are scored, had
+not been seen. Plain VALIDATION is not a forecast here. The
 runs use `experiment_config_behave_fold.json` and `python -m rsi3.longrun`.
 Misses will be scored in the results file and will not be reinterpreted.
 
@@ -55,8 +66,9 @@ Seven TRAIN tasks remain unsolved:
 
 **Earlier exposure.** The exposure listed in PREDICTIONS_BEHAVE.md applies:
 the VALIDATION task names were seen, and CONJ's per-task agent spending was
-read. No VALIDATION outcome of RSI3_META_BEH or RSI3_META_BEH_BASE has been
-seen. No VALIDATION example has been read, and TEST was never opened.
+read. The only outcomes of RSI3_META_BEH or RSI3_META_BEH_BASE seen are
+the in-progress plain VALIDATION values above; no `validation_agent`
+outcome of either has been seen. No VALIDATION example has been read, and TEST was never opened.
 
 **Comparators.** These are the registered RSI3_META_BEH runs (in progress
 at registration) and the committed RSI3_META_CONJ runs.
