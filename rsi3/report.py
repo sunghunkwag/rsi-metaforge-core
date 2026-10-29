@@ -13,7 +13,7 @@ from statistics import mean
 
 ARM_ORDER = ["RSI2", "RSI3", "RSI3_NO_REPLAY", "RSI3_NO_GENESIS", "RSI3_UNIFORM",
              "RSI3_UNIFORM_FM", "RSI3_FM", "RSI3_UNIFORM_FM_SCM", "RSI3_UNIFORM_FM_SC",
-             "RSI3_UNIFORM_FM_INV"]
+             "RSI3_UNIFORM_FM_INV", "RSI3_UNIFORM_FM_INVP"]
 COMPARISONS = [
     ("C1", "RSI3", "RSI2", "train"), ("C2", "RSI3", "RSI3_UNIFORM", "train"),
     ("C3", "RSI3", "RSI3_NO_REPLAY", "train"), ("C4", "RSI3", "RSI3_NO_GENESIS", "train"),
@@ -29,6 +29,11 @@ COMPARISONS = [
     # Concept-invention study (PREDICTIONS_INVENTION.md)
     ("I1", "RSI3_UNIFORM_FM_INV", "RSI3_UNIFORM_FM", "train"),
     ("I2", "RSI3_UNIFORM_FM_INV", "RSI3_UNIFORM_FM", "validation"),
+    # Long-horizon compounding study (PREDICTIONS_LONG.md)
+    ("L1", "RSI3_UNIFORM_FM_INVP", "RSI3_UNIFORM_FM", "train"),
+    ("L2", "RSI3_UNIFORM_FM_INV", "RSI3_UNIFORM_FM", "train"),
+    ("L3", "RSI3_UNIFORM_FM_INVP", "RSI3_UNIFORM_FM_INV", "train"),
+    ("L4", "RSI3_UNIFORM_FM_INVP", "RSI3_UNIFORM_FM", "validation"),
 ]
 
 
@@ -96,8 +101,12 @@ def invention_lines(arm, records) -> list[str]:
                                                 key=lambda kv: kv[1]["generation"]))
         proposed = [len(g["wake"]["invention"].get("proposed", [])) for g in r["generations"]]
         mdl = sum(len(g["sleep"]["adopted_library"]) for g in r["generations"])
+        built = [name for name in adopted
+                 if any(other != name and other in library.get(name, "")
+                        for other in adopted)]
         lines.append(f"  - {arm} seed {r['seed']}: concepts adopted {len(adopted)} "
-                     f"({items or 'none'}); proposed per generation {proposed}; "
+                     f"({items or 'none'}); built from an earlier adopted concept "
+                     f"{len(built)}; proposed per generation {proposed}; "
                      f"RSI-2 MDL library adoptions {mdl}.")
     return lines
 
