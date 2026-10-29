@@ -88,11 +88,20 @@ and configuration are unchanged. The runner differs in three ways:
    because one background job may run for at most two hours. A job resumes
    exactly from its checkpoint, which the same test checks.
 
-Generations 1–12 of the UFM and INV outputs will also be compared with the
-committed `results_invention/` runs on all three seeds: TRAIN, wake episodes,
-and VALIDATION per seed. This is P0, extended to INV and to per-seed
-VALIDATION. A mismatch would invalidate the run, and it would be reported
-as such.
+Generations 1–12 will also be compared with the committed
+`results_invention/` runs on all three seeds.
+
+- **UFM:** TRAIN, wake episodes and per-seed VALIDATION must be identical.
+  This is P0, extended to per-seed VALIDATION. A mismatch would invalidate
+  the run, and it would be reported as such.
+- **INV:** not byte-identical, because of the `iterate` kind added since the
+  invention study. Only TRAIN and per-seed VALIDATION are compared, and
+  differences there are reported, not treated as invalidating. On seed 11,
+  a 12-generation compact run of this commit's INV had the same TRAIN, the
+  same solves in the same generations and the same VALIDATION as the
+  committed run. Its wake episodes differ from generation 7 on, but only in
+  known-failure skip counts and one window length (prepend-k k=4 found at
+  candidate 40 instead of 38). The cause is the extra iterate concept.
 
 ## Disclosure: development before registration
 
