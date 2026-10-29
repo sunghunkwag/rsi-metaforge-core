@@ -115,6 +115,15 @@ class Skeleton:
     def build(self, hole: Term) -> Term:
         raise NotImplementedError
 
+    def compose(self, hole: Term) -> Term:
+        """The skeleton with the hole filled, in beta-eta normal form.
+
+        A lambda hole applied inside the skeleton leaves a beta-redex; RSI-2's
+        grammar scores (and its sleep fits) beta-normal programs only.
+        """
+        from .selfmodel import canonical_types, normalize
+        return canonical_types(normalize(self.build(hole)))
+
 
 class MapElem(Skeleton):          # map h
     def build(self, h):

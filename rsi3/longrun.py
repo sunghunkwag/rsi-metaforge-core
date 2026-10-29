@@ -107,7 +107,7 @@ def agent_validation(runtime, model, validation, config: dict, verifier,
         if decomposes:
             for sk in skeletons_for(public.examples):
                 searches[f"decompose:{sk.name}"] = ResumableSearch(
-                    public.examples, sk.hole_type, runtime.state.grammar, compose=sk.build,
+                    public.examples, sk.hole_type, runtime.state.grammar, compose=sk.compose,
                     **search)
         found, spent, used_by = None, 0, {}
         if runtime.metapolicy is not None:

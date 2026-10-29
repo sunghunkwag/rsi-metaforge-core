@@ -222,7 +222,7 @@ class PathwayRegistry:
             cached = (fingerprint, ResumableSearch(
                 public.examples,
                 public.request_type if skeleton is None else skeleton.hole_type, grammar,
-                compose=None if skeleton is None else skeleton.build,
+                compose=None if skeleton is None else skeleton.compose,
                 step_budget=self.search_config["step_budget"],
                 max_size=self.search_config["max_size"],
                 max_expansions=self.search_config["max_expansions"],
