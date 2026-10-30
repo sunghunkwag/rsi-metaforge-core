@@ -20,6 +20,13 @@ class ReserveTests(unittest.TestCase):
         used = set(research["confirmation_families"]) | set(research["audit_families"])
         self.assertFalse({n.split(" with ", 1)[0] for n in reserve_names()["far"]} & used)
 
+    def test_far2_is_disjoint_from_the_research_tasks_and_the_other_partitions(self):
+        names = reserve_names()
+        research = json.loads(Path(RESEARCH).read_text(encoding="utf-8"))
+        self.assertEqual(len(names["far2"]), 21)
+        self.assertFalse(set(names["far2"]) & (set(research["confirmation"]) | set(research["audit"])))
+        self.assertFalse(set(names["far2"]) & (set(names["near"]) | set(names["far"])))
+
     def test_records_have_ten_public_examples_and_separate_hidden_ones(self):
         for task in load_reserve("far") + load_reserve("near")[:10]:
             self.assertEqual(len(task.examples), 10)
