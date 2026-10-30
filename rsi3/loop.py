@@ -101,6 +101,10 @@ class ArmConfig:
     # Dream practice only on hard dreams: those the prior does not find in
     # one chunk (removes the prior's advantage on samples of its own grammar).
     selfplay_dreams_hard: bool = False
+    # Analogical repair (analogy.py): one meta-RL action that edits the
+    # system's verified programs (best first by conditional description
+    # length), in the wake, in honest practice and in the held-out solver.
+    analogy: bool = False
 
 
 def standardized_features(public_tasks) -> dict:
@@ -191,6 +195,8 @@ class Runtime:
         if arm.behave:
             self.registry.add_behave_pathways(config.get("behave", {}), arm.behave_library,
                                               arm.behave_folds, arm.behave_dual)
+        if arm.analogy:
+            self.registry.add_analogy_pathway(config.get("analogy", {}))
         self.metapolicy = MetaPolicy(wipe=arm.meta_wipe) if meta else None
         self.shapes = {task.name: shape_features(task.examples, arm.meta_extended,
                                                  arm.meta_fixed_length)
@@ -313,11 +319,15 @@ class Runtime:
         actions += [f"behave:{name}" for name in problems]
         if self.arm.behave_dual:
             actions += [f"behave0:{name}" for name in problems]
+        if self.arm.analogy and self.registry.analogy_sources(task):
+            actions.append("analogy")
         return [a for a in actions if not self.registry.peek(task, a, self.state)[1]]
 
     def _meta_wake(self, budget_total, unsolved, generation, pending, log) -> int:
         """Each task's even share, spent in chunks on actions the meta-policy picks."""
         chunk = int(self.config.get("meta", {}).get("chunk", 16))
+        if self.arm.analogy:
+            self.analogy_sources = self.registry.refresh_analogy(self.state)
         if self.arm.decomposition_conjugate:
             self.conjugates = self.registry.refresh_conjugates(
                 self.state, self.config["search"]["step_budget"], self.arm.decomposition_fold)
@@ -485,6 +495,17 @@ class Runtime:
                 examples, sk.hole_type, hole_grammar, compose=sk.compose,
                 step_budget=search["step_budget"], max_size=search["max_size"],
                 max_expansions=search["max_expansions"])
+        if self.arm.analogy:
+            from .analogy import AnalogySearch
+            settings = self.config.get("analogy", {})
+            sources = self.registry.analogy_index.sources(self.state.solutions, request, examples)
+            if sources:
+                searches["analogy"] = AnalogySearch(
+                    examples, request, sources, hole_grammar,
+                    step_budget=search["step_budget"], max_size=search["max_size"],
+                    max_expansions=search["max_expansions"],
+                    max_sources=int(settings.get("max_sources", 4)),
+                    max_ranked=settings.get("max_ranked", 6))
         spent = 0
         for action, practice in searches.items():
             result = practice.run(chunk)

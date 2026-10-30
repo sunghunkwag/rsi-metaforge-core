@@ -56,7 +56,8 @@ def evaluate(checkpoint: Path, config: dict, partition: str) -> dict:
         verifier = FrozenVerifier(tasks, step_budget=config["search"]["step_budget"])
         record = agent_validation(runtime, model, tasks,
                                   rsi2_config | {"meta": config.get("meta", {}),
-                                                 "behave": config.get("behave", {})},
+                                                 "behave": config.get("behave", {}),
+                                                 "analogy": config.get("analogy", {})},
                                   verifier, generation)
         record["cpu_seconds"] = time.process_time() - started
         results[seed] = record

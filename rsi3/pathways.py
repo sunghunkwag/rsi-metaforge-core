@@ -205,6 +205,29 @@ class PathwayRegistry:
                     self.pathways.setdefault(f"{prefix}:{kind}", Pathway(
                         f"{prefix}:{kind}", "behave", "designer", 0, status="dormant"))
 
+    def add_analogy_pathway(self, settings: dict) -> None:
+        """Analogical repair (analogy.py): edits of the system's verified programs."""
+        from .analogy import SourceIndex
+        self.analogy_settings = dict(settings)
+        self.analogy_index = SourceIndex(self.tasks.values())
+        self.analogy_solutions: dict = {}
+        self.analogy_digest = ""
+        self.pathways.setdefault("analogy", Pathway("analogy", "analogy", "designer", 0,
+                                                    status="dormant"))
+
+    def refresh_analogy(self, state) -> int:
+        """Per generation: the sources are the solutions verified before this wake."""
+        self.analogy_solutions = dict(state.solutions)
+        blob = json.dumps(sorted((n, pretty(t)) for n, t in self.analogy_solutions.items()))
+        self.analogy_digest = hashlib.sha256(blob.encode("utf-8")).hexdigest()[:20]
+        self._generation_cache.pop(("*", "analogy"), None)
+        return len(self.analogy_solutions)
+
+    def analogy_sources(self, task: str) -> dict:
+        public = self.tasks[task]
+        return self.analogy_index.sources(self.analogy_solutions, public.request_type,
+                                          public.examples, exclude=task)
+
     def add_invented_pathway(self) -> None:
         """A separate pathway searching with this generation's concepts at full weight."""
         self.pathways.setdefault("invented", Pathway("invented", "invented", "designer", 0,
@@ -232,7 +255,7 @@ class PathwayRegistry:
                 return Grammar()
             return Grammar(library=self.library(state), weights=state.grammar.weights,
                            context_weights=state.grammar.context_weights)
-        if pathway.kind in ("invented", "decompose"):
+        if pathway.kind in ("invented", "decompose", "analogy"):
             # Decomposition holes use the same grammar as the invented pathway:
             # the generation's concepts at full weight (none without invention).
             return Grammar(library=self.library(state), weights=state.grammar.weights,
@@ -257,7 +280,12 @@ class PathwayRegistry:
         cached = self._generation_cache.get(key)
         if cached is None:
             grammar = self.grammar(pid, task, state)
-            cached = (grammar_fingerprint(grammar), grammar)
+            fingerprint = grammar_fingerprint(grammar)
+            if self.pathways[pid].kind == "analogy":
+                # The search also depends on its sources.
+                fingerprint = hashlib.sha256(
+                    (fingerprint + self.analogy_digest).encode("utf-8")).hexdigest()[:20]
+            cached = (fingerprint, grammar)
             self._generation_cache[key] = cached
         return cached
 
@@ -276,6 +304,24 @@ class PathwayRegistry:
                 known=self.behave_known.setdefault((task, pid), set()),
                 weights=(grammar.weights if self.behave_library
                          and not pid.startswith("behave0:") else None))
+            cached = (fingerprint, search)
+            parked = self._parked.pop((task, pid), None)
+            if parked is not None and parked[0] == fingerprint:
+                search.fast_forward(*parked[1:5])
+            self._live[(task, pid)] = cached
+        if (cached is None or cached[0] != fingerprint) and self.pathways[pid].kind == "analogy":
+            from .analogy import AnalogySearch
+            settings = self.analogy_settings
+            public = self.tasks[task]
+            search = AnalogySearch(
+                public.examples, public.request_type, self.analogy_sources(task), grammar,
+                step_budget=self.search_config["step_budget"],
+                max_size=self.search_config["max_size"],
+                max_expansions=self.search_config["max_expansions"],
+                known_failures=(None if self.failure_memory is None
+                                else self.failure_memory.for_task(task)),
+                max_sources=int(settings.get("max_sources", 4)),
+                max_ranked=settings.get("max_ranked", 6))
             cached = (fingerprint, search)
             parked = self._parked.pop((task, pid), None)
             if parked is not None and parked[0] == fingerprint:

@@ -129,6 +129,18 @@ def agent_validation(runtime, model, validation, config: dict, verifier,
                         max_size=int(settings.get("max_size", 10)),
                         combo_limit=int(settings.get("combo_limit", 2_000_000)),
                         weights=pool_weights)
+        if getattr(arm, "analogy", False):
+            from .analogy import AnalogySearch
+            settings = config.get("analogy", {})
+            sources = runtime.registry.analogy_index.sources(
+                runtime.state.solutions, public.request_type, public.examples)
+            if sources:
+                searches["analogy"] = AnalogySearch(
+                    public.examples, public.request_type, sources, runtime.state.grammar,
+                    step_budget=search["step_budget"], max_size=search["max_size"],
+                    max_expansions=search["max_expansions"],
+                    max_sources=int(settings.get("max_sources", 4)),
+                    max_ranked=settings.get("max_ranked", 6))
         found, spent, used_by = None, 0, {}
         if runtime.metapolicy is not None:
             shape = shape_features(public.examples, arm.meta_extended,
@@ -220,7 +232,8 @@ def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = N
                                          "invention": config.get("invention", {}),
                                          "compact_searches": True,
                                          "meta": config.get("meta", {}),
-                                         "behave": config.get("behave", {})})
+                                         "behave": config.get("behave", {}),
+                                         "analogy": config.get("analogy", {})})
         records, cpu = {seed: [] for seed in seeds}, {seed: 0.0 for seed in seeds}
     from .verifier import FrozenVerifier
     agent_verifiers = {seed: FrozenVerifier(validation, step_budget=config["search"]["step_budget"])
@@ -248,7 +261,8 @@ def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = N
                                                           rsi2_config)
             seed_record["validation_agent"] = agent_validation(
                 runtime, model, validation, rsi2_config | {"meta": config.get("meta", {}),
-                                                           "behave": config.get("behave", {})},
+                                                           "behave": config.get("behave", {}),
+                                                           "analogy": config.get("analogy", {})},
                 agent_verifiers[seed], generation)
             seed_record["cpu_seconds"] = record["cpu_seconds"] + (
                 time.process_time() - seed_started)
