@@ -140,7 +140,8 @@ def agent_validation(runtime, model, validation, config: dict, verifier,
                     step_budget=search["step_budget"], max_size=search["max_size"],
                     max_expansions=search["max_expansions"],
                     max_sources=int(settings.get("max_sources", 4)),
-                    max_ranked=settings.get("max_ranked", 6))
+                    max_ranked=settings.get("max_ranked", 6),
+                    max_evaluations=settings.get("max_evaluations"))
         found, found_by, spent, used_by = None, None, 0, {}
         if runtime.metapolicy is not None:
             shape = shape_features(public.examples, arm.meta_extended,

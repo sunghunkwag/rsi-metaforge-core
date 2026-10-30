@@ -321,7 +321,8 @@ class PathwayRegistry:
                 known_failures=(None if self.failure_memory is None
                                 else self.failure_memory.for_task(task)),
                 max_sources=int(settings.get("max_sources", 4)),
-                max_ranked=settings.get("max_ranked", 6))
+                max_ranked=settings.get("max_ranked", 6),
+                max_evaluations=settings.get("max_evaluations"))
             cached = (fingerprint, search)
             parked = self._parked.pop((task, pid), None)
             if parked is not None and parked[0] == fingerprint:

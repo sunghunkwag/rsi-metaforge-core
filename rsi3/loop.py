@@ -521,7 +521,8 @@ class Runtime:
                     step_budget=search["step_budget"], max_size=search["max_size"],
                     max_expansions=search["max_expansions"],
                     max_sources=int(settings.get("max_sources", 4)),
-                    max_ranked=settings.get("max_ranked", 6))
+                    max_ranked=settings.get("max_ranked", 6),
+                    max_evaluations=settings.get("max_evaluations"))
         spent = 0
         for action, practice in searches.items():
             result = practice.run(chunk)

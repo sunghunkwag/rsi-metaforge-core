@@ -280,7 +280,7 @@ class AnalogySearch:
 
     def __init__(self, examples, request_type, sources: dict, grammar, *, step_budget=2000,
                  max_size=12, max_expansions=20000, known_failures=None,
-                 max_sources=MAX_SOURCES, max_ranked=None):
+                 max_sources=MAX_SOURCES, max_ranked=None, max_evaluations=None):
         self.examples = tuple(examples)
         self.request = request_type
         self.grammar = grammar
@@ -290,6 +290,9 @@ class AnalogySearch:
         self.max_expansions = max_expansions
         self.known_failures = known_failures
         self.max_sources = int(max_sources)
+        # A local search: once this many candidates are spent, the search is
+        # exhausted for its sources (a new source set starts a new search).
+        self.max_evaluations = None if max_evaluations is None else int(max_evaluations)
         # Sources in the caller's order (a dict's insertion order), one per
         # program; at most ``max_ranked`` are run to rank them.
         unique = {}
@@ -335,6 +338,8 @@ class AnalogySearch:
             passed += 1
         self.evaluated, self.skipped_known = evaluated, skipped_known
         self.evaluation_steps = evaluation_steps
+        if self.max_evaluations is not None and self.evaluated >= self.max_evaluations:
+            self.exhausted = True
 
     # -- one step: the next distinct candidate, in cost order -------------------
     def _outputs(self, term):
@@ -448,6 +453,9 @@ class AnalogySearch:
         used = skipped = known = 0
         found = None
         while used < budget and not self.exhausted:
+            if self.max_evaluations is not None and self.evaluated >= self.max_evaluations:
+                self.exhausted = True
+                break
             step = self._next()
             if step is None:
                 break
