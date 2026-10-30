@@ -98,6 +98,9 @@ class ArmConfig:
     # run on TRAIN public inputs (RSI-2's dream_pairs), with every action
     # credited by its actual one-chunk outcome (selfplay_honest's practice).
     selfplay_dreams: bool = False
+    # Dream practice only on hard dreams: those the prior does not find in
+    # one chunk (removes the prior's advantage on samples of its own grammar).
+    selfplay_dreams_hard: bool = False
 
 
 def standardized_features(public_tasks) -> dict:
@@ -433,6 +436,18 @@ class Runtime:
             outputs = [repr(o) for _, o in examples]
             if len(set(outputs)) == 1 or all(repr(o) == repr(i[0]) for i, o in examples):
                 continue
+            if self.arm.selfplay_dreams_hard:
+                from .resumable import ResumableSearch
+                search = self.config["search"]
+                probe = ResumableSearch(examples, task.request_type,
+                                        self.registry.base_grammar(self.state),
+                                        step_budget=search["step_budget"],
+                                        max_size=search["max_size"],
+                                        max_expansions=search["max_expansions"])
+                result = probe.run(int(self.config.get("meta", {}).get("chunk", 16)))
+                spent += result.evaluated
+                if result.term is not None:
+                    continue
             shape = shape_features(examples, self.arm.meta_extended, self.arm.meta_fixed_length)
             spent += self._practice_searches(examples, shape, generation)
             if self.arm.behave:
