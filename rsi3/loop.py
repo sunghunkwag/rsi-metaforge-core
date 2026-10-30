@@ -83,6 +83,10 @@ class ArmConfig:
     # Behavioural search also builds ``fold h init L`` with closed steps, as
     # a separate action (behave.StepPool).
     behave_folds: bool = False
+    # Self-play credits every action by its actual one-chunk outcome on the
+    # imagined task (the prior, each fitting skeleton, each behavioural
+    # problem), instead of crediting the generating skeleton by construction.
+    selfplay_honest: bool = False
 
 
 def standardized_features(public_tasks) -> dict:
@@ -376,13 +380,55 @@ class Runtime:
                     examples, self.arm.decomposition_fold)}:
                 continue
             shape = shape_features(examples, self.arm.meta_extended)
-            self.metapolicy.record(generation, f"decompose:{skeleton.name}",
-                                   context(shape, 0, 0), 1)
+            if self.arm.selfplay_honest:
+                practice += self._practice_searches(examples, shape, generation)
+            else:
+                self.metapolicy.record(generation, f"decompose:{skeleton.name}",
+                                       context(shape, 0, 0), 1)
             made += 1
             if self.arm.behave:
                 practice += self._practice(examples, shape, generation)
         return {"imagined": made, "program_runs": runs,
-                "practice_evaluations": practice if self.arm.behave else None}
+                "practice_evaluations": (practice if self.arm.behave or self.arm.selfplay_honest
+                                         else None)}
+
+    def _practice_searches(self, examples, shape, generation) -> int:
+        """Honest practice: run the prior and each fitting skeleton for one chunk.
+
+        The generating skeleton is not credited by construction: whether its
+        hole is found within one chunk under the current grammar is the
+        episode's reward, as for every other action. Imagined tasks are never
+        verified; these evaluations are reported and are not wake budget.
+        """
+        from rsi2.corpus import infer_request_type
+        from .decompose import skeletons_for
+        from .resumable import ResumableSearch
+        search = self.config["search"]
+        chunk = int(self.config.get("meta", {}).get("chunk", 16))
+        try:
+            request = infer_request_type(examples)
+        except ValueError:
+            return 0
+        library = self.registry.library(self.state)
+        hole_grammar = Grammar(library=library, weights=self.state.grammar.weights,
+                               context_weights=self.state.grammar.context_weights)
+        searches = {"prior": ResumableSearch(examples, request,
+                                             self.registry.base_grammar(self.state),
+                                             step_budget=search["step_budget"],
+                                             max_size=search["max_size"],
+                                             max_expansions=search["max_expansions"])}
+        for sk in skeletons_for(examples, self.arm.decomposition_fold):
+            searches[f"decompose:{sk.name}"] = ResumableSearch(
+                examples, sk.hole_type, hole_grammar, compose=sk.compose,
+                step_budget=search["step_budget"], max_size=search["max_size"],
+                max_expansions=search["max_expansions"])
+        spent = 0
+        for action, practice in searches.items():
+            result = practice.run(chunk)
+            spent += result.evaluated
+            self.metapolicy.record(generation, action, context(shape, 0, 0),
+                                   int(result.term is not None))
+        return spent
 
     def _practice(self, examples, shape, generation) -> int:
         """Run each behavioural action on an imagined task for one chunk; record the outcome.
