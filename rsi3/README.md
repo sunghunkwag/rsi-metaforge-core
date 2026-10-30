@@ -28,12 +28,16 @@ capability at equal logical budgets.
 
 | **Behavioural fold** ([BEHAVE_FOLD_RESULTS.md](BEHAVE_FOLD_RESULTS.md)) | One more designer-given action: closed fold steps built bottom up by behaviour and folded over pool lists. Reverse returns (g12), and the system's own conjugation rebuilds the append cascade on it (g13, g15) while RSI-2's MDL learner compresses it: **29/36 TRAIN**, the most so far, and held-out 5/12 on every seed. 3 of 6 predictions hit (the three determined ones); every open held-out forecast missed. |
 
+| **Honest self-play** ([HONEST_RESULTS.md](HONEST_RESULTS.md)) | One change to how the meta-policy is trained: on the tasks the system imagines, every action is credited by its actual one-chunk outcome, none by construction. TRAIN stays **29/36**, and the learned solver reaches **9/12 held-out on every seed** (from 5), including a caesar task no run had solved: both stated targets in one arm. Caveat: this change was designed after earlier arms' per-task VALIDATION outcomes were read, so VALIDATION was no longer unseen. 5 of 6 predictions hit; the point forecast (6) was too low. |
+
+| **Portfolio** ([PORTFOLIO_RESULTS.md](PORTFOLIO_RESULTS.md)) | Every behavioural problem offered twice, built from the library and from RSI-2's primitives only, for the honestly trained policy to choose per shape. TRAIN **29/36**, held-out **8/12** on every seed: above the designer-only control's 7, one below honest self-play. The policy preferred the cheap library-free pools, which cannot build the self-learned constant 5 that one held-out caesar task needs. 7 of 8 predictions hit. |
+
 Plain VALIDATION (RSI-2's `assess`) did not improve on the registered comparison of any study. Held-out gains appear only when the learned solver is used at test time (`validation_agent`). TEST was not opened.
 
 - [`OWNER_DIRECTIVE.md`](OWNER_DIRECTIVE.md) — scope and constraints
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — component map and the evidence behind each design decision
-- [`PREDICTIONS.md`](PREDICTIONS.md), [`PREDICTIONS_FAILURE_MEMORY.md`](PREDICTIONS_FAILURE_MEMORY.md), [`PREDICTIONS_SELF_CONTINUITY.md`](PREDICTIONS_SELF_CONTINUITY.md) (abandoned), [`PREDICTIONS_INVENTION.md`](PREDICTIONS_INVENTION.md), [`PREDICTIONS_LONG.md`](PREDICTIONS_LONG.md) (suspended), [`PREDICTIONS_METARL.md`](PREDICTIONS_METARL.md), [`PREDICTIONS_CASCADE.md`](PREDICTIONS_CASCADE.md), [`PREDICTIONS_BEHAVE.md`](PREDICTIONS_BEHAVE.md), [`PREDICTIONS_BEHAVE_FOLD.md`](PREDICTIONS_BEHAVE_FOLD.md) — registered before each study's final runs
-- [`RESULTS.md`](RESULTS.md), [`FAILURE_MEMORY_RESULTS.md`](FAILURE_MEMORY_RESULTS.md), [`INVENTION_RESULTS.md`](INVENTION_RESULTS.md), [`METARL_RESULTS.md`](METARL_RESULTS.md), [`CASCADE_RESULTS.md`](CASCADE_RESULTS.md), [`BEHAVE_RESULTS.md`](BEHAVE_RESULTS.md), [`BEHAVE_FOLD_RESULTS.md`](BEHAVE_FOLD_RESULTS.md) — measured outcomes, predictions scored
+- [`PREDICTIONS.md`](PREDICTIONS.md), [`PREDICTIONS_FAILURE_MEMORY.md`](PREDICTIONS_FAILURE_MEMORY.md), [`PREDICTIONS_SELF_CONTINUITY.md`](PREDICTIONS_SELF_CONTINUITY.md) (abandoned), [`PREDICTIONS_INVENTION.md`](PREDICTIONS_INVENTION.md), [`PREDICTIONS_LONG.md`](PREDICTIONS_LONG.md) (suspended), [`PREDICTIONS_METARL.md`](PREDICTIONS_METARL.md), [`PREDICTIONS_CASCADE.md`](PREDICTIONS_CASCADE.md), [`PREDICTIONS_BEHAVE.md`](PREDICTIONS_BEHAVE.md), [`PREDICTIONS_BEHAVE_FOLD.md`](PREDICTIONS_BEHAVE_FOLD.md), [`PREDICTIONS_HONEST.md`](PREDICTIONS_HONEST.md), [`PREDICTIONS_PORTFOLIO.md`](PREDICTIONS_PORTFOLIO.md) — registered before each study's final runs
+- [`RESULTS.md`](RESULTS.md), [`FAILURE_MEMORY_RESULTS.md`](FAILURE_MEMORY_RESULTS.md), [`INVENTION_RESULTS.md`](INVENTION_RESULTS.md), [`METARL_RESULTS.md`](METARL_RESULTS.md), [`CASCADE_RESULTS.md`](CASCADE_RESULTS.md), [`BEHAVE_RESULTS.md`](BEHAVE_RESULTS.md), [`BEHAVE_FOLD_RESULTS.md`](BEHAVE_FOLD_RESULTS.md), [`HONEST_RESULTS.md`](HONEST_RESULTS.md), [`PORTFOLIO_RESULTS.md`](PORTFOLIO_RESULTS.md) — measured outcomes, predictions scored
 - [`studies/REGULATION_TOY_RESULTS.md`](studies/REGULATION_TOY_RESULTS.md) — the study behind design decision D1
 
 Nothing in `rsi2/`, `docs/`, or `rsi_levels_metaforge_unified.py` is modified.
@@ -69,6 +73,10 @@ for arm in RSI3_META_BEH RSI3_META_BEH_BASE; do
 done
 # the behavioural fold follow-up (16 generations)
 python -m rsi3.longrun --config rsi3/experiment_config_behave_fold.json --arm RSI3_META_BEH_FOLD --output NEW_DIR7
+# honest self-play (16 generations)
+python -m rsi3.longrun --config rsi3/experiment_config_honest.json --arm RSI3_META_HONEST --output NEW_DIR8
+# portfolio (16 generations)
+python -m rsi3.longrun --config rsi3/experiment_config_portfolio.json --arm RSI3_META_PORTFOLIO --output NEW_DIR9
 python -m rsi3.report --results NEW_EMPTY_DIR --output report.md
 ```
 
