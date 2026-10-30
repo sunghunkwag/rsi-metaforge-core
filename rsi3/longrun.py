@@ -117,16 +117,23 @@ def agent_validation(runtime, model, validation, config: dict, verifier,
                                     skeletons_for(public.examples, False),
                                     int(settings.get("max_unroll", 6)),
                                     getattr(arm, "behave_folds", False))
+            variants = [("behave", library if arm.behave_library else {},
+                         runtime.state.grammar.weights if arm.behave_library else None)]
+            if getattr(arm, "behave_dual", False):
+                variants.append(("behave0", {}, None))
             for kind, problem in problems.items():
-                searches[f"behave:{kind}"] = BehaviouralSearch(
-                    problem, library if arm.behave_library else {}, public.examples,
-                    step_budget=search["step_budget"],
-                    max_size=int(settings.get("max_size", 10)),
-                    combo_limit=int(settings.get("combo_limit", 2_000_000)),
-                    weights=runtime.state.grammar.weights if arm.behave_library else None)
+                for prefix, pool_library, pool_weights in variants:
+                    searches[f"{prefix}:{kind}"] = BehaviouralSearch(
+                        problem, pool_library, public.examples,
+                        step_budget=search["step_budget"],
+                        max_size=int(settings.get("max_size", 10)),
+                        combo_limit=int(settings.get("combo_limit", 2_000_000)),
+                        weights=pool_weights)
         found, spent, used_by = None, 0, {}
         if runtime.metapolicy is not None:
-            shape, history = shape_features(public.examples, arm.meta_extended), {}
+            shape = shape_features(public.examples, arm.meta_extended,
+                                   getattr(arm, "meta_fixed_length", False))
+            history = {}
             while spent < budget and found is None:
                 live = [a for a, s in searches.items() if not s.exhausted]
                 if not live:

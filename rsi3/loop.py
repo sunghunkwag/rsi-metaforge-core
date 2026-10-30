@@ -87,6 +87,13 @@ class ArmConfig:
     # imagined task (the prior, each fitting skeleton, each behavioural
     # problem), instead of crediting the generating skeleton by construction.
     selfplay_honest: bool = False
+    # A fixed-output-length flag in the policy's task shape (metarl).
+    meta_fixed_length: bool = False
+    # Every behavioural problem is also offered as ``behave0:<kind>``, built
+    # from RSI-2's primitives only in a fixed order, beside the library
+    # version: the policy chooses per shape between a wide pool that the
+    # system's own abstractions shorten and a narrow pool that is cheap.
+    behave_dual: bool = False
 
 
 def standardized_features(public_tasks) -> dict:
@@ -176,9 +183,10 @@ class Runtime:
             self.registry.add_decompose_pathways(fold=arm.decomposition_fold)
         if arm.behave:
             self.registry.add_behave_pathways(config.get("behave", {}), arm.behave_library,
-                                              arm.behave_folds)
+                                              arm.behave_folds, arm.behave_dual)
         self.metapolicy = MetaPolicy(wipe=arm.meta_wipe) if meta else None
-        self.shapes = {task.name: shape_features(task.examples, arm.meta_extended)
+        self.shapes = {task.name: shape_features(task.examples, arm.meta_extended,
+                                                 arm.meta_fixed_length)
                        for task in self.public}
         self.chunks_spent: dict[str, dict[str, int]] = {}   # task -> action -> chunks, all generations
         self.near_misses = None
@@ -294,8 +302,10 @@ class Runtime:
         if "invented" in self.registry.pathways and self.registry.extra_library:
             actions.append("invented")
         actions += [f"decompose:{name}" for name in sorted(self.registry.skeletons.get(task, {}))]
-        actions += [f"behave:{name}"
-                    for name in sorted(getattr(self.registry, "behave_problems", {}).get(task, {}))]
+        problems = sorted(getattr(self.registry, "behave_problems", {}).get(task, {}))
+        actions += [f"behave:{name}" for name in problems]
+        if self.arm.behave_dual:
+            actions += [f"behave0:{name}" for name in problems]
         return [a for a in actions if not self.registry.peek(task, a, self.state)[1]]
 
     def _meta_wake(self, budget_total, unsolved, generation, pending, log) -> int:
@@ -379,7 +389,7 @@ class Runtime:
             if skeleton.name not in {sk.name for sk in skeletons_for(
                     examples, self.arm.decomposition_fold)}:
                 continue
-            shape = shape_features(examples, self.arm.meta_extended)
+            shape = shape_features(examples, self.arm.meta_extended, self.arm.meta_fixed_length)
             if self.arm.selfplay_honest:
                 practice += self._practice_searches(examples, shape, generation)
             else:
@@ -451,19 +461,24 @@ class Runtime:
             return 0
         library = self.registry.library(self.state) if self.arm.behave_library else {}
         weights = self.state.grammar.weights if self.arm.behave_library else None
+        variants = [("behave", library, weights)]
+        if self.arm.behave_dual:
+            variants.append(("behave0", {}, None))
         spent = 0
         for kind, problem in problems_for(examples, request, skeletons_for(examples, False),
                                           int(settings.get("max_unroll", 6)),
                                           self.arm.behave_folds).items():
-            search = BehaviouralSearch(problem, library, examples,
-                                       step_budget=self.config["search"]["step_budget"],
-                                       max_size=int(settings.get("max_size", 10)),
-                                       combo_limit=int(settings.get("combo_limit", 2_000_000)),
-                                       weights=weights)
-            result = search.run(chunk)
-            spent += result.evaluated
-            self.metapolicy.record(generation, f"behave:{kind}", context(shape, 0, 0),
-                                   int(result.term is not None))
+            for prefix, pool_library, pool_weights in variants:
+                search = BehaviouralSearch(problem, pool_library, examples,
+                                           step_budget=self.config["search"]["step_budget"],
+                                           max_size=int(settings.get("max_size", 10)),
+                                           combo_limit=int(settings.get("combo_limit",
+                                                                        2_000_000)),
+                                           weights=pool_weights)
+                result = search.run(chunk)
+                spent += result.evaluated
+                self.metapolicy.record(generation, f"{prefix}:{kind}", context(shape, 0, 0),
+                                       int(result.term is not None))
         return spent
 
     def wake(self, generation) -> dict:

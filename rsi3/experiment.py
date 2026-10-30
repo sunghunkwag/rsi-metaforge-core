@@ -158,6 +158,17 @@ ARMS = {
                                   meta_extended=True, meta_selfplay=True,
                                   decomposition_conjugate=True, behave=True,
                                   behave_folds=True, selfplay_honest=True),
+    # Portfolio (PREDICTIONS_PORTFOLIO.md): RSI3_META_HONEST, with every
+    # behavioural problem also offered from RSI-2's primitives only, and a
+    # fixed-output-length flag in the policy's task shape.
+    "RSI3_META_PORTFOLIO": ArmConfig("RSI3_META_PORTFOLIO", allocation="meta", genesis=False,
+                                     designer_kinds=("prior",), failure_memory=True,
+                                     invention=True, invention_near_misses=True,
+                                     invention_meta=True, decomposition_fold=True,
+                                     meta_extended=True, meta_selfplay=True,
+                                     decomposition_conjugate=True, behave=True,
+                                     behave_folds=True, selfplay_honest=True,
+                                     behave_dual=True, meta_fixed_length=True),
 }
 BASELINE = "RSI2"
 
