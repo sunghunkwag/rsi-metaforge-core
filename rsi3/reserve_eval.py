@@ -3,6 +3,9 @@
     python -m rsi3.reserve_eval --checkpoint RUN_DIR/ARM.checkpoint.pkl \
         --config rsi3/experiment_config_X.json --partition near --output OUT.json
 
+Partitions: RESERVE ``near``, ``far``, ``far2`` (reserve.py); FRESH ``fresh1``,
+``fresh2`` (fresh.py); ``validation``.
+
 This is the same measurement ``longrun`` makes on VALIDATION at every
 generation (``longrun.agent_validation``). It uses the final generation's
 state and every seed's recognition model: seed one's is the run's own, and
@@ -24,6 +27,7 @@ import time
 from rsi2.corpus import load_validation
 
 from .longrun import agent_validation, seed_recognition
+from .fresh import load_fresh
 from .reserve import load_reserve
 from .verifier import FrozenVerifier
 
@@ -31,7 +35,12 @@ from .verifier import FrozenVerifier
 def evaluate(checkpoint: Path, config: dict, partition: str) -> dict:
     saved = pickle.loads(checkpoint.read_bytes())
     runtime = saved["runtime"]
-    tasks = load_validation() if partition == "validation" else load_reserve(partition)
+    if partition == "validation":
+        tasks = load_validation()
+    elif partition.startswith("fresh"):
+        tasks = load_fresh(partition)
+    else:
+        tasks = load_reserve(partition)
     seeds = list(config["seeds"])
     generation = runtime.state.generation
     rsi2_config = {"B_wake": config["B_wake"], "B_eval": config["B_eval"],
@@ -59,7 +68,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--config", type=Path, required=True)
-    parser.add_argument("--partition", choices=("near", "far", "far2", "validation"), required=True)
+    parser.add_argument("--partition", choices=("near", "far", "far2", "fresh1", "fresh2", "validation"), required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
     config = json.loads(args.config.read_text(encoding="utf-8"))
