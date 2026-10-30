@@ -1,0 +1,339 @@
+{
+ "arm": "RSI3_META_PORTFOLIO",
+ "partition": "far",
+ "generation": 16,
+ "tasks": 12,
+ "seeds": {
+  "11": {
+   "solved": 3,
+   "solved_names": [
+    "evens",
+    "last",
+    "odds"
+   ],
+   "tasks": [
+    {
+     "name": "count-head-in-tail",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "empty",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "behave0:any_list": 16
+     }
+    },
+    {
+     "name": "evens",
+     "solved": true,
+     "spent": {
+      "behave0:filter": 25
+     }
+    },
+    {
+     "name": "head",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "prior": 16
+     }
+    },
+    {
+     "name": "is-odds",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 13
+     }
+    },
+    {
+     "name": "is-primes",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "behave0:any_list": 16
+     }
+    },
+    {
+     "name": "last",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 2
+     }
+    },
+    {
+     "name": "min",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "prior": 16
+     }
+    },
+    {
+     "name": "odds",
+     "solved": true,
+     "spent": {
+      "behave0:filter": 25
+     }
+    },
+    {
+     "name": "product",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "repeat",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "repeat-many",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "prior": 16
+     }
+    }
+   ],
+   "cpu_seconds": 5.494423848
+  },
+  "22": {
+   "solved": 3,
+   "solved_names": [
+    "evens",
+    "last",
+    "odds"
+   ],
+   "tasks": [
+    {
+     "name": "count-head-in-tail",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "empty",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "behave0:any_list": 16
+     }
+    },
+    {
+     "name": "evens",
+     "solved": true,
+     "spent": {
+      "behave0:filter": 25
+     }
+    },
+    {
+     "name": "head",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "prior": 16
+     }
+    },
+    {
+     "name": "is-odds",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 13
+     }
+    },
+    {
+     "name": "is-primes",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "behave0:any_list": 16
+     }
+    },
+    {
+     "name": "last",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 2
+     }
+    },
+    {
+     "name": "min",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "prior": 16
+     }
+    },
+    {
+     "name": "odds",
+     "solved": true,
+     "spent": {
+      "behave0:filter": 25
+     }
+    },
+    {
+     "name": "product",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "repeat",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "repeat-many",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "prior": 16
+     }
+    }
+   ],
+   "cpu_seconds": 5.6801385589999995
+  },
+  "33": {
+   "solved": 4,
+   "solved_names": [
+    "evens",
+    "head",
+    "last",
+    "odds"
+   ],
+   "tasks": [
+    {
+     "name": "count-head-in-tail",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "empty",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "behave0:any_list": 16
+     }
+    },
+    {
+     "name": "evens",
+     "solved": true,
+     "spent": {
+      "behave0:filter": 25
+     }
+    },
+    {
+     "name": "head",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "prior": 11
+     }
+    },
+    {
+     "name": "is-odds",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 13
+     }
+    },
+    {
+     "name": "is-primes",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "behave0:any_list": 16
+     }
+    },
+    {
+     "name": "last",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 2
+     }
+    },
+    {
+     "name": "min",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "prior": 16
+     }
+    },
+    {
+     "name": "odds",
+     "solved": true,
+     "spent": {
+      "behave0:filter": 25
+     }
+    },
+    {
+     "name": "product",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "repeat",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "repeat-many",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "prior": 16
+     }
+    }
+   ],
+   "cpu_seconds": 6.150006881000001
+  }
+ }
+}

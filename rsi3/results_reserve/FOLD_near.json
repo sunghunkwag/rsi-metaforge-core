@@ -1,0 +1,2561 @@
+{
+ "arm": "RSI3_META_BEH_FOLD",
+ "partition": "near",
+ "generation": 16,
+ "tasks": 100,
+ "seeds": {
+  "11": {
+   "solved": 42,
+   "solved_names": [
+    "add-k with k=0",
+    "add-k with k=1",
+    "add-k with k=2",
+    "add-k with k=3",
+    "add-k with k=4",
+    "bool-identify-geq-k with k=1",
+    "bool-identify-geq-k with k=2",
+    "bool-identify-geq-k with k=5",
+    "bool-identify-is-mod-k with k=1",
+    "bool-identify-k with k=0",
+    "bool-identify-k with k=2",
+    "bool-identify-k with k=3",
+    "bool-identify-k with k=4",
+    "bool-identify-k with k=5",
+    "caesar-cipher-k-modulo-n with k=0 and n=4",
+    "caesar-cipher-k-modulo-n with k=0 and n=5",
+    "caesar-cipher-k-modulo-n with k=3 and n=3",
+    "caesar-cipher-k-modulo-n with k=4 and n=2",
+    "caesar-cipher-k-modulo-n with k=4 and n=4",
+    "caesar-cipher-k-modulo-n with k=5 and n=2",
+    "has-k with k=0",
+    "index-k with k=1",
+    "is-mod-k with k=1",
+    "keep-mod-k with k=1",
+    "modulo-k with k=1",
+    "modulo-k with k=4",
+    "modulo-k with k=5",
+    "mult-k with k=0",
+    "mult-k with k=1",
+    "mult-k with k=2",
+    "mult-k with k=3",
+    "mult-k with k=5",
+    "pow-k with k=1",
+    "pow-k with k=2",
+    "prepend-index-k with k=1",
+    "prepend-index-k with k=4",
+    "prepend-k with k=1",
+    "prepend-k with k=3",
+    "repeat-k with k=1",
+    "replace-all-with-index-k with k=2",
+    "replace-all-with-index-k with k=3",
+    "replace-all-with-index-k with k=4"
+   ],
+   "tasks": [
+    {
+     "name": "add-k with k=0",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "add-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16,
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "add-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16,
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "add-k with k=3",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16,
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "add-k with k=4",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16,
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "append-index-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "append-index-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "append-index-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "append-k with k=0",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "append-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "append-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "append-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "bool-identify-geq-k with k=0",
+     "solved": false,
+     "spent": {
+      "decompose:map": 1
+     }
+    },
+    {
+     "name": "bool-identify-geq-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:map": 14
+     }
+    },
+    {
+     "name": "bool-identify-geq-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:map": 15
+     }
+    },
+    {
+     "name": "bool-identify-geq-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:map": 23
+     }
+    },
+    {
+     "name": "bool-identify-geq-k with k=5",
+     "solved": true,
+     "spent": {
+      "decompose:map": 23
+     }
+    },
+    {
+     "name": "bool-identify-is-mod-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:map": 1
+     }
+    },
+    {
+     "name": "bool-identify-is-mod-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:map": 48,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "bool-identify-k with k=0",
+     "solved": true,
+     "spent": {
+      "decompose:map": 19
+     }
+    },
+    {
+     "name": "bool-identify-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:map": 42
+     }
+    },
+    {
+     "name": "bool-identify-k with k=3",
+     "solved": true,
+     "spent": {
+      "decompose:map": 36
+     }
+    },
+    {
+     "name": "bool-identify-k with k=4",
+     "solved": true,
+     "spent": {
+      "decompose:map": 37
+     }
+    },
+    {
+     "name": "bool-identify-k with k=5",
+     "solved": true,
+     "spent": {
+      "decompose:map": 38
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=0 and n=4",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=0 and n=5",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=1 and n=5",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=2 and n=4",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=3 and n=3",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=3 and n=4",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=3 and n=5",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=4 and n=2",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=4 and n=3",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=4 and n=4",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=4 and n=5",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=5 and n=2",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=5 and n=3",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=5 and n=4",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "has-k with k=0",
+     "solved": true,
+     "spent": {
+      "decompose:any_list": 10
+     }
+    },
+    {
+     "name": "has-k with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "decompose:fold_true": 16
+     }
+    },
+    {
+     "name": "has-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "decompose:fold_true": 16
+     }
+    },
+    {
+     "name": "has-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "decompose:fold_true": 16
+     }
+    },
+    {
+     "name": "index-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "behave:whole": 11
+     }
+    },
+    {
+     "name": "index-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "index-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "is-mod-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:any_list": 1
+     }
+    },
+    {
+     "name": "is-mod-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "decompose:fold_true": 16
+     }
+    },
+    {
+     "name": "is-mod-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "decompose:fold_true": 16
+     }
+    },
+    {
+     "name": "is-mod-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "decompose:fold_true": 16
+     }
+    },
+    {
+     "name": "keep-mod-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "keep-mod-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "keep-mod-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "keep-mod-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "kth-largest with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "kth-largest with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "kth-smallest with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "kth-smallest with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "modulo-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:map_const": 10
+     }
+    },
+    {
+     "name": "modulo-k with k=4",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16,
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "modulo-k with k=5",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16,
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "mult-k with k=0",
+     "solved": true,
+     "spent": {
+      "decompose:map_const": 10
+     }
+    },
+    {
+     "name": "mult-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "mult-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16
+     }
+    },
+    {
+     "name": "mult-k with k=3",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16,
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "mult-k with k=5",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 15
+     }
+    },
+    {
+     "name": "pow-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "pow-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:map": 13
+     }
+    },
+    {
+     "name": "pow-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "pow-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "prepend-index-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:prepend_of": 1
+     }
+    },
+    {
+     "name": "prepend-index-k with k=4",
+     "solved": true,
+     "spent": {
+      "decompose:prepend_of": 40
+     }
+    },
+    {
+     "name": "prepend-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:prepend_of": 11
+     }
+    },
+    {
+     "name": "prepend-k with k=3",
+     "solved": true,
+     "spent": {
+      "decompose:prepend_of": 6
+     }
+    },
+    {
+     "name": "repeat-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "repeat-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "repeat-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "repeat-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "replace-all-with-index-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:map_const": 39
+     }
+    },
+    {
+     "name": "replace-all-with-index-k with k=3",
+     "solved": true,
+     "spent": {
+      "decompose:map_const": 16
+     }
+    },
+    {
+     "name": "replace-all-with-index-k with k=4",
+     "solved": true,
+     "spent": {
+      "decompose:map_const": 40
+     }
+    },
+    {
+     "name": "rotate-k with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "decompose:map_list": 32
+     }
+    },
+    {
+     "name": "rotate-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "decompose:map_list": 32
+     }
+    },
+    {
+     "name": "rotate-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "decompose:map_list": 32
+     }
+    },
+    {
+     "name": "rotate-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "decompose:map_list": 32
+     }
+    },
+    {
+     "name": "slice-k-n with k=1 and n=1",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=1 and n=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=1 and n=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=1 and n=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=2 and n=1",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=2 and n=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=2 and n=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=2 and n=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=3 and n=1",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=3 and n=4",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=3 and n=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=4 and n=1",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=4 and n=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=4 and n=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=4 and n=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=5 and n=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    }
+   ],
+   "cpu_seconds": 60.224523642
+  },
+  "22": {
+   "solved": 42,
+   "solved_names": [
+    "add-k with k=0",
+    "add-k with k=1",
+    "add-k with k=2",
+    "add-k with k=3",
+    "add-k with k=4",
+    "bool-identify-geq-k with k=1",
+    "bool-identify-geq-k with k=2",
+    "bool-identify-geq-k with k=5",
+    "bool-identify-is-mod-k with k=1",
+    "bool-identify-k with k=0",
+    "bool-identify-k with k=2",
+    "bool-identify-k with k=3",
+    "bool-identify-k with k=4",
+    "bool-identify-k with k=5",
+    "caesar-cipher-k-modulo-n with k=0 and n=4",
+    "caesar-cipher-k-modulo-n with k=0 and n=5",
+    "caesar-cipher-k-modulo-n with k=3 and n=3",
+    "caesar-cipher-k-modulo-n with k=4 and n=2",
+    "caesar-cipher-k-modulo-n with k=4 and n=4",
+    "caesar-cipher-k-modulo-n with k=5 and n=2",
+    "has-k with k=0",
+    "index-k with k=1",
+    "is-mod-k with k=1",
+    "keep-mod-k with k=1",
+    "modulo-k with k=1",
+    "modulo-k with k=4",
+    "modulo-k with k=5",
+    "mult-k with k=0",
+    "mult-k with k=1",
+    "mult-k with k=2",
+    "mult-k with k=3",
+    "mult-k with k=5",
+    "pow-k with k=1",
+    "pow-k with k=2",
+    "prepend-index-k with k=1",
+    "prepend-index-k with k=4",
+    "prepend-k with k=1",
+    "prepend-k with k=3",
+    "repeat-k with k=1",
+    "replace-all-with-index-k with k=2",
+    "replace-all-with-index-k with k=3",
+    "replace-all-with-index-k with k=4"
+   ],
+   "tasks": [
+    {
+     "name": "add-k with k=0",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "add-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16,
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "add-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16,
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "add-k with k=3",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16,
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "add-k with k=4",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16,
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "append-index-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "append-index-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "append-index-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "append-k with k=0",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "append-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "append-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "append-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "bool-identify-geq-k with k=0",
+     "solved": false,
+     "spent": {
+      "decompose:map": 1
+     }
+    },
+    {
+     "name": "bool-identify-geq-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:map": 14
+     }
+    },
+    {
+     "name": "bool-identify-geq-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:map": 15
+     }
+    },
+    {
+     "name": "bool-identify-geq-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:map": 23
+     }
+    },
+    {
+     "name": "bool-identify-geq-k with k=5",
+     "solved": true,
+     "spent": {
+      "decompose:map": 23
+     }
+    },
+    {
+     "name": "bool-identify-is-mod-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:map": 1
+     }
+    },
+    {
+     "name": "bool-identify-is-mod-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:map": 48,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "bool-identify-k with k=0",
+     "solved": true,
+     "spent": {
+      "decompose:map": 19
+     }
+    },
+    {
+     "name": "bool-identify-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:map": 42
+     }
+    },
+    {
+     "name": "bool-identify-k with k=3",
+     "solved": true,
+     "spent": {
+      "decompose:map": 36
+     }
+    },
+    {
+     "name": "bool-identify-k with k=4",
+     "solved": true,
+     "spent": {
+      "decompose:map": 37
+     }
+    },
+    {
+     "name": "bool-identify-k with k=5",
+     "solved": true,
+     "spent": {
+      "decompose:map": 38
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=0 and n=4",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=0 and n=5",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=1 and n=5",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=2 and n=4",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=3 and n=3",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=3 and n=4",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=3 and n=5",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=4 and n=2",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=4 and n=3",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=4 and n=4",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=4 and n=5",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=5 and n=2",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=5 and n=3",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=5 and n=4",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "has-k with k=0",
+     "solved": true,
+     "spent": {
+      "decompose:any_list": 10
+     }
+    },
+    {
+     "name": "has-k with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "decompose:fold_true": 16
+     }
+    },
+    {
+     "name": "has-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "decompose:fold_true": 16
+     }
+    },
+    {
+     "name": "has-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "decompose:fold_true": 16
+     }
+    },
+    {
+     "name": "index-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "behave:whole": 11
+     }
+    },
+    {
+     "name": "index-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "index-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "is-mod-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:any_list": 1
+     }
+    },
+    {
+     "name": "is-mod-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "decompose:fold_true": 16
+     }
+    },
+    {
+     "name": "is-mod-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "decompose:fold_true": 16
+     }
+    },
+    {
+     "name": "is-mod-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "decompose:fold_true": 16
+     }
+    },
+    {
+     "name": "keep-mod-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "keep-mod-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "keep-mod-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "keep-mod-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "kth-largest with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "kth-largest with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "kth-smallest with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "kth-smallest with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "modulo-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:map_const": 10
+     }
+    },
+    {
+     "name": "modulo-k with k=4",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16,
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "modulo-k with k=5",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16,
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "mult-k with k=0",
+     "solved": true,
+     "spent": {
+      "decompose:map_const": 10
+     }
+    },
+    {
+     "name": "mult-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "mult-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16
+     }
+    },
+    {
+     "name": "mult-k with k=3",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16,
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "mult-k with k=5",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 15
+     }
+    },
+    {
+     "name": "pow-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "pow-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:map": 13
+     }
+    },
+    {
+     "name": "pow-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "pow-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "prepend-index-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:prepend_of": 1
+     }
+    },
+    {
+     "name": "prepend-index-k with k=4",
+     "solved": true,
+     "spent": {
+      "decompose:prepend_of": 40
+     }
+    },
+    {
+     "name": "prepend-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:prepend_of": 11
+     }
+    },
+    {
+     "name": "prepend-k with k=3",
+     "solved": true,
+     "spent": {
+      "decompose:prepend_of": 6
+     }
+    },
+    {
+     "name": "repeat-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "repeat-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "repeat-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "repeat-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "replace-all-with-index-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:map_const": 39
+     }
+    },
+    {
+     "name": "replace-all-with-index-k with k=3",
+     "solved": true,
+     "spent": {
+      "decompose:map_const": 16
+     }
+    },
+    {
+     "name": "replace-all-with-index-k with k=4",
+     "solved": true,
+     "spent": {
+      "decompose:map_const": 40
+     }
+    },
+    {
+     "name": "rotate-k with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "decompose:map_list": 32
+     }
+    },
+    {
+     "name": "rotate-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "decompose:map_list": 32
+     }
+    },
+    {
+     "name": "rotate-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "decompose:map_list": 32
+     }
+    },
+    {
+     "name": "rotate-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "decompose:map_list": 32
+     }
+    },
+    {
+     "name": "slice-k-n with k=1 and n=1",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=1 and n=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=1 and n=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=1 and n=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=2 and n=1",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=2 and n=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=2 and n=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=2 and n=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=3 and n=1",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=3 and n=4",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=3 and n=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=4 and n=1",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=4 and n=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=4 and n=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=4 and n=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=5 and n=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    }
+   ],
+   "cpu_seconds": 60.32694181
+  },
+  "33": {
+   "solved": 42,
+   "solved_names": [
+    "add-k with k=0",
+    "add-k with k=1",
+    "add-k with k=2",
+    "add-k with k=3",
+    "add-k with k=4",
+    "bool-identify-geq-k with k=1",
+    "bool-identify-geq-k with k=2",
+    "bool-identify-geq-k with k=5",
+    "bool-identify-is-mod-k with k=1",
+    "bool-identify-k with k=0",
+    "bool-identify-k with k=2",
+    "bool-identify-k with k=3",
+    "bool-identify-k with k=4",
+    "bool-identify-k with k=5",
+    "caesar-cipher-k-modulo-n with k=0 and n=4",
+    "caesar-cipher-k-modulo-n with k=0 and n=5",
+    "caesar-cipher-k-modulo-n with k=3 and n=3",
+    "caesar-cipher-k-modulo-n with k=4 and n=2",
+    "caesar-cipher-k-modulo-n with k=4 and n=4",
+    "caesar-cipher-k-modulo-n with k=5 and n=2",
+    "has-k with k=0",
+    "index-k with k=1",
+    "is-mod-k with k=1",
+    "keep-mod-k with k=1",
+    "modulo-k with k=1",
+    "modulo-k with k=4",
+    "modulo-k with k=5",
+    "mult-k with k=0",
+    "mult-k with k=1",
+    "mult-k with k=2",
+    "mult-k with k=3",
+    "mult-k with k=5",
+    "pow-k with k=1",
+    "pow-k with k=2",
+    "prepend-index-k with k=1",
+    "prepend-index-k with k=4",
+    "prepend-k with k=1",
+    "prepend-k with k=3",
+    "repeat-k with k=1",
+    "replace-all-with-index-k with k=2",
+    "replace-all-with-index-k with k=3",
+    "replace-all-with-index-k with k=4"
+   ],
+   "tasks": [
+    {
+     "name": "add-k with k=0",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "add-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16,
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "add-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16,
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "add-k with k=3",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16,
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "add-k with k=4",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16,
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "append-index-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "append-index-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "append-index-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "append-k with k=0",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "append-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "append-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "append-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "bool-identify-geq-k with k=0",
+     "solved": false,
+     "spent": {
+      "decompose:map": 1
+     }
+    },
+    {
+     "name": "bool-identify-geq-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:map": 14
+     }
+    },
+    {
+     "name": "bool-identify-geq-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:map": 15
+     }
+    },
+    {
+     "name": "bool-identify-geq-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:map": 23
+     }
+    },
+    {
+     "name": "bool-identify-geq-k with k=5",
+     "solved": true,
+     "spent": {
+      "decompose:map": 23
+     }
+    },
+    {
+     "name": "bool-identify-is-mod-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:map": 1
+     }
+    },
+    {
+     "name": "bool-identify-is-mod-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:map": 48,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "bool-identify-k with k=0",
+     "solved": true,
+     "spent": {
+      "decompose:map": 19
+     }
+    },
+    {
+     "name": "bool-identify-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:map": 42
+     }
+    },
+    {
+     "name": "bool-identify-k with k=3",
+     "solved": true,
+     "spent": {
+      "decompose:map": 36
+     }
+    },
+    {
+     "name": "bool-identify-k with k=4",
+     "solved": true,
+     "spent": {
+      "decompose:map": 37
+     }
+    },
+    {
+     "name": "bool-identify-k with k=5",
+     "solved": true,
+     "spent": {
+      "decompose:map": 38
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=0 and n=4",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=0 and n=5",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=1 and n=5",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=2 and n=4",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=3 and n=3",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=3 and n=4",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=3 and n=5",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=4 and n=2",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=4 and n=3",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=4 and n=4",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=4 and n=5",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=5 and n=2",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=5 and n=3",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=5 and n=4",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "has-k with k=0",
+     "solved": true,
+     "spent": {
+      "decompose:any_list": 10
+     }
+    },
+    {
+     "name": "has-k with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "decompose:fold_true": 16
+     }
+    },
+    {
+     "name": "has-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "decompose:fold_true": 16
+     }
+    },
+    {
+     "name": "has-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "decompose:fold_true": 16
+     }
+    },
+    {
+     "name": "index-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "behave:whole": 11
+     }
+    },
+    {
+     "name": "index-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "index-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "is-mod-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:any_list": 1
+     }
+    },
+    {
+     "name": "is-mod-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "decompose:fold_true": 16
+     }
+    },
+    {
+     "name": "is-mod-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "decompose:fold_true": 16
+     }
+    },
+    {
+     "name": "is-mod-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "decompose:fold_true": 16
+     }
+    },
+    {
+     "name": "keep-mod-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "keep-mod-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "keep-mod-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "keep-mod-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "kth-largest with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "kth-largest with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "kth-smallest with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "kth-smallest with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "modulo-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:map_const": 10
+     }
+    },
+    {
+     "name": "modulo-k with k=4",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16,
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "modulo-k with k=5",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16,
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "mult-k with k=0",
+     "solved": true,
+     "spent": {
+      "decompose:map_const": 10
+     }
+    },
+    {
+     "name": "mult-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "mult-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16
+     }
+    },
+    {
+     "name": "mult-k with k=3",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 16,
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "mult-k with k=5",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "decompose:map_list": 15
+     }
+    },
+    {
+     "name": "pow-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "pow-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:map": 13
+     }
+    },
+    {
+     "name": "pow-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "pow-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:map": 32,
+      "decompose:map_list": 16,
+      "behave:map": 16
+     }
+    },
+    {
+     "name": "prepend-index-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:prepend_of": 1
+     }
+    },
+    {
+     "name": "prepend-index-k with k=4",
+     "solved": true,
+     "spent": {
+      "decompose:prepend_of": 40
+     }
+    },
+    {
+     "name": "prepend-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:prepend_of": 11
+     }
+    },
+    {
+     "name": "prepend-k with k=3",
+     "solved": true,
+     "spent": {
+      "decompose:prepend_of": 6
+     }
+    },
+    {
+     "name": "repeat-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "repeat-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "repeat-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "repeat-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "replace-all-with-index-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:map_const": 39
+     }
+    },
+    {
+     "name": "replace-all-with-index-k with k=3",
+     "solved": true,
+     "spent": {
+      "decompose:map_const": 16
+     }
+    },
+    {
+     "name": "replace-all-with-index-k with k=4",
+     "solved": true,
+     "spent": {
+      "decompose:map_const": 40
+     }
+    },
+    {
+     "name": "rotate-k with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "decompose:map_list": 32
+     }
+    },
+    {
+     "name": "rotate-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "decompose:map_list": 32
+     }
+    },
+    {
+     "name": "rotate-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "decompose:map_list": 32
+     }
+    },
+    {
+     "name": "rotate-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 32,
+      "decompose:map_list": 32
+     }
+    },
+    {
+     "name": "slice-k-n with k=1 and n=1",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=1 and n=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=1 and n=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=1 and n=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=2 and n=1",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=2 and n=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=2 and n=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=2 and n=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=3 and n=1",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=3 and n=4",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=3 and n=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=4 and n=1",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=4 and n=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=4 and n=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=4 and n=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "slice-k-n with k=5 and n=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    }
+   ],
+   "cpu_seconds": 59.85592584
+  }
+ }
+}

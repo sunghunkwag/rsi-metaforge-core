@@ -1,0 +1,332 @@
+{
+ "arm": "RSI3_META_CONJ",
+ "partition": "far",
+ "generation": 16,
+ "tasks": 12,
+ "seeds": {
+  "11": {
+   "solved": 3,
+   "solved_names": [
+    "empty",
+    "head",
+    "last"
+   ],
+   "tasks": [
+    {
+     "name": "count-head-in-tail",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "empty",
+     "solved": true,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:any": 16,
+      "decompose:all": 2
+     }
+    },
+    {
+     "name": "evens",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "head",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "prior": 10
+     }
+    },
+    {
+     "name": "is-odds",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:any": 16,
+      "decompose:all": 4
+     }
+    },
+    {
+     "name": "is-primes",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:any": 16,
+      "decompose:all": 16,
+      "decompose:fold_false": 16
+     }
+    },
+    {
+     "name": "last",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 7
+     }
+    },
+    {
+     "name": "min",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "prior": 16
+     }
+    },
+    {
+     "name": "odds",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "product",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "repeat",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "prior": 16
+     }
+    },
+    {
+     "name": "repeat-many",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "prior": 16
+     }
+    }
+   ],
+   "cpu_seconds": 7.343163103
+  },
+  "22": {
+   "solved": 3,
+   "solved_names": [
+    "empty",
+    "head",
+    "last"
+   ],
+   "tasks": [
+    {
+     "name": "count-head-in-tail",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "empty",
+     "solved": true,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:any": 16,
+      "decompose:all": 2
+     }
+    },
+    {
+     "name": "evens",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "head",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "prior": 13
+     }
+    },
+    {
+     "name": "is-odds",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:any": 16,
+      "decompose:all": 4
+     }
+    },
+    {
+     "name": "is-primes",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:any": 16,
+      "decompose:all": 16,
+      "decompose:fold_false": 16
+     }
+    },
+    {
+     "name": "last",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 7
+     }
+    },
+    {
+     "name": "min",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "prior": 16
+     }
+    },
+    {
+     "name": "odds",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "product",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "repeat",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "prior": 16
+     }
+    },
+    {
+     "name": "repeat-many",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "prior": 16
+     }
+    }
+   ],
+   "cpu_seconds": 7.872052755
+  },
+  "33": {
+   "solved": 3,
+   "solved_names": [
+    "empty",
+    "head",
+    "last"
+   ],
+   "tasks": [
+    {
+     "name": "count-head-in-tail",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "empty",
+     "solved": true,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:any": 16,
+      "decompose:all": 2
+     }
+    },
+    {
+     "name": "evens",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "head",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "prior": 13
+     }
+    },
+    {
+     "name": "is-odds",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:any": 16,
+      "decompose:all": 4
+     }
+    },
+    {
+     "name": "is-primes",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:any": 16,
+      "decompose:all": 16,
+      "decompose:fold_false": 16
+     }
+    },
+    {
+     "name": "last",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 7
+     }
+    },
+    {
+     "name": "min",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "prior": 16
+     }
+    },
+    {
+     "name": "odds",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "product",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "repeat",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "prior": 16
+     }
+    },
+    {
+     "name": "repeat-many",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "prior": 16
+     }
+    }
+   ],
+   "cpu_seconds": 8.354690629
+  }
+ }
+}
