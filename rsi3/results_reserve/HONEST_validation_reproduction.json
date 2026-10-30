@@ -1,0 +1,341 @@
+{
+ "arm": "RSI3_META_HONEST",
+ "partition": "validation",
+ "generation": 16,
+ "tasks": 12,
+ "seeds": {
+  "11": {
+   "solved": 9,
+   "solved_names": [
+    "add-k with k=5",
+    "has-k with k=2",
+    "bool-identify-is-mod-k with k=2",
+    "caesar-cipher-k-modulo-n with k=2 and n=5",
+    "caesar-cipher-k-modulo-n with k=1 and n=3",
+    "caesar-cipher-k-modulo-n with k=3 and n=2",
+    "prepend-index-k with k=3",
+    "caesar-cipher-k-modulo-n with k=1 and n=4",
+    "sum"
+   ],
+   "tasks": [
+    {
+     "name": "slice-k-n with k=3 and n=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "decompose:fold_nil": 16,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "add-k with k=5",
+     "solved": true,
+     "spent": {
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "repeat-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "has-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "behave:any": 12
+     }
+    },
+    {
+     "name": "bool-identify-is-mod-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "behave:map": 13
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=2 and n=5",
+     "solved": true,
+     "spent": {
+      "behave:map": 34
+     }
+    },
+    {
+     "name": "kth-largest with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "prior": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=1 and n=3",
+     "solved": true,
+     "spent": {
+      "behave:map": 31
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=3 and n=2",
+     "solved": true,
+     "spent": {
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "prepend-index-k with k=3",
+     "solved": true,
+     "spent": {
+      "decompose:prepend_of": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=1 and n=4",
+     "solved": true,
+     "spent": {
+      "behave:map": 32
+     }
+    },
+    {
+     "name": "sum",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 4
+     }
+    }
+   ],
+   "cpu_seconds": 2.995667566
+  },
+  "22": {
+   "solved": 9,
+   "solved_names": [
+    "add-k with k=5",
+    "has-k with k=2",
+    "bool-identify-is-mod-k with k=2",
+    "caesar-cipher-k-modulo-n with k=2 and n=5",
+    "caesar-cipher-k-modulo-n with k=1 and n=3",
+    "caesar-cipher-k-modulo-n with k=3 and n=2",
+    "prepend-index-k with k=3",
+    "caesar-cipher-k-modulo-n with k=1 and n=4",
+    "sum"
+   ],
+   "tasks": [
+    {
+     "name": "slice-k-n with k=3 and n=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "decompose:fold_nil": 16,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "add-k with k=5",
+     "solved": true,
+     "spent": {
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "repeat-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "has-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "behave:any": 12
+     }
+    },
+    {
+     "name": "bool-identify-is-mod-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "behave:map": 13
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=2 and n=5",
+     "solved": true,
+     "spent": {
+      "behave:map": 34
+     }
+    },
+    {
+     "name": "kth-largest with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "prior": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=1 and n=3",
+     "solved": true,
+     "spent": {
+      "behave:map": 31
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=3 and n=2",
+     "solved": true,
+     "spent": {
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "prepend-index-k with k=3",
+     "solved": true,
+     "spent": {
+      "decompose:prepend_of": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=1 and n=4",
+     "solved": true,
+     "spent": {
+      "behave:map": 32
+     }
+    },
+    {
+     "name": "sum",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 4
+     }
+    }
+   ],
+   "cpu_seconds": 3.9994597249999995
+  },
+  "33": {
+   "solved": 9,
+   "solved_names": [
+    "add-k with k=5",
+    "has-k with k=2",
+    "bool-identify-is-mod-k with k=2",
+    "caesar-cipher-k-modulo-n with k=2 and n=5",
+    "caesar-cipher-k-modulo-n with k=1 and n=3",
+    "caesar-cipher-k-modulo-n with k=3 and n=2",
+    "prepend-index-k with k=3",
+    "caesar-cipher-k-modulo-n with k=1 and n=4",
+    "sum"
+   ],
+   "tasks": [
+    {
+     "name": "slice-k-n with k=3 and n=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "decompose:fold_nil": 16,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "add-k with k=5",
+     "solved": true,
+     "spent": {
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "repeat-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "has-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "behave:any": 12
+     }
+    },
+    {
+     "name": "bool-identify-is-mod-k with k=2",
+     "solved": true,
+     "spent": {
+      "decompose:map": 16,
+      "behave:map": 13
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=2 and n=5",
+     "solved": true,
+     "spent": {
+      "behave:map": 34
+     }
+    },
+    {
+     "name": "kth-largest with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "prior": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=1 and n=3",
+     "solved": true,
+     "spent": {
+      "behave:map": 31
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=3 and n=2",
+     "solved": true,
+     "spent": {
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "prepend-index-k with k=3",
+     "solved": true,
+     "spent": {
+      "decompose:prepend_of": 16
+     }
+    },
+    {
+     "name": "caesar-cipher-k-modulo-n with k=1 and n=4",
+     "solved": true,
+     "spent": {
+      "behave:map": 32
+     }
+    },
+    {
+     "name": "sum",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 4
+     }
+    }
+   ],
+   "cpu_seconds": 3.955038211999999
+  }
+ }
+}

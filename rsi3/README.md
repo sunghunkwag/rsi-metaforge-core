@@ -32,12 +32,14 @@ capability at equal logical budgets.
 
 | **Portfolio** ([PORTFOLIO_RESULTS.md](PORTFOLIO_RESULTS.md)) | Every behavioural problem offered twice, built from the library and from RSI-2's primitives only, for the honestly trained policy to choose per shape. TRAIN **29/36**, held-out **8/12** on every seed: above the designer-only control's 7, one below honest self-play. The policy preferred the cheap library-free pools, which cannot build the self-learned constant 5 that one held-out caesar task needs. 7 of 8 predictions hit. |
 
+| **RESERVE** ([RESERVE_RESULTS.md](RESERVE_RESULTS.md)) | A clean held-out measure: 100 unselected corpus tasks in the 60 selected tasks' families (NEAR) and 12 in families nothing used (FAR), which no split, run or design decision had touched. Every arm's final learned solver, from its registered checkpoint: honest self-play solves **56–57 of 100 NEAR** on every seed, against 39–52 for every other arm, so its VALIDATION lead was not manufactured by design exposure. Every arm solves 2–4 of 12 FAR: no transfer to new routines. 8 of 9 predictions hit. |
+
 Plain VALIDATION (RSI-2's `assess`) did not improve on the registered comparison of any study. Held-out gains appear only when the learned solver is used at test time (`validation_agent`). TEST was not opened.
 
 - [`OWNER_DIRECTIVE.md`](OWNER_DIRECTIVE.md) — scope and constraints
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — component map and the evidence behind each design decision
-- [`PREDICTIONS.md`](PREDICTIONS.md), [`PREDICTIONS_FAILURE_MEMORY.md`](PREDICTIONS_FAILURE_MEMORY.md), [`PREDICTIONS_SELF_CONTINUITY.md`](PREDICTIONS_SELF_CONTINUITY.md) (abandoned), [`PREDICTIONS_INVENTION.md`](PREDICTIONS_INVENTION.md), [`PREDICTIONS_LONG.md`](PREDICTIONS_LONG.md) (suspended), [`PREDICTIONS_METARL.md`](PREDICTIONS_METARL.md), [`PREDICTIONS_CASCADE.md`](PREDICTIONS_CASCADE.md), [`PREDICTIONS_BEHAVE.md`](PREDICTIONS_BEHAVE.md), [`PREDICTIONS_BEHAVE_FOLD.md`](PREDICTIONS_BEHAVE_FOLD.md), [`PREDICTIONS_HONEST.md`](PREDICTIONS_HONEST.md), [`PREDICTIONS_PORTFOLIO.md`](PREDICTIONS_PORTFOLIO.md) — registered before each study's final runs
-- [`RESULTS.md`](RESULTS.md), [`FAILURE_MEMORY_RESULTS.md`](FAILURE_MEMORY_RESULTS.md), [`INVENTION_RESULTS.md`](INVENTION_RESULTS.md), [`METARL_RESULTS.md`](METARL_RESULTS.md), [`CASCADE_RESULTS.md`](CASCADE_RESULTS.md), [`BEHAVE_RESULTS.md`](BEHAVE_RESULTS.md), [`BEHAVE_FOLD_RESULTS.md`](BEHAVE_FOLD_RESULTS.md), [`HONEST_RESULTS.md`](HONEST_RESULTS.md), [`PORTFOLIO_RESULTS.md`](PORTFOLIO_RESULTS.md) — measured outcomes, predictions scored
+- [`PREDICTIONS.md`](PREDICTIONS.md), [`PREDICTIONS_FAILURE_MEMORY.md`](PREDICTIONS_FAILURE_MEMORY.md), [`PREDICTIONS_SELF_CONTINUITY.md`](PREDICTIONS_SELF_CONTINUITY.md) (abandoned), [`PREDICTIONS_INVENTION.md`](PREDICTIONS_INVENTION.md), [`PREDICTIONS_LONG.md`](PREDICTIONS_LONG.md) (suspended), [`PREDICTIONS_METARL.md`](PREDICTIONS_METARL.md), [`PREDICTIONS_CASCADE.md`](PREDICTIONS_CASCADE.md), [`PREDICTIONS_BEHAVE.md`](PREDICTIONS_BEHAVE.md), [`PREDICTIONS_BEHAVE_FOLD.md`](PREDICTIONS_BEHAVE_FOLD.md), [`PREDICTIONS_HONEST.md`](PREDICTIONS_HONEST.md), [`PREDICTIONS_PORTFOLIO.md`](PREDICTIONS_PORTFOLIO.md), [`PREDICTIONS_RESERVE.md`](PREDICTIONS_RESERVE.md) — registered before each study's final runs
+- [`RESULTS.md`](RESULTS.md), [`FAILURE_MEMORY_RESULTS.md`](FAILURE_MEMORY_RESULTS.md), [`INVENTION_RESULTS.md`](INVENTION_RESULTS.md), [`METARL_RESULTS.md`](METARL_RESULTS.md), [`CASCADE_RESULTS.md`](CASCADE_RESULTS.md), [`BEHAVE_RESULTS.md`](BEHAVE_RESULTS.md), [`BEHAVE_FOLD_RESULTS.md`](BEHAVE_FOLD_RESULTS.md), [`HONEST_RESULTS.md`](HONEST_RESULTS.md), [`PORTFOLIO_RESULTS.md`](PORTFOLIO_RESULTS.md), [`RESERVE_RESULTS.md`](RESERVE_RESULTS.md) — measured outcomes, predictions scored
 - [`studies/REGULATION_TOY_RESULTS.md`](studies/REGULATION_TOY_RESULTS.md) — the study behind design decision D1
 
 Nothing in `rsi2/`, `docs/`, or `rsi_levels_metaforge_unified.py` is modified.
@@ -77,6 +79,9 @@ python -m rsi3.longrun --config rsi3/experiment_config_behave_fold.json --arm RS
 python -m rsi3.longrun --config rsi3/experiment_config_honest.json --arm RSI3_META_HONEST --output NEW_DIR8
 # portfolio (16 generations)
 python -m rsi3.longrun --config rsi3/experiment_config_portfolio.json --arm RSI3_META_PORTFOLIO --output NEW_DIR9
+# the RESERVE evaluation of a finished run (partition near or far)
+python -m rsi3.reserve_eval --checkpoint NEW_DIR8/RSI3_META_HONEST.checkpoint.pkl \
+    --config rsi3/experiment_config_honest.json --partition near --output honest_near.json
 python -m rsi3.report --results NEW_EMPTY_DIR --output report.md
 ```
 
