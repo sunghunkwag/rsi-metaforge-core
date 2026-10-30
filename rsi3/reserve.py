@@ -17,6 +17,12 @@ What remains forms two partitions:
 - **RESERVE-FAR.** Unselected tasks in the families that RSI-2's research
   left unused (its manifest's ``unused_families``), which no split
   contains. There are 12.
+- **RESERVE-FAR2.** Unselected tasks in the 14 families RSI-2's research
+  drew its confirmation and audit tasks from, other than those tasks
+  themselves. No split contains these families, and no run has used these
+  tasks. There are 21, in 5 families. They were added after the
+  RESERVE-NEAR and RESERVE-FAR results (RESERVE_RESULTS.md), as a second
+  test of transfer to new families.
 
 Records are built by RSI-2's own normalizer
 (``rsi2.research.transfer.normalize_record``): the first ten distinct inputs
@@ -51,11 +57,15 @@ def reserve_names() -> dict:
     rest = [name for name in manifest["eligible_names"] if name not in selected]
     near = sorted(n for n in rest if family(n) in selected_families)
     far = sorted(n for n in rest if family(n) not in selected_families and family(n) in unused)
-    return {"near": near, "far": far}
+    research_families = set(research["confirmation_families"]) | set(research["audit_families"])
+    research_tasks = set(research["confirmation"]) | set(research["audit"])
+    far2 = sorted(n for n in rest if family(n) in research_families
+                  and n not in research_tasks)
+    return {"near": near, "far": far, "far2": far2}
 
 
 def load_reserve(partition: str) -> list:
-    """Parsed tasks of one partition ("near" or "far"), in name order."""
+    """Parsed tasks of one partition ("near", "far" or "far2"), in name order."""
     names = reserve_names()[partition]
     wanted = set(names)
     source = json.loads(SOURCE.read_text(encoding="utf-8"))

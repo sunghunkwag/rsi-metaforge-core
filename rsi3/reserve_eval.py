@@ -59,7 +59,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--config", type=Path, required=True)
-    parser.add_argument("--partition", choices=("near", "far", "validation"), required=True)
+    parser.add_argument("--partition", choices=("near", "far", "far2", "validation"), required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
     config = json.loads(args.config.read_text(encoding="utf-8"))
