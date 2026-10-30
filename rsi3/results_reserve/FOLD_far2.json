@@ -1,0 +1,521 @@
+{
+ "arm": "RSI3_META_BEH_FOLD",
+ "partition": "far2",
+ "generation": 16,
+ "tasks": 21,
+ "seeds": {
+  "11": {
+   "solved": 1,
+   "solved_names": [
+    "drop-k with k=0"
+   ],
+   "tasks": [
+    {
+     "name": "count-k with k=0",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "count-k with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "count-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "count-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "count-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "drop-k with k=0",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "drop-k with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "drop-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "drop-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "drop-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "remove-index-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "remove-index-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "remove-index-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "remove-index-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "remove-mod-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "remove-mod-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "remove-mod-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "take-k with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "take-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "take-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "take-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    }
+   ],
+   "cpu_seconds": 16.671830267999997
+  },
+  "22": {
+   "solved": 1,
+   "solved_names": [
+    "drop-k with k=0"
+   ],
+   "tasks": [
+    {
+     "name": "count-k with k=0",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "count-k with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "count-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "count-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "count-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "drop-k with k=0",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "drop-k with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "drop-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "drop-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "drop-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "remove-index-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "remove-index-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "remove-index-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "remove-index-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "remove-mod-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "remove-mod-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "remove-mod-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "take-k with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "take-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "take-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "take-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    }
+   ],
+   "cpu_seconds": 17.393394593999997
+  },
+  "33": {
+   "solved": 1,
+   "solved_names": [
+    "drop-k with k=0"
+   ],
+   "tasks": [
+    {
+     "name": "count-k with k=0",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "count-k with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "count-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "count-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "count-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 64
+     }
+    },
+    {
+     "name": "drop-k with k=0",
+     "solved": true,
+     "spent": {
+      "decompose:filter": 1
+     }
+    },
+    {
+     "name": "drop-k with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "drop-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "drop-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "drop-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "remove-index-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "remove-index-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "remove-index-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "remove-index-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "remove-mod-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "remove-mod-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "remove-mod-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter": 48,
+      "decompose:filter_list": 16
+     }
+    },
+    {
+     "name": "take-k with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "take-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "take-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "take-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    }
+   ],
+   "cpu_seconds": 20.707506214999995
+  }
+ }
+}
