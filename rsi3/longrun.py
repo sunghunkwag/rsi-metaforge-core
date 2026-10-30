@@ -141,7 +141,7 @@ def agent_validation(runtime, model, validation, config: dict, verifier,
                     max_expansions=search["max_expansions"],
                     max_sources=int(settings.get("max_sources", 4)),
                     max_ranked=settings.get("max_ranked", 6))
-        found, spent, used_by = None, 0, {}
+        found, found_by, spent, used_by = None, None, 0, {}
         if runtime.metapolicy is not None:
             shape = shape_features(public.examples, arm.meta_extended,
                                    getattr(arm, "meta_fixed_length", False))
@@ -157,6 +157,7 @@ def agent_validation(runtime, model, validation, config: dict, verifier,
                 history[action] = history.get(action, 0) + 1
                 used_by[action] = used_by.get(action, 0) + result.evaluated
                 found = result.term
+                found_by = action
         else:
             skeleton_ids = [a for a in searches if a != "prior"]
             share = int(budget * arm.decomposition_split) if skeleton_ids else 0
@@ -173,7 +174,10 @@ def agent_validation(runtime, model, validation, config: dict, verifier,
             verdict = verifier.verify(task.name, found, library, generation).verdict
         if verdict:
             solved.append(task.name)
-        records.append({"name": task.name, "solved": verdict, "spent": used_by})
+        record = {"name": task.name, "solved": verdict, "spent": used_by}
+        if verdict and found_by == "analogy":
+            record["analogy_from"] = list(searches["analogy"].found_from)
+        records.append(record)
     return {"solved": len(solved), "solved_names": solved, "tasks": records}
 
 
@@ -194,7 +198,8 @@ def final_record(runtime) -> dict:
             "failure_memory": (None if runtime.failures is None else runtime.failures.sizes()),
             "library": {name: pretty(term)
                         for name, term in sorted(runtime.state.grammar.library.items())},
-            "adopted_concepts": runtime.adopted_concepts}
+            "adopted_concepts": runtime.adopted_concepts,
+            "analogy": getattr(runtime, "analogy_record", {})}
 
 
 def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = None, *,

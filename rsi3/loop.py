@@ -249,6 +249,8 @@ class Runtime:
             if receipt.verdict:
                 outcome = "verified"
                 self._adopt(result.term, task, generation)
+                if kind == "analogy":
+                    self._record_analogy(task, search, generation)
                 self.state.solutions[task] = result.term
                 record = SolutionRecord(task, digest, pid, kind, pathway.origin, generation,
                                         receipt.receipt_id)
@@ -272,6 +274,20 @@ class Runtime:
         if self.registry.compact and not self._task_turn:
             self.registry.release(task, pid)
         return result.evaluated
+
+    def _record_analogy(self, task, search, generation) -> None:
+        """Which verified program a solve was edited from, and the length of that chain.
+
+        A solve's depth is 1 + its source's depth; a source found any other
+        way has depth 0. Depth 2 means a program edited from a program that
+        was itself edited from another: transfer built on transfer.
+        """
+        source, edit = search.found_from or (None, None)
+        if not hasattr(self, "analogy_record"):
+            self.analogy_record = {}
+        depth = 1 + self.analogy_record.get(source, {}).get("depth", 0)
+        self.analogy_record[task] = {"generation": generation, "source": source, "edit": edit,
+                                     "depth": depth}
 
     def _adopt(self, term, task, generation) -> None:
         """A concept joins the language only through a verified program that uses it."""

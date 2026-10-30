@@ -312,6 +312,8 @@ class AnalogySearch:
         self.evaluation_steps = 0
         self.exhausted = False
         self.chosen: list = []           # the sources whose edits are searched
+        self._last = None
+        self.found_from = None           # (source task, edit) of the match returned
 
     @property
     def position(self) -> int:
@@ -374,6 +376,7 @@ class AnalogySearch:
             self._ranked.append((score / max(len(self.examples), 1), name, term))
             if len(self._ranked) == len(self.sources):
                 self._start_edits()
+            self._last = (name, "source")
             return ("source", term)
         while self._heap:
             cost, _, index, candidate = heapq.heappop(self._heap)
@@ -405,6 +408,7 @@ class AnalogySearch:
             if term in self._seen:
                 continue
             self._seen.add(term)
+            self._last = (name, skeleton.name)
             return ("edit", term)
         self.exhausted = True
         return None
@@ -463,6 +467,7 @@ class AnalogySearch:
                     skipped += 1
                     continue
                 found = term
+                self.found_from = self._last
                 break
             if self.known_failures is not None:
                 self.known_failures.add(term)
