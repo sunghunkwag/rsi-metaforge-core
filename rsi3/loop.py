@@ -94,6 +94,10 @@ class ArmConfig:
     # version: the policy chooses per shape between a wide pool that the
     # system's own abstractions shorten and a narrow pool that is cheap.
     behave_dual: bool = False
+    # Practice also on dreams: programs sampled from the fitted grammar and
+    # run on TRAIN public inputs (RSI-2's dream_pairs), with every action
+    # credited by its actual one-chunk outcome (selfplay_honest's practice).
+    selfplay_dreams: bool = False
 
 
 def standardized_features(public_tasks) -> dict:
@@ -398,9 +402,43 @@ class Runtime:
             made += 1
             if self.arm.behave:
                 practice += self._practice(examples, shape, generation)
-        return {"imagined": made, "program_runs": runs,
+        dreamt = 0
+        if self.arm.selfplay_dreams:
+            dreamt, dream_practice = self._dream_practice(generation)
+            practice += dream_practice
+        return {"imagined": made, "program_runs": runs, "dreams_practised": dreamt,
                 "practice_evaluations": (practice if self.arm.behave or self.arm.selfplay_honest
                                          else None)}
+
+    def _dream_practice(self, generation) -> tuple[int, int]:
+        """Practise every action on dreams sampled from the system's own grammar.
+
+        Skeleton-imagined tasks only have skeleton shapes. Dreams follow the
+        distribution of the system's own solutions as the fitted grammar
+        holds it, fixed-length outputs and cons chains included. The random
+        stream depends on the generation only, so TRAIN stays
+        seed-independent. Dreams are never verified and their evaluations
+        are not wake budget.
+        """
+        from rsi2.learning import dream_pairs
+        count = int(self.config.get("meta", {}).get("dream_practice", 64))
+        rng = random.Random(f"rsi3-dream-practice-{generation}")
+        dreams, _ = dream_pairs(self.public, self.state.grammar, rng, count=count,
+                                attempts=8 * count,
+                                max_size=self.config["search"]["max_size"],
+                                step_budget=self.config["search"]["step_budget"])
+        practised, spent = 0, 0
+        for task, _ in dreams:
+            examples = list(task.examples)
+            outputs = [repr(o) for _, o in examples]
+            if len(set(outputs)) == 1 or all(repr(o) == repr(i[0]) for i, o in examples):
+                continue
+            shape = shape_features(examples, self.arm.meta_extended, self.arm.meta_fixed_length)
+            spent += self._practice_searches(examples, shape, generation)
+            if self.arm.behave:
+                spent += self._practice(examples, shape, generation)
+            practised += 1
+        return practised, spent
 
     def _practice_searches(self, examples, shape, generation) -> int:
         """Honest practice: run the prior and each fitting skeleton for one chunk.
