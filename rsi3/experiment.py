@@ -197,6 +197,14 @@ ARMS = {
                                   meta_extended=True, meta_selfplay=True,
                                   decomposition_conjugate=True, behave=True,
                                   behave_folds=True, selfplay_honest=True, induce=True),
+    "RSI3_META_INDUCE2": ArmConfig("RSI3_META_INDUCE2", allocation="meta", genesis=False,
+                                   designer_kinds=("prior",), failure_memory=True,
+                                   invention=True, invention_near_misses=True,
+                                   invention_meta=True, decomposition_fold=True,
+                                   meta_extended=True, meta_selfplay=True,
+                                   decomposition_conjugate=True, behave=True,
+                                   behave_folds=True, selfplay_honest=True, induce=True,
+                                   induce_family=True),
 }
 BASELINE = "RSI2"
 

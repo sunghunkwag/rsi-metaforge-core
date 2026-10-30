@@ -106,6 +106,10 @@ class ArmConfig:
     # skeletons; a template is adopted when the verifier confirms a solve of
     # an unsolved task through it.
     induce: bool = False
+    # The induced templates form one meta-RL action, "induced", instead of
+    # one action each: the policy learns whether the family pays for a
+    # shape; inside it, the template least tried on the task goes first.
+    induce_family: bool = False
 
 
 def standardized_features(public_tasks) -> dict:
@@ -353,12 +357,28 @@ class Runtime:
         actions = ["prior"]
         if "invented" in self.registry.pathways and self.registry.extra_library:
             actions.append("invented")
-        actions += [f"decompose:{name}" for name in sorted(self.registry.skeletons.get(task, {}))]
+        skeletons = sorted(self.registry.skeletons.get(task, {}))
+        if self.arm.induce_family:
+            if self._family_member(task) is not None:
+                actions.append("induced")
+            skeletons = [n for n in skeletons if not n.startswith("ind")]
+        actions += [f"decompose:{name}" for name in skeletons]
         problems = sorted(getattr(self.registry, "behave_problems", {}).get(task, {}))
         actions += [f"behave:{name}" for name in problems]
         if self.arm.behave_dual:
             actions += [f"behave0:{name}" for name in problems]
-        return [a for a in actions if not self.registry.peek(task, a, self.state)[1]]
+        return [a for a in actions
+                if a == "induced" or not self.registry.peek(task, a, self.state)[1]]
+
+    def _family_member(self, task: str):
+        """The induced template to run next for ``task``: least tried, then best supported."""
+        history = getattr(self, "family_spent", {}).get(task, {})
+        members = []
+        for name, sk in self.registry.skeletons.get(task, {}).items():
+            pid = f"decompose:{name}"
+            if name.startswith("ind") and not self.registry.peek(task, pid, self.state)[1]:
+                members.append((history.get(pid, 0), -getattr(sk, "support", 0), name, pid))
+        return min(members)[3] if members else None
 
     def _meta_wake(self, budget_total, unsolved, generation, pending, log) -> int:
         """Each task's even share, spent in chunks on actions the meta-policy picks."""
@@ -381,10 +401,16 @@ class Runtime:
                 action = self.metapolicy.choose(actions, self.shapes[task], history, total)
                 x = context(self.shapes[task], history.get(action, 0), total)
                 window = min(chunk, remaining)
-                used = self._run_window(task, action, 0.0, window, generation, pending, log)
+                pid = self._family_member(task) if action == "induced" else action
+                used = self._run_window(task, pid, 0.0, window, generation, pending, log)
                 reward = int(task in self.state.solutions and task in pending)
                 self.metapolicy.record(generation, action, x, reward)
                 history[action] = history.get(action, 0) + 1
+                if pid != action:
+                    if not hasattr(self, "family_spent"):
+                        self.family_spent = {}
+                    counts = self.family_spent.setdefault(task, {})
+                    counts[pid] = counts.get(pid, 0) + 1
                 spent += used
                 remaining -= max(used, 1)
             self._task_turn = False
@@ -527,8 +553,17 @@ class Runtime:
                                              step_budget=search["step_budget"],
                                              max_size=search["max_size"],
                                              max_expansions=search["max_expansions"])}
-        induced = [sk for sk in self.induced_active.values()
-                   if self.arm.induce and sk.request == str(request)]
+        induced = sorted((sk for sk in self.induced_active.values()
+                          if self.arm.induce and sk.request == str(request)),
+                         key=lambda sk: (-sk.support, sk.name))
+        if self.arm.induce_family:
+            members, induced = induced[:1], []
+            if members:
+                sk = members[0]
+                searches["induced"] = ResumableSearch(
+                    examples, sk.hole_type, hole_grammar, compose=sk.compose,
+                    step_budget=search["step_budget"], max_size=search["max_size"],
+                    max_expansions=search["max_expansions"])
         for sk in list(skeletons_for(examples, self.arm.decomposition_fold)) + induced:
             searches[f"decompose:{sk.name}"] = ResumableSearch(
                 examples, sk.hole_type, hole_grammar, compose=sk.compose,

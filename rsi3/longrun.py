@@ -113,6 +113,14 @@ def agent_validation(runtime, model, validation, config: dict, verifier,
                 pool.update(getattr(runtime, "induced_adopted", {}))
                 induced = [sk for _, sk in sorted(pool.items())
                            if sk.request == str(public.request_type)]
+            if getattr(arm, "induce_family", False) and induced:
+                # One "induced" action: its templates in support order, each run
+                # until exhausted before the next (FamilySearch).
+                ordered = sorted(induced, key=lambda sk: (-sk.support, sk.name))
+                searches["induced"] = FamilySearch([ResumableSearch(
+                    public.examples, sk.hole_type, runtime.state.grammar, compose=sk.compose,
+                    **search) for sk in ordered])
+                induced = []
             for sk in list(skeletons_for(public.examples, arm.decomposition_fold)) + induced:
                 searches[f"decompose:{sk.name}"] = ResumableSearch(
                     public.examples, sk.hole_type, runtime.state.grammar, compose=sk.compose,
@@ -170,6 +178,23 @@ def agent_validation(runtime, model, validation, config: dict, verifier,
             solved.append(task.name)
         records.append({"name": task.name, "solved": verdict, "spent": used_by})
     return {"solved": len(solved), "solved_names": solved, "tasks": records}
+
+
+class FamilySearch:
+    """Several searches behind one action: each window goes to the first not exhausted."""
+
+    def __init__(self, searches):
+        self.searches = list(searches)
+
+    @property
+    def exhausted(self) -> bool:
+        return all(s.exhausted for s in self.searches)
+
+    def run(self, budget, skip_match=None):
+        for search in self.searches:
+            if not search.exhausted:
+                return search.run(budget, skip_match)
+        return self.searches[-1].run(budget, skip_match)
 
 
 def runtime_public(task):
