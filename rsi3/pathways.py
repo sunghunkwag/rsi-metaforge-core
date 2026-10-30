@@ -205,6 +205,22 @@ class PathwayRegistry:
                     self.pathways.setdefault(f"{prefix}:{kind}", Pathway(
                         f"{prefix}:{kind}", "behave", "designer", 0, status="dormant"))
 
+    def refresh_induced(self, active: dict) -> int:
+        """Offer the induced templates (induce.py) to every unsolved task of their type."""
+        offered = 0
+        for task_name, task in self.tasks.items():
+            current = self.skeletons.setdefault(task_name, {})
+            for name in [n for n in current if n.startswith("ind")]:
+                del current[name]
+            for name, skeleton in sorted(active.items()):
+                if skeleton.request != str(task.request_type):
+                    continue
+                current[name] = skeleton
+                self.pathways.setdefault(f"decompose:{name}", Pathway(
+                    f"decompose:{name}", "decompose", "designer", 0, status="dormant"))
+                offered += 1
+        return offered
+
     def add_invented_pathway(self) -> None:
         """A separate pathway searching with this generation's concepts at full weight."""
         self.pathways.setdefault("invented", Pathway("invented", "invented", "designer", 0,

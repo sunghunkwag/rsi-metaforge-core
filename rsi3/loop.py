@@ -101,6 +101,11 @@ class ArmConfig:
     # Dream practice only on hard dreams: those the prior does not find in
     # one chunk (removes the prior's advantage on samples of its own grammar).
     selfplay_dreams_hard: bool = False
+    # Procedure induction (induce.py): each generation, templates
+    # anti-unified from the system's own verified solutions become search
+    # skeletons; a template is adopted when the verifier confirms a solve of
+    # an unsolved task through it.
+    induce: bool = False
 
 
 def standardized_features(public_tasks) -> dict:
@@ -204,6 +209,11 @@ class Runtime:
         if self.selfmodel is not None:
             self.selfmodel.meta = bool(arm.invention_meta)
         self._concept_kinds: dict[str, str] = {}
+        self.induced_adopted: dict = {}       # name -> InducedSkeleton, kept across generations
+        self.induced_proposed: list = []      # this generation's proposals
+        self.induced_active: dict = {}
+        self.induced_record: dict = {}        # name -> adoption metadata
+        self.solution_depth: dict = {}        # task -> depth of the procedure that found it
         self.registry.compact = bool(config.get("compact_searches", False))
         # In the per-task allocations a task's searches are released once,
         # after all of its windows, instead of after every window: a rebuild
@@ -243,6 +253,8 @@ class Runtime:
             if receipt.verdict:
                 outcome = "verified"
                 self._adopt(result.term, task, generation)
+                if self.arm.induce:
+                    self._adopt_procedure(pid, task, generation)
                 self.state.solutions[task] = result.term
                 record = SolutionRecord(task, digest, pid, kind, pathway.origin, generation,
                                         receipt.receipt_id)
@@ -266,6 +278,39 @@ class Runtime:
         if self.registry.compact and not self._task_turn:
             self.registry.release(task, pid)
         return result.evaluated
+
+    def _refresh_induced(self, generation) -> dict:
+        """Propose templates from the current solutions; offer them, and the adopted ones."""
+        from rsi2.terms import pretty
+        from .induce import induce_skeletons
+        types = {task.name: str(task.request_type) for task in self.public}
+        count = int(self.config.get("induce", {}).get("proposals", 8))
+        self.induced_proposed = induce_skeletons(self.state.solutions, types,
+                                                 self.state.grammar.library, count)
+        active = {sk.name: sk for sk in self.induced_proposed}
+        active.update(self.induced_adopted)
+        self.induced_active = active
+        offered = self.registry.refresh_induced(active)
+        return {"proposed": [{"name": sk.name, "support": sk.support,
+                              "template": pretty(sk.template), "sources": list(sk.sources)}
+                             for sk in self.induced_proposed],
+                "adopted_total": len(self.induced_adopted), "offered_slots": offered}
+
+    def _adopt_procedure(self, pid, task, generation) -> None:
+        """A template joins the procedures only through a verified solve of an unsolved task."""
+        from rsi2.terms import pretty
+        name = pid.split(":", 1)[1] if pid.startswith("decompose:ind") else None
+        skeleton = self.induced_active.get(name) if name else None
+        if skeleton is None:
+            self.solution_depth[task] = 0
+            return
+        if name not in self.induced_adopted:
+            depth = 1 + max((self.solution_depth.get(s, 0) for s in skeleton.sources), default=0)
+            self.induced_adopted[name] = skeleton
+            self.induced_record[name] = {"generation": generation, "task": task, "depth": depth,
+                                         "template": pretty(skeleton.template),
+                                         "sources": list(skeleton.sources)}
+        self.solution_depth[task] = self.induced_record[name]["depth"]
 
     def _adopt(self, term, task, generation) -> None:
         """A concept joins the language only through a verified program that uses it."""
@@ -321,6 +366,8 @@ class Runtime:
         if self.arm.decomposition_conjugate:
             self.conjugates = self.registry.refresh_conjugates(
                 self.state, self.config["search"]["step_budget"], self.arm.decomposition_fold)
+        if self.arm.induce:
+            self.induce_info = self._refresh_induced(generation)
         spent = 0
         for task, budget in Controller.uniform_split(budget_total, unsolved).items():
             history = self.chunks_spent.setdefault(task, {})
@@ -480,7 +527,9 @@ class Runtime:
                                              step_budget=search["step_budget"],
                                              max_size=search["max_size"],
                                              max_expansions=search["max_expansions"])}
-        for sk in skeletons_for(examples, self.arm.decomposition_fold):
+        induced = [sk for sk in self.induced_active.values()
+                   if self.arm.induce and sk.request == str(request)]
+        for sk in list(skeletons_for(examples, self.arm.decomposition_fold)) + induced:
             searches[f"decompose:{sk.name}"] = ResumableSearch(
                 examples, sk.hole_type, hole_grammar, compose=sk.compose,
                 step_budget=search["step_budget"], max_size=search["max_size"],
@@ -589,6 +638,7 @@ class Runtime:
                          {"fit": self.meta_fit,
                           "selfplay": getattr(self, "selfplay", None),
                           "conjugate_skeletons": getattr(self, "conjugates", None),
+                          "induce": getattr(self, "induce_info", None) if self.arm.induce else None,
                           "chosen": {a: sum(1 for e in log if e["pathway"] == a)
                                      for a in sorted({e["pathway"] for e in log})}}),
                 "adopted": sorted(n for n, a in self.adopted_concepts.items()

@@ -106,7 +106,14 @@ def agent_validation(runtime, model, validation, config: dict, verifier,
         searches = {"prior": ResumableSearch(public.examples, public.request_type,
                                              prior_grammar, **search)}
         if decomposes:
-            for sk in skeletons_for(public.examples, arm.decomposition_fold):
+            induced = []
+            if getattr(arm, "induce", False):
+                # The system's procedure set: adopted templates and the final proposals.
+                pool = {sk.name: sk for sk in getattr(runtime, "induced_proposed", [])}
+                pool.update(getattr(runtime, "induced_adopted", {}))
+                induced = [sk for _, sk in sorted(pool.items())
+                           if sk.request == str(public.request_type)]
+            for sk in list(skeletons_for(public.examples, arm.decomposition_fold)) + induced:
                 searches[f"decompose:{sk.name}"] = ResumableSearch(
                     public.examples, sk.hole_type, runtime.state.grammar, compose=sk.compose,
                     **search)
@@ -182,7 +189,8 @@ def final_record(runtime) -> dict:
             "failure_memory": (None if runtime.failures is None else runtime.failures.sizes()),
             "library": {name: pretty(term)
                         for name, term in sorted(runtime.state.grammar.library.items())},
-            "adopted_concepts": runtime.adopted_concepts}
+            "adopted_concepts": runtime.adopted_concepts,
+            "induced_procedures": getattr(runtime, "induced_record", {})}
 
 
 def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = None, *,
@@ -220,7 +228,8 @@ def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = N
                                          "invention": config.get("invention", {}),
                                          "compact_searches": True,
                                          "meta": config.get("meta", {}),
-                                         "behave": config.get("behave", {})})
+                                         "behave": config.get("behave", {}),
+                                         "induce": config.get("induce", {})})
         records, cpu = {seed: [] for seed in seeds}, {seed: 0.0 for seed in seeds}
     from .verifier import FrozenVerifier
     agent_verifiers = {seed: FrozenVerifier(validation, step_budget=config["search"]["step_budget"])
