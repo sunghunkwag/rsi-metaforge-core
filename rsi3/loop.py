@@ -30,6 +30,7 @@ from .integrator import BindingIntegrator
 from .memory import Episode, EpisodicMemory, FailureMemory, SolutionRecord
 from .pathways import DESIGNER_KINDS, PathwayRegistry
 from .value_model import ValueModel, slot_features
+from .dust_value_model import DustValueModel
 from .verifier import FrozenVerifier, public_view, term_digest
 
 
@@ -41,6 +42,7 @@ class ArmConfig:
     genesis: bool = True
     designer_kinds: tuple = DESIGNER_KINDS
     failure_memory: bool = False       # carry public failures across grammars/pathways
+    dust_learner: bool = False          # Q Labs DUST parameter update, off by default
 
 
 def standardized_features(public_tasks) -> dict:
@@ -99,7 +101,7 @@ class Runtime:
             neighbors=controller_config["analog_neighbors"],
             designer_kinds=arm.designer_kinds, search_config=search,
             failure_memory=self.failures)
-        self.value_model = ValueModel()
+        self.value_model = DustValueModel(seed=seed) if arm.dust_learner else ValueModel()
         self.controller = Controller(chunk=controller_config["chunk"],
                                      exploration=controller_config["exploration"], seed=seed)
         self.integrator = BindingIntegrator(self.public, step_budget=search["step_budget"])
