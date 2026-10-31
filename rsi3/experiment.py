@@ -36,6 +36,7 @@ os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
 os.environ.setdefault("OMP_NUM_THREADS", "1")
 
 import argparse
+from dataclasses import replace
 from concurrent.futures import ProcessPoolExecutor
 import json
 from pathlib import Path
@@ -189,6 +190,12 @@ ARMS = {
                                       behave_folds=True, selfplay_honest=True,
                                       selfplay_dreams=True, selfplay_dreams_hard=True),
 }
+# Exact-control variants: replace only the action policy's update rule.
+ARMS["RSI3_META_HONEST_DUST"] = replace(
+    ARMS["RSI3_META_HONEST"], name="RSI3_META_HONEST_DUST", meta_dust=True)
+ARMS["RSI3_META_PORTFOLIO_DUST"] = replace(
+    ARMS["RSI3_META_PORTFOLIO"], name="RSI3_META_PORTFOLIO_DUST", meta_dust=True)
+
 BASELINE = "RSI2"
 
 
