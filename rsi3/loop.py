@@ -32,6 +32,8 @@ from .pathways import DESIGNER_KINDS, PathwayRegistry
 from .value_model import ValueModel, slot_features
 from .dust_value_model import DustValueModel
 from .verifier import FrozenVerifier, public_view, term_digest
+from .verified_transfer import verified_program_mutations
+from .pathways import types_compatible
 
 
 @dataclass(frozen=True)
@@ -43,6 +45,7 @@ class ArmConfig:
     designer_kinds: tuple = DESIGNER_KINDS
     failure_memory: bool = False       # carry public failures across grammars/pathways
     dust_learner: bool = False          # Q Labs DUST parameter update, off by default
+    verified_transfer: bool = False     # forward-tested verified-program mutation
 
 
 def standardized_features(public_tasks) -> dict:
@@ -105,6 +108,9 @@ class Runtime:
         self.controller = Controller(chunk=controller_config["chunk"],
                                      exploration=controller_config["exploration"], seed=seed)
         self.integrator = BindingIntegrator(self.public, step_budget=search["step_budget"])
+        self._transfer_sources = ()
+        self._transfer_keys = {}
+        self._public_by_name = {item.name: item for item in self.public}
 
     # ---- wake ------------------------------------------------------------
     def _slots(self, unsolved, pending, window) -> list[Slot]:
@@ -124,6 +130,22 @@ class Runtime:
 
     def _run_window(self, task, pid, similarity, budget, generation, pending, log) -> int:
         fingerprint, search = self.registry.search(task, pid, self.state, generation)
+        if self.arm.verified_transfer and pid == "prior" and self._transfer_sources:
+            key = (fingerprint, self._transfer_sources)
+            if self._transfer_keys.get(task) != key:
+                target = self._public_by_name[task]
+                donors = sorted(
+                    (name for name in self._transfer_sources
+                     if types_compatible(target.request_type,
+                                         self._public_by_name[name].request_type)),
+                    key=lambda name: (-self.registry.similarity(task, name), name))
+                grammar = self.state.grammar
+                proposals = verified_program_mutations(
+                    target, [self.state.solutions[name] for name in donors[:4]],
+                    grammar, max_size=self.config["search"]["max_size"],
+                    max_proposals=48)
+                search.prepend_proposals(proposals, grammar)
+                self._transfer_keys[task] = key
         library = self.state.grammar.library
         kind = self.registry.pathways[pid].kind
         features = slot_features(self.features[task], kind, similarity, search.evaluated, budget)
@@ -201,6 +223,8 @@ class Runtime:
         generation = self.state.generation + 1
         cpu_started, wall_started = time.process_time(), time.perf_counter()
         self.registry.begin_generation()
+        self._transfer_sources = (tuple(sorted(self.state.solutions))
+                                  if self.arm.verified_transfer else ())
         wake = self.wake(generation)
         self.state.logical_evaluations += wake["spent"]
         replayed = self.memory.replay(self.arm.value_mode, generation)
