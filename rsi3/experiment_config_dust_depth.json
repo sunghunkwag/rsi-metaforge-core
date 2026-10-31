@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "seeds": [
+    11
+  ],
+  "generations": 4,
+  "arms": [
+    "RSI3_META_HONEST_DUST",
+    "RSI3_META_HONEST_DUST_DEPTH"
+  ],
+  "B_wake": 64,
+  "B_eval": 64,
+  "dreams": 16,
+  "search": {
+    "max_size": 12,
+    "max_expansions": 20000,
+    "step_budget": 2000
+  },
+  "controller": {
+    "chunk": 32,
+    "exploration": 0.3,
+    "analog_neighbors": 2
+  },
+  "invention": {
+    "concept_weight": 0.1
+  },
+  "meta": {
+    "chunk": 16,
+    "selfplay": 256
+  },
+  "behave": {
+    "max_size": 10,
+    "max_unroll": 6,
+    "combo_limit": 2000000
+  },
+  "workers": 1
+}
