@@ -1,0 +1,50 @@
+name: Frozen DUST-only long-run transfer check
+on:
+  push:
+    branches:
+      - research/dust-meta-long-20261031
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  long:
+    runs-on: ubuntu-latest
+    timeout-minutes: 175
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install numpy
+      - name: Compile and targeted DUST/meta/sealing regressions
+        run: |
+          python -m compileall -q rsi3
+          python -m unittest rsi3.tests.test_dust_metapolicy rsi3.tests.test_metarl rsi3.tests.test_sealing -v
+      - name: Freeze 16-generation TRAIN-only Q Labs DUST
+        run: |
+          python -m rsi3.longrun --config rsi3/experiment_config_dust_meta_pilot.json --arm RSI3_META_HONEST_DUST --output dust-only-frozen --generations 16 --seeds 11 --skip-validation
+      - name: Evaluate published FAR2 retrospectively, once
+        run: |
+          python -m rsi3.reserve_eval --checkpoint dust-only-frozen/RSI3_META_HONEST_DUST.checkpoint.pkl --config rsi3/experiment_config_dust_meta_pilot.json --partition far2 --output dust-only-far2-retrospective.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          a = json.loads(Path('dust-only-frozen/RSI3_META_HONEST_DUST_seed11.json').read_text())
+          b = json.loads(Path('dust-only-far2-retrospective.json').read_text())
+          print('FROZEN_DUST_TRANSFER','TRAIN',a['final']['train_solved'],
+                'FAR2',{s: x['solved'] for s,x in b['seeds'].items()},
+                'CPU',a['cpu_seconds'],
+                'TRAIN_VALIDATION_UNOPENED',all(g['validation'] is None for g in a['generations']),
+                flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frozen-dust-only-transfer
+          path: |
+            dust-only-frozen/*_seed11.json
+            dust-only-far2-retrospective.json
+          if-no-files-found: warn
