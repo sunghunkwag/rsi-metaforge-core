@@ -41,6 +41,7 @@ class ArmConfig:
     genesis: bool = True
     designer_kinds: tuple = DESIGNER_KINDS
     failure_memory: bool = False       # carry public failures across grammars/pathways
+    forward_credit: bool = False       # experimental public forward-only signal
 
 
 def standardized_features(public_tasks) -> dict:
@@ -98,11 +99,13 @@ class Runtime:
             self.public, self.features, genesis=arm.genesis,
             neighbors=controller_config["analog_neighbors"],
             designer_kinds=arm.designer_kinds, search_config=search,
-            failure_memory=self.failures)
+            failure_memory=self.failures,
+            forward_credit=arm.forward_credit)
         self.value_model = ValueModel()
         self.controller = Controller(chunk=controller_config["chunk"],
                                      exploration=controller_config["exploration"], seed=seed)
         self.integrator = BindingIntegrator(self.public, step_budget=search["step_budget"])
+        self.credit_by_task = {}  # prior forward-only partial progress, not oracle data
 
     # ---- wake ------------------------------------------------------------
     def _slots(self, unsolved, pending, window) -> list[Slot]:
@@ -127,6 +130,9 @@ class Runtime:
         features = slot_features(self.features[task], kind, similarity, search.evaluated, budget)
         cpu_started = time.process_time()
         result = search.run(budget, self.integrator.skip_callback(task, library, self.memory))
+        if self.arm.forward_credit:
+            self.credit_by_task[task] = max(self.credit_by_task.get(task, 0.0),
+                                            result.best_public_credit)
         outcome, digest, receipt = "none", None, None
         if result.term is not None:
             digest = term_digest(result.term)
@@ -165,6 +171,20 @@ class Runtime:
         if self.arm.allocation == "uniform":
             for task, budget in Controller.uniform_split(budget_total, unsolved).items():
                 spent += self._run_window(task, "prior", 0.0, budget, generation, pending, log)
+        elif self.arm.allocation == "forward":
+            # Per-generation budget is identical to uniform FM. A full generation
+            # of PUBLIC forward observations precedes any new allocation.
+            # Never read hidden/validation/test data for the policy.
+            ordered = sorted(unsolved, key=lambda t: (-self.credit_by_task.get(t, 0.0), t))
+            base = budget_total // max(1, len(ordered))
+            extra = budget_total - base * len(ordered)
+            for index, task in enumerate(ordered):
+                # Reallocate only a bounded fraction toward higher partial credit.
+                # Pool consists exclusively of the prior pathway, so the
+                # comparison isolates allocation rather than new grammar arms.
+                budget = base + (1 if index < extra else 0)
+                spent += self._run_window(task, "prior", 0.0, budget,
+                                          generation, pending, log)
         elif self.arm.allocation == "learned":
             chunk = self.controller.chunk
             while spent < budget_total:
