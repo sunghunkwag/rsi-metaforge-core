@@ -176,14 +176,24 @@ class Runtime:
             # of PUBLIC forward observations precedes any new allocation.
             # Never read hidden/validation/test data for the policy.
             ordered = sorted(unsolved, key=lambda t: (-self.credit_by_task.get(t, 0.0), t))
-            base = budget_total // max(1, len(ordered))
-            extra = budget_total - base * len(ordered)
-            for index, task in enumerate(ordered):
-                # Reallocate only a bounded fraction toward higher partial credit.
-                # Pool consists exclusively of the prior pathway, so the
-                # comparison isolates allocation rather than new grammar arms.
-                budget = base + (1 if index < extra else 0)
-                spent += self._run_window(task, "prior", 0.0, budget,
+            # Always retain half the budget as uniform coverage. Redistribute
+            # the other half using last generation's public forward credit.
+            # Generation 1 is exactly uniform, with no prior measurements.
+            base_total = budget_total if not self.credit_by_task else budget_total // 2
+            allocation = Controller.uniform_split(base_total, ordered)
+            remaining = budget_total - sum(allocation.values())
+            if remaining:
+                weights = [max(0.01, self.credit_by_task.get(t, 0.0)) for t in ordered]
+                total = sum(weights)
+                shares = [remaining * x / total for x in weights]
+                for t, share in zip(ordered, shares):
+                    allocation[t] += int(share)
+                residue = budget_total - sum(allocation.values())
+                for t in sorted(ordered, key=lambda t: (-(remaining * max(0.01, self.credit_by_task.get(t, 0.0)) / total % 1), t))[:residue]:
+                    allocation[t] += 1
+            assert sum(allocation.values()) == budget_total
+            for task in ordered:
+                spent += self._run_window(task, "prior", 0.0, allocation[task],
                                           generation, pending, log)
         elif self.arm.allocation == "learned":
             chunk = self.controller.chunk
