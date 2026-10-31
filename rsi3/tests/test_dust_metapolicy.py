@@ -113,6 +113,19 @@ class DustMetaPolicyTests(unittest.TestCase):
         treated.pop("name")
         self.assertEqual(base, treated)
 
+    def test_contrastive_and_standard_dust_have_identical_rng_seeds(self):
+        config = {
+            "B_wake": 2, "B_eval": 2, "dreams": 0,
+            "search": {"step_budget": 200, "max_size": 5, "max_expansions": 32},
+            "controller": {"chunk": 2, "exploration": 0.3, "analog_neighbors": 1},
+            "meta": {"chunk": 2, "selfplay": 0},
+        }
+        tasks = load_train()[:2]
+        a = Runtime(11, tasks, ARMS["RSI3_META_HONEST_DUST"], config)
+        b = Runtime(11, tasks, ARMS["RSI3_META_HONEST_DUST_CONTRAST"], config)
+        self.assertEqual(a.metapolicy.seed, b.metapolicy.seed)
+        self.assertEqual(a.metapolicy.seed, 11)
+
     def test_matched_arms_differ_only_by_credit_learner(self):
         for base_name, dust_name in (
             ("RSI3_META_HONEST", "RSI3_META_HONEST_DUST"),
