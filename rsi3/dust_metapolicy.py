@@ -109,7 +109,7 @@ class DustMetaPolicy(MetaPolicy):
                     v = 0.999 * v + 0.001 * gradient * gradient
                     w -= self.rate * (m / (1 - 0.9**iteration)) / (
                         np.sqrt(v / (1 - 0.999**iteration)) + 1e-8)
-                forward_evals += n * (1 + self.draws * self.steps)
+                forward_evals += n * (1 + self.draws) * self.steps
             self.models[action] = (w, prior)
             summary[action] = {"episodes": n, "rewards": positives}
         self.last_fit = {"replayed": len(replay), "actions": summary,
