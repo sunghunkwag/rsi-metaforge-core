@@ -17,6 +17,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 import hashlib
+import math
 
 import numpy as np
 
@@ -64,15 +65,40 @@ class DustMetaPolicy(MetaPolicy):
     """
 
     def __init__(self, *, exploration=0.3, wipe=False, seed=0,
-                 draws=16, sigma=0.25, steps=80, rate=0.045):
+                 draws=16, sigma=0.25, steps=80, rate=0.045,
+                 uncertainty_exploration=False):
         super().__init__(exploration=exploration, wipe=wipe)
         self.seed = int(seed)
         self.draws = int(draws)
         self.sigma = float(sigma)
         self.steps = int(steps)
         self.rate = float(rate)
+        self.uncertainty_exploration = bool(uncertainty_exploration)
         if self.draws < 2 or self.sigma <= 0 or self.steps < 1 or self.rate <= 0:
             raise ValueError("invalid DUST learner configuration")
+
+
+    def choose(self, actions, shape, spent, total):
+        """Variance-weight the UCB exploration bonus using DUST policy outputs.
+
+        For a calibrated Bernoulli probability p, 4*p*(1-p) is maximum at
+        uncertainty and small when the learner predicts near-certain outcomes.
+        A nonzero floor preserves exploration in unfamiliar contexts.
+        This is an ACTION ROUTING extension, not upstream Q Labs DUST.
+        """
+        if not self.uncertainty_exploration:
+            return super().choose(actions, shape, spent, total)
+        from .metarl import context
+        best, best_score = None, None
+        log_term = math.log1p(total)
+        for action in sorted(actions):
+            n = spent.get(action, 0)
+            p = self.probability(action, context(shape, n, total))
+            uncertainty = 0.15 + 0.85 * (4.0 * p * (1.0 - p))
+            score = p + self.exploration * uncertainty * math.sqrt(log_term / (1.0 + n))
+            if best_score is None or score > best_score + 1e-12:
+                best, best_score = action, score
+        return best
 
     def fit(self, generation: int) -> dict:
         replay = [e for e in self.episodes if not self.wipe or e[0] == generation]
@@ -116,5 +142,6 @@ class DustMetaPolicy(MetaPolicy):
                          "learner": "qlabs_dust_local_logit_credit",
                          "forward_loss_evaluations": forward_evals,
                          "draws": self.draws, "sigma": self.sigma,
-                         "steps": self.steps}
+                         "steps": self.steps,
+                         "uncertainty_exploration": self.uncertainty_exploration}
         return self.last_fit

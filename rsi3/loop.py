@@ -65,6 +65,7 @@ class ArmConfig:
     # instead of the full replay (the wiped-memory control).
     meta_wipe: bool = False
     meta_dust: bool = False              # optional Q Labs DUST forward-credit meta-policy
+    meta_dust_uncertainty: bool = False  # adapt exploration to DUST policy uncertainty
     # Add the fold (catamorphism) skeletons to decomposition (decompose.py).
     decomposition_fold: bool = False
     # Meta-RL: extended relation features in the policy's task shape, and
@@ -193,7 +194,8 @@ class Runtime:
         if arm.behave:
             self.registry.add_behave_pathways(config.get("behave", {}), arm.behave_library,
                                               arm.behave_folds, arm.behave_dual)
-        self.metapolicy = (DustMetaPolicy(wipe=arm.meta_wipe, seed=seed)
+        self.metapolicy = (DustMetaPolicy(wipe=arm.meta_wipe, seed=seed,
+                                          uncertainty_exploration=arm.meta_dust_uncertainty)
                            if arm.meta_dust else MetaPolicy(wipe=arm.meta_wipe)) if meta else None
         self.shapes = {task.name: shape_features(task.examples, arm.meta_extended,
                                                  arm.meta_fixed_length)
