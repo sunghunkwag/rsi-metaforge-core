@@ -1,0 +1,45 @@
+name: Forward-credit pilot
+on:
+  push:
+    branches:
+      - research/forward-credit-pilot-20261031
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install NumPy
+        run: python -m pip install numpy
+      - name: Compile and unit tests
+        run: |
+          python -m compileall -q rsi3
+          python -m unittest discover -s rsi3/tests -t . -v
+      - name: Two-arm pilot
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '1'
+        run: |
+          python -m rsi3.experiment --config rsi3/experiment_config_forward_pilot.json --output forward-credit-pilot --workers 1
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('forward-credit-pilot')
+          for arm in ['RSI3_UNIFORM_FM', 'RSI3_FORWARD_FM']:
+              data = json.loads((p / (arm + '_seed11.json')).read_text())
+              print(arm, 'TRAIN', data['final']['train_solved'],
+                    'VALIDATION', data['generations'][-1]['validation']['solved'],
+                    'CPU', data['cpu_seconds'])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: forward-credit-pilot
+          path: forward-credit-pilot
+          if-no-files-found: warn
