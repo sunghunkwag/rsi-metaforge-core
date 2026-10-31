@@ -1,0 +1,153 @@
+name: Fresh family transfer - independent seeds
+on:
+  push:
+    branches:
+      - research/dust-fresh-transfer-20261031
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  benchmark-lock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install numpy
+      - name: Compile and inspect benchmark before training
+        run: |
+          python -m compileall -q rsi3/research_fresh
+          python -m unittest rsi3.tests.test_fresh_transfer_protocol rsi3.tests.test_sealing -v
+          python - <<'PY'
+          from rsi3.research_fresh.suite import BENCHMARK_ID, suite_sha256
+          print("PRE_EVALUATION_SUITE_COMMITMENT", BENCHMARK_ID, suite_sha256(), flush=True)
+          PY
+
+  independent-run:
+    needs: benchmark-lock
+    runs-on: ubuntu-latest
+    timeout-minutes: 210
+    strategy:
+      fail-fast: false
+      matrix:
+        arm:
+          - RSI3_META_HONEST
+          - RSI3_META_HONEST_DUST_DEPTH
+        seed: [11, 22, 33]
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      ARM: ${{ matrix.arm }}
+      SEED: ${{ matrix.seed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install numpy
+      - name: Independently train one arm and one seed, without holdout access
+        run: |
+          python -m rsi3.longrun \
+            --config rsi3/experiment_config_fresh_transfer.json \
+            --arm "$ARM" \
+            --output "training-$ARM-$SEED" \
+            --generations 16 --seeds "$SEED" --skip-validation
+      - name: Evaluate a frozen checkpoint once on precommitted new families
+        run: |
+          mkdir -p reports
+          python -m rsi3.research_fresh.evaluate \
+            --checkpoint "training-$ARM-$SEED/$ARM.checkpoint.pkl" \
+            --config rsi3/experiment_config_fresh_transfer.json \
+            --seed "$SEED" \
+            --output "reports/${ARM}_seed${SEED}_fresh.json"
+          cp "training-$ARM-$SEED/${ARM}_seed${SEED}.json" "reports/${ARM}_seed${SEED}_train.json"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          arm, seed = os.environ["ARM"], os.environ["SEED"]
+          a = json.loads((Path("reports") / f"{arm}_seed{seed}_fresh.json").read_text())
+          b = json.loads((Path("reports") / f"{arm}_seed{seed}_train.json").read_text())
+          assert a["training_checkpoint_frozen"] and a["TRAIN_state_unchanged"]
+          assert a["policy_replay_unchanged"]
+          assert all(g["validation"] is None for g in b["generations"])
+          assert len(b["generations"]) == 16
+          print("INDEPENDENT_FRESH_RESULT", arm, seed, "TRAIN", b["final"]["train_solved"],
+                "NEW_FAMILIES", a["solved"], "/", a["tasks"],
+                "TRAIN_CPU", round(b["cpu_seconds"], 3),
+                "EVAL_CPU", round(a["cpu_seconds"], 3),
+                "SUITE", a["suite_sha256"], flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fresh-transfer-${{ matrix.arm }}-seed${{ matrix.seed }}
+          path: reports
+          if-no-files-found: warn
+
+  summarize-frozen-comparison:
+    needs: independent-run
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: fresh-transfer-*
+          merge-multiple: true
+          path: gathered
+      - name: Audit full six-run result and paired per-seed differences
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          paths = sorted(Path("gathered").glob("*_fresh.json"))
+          if len(paths) != 6:
+              raise SystemExit(f"Expected six complete frozen results; got {len(paths)}")
+          records = [json.loads(p.read_text()) for p in paths]
+          digests = {r["suite_sha256"] for r in records}
+          if len(digests) != 1:
+              raise SystemExit(f"Benchmark hash mismatch: {digests}")
+          expected = {"RSI3_META_HONEST", "RSI3_META_HONEST_DUST_DEPTH"}
+          seeds = (11, 22, 33)
+          by_key = {(r["arm"], r["training_seed"]): r for r in records}
+          if len(by_key) != 6 or set(r["arm"] for r in records) != expected:
+              raise SystemExit("Missing/duplicate independent treatment-control runs")
+          scores = {}
+          lines = ["# Fixed new-family transfer report", "",
+                   "Benchmark: FRESH-COMPOSE-20261031-V1 (24 tasks; 4 families x 6 k)",
+                   "Locked suite SHA-256: " + next(iter(digests)), "",
+                   "| Independent TRAIN seed | Honest baseline | DUST depth | Paired delta |",
+                   "|---|---:|---:|---:|"]
+          for seed in seeds:
+              control = by_key[("RSI3_META_HONEST", seed)]
+              treatment = by_key[("RSI3_META_HONEST_DUST_DEPTH", seed)]
+              a, b = control["solved"], treatment["solved"]
+              scores[seed] = b - a
+              lines.append(f"| {seed} | {a}/24 | {b}/24 | {b-a:+d} |")
+          avg = sum(scores.values()) / len(scores)
+          nonnegative = sum(d >= 0 for d in scores.values())
+          verdict = ("positive exploratory transfer" if avg > 0 and nonnegative >= 2
+                     else "negative/null or non-robust transfer")
+          lines += ["", f"Mean paired delta: {avg:+.3f} verified tasks",
+                    f"Nonnegative seeds: {nonnegative}/3",
+                    f"Pre-registered verdict: **{verdict}**",
+                    "", "This is investigator-designed, initially unscored and frozen,",
+                    "but NOT an independently third-party-secret benchmark.",
+                    "No claims of statistical significance from 3 seeds.",
+                    "The published FAR2 5/21 score is not directly comparable to this 24-task suite."]
+          report = "\n".join(lines) + "\n"
+          Path("FRESH_TRANSFER_REPORT.md").write_text(report)
+          print(report, flush=True)
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write(report)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fresh-transfer-six-run-replication-report
+          path: |
+            FRESH_TRANSFER_REPORT.md
+            gathered
