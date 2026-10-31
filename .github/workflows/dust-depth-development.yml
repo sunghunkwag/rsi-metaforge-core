@@ -1,0 +1,52 @@
+name: DUST depth-two practice development
+on:
+  push:
+    branches:
+      - research/dust-depth-practice-20261031
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  depth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install numpy
+      - name: Full RSI-3 unit suite
+        run: |
+          python -m compileall -q rsi3
+          python -m unittest discover -s rsi3/tests -t . -v
+      - name: Equal-wake TRAIN-only depth credit ablation
+        run: |
+          python -m rsi3.longrun --config rsi3/experiment_config_dust_depth.json --arm RSI3_META_HONEST_DUST --output depth-control --seeds 11 --generations 4 --skip-validation
+          python -m rsi3.longrun --config rsi3/experiment_config_dust_depth.json --arm RSI3_META_HONEST_DUST_DEPTH --output depth-treatment --seeds 11 --generations 4 --skip-validation
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          for arm, directory in [("RSI3_META_HONEST_DUST","depth-control"),
+                                 ("RSI3_META_HONEST_DUST_DEPTH","depth-treatment")]:
+              r = json.loads((Path(directory) / f"{arm}_seed11.json").read_text())
+              print("DUST_DEPTH_RESULT",arm,
+                    "TRAIN",[g["train_solved"] for g in r["generations"]],
+                    "PRACTICE",[g["wake"]["meta"]["selfplay"]["practice_evaluations"]
+                                for g in r["generations"]],
+                    "WAKE",[g["wake"]["spent"] for g in r["generations"]],
+                    "CPU",r["cpu_seconds"],
+                    "VALIDATION_UNOPENED",all(g["validation"] is None for g in r["generations"]),
+                    flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dust-depth-development
+          path: |
+            depth-control/*_seed11.json
+            depth-treatment/*_seed11.json
+          if-no-files-found: warn
