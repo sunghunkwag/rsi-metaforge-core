@@ -65,6 +65,7 @@ class ArmConfig:
     # instead of the full replay (the wiped-memory control).
     meta_wipe: bool = False
     meta_dust: bool = False              # optional Q Labs DUST forward-credit meta-policy
+    meta_dust_depth: bool = False        # honest second-chunk behavioural practice
     # Add the fold (catamorphism) skeletons to decomposition (decompose.py).
     decomposition_fold: bool = False
     # Meta-RL: extended relation features in the policy's task shape, and
@@ -533,8 +534,17 @@ class Runtime:
                                            weights=pool_weights)
                 result = search.run(chunk)
                 spent += result.evaluated
-                self.metapolicy.record(generation, f"{prefix}:{kind}", context(shape, 0, 0),
+                action = f"{prefix}:{kind}"
+                self.metapolicy.record(generation, action, context(shape, 0, 0),
                                        int(result.term is not None))
+                if (self.arm.meta_dust_depth and result.term is None
+                        and not search.exhausted):
+                    # An actual resumed search: no synthetic successes or
+                    # undisclosed extra inference-time candidate budget.
+                    continued = search.run(chunk)
+                    spent += continued.evaluated
+                    self.metapolicy.record(generation, action, context(shape, 1, 1),
+                                           int(continued.term is not None))
         return spent
 
     def wake(self, generation) -> dict:
