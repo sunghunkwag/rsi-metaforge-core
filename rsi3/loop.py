@@ -31,6 +31,7 @@ from .integrator import BindingIntegrator
 from .memory import Episode, EpisodicMemory, FailureMemory, NearMissMemory, SolutionRecord
 from .pathways import DESIGNER_KINDS, PathwayRegistry
 from .metarl import MetaPolicy, context, shape_features
+from .dust_metapolicy import DustMetaPolicy
 from .selfmodel import CONCEPT_WEIGHT, SelfModel, references
 from .value_model import ValueModel, slot_features
 from .verifier import FrozenVerifier, public_view, term_digest
@@ -63,6 +64,7 @@ class ArmConfig:
     # Meta-RL allocation only: refit the policy on the current generation
     # instead of the full replay (the wiped-memory control).
     meta_wipe: bool = False
+    meta_dust: bool = False              # optional Q Labs DUST forward-credit meta-policy
     # Add the fold (catamorphism) skeletons to decomposition (decompose.py).
     decomposition_fold: bool = False
     # Meta-RL: extended relation features in the policy's task shape, and
@@ -191,7 +193,8 @@ class Runtime:
         if arm.behave:
             self.registry.add_behave_pathways(config.get("behave", {}), arm.behave_library,
                                               arm.behave_folds, arm.behave_dual)
-        self.metapolicy = MetaPolicy(wipe=arm.meta_wipe) if meta else None
+        self.metapolicy = (DustMetaPolicy(wipe=arm.meta_wipe, seed=seed)
+                           if arm.meta_dust else MetaPolicy(wipe=arm.meta_wipe)) if meta else None
         self.shapes = {task.name: shape_features(task.examples, arm.meta_extended,
                                                  arm.meta_fixed_length)
                        for task in self.public}
