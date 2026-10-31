@@ -42,9 +42,29 @@ jobs:
                     'wake_spent', [g['wake']['spent'] for g in r['generations']],
                     'verified_by_gen', [g['wake']['verified'] for g in r['generations']])
           PY
+      - name: Replicate transfer without retuning on seeds 22 and 33
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '1'
+        run: |
+          python -m rsi3.experiment --config rsi3/experiment_config_transfer_pilot.json --output verified-transfer-replication --workers 2 --arms RSI3_UNIFORM_TRANSFER_FM --seeds 22 33
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('verified-transfer-replication')
+          for seed in [22, 33]:
+              r = json.loads((p / ('RSI3_UNIFORM_TRANSFER_FM_seed' + str(seed) + '.json')).read_text())
+              print('REPLICATION_RESULT', seed,
+                    'train', r['final']['train_solved'],
+                    'validation', r['generations'][-1]['validation']['solved'],
+                    'cpu', round(r['cpu_seconds'], 3),
+                    'solves', [g['wake']['verified'] for g in r['generations']])
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: verified-transfer-pilot
-          path: verified-transfer-pilot
+          name: verified-transfer-pilot-and-replication
+          path: |
+            verified-transfer-pilot
+            verified-transfer-replication
           if-no-files-found: warn
