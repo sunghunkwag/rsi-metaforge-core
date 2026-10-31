@@ -195,7 +195,7 @@ class Runtime:
             self.registry.add_behave_pathways(config.get("behave", {}), arm.behave_library,
                                               arm.behave_folds, arm.behave_dual)
         self.metapolicy = (DustMetaPolicy(wipe=arm.meta_wipe,
-                                          seed=(0 if arm.meta_dust_contrastive else seed),
+                                          seed=seed,
                                           contrastive=arm.meta_dust_contrastive)
                            if arm.meta_dust else MetaPolicy(wipe=arm.meta_wipe)) if meta else None
         self.shapes = {task.name: shape_features(task.examples, arm.meta_extended,
