@@ -45,11 +45,13 @@ class WindowResult:
     skipped_matches: int
     wall_seconds: float
     skipped_known: int = 0
+    best_public_credit: float = 0.0
 
 
 class ResumableSearch:
     def __init__(self, examples, request_type, grammar, *, step_budget=2000,
-                 max_size=12, max_expansions=20000, known_failures=None):
+                 max_size=12, max_expansions=20000, known_failures=None,
+                 forward_credit=False):
         self.examples = tuple(examples)
         self.library = grammar.library
         self.step_budget = int(step_budget)
@@ -59,6 +61,8 @@ class ResumableSearch:
             partial_features_only=True)
         self._seen: set = set()
         self.known_failures = known_failures
+        self.forward_credit = bool(forward_credit)
+        self.last_public_credit = 0.0
         self.evaluated = 0
         self.skipped_known = 0
         self.exhausted = False
@@ -70,6 +74,22 @@ class ResumableSearch:
         return self.evaluated + self.skipped_known
 
     def _matches(self, term) -> bool:
+        if self.forward_credit:
+            # Observe every PUBLIC example once for dense, forward-only credit.
+            # The added interpreter steps are accounted for separately.
+            from .forward_credit import public_credit
+            outcomes, expected_values = [], []
+            matched = True
+            for inputs, expected in self.examples:
+                result = evaluate(term, inputs, library=self.library,
+                                  step_budget=self.step_budget)
+                self.evaluation_steps += result.steps
+                outcomes.append((result.ok, result.value))
+                expected_values.append(expected)
+                if not result.ok or result.value != expected:
+                    matched = False
+            self.last_public_credit = public_credit(outcomes, expected_values)
+            return matched
         for inputs, expected in self.examples:
             result = evaluate(term, inputs, library=self.library, step_budget=self.step_budget)
             self.evaluation_steps += result.steps
@@ -85,6 +105,7 @@ class ResumableSearch:
         start, steps_before = self.evaluated, self.evaluation_steps
         used = skipped = known = 0
         found = None
+        best_public_credit = 0.0
         while used < budget and not self.exhausted:
             try:
                 candidate = next(self._iterator)
@@ -101,7 +122,10 @@ class ResumableSearch:
                 continue
             used += 1
             self.evaluated += 1
-            if self._matches(term):
+            matched = self._matches(term)
+            if self.forward_credit and not matched:
+                best_public_credit = max(best_public_credit, self.last_public_credit)
+            if matched:
                 if skip_match is not None and skip_match(term):
                     skipped += 1
                     continue
@@ -115,4 +139,4 @@ class ResumableSearch:
             start=start, evaluated=used, exhausted=self.exhausted,
             evaluation_steps=self.evaluation_steps - steps_before,
             skipped_matches=skipped, wall_seconds=time.perf_counter() - started,
-            skipped_known=known)
+            skipped_known=known, best_public_credit=best_public_credit)

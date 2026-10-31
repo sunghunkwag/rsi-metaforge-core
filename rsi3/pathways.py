@@ -84,11 +84,13 @@ class Pathway:
 
 class PathwayRegistry:
     def __init__(self, tasks, features: dict, *, genesis: bool = True, neighbors: int = 2,
-                 designer_kinds=DESIGNER_KINDS, search_config: dict, failure_memory=None):
+                 designer_kinds=DESIGNER_KINDS, search_config: dict, failure_memory=None,
+                 forward_credit=False):
         self.tasks = {task.name: task for task in tasks}
         # Optional per-task sets of programs that failed the public examples,
         # shared by every pathway and kept across grammar changes.
         self.failure_memory = failure_memory
+        self.forward_credit = bool(forward_credit)
         self.features = features
         self.genesis_enabled = bool(genesis)
         self.neighbors = int(neighbors)
@@ -179,7 +181,8 @@ class PathwayRegistry:
                 max_size=self.search_config["max_size"],
                 max_expansions=self.search_config["max_expansions"],
                 known_failures=(None if self.failure_memory is None
-                                else self.failure_memory.for_task(task))))
+                                else self.failure_memory.for_task(task)),
+                forward_credit=self.forward_credit))
             self._live[(task, pid)] = cached
         pathway = self.pathways[pid]
         if pathway.status == "dormant":
