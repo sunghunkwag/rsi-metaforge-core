@@ -64,29 +64,67 @@ class DustMetaPolicy(MetaPolicy):
     """
 
     def __init__(self, *, exploration=0.3, wipe=False, seed=0,
-                 draws=16, sigma=0.25, steps=80, rate=0.045):
+                 draws=16, sigma=0.25, steps=80, rate=0.045,
+                 contrastive=False):
         super().__init__(exploration=exploration, wipe=wipe)
         self.seed = int(seed)
         self.draws = int(draws)
         self.sigma = float(sigma)
         self.steps = int(steps)
         self.rate = float(rate)
+        self.contrastive = bool(contrastive)
+        self._active_group = None
+        self._group_counter = 0
+        self._episode_groups = []
         if self.draws < 2 or self.sigma <= 0 or self.steps < 1 or self.rate <= 0:
             raise ValueError("invalid DUST learner configuration")
 
+    def begin_practice_group(self):
+        """Identify actions run on the same synthetic public task.
+
+        This changes no recorded binary label. Relative weights are only
+        computed after ALL same-task counterfactual action outcomes exist.
+        """
+        if self._active_group is not None:
+            raise RuntimeError("nested practice group")
+        self._group_counter += 1
+        self._active_group = self._group_counter
+
+    def end_practice_group(self):
+        self._active_group = None
+
+    def record(self, generation, action, x, reward):
+        super().record(generation, action, x, reward)
+        self._episode_groups.append(self._active_group)
+
     def fit(self, generation: int) -> dict:
-        replay = [e for e in self.episodes if not self.wipe or e[0] == generation]
+        replay = [(e, group) for e, group in zip(self.episodes, self._episode_groups)
+                  if not self.wipe or e[0] == generation]
+        grouped = defaultdict(list)
+        if self.contrastive:
+            for (_, action, x, reward), group in replay:
+                if group is not None:
+                    grouped[group].append(int(reward))
+        group_rates = {g: sum(rs) / len(rs) for g, rs in grouped.items()
+                       if len(rs) > 1}
         by_action = defaultdict(list)
-        for _, action, x, reward in replay:
-            by_action[action].append((x, reward))
+        for (_, action, x, reward), group in replay:
+            rate = group_rates.get(group)
+            # A success distinguishing one action among numerous alternatives
+            # is more informative than a success shared by every alternative.
+            # All actual outcomes remain strictly 0/1; no invented positives.
+            weight = (1.0 + 2.0 * abs(reward - rate)
+                      if rate is not None and 0.0 < rate < 1.0 else 1.0)
+            by_action[action].append((x, reward, weight))
         self.models = {}
-        successes = sum(r for _, _, _, r in replay)
+        successes = sum(e[3] for e, _ in replay)
         self.base_rate = (successes + 1.0) / (len(replay) + 2.0)
         summary = {}
         forward_evals = 0
         for action, rows in sorted(by_action.items()):
-            X = np.stack([x for x, _ in rows]).astype(np.float64)
-            y = np.asarray([r for _, r in rows], dtype=np.float64)
+            X = np.stack([x for x, _, _ in rows]).astype(np.float64)
+            y = np.asarray([r for _, r, _ in rows], dtype=np.float64)
+            weights = np.asarray([weight for _, _, weight in rows], dtype=np.float64)
             n, positives = len(y), int(y.sum())
             prior = (positives + 1.0) / (n + 2.0)
             w = None
@@ -104,7 +142,7 @@ class DustMetaPolicy(MetaPolicy):
                     error = local_logit_credit(
                         z, y, rng=rng, draws=self.draws, sigma=self.sigma)
                     # Q Labs DUST.reassemble: outer product of error and cached input.
-                    gradient = X.T @ error / n + L2 * w
+                    gradient = X.T @ (error * weights) / weights.sum() + L2 * w
                     m = 0.9 * m + 0.1 * gradient
                     v = 0.999 * v + 0.001 * gradient * gradient
                     w -= self.rate * (m / (1 - 0.9**iteration)) / (
@@ -116,5 +154,7 @@ class DustMetaPolicy(MetaPolicy):
                          "learner": "qlabs_dust_local_logit_credit",
                          "forward_loss_evaluations": forward_evals,
                          "draws": self.draws, "sigma": self.sigma,
-                         "steps": self.steps}
+                         "steps": self.steps,
+                         "contrastive": self.contrastive,
+                         "practice_groups": len(group_rates)}
         return self.last_fit
