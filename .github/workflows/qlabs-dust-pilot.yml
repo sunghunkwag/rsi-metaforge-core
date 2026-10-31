@@ -1,0 +1,50 @@
+name: Q Labs DUST port pilot
+on:
+  push:
+    branches:
+      - research/qlabs-dust-port-20261031
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dust-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install NumPy
+        run: python -m pip install numpy
+      - name: Compile and run RSI-3 unit tests
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '1'
+        run: |
+          python -m compileall -q rsi3
+          python -m unittest discover -s rsi3/tests -t . -v
+      - name: Run Q Labs DUST port comparison
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '1'
+        run: |
+          python -m rsi3.experiment --config rsi3/experiment_config_dust_pilot.json --output qlabs-dust-pilot --workers 1
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('qlabs-dust-pilot')
+          for arm in ['RSI3_FM', 'RSI3_DUST_FM', 'RSI3_UNIFORM_FM']:
+              result = json.loads((p / (arm + '_seed11.json')).read_text())
+              print('PORT_RESULT', arm,
+                    'TRAIN', result['final']['train_solved'],
+                    'VALIDATION', result['generations'][-1]['validation']['solved'],
+                    'CPU', round(result['cpu_seconds'], 3),
+                    'MODEL', result['generations'][-1]['value_fit'].get('learner', 'original'))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qlabs-dust-port-pilot
+          path: qlabs-dust-pilot
+          if-no-files-found: warn
