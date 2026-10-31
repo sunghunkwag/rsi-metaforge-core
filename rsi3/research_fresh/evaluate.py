@@ -32,7 +32,7 @@ def evaluate(checkpoint: Path, config: dict) -> dict:
         raise ValueError("training checkpoint is not frozen at the registered horizon")
     if runtime.verifier.queries < 1:
         raise ValueError("empty training checkpoint")
-    if list(config["seeds"]) != [runtime.seed] if hasattr(runtime, "seed") else False:
+    if list(config["seeds"]) != [runtime.state.seed]:
         raise ValueError("evaluation seed differs from training seed")
     tasks = load_frozen_tasks()
     if len(tasks) != 24 or len({t.name for t in tasks}) != 24:
@@ -83,8 +83,11 @@ def main(argv=None):
     parser.add_argument("--checkpoint", required=True, type=Path)
     parser.add_argument("--config", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--seed", required=True, type=int)
     args = parser.parse_args(argv)
-    result = evaluate(args.checkpoint, json.loads(args.config.read_text()))
+    config = json.loads(args.config.read_text())
+    config["seeds"] = [args.seed]
+    result = evaluate(args.checkpoint, config)
     args.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print("FRESH_TRANSFER_RESULT", result["arm"], result["training_seed"],
           result["solved"], "/", result["tasks"],
