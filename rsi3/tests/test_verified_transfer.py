@@ -31,7 +31,7 @@ class VerifiedTransferTests(unittest.TestCase):
     def test_publicly_correct_program_is_generated_and_charged(self):
         grammar = Grammar()
         task = SimpleNamespace(request_type=Arrow(LIST, LIST),
-             examples=tuple((((n,),), [4] + n) for n in ([1], [2,3], [], [0,5], [9])))
+             examples=tuple(((n,), [4] + n) for n in ([1], [2,3], [], [0,5], [9])))
         variants = verified_program_mutations(
             task, [donor()], grammar, max_size=12, max_proposals=48)
         self.assertTrue(variants)
