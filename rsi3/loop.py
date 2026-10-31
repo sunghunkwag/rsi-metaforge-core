@@ -65,6 +65,7 @@ class ArmConfig:
     # instead of the full replay (the wiped-memory control).
     meta_wipe: bool = False
     meta_dust: bool = False              # optional Q Labs DUST forward-credit meta-policy
+    meta_dust_contrastive: bool = False  # actual same-imagined-task action comparisons
     # Add the fold (catamorphism) skeletons to decomposition (decompose.py).
     decomposition_fold: bool = False
     # Meta-RL: extended relation features in the policy's task shape, and
@@ -193,7 +194,9 @@ class Runtime:
         if arm.behave:
             self.registry.add_behave_pathways(config.get("behave", {}), arm.behave_library,
                                               arm.behave_folds, arm.behave_dual)
-        self.metapolicy = (DustMetaPolicy(wipe=arm.meta_wipe, seed=seed)
+        self.metapolicy = (DustMetaPolicy(wipe=arm.meta_wipe,
+                                          seed=seed,
+                                          contrastive=arm.meta_dust_contrastive)
                            if arm.meta_dust else MetaPolicy(wipe=arm.meta_wipe)) if meta else None
         self.shapes = {task.name: shape_features(task.examples, arm.meta_extended,
                                                  arm.meta_fixed_length)
@@ -400,6 +403,8 @@ class Runtime:
                     examples, self.arm.decomposition_fold)}:
                 continue
             shape = shape_features(examples, self.arm.meta_extended, self.arm.meta_fixed_length)
+            if self.arm.meta_dust_contrastive:
+                self.metapolicy.begin_practice_group()
             if self.arm.selfplay_honest:
                 practice += self._practice_searches(examples, shape, generation)
             else:
@@ -408,6 +413,8 @@ class Runtime:
             made += 1
             if self.arm.behave:
                 practice += self._practice(examples, shape, generation)
+            if self.arm.meta_dust_contrastive:
+                self.metapolicy.end_practice_group()
         dreamt = 0
         if self.arm.selfplay_dreams:
             dreamt, dream_practice = self._dream_practice(generation)
@@ -452,9 +459,13 @@ class Runtime:
                 if result.term is not None:
                     continue
             shape = shape_features(examples, self.arm.meta_extended, self.arm.meta_fixed_length)
+            if self.arm.meta_dust_contrastive:
+                self.metapolicy.begin_practice_group()
             spent += self._practice_searches(examples, shape, generation)
             if self.arm.behave:
                 spent += self._practice(examples, shape, generation)
+            if self.arm.meta_dust_contrastive:
+                self.metapolicy.end_practice_group()
             practised += 1
         return practised, spent
 

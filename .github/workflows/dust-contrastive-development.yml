@@ -1,0 +1,52 @@
+name: Contrastive DUST transfer development
+on:
+  push:
+    branches:
+      - research/dust-contrastive-transfer-20261031
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  train-ablation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install numpy
+      - name: Compile and run RSI-3 regression suite
+        run: |
+          python -m compileall -q rsi3
+          python -m unittest discover -s rsi3/tests -t . -v
+      - name: Compare matched DUST policies without loading held-out data
+        run: |
+          python -m rsi3.longrun --config rsi3/experiment_config_dust_contrast.json --arm RSI3_META_HONEST_DUST --output contrast-control --seeds 11 --generations 4 --skip-validation
+          python -m rsi3.longrun --config rsi3/experiment_config_dust_contrast.json --arm RSI3_META_HONEST_DUST_CONTRAST --output contrast-treatment --seeds 11 --generations 4 --skip-validation
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          for arm, directory in [("RSI3_META_HONEST_DUST","contrast-control"),
+                                 ("RSI3_META_HONEST_DUST_CONTRAST","contrast-treatment")]:
+              payload = json.loads((Path(directory) / f"{arm}_seed11.json").read_text())
+              gens = payload["generations"]
+              print("DUST_CONTRAST_RESULT", arm,
+                    "TRAIN_PATH", [g["train_solved"] for g in gens],
+                    "WAKE_EVAL", [g["wake"]["spent"] for g in gens],
+                    "PRACTICE_GROUPS", [g["wake"]["meta"]["fit"].get("practice_groups") for g in gens],
+                    "CPU", payload["cpu_seconds"],
+                    "VALIDATION_UNOPENED", all(g["validation"] is None for g in gens),
+                    flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dust-contrastive-development
+          path: |
+            contrast-control/*_seed11.json
+            contrast-treatment/*_seed11.json
+          if-no-files-found: warn

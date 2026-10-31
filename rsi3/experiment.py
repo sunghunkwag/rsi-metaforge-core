@@ -196,6 +196,15 @@ ARMS["RSI3_META_HONEST_DUST"] = replace(
 ARMS["RSI3_META_PORTFOLIO_DUST"] = replace(
     ARMS["RSI3_META_PORTFOLIO"], name="RSI3_META_PORTFOLIO_DUST", meta_dust=True)
 
+# Contrastive DUST receives exactly the same synthetic tasks and success labels,
+# but downweights non-discriminative action outcomes within each task.
+ARMS["RSI3_META_HONEST_DUST_CONTRAST"] = replace(
+    ARMS["RSI3_META_HONEST_DUST"], name="RSI3_META_HONEST_DUST_CONTRAST",
+    meta_dust_contrastive=True)
+ARMS["RSI3_META_PORTFOLIO_DUST_CONTRAST"] = replace(
+    ARMS["RSI3_META_PORTFOLIO_DUST"], name="RSI3_META_PORTFOLIO_DUST_CONTRAST",
+    meta_dust_contrastive=True)
+
 BASELINE = "RSI2"
 
 

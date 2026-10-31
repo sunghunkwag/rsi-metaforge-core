@@ -84,6 +84,48 @@ class DustMetaPolicyTests(unittest.TestCase):
             np.testing.assert_array_equal(policy.models[action][0], weights)
             self.assertEqual(policy.models[action][1], prior)
 
+    def test_contrastive_credit_preserves_true_rewards(self):
+        plain = DustMetaPolicy(seed=0, draws=8, steps=12)
+        treated = DustMetaPolicy(seed=0, draws=8, steps=12, contrastive=True)
+        x = context(np.zeros(11), 0, 0)
+        for policy in (plain, treated):
+            policy.begin_practice_group()
+            policy.record(1, "behave:whole", x, 1)
+            policy.record(1, "decompose:fold_nil", x, 0)
+            policy.record(1, "decompose:filter_list", x, 0)
+            policy.end_practice_group()
+            policy.begin_practice_group()
+            policy.record(1, "behave:whole", x, 0)
+            policy.record(1, "decompose:fold_nil", x, 1)
+            policy.record(1, "decompose:filter_list", x, 0)
+            policy.end_practice_group()
+        self.assertEqual(plain.episodes, treated.episodes)
+        self.assertEqual(treated.fit(1)["practice_groups"], 2)
+        self.assertNotEqual(plain.fit(1)["contrastive"], treated.last_fit["contrastive"])
+        self.assertTrue(all(r in (0, 1) for _, _, _, r in treated.episodes))
+
+    def test_contrastive_arm_is_one_flag_ablation(self):
+        base = dataclasses.asdict(ARMS["RSI3_META_HONEST_DUST"])
+        treated = dataclasses.asdict(ARMS["RSI3_META_HONEST_DUST_CONTRAST"])
+        self.assertFalse(base.pop("meta_dust_contrastive"))
+        self.assertTrue(treated.pop("meta_dust_contrastive"))
+        base.pop("name")
+        treated.pop("name")
+        self.assertEqual(base, treated)
+
+    def test_contrastive_and_standard_dust_have_identical_rng_seeds(self):
+        config = {
+            "B_wake": 2, "B_eval": 2, "dreams": 0,
+            "search": {"step_budget": 200, "max_size": 5, "max_expansions": 32},
+            "controller": {"chunk": 2, "exploration": 0.3, "analog_neighbors": 1},
+            "meta": {"chunk": 2, "selfplay": 0},
+        }
+        tasks = load_train()[:2]
+        a = Runtime(11, tasks, ARMS["RSI3_META_HONEST_DUST"], config)
+        b = Runtime(11, tasks, ARMS["RSI3_META_HONEST_DUST_CONTRAST"], config)
+        self.assertEqual(a.metapolicy.seed, b.metapolicy.seed)
+        self.assertEqual(a.metapolicy.seed, 11)
+
     def test_matched_arms_differ_only_by_credit_learner(self):
         for base_name, dust_name in (
             ("RSI3_META_HONEST", "RSI3_META_HONEST_DUST"),
