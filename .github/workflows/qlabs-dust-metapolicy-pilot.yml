@@ -1,0 +1,55 @@
+name: Q Labs DUST Meta-RL policy pilot
+on:
+  push:
+    branches:
+      - research/qlabs-dust-metapolicy-20261031
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dust-meta-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install NumPy
+        run: python -m pip install numpy
+      - name: Compile and audit unit tests
+        run: |
+          python -m compileall -q rsi3
+          python -m unittest discover -s rsi3/tests -t . -v
+      - name: Run frozen 2-generation TRAIN-only Honest controls
+        run: |
+          python -m rsi3.longrun --config rsi3/experiment_config_dust_meta_pilot.json --arm RSI3_META_HONEST --output qlabs-dust-honest-control --generations 2 --seeds 11 --skip-validation
+          python -m rsi3.longrun --config rsi3/experiment_config_dust_meta_pilot.json --arm RSI3_META_HONEST_DUST --output qlabs-dust-honest-treatment --generations 2 --seeds 11 --skip-validation
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          for arm, location in (
+              ("RSI3_META_HONEST", "qlabs-dust-honest-control"),
+              ("RSI3_META_HONEST_DUST", "qlabs-dust-honest-treatment")
+          ):
+              record = json.loads((Path(location) / (arm + "_seed11.json")).read_text())
+              generations = record["generations"]
+              print("DUST_META_RESULT", arm,
+                    "TRAIN", record["final"]["train_solved"],
+                    "CPU", round(record["cpu_seconds"], 3),
+                    "WAKE_SPENT", [g["wake"]["spent"] for g in generations],
+                    "FITS", [g["wake"]["meta"]["fit"] for g in generations],
+                    "VALIDATION_UNOPENED", all(
+                        g["validation"] is None for g in generations), flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qlabs-dust-metapolicy-train-only
+          path: |
+            qlabs-dust-honest-control/*_seed*.json
+            qlabs-dust-honest-treatment/*_seed*.json
+          if-no-files-found: warn
