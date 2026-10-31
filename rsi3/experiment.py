@@ -53,6 +53,9 @@ ARMS = {
     "RSI3_UNIFORM_FM": ArmConfig("RSI3_UNIFORM_FM", allocation="uniform", genesis=False,
                                  designer_kinds=("prior",), failure_memory=True),
     "RSI3_FM": ArmConfig("RSI3_FM", failure_memory=True),
+    "RSI3_FORWARD_FM": ArmConfig("RSI3_FORWARD_FM", allocation="forward",
+                                  genesis=False, designer_kinds=("prior",),
+                                  failure_memory=True, forward_credit=True),
 }
 BASELINE = "RSI2"
 
