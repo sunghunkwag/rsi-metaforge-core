@@ -53,6 +53,15 @@ ARMS = {
     "RSI3_UNIFORM_FM": ArmConfig("RSI3_UNIFORM_FM", allocation="uniform", genesis=False,
                                  designer_kinds=("prior",), failure_memory=True),
     "RSI3_FM": ArmConfig("RSI3_FM", failure_memory=True),
+    "RSI3_DUST_FM": ArmConfig("RSI3_DUST_FM", failure_memory=True,
+                              dust_learner=True),
+    "RSI3_UNIFORM_TRANSFER_FM": ArmConfig(
+        "RSI3_UNIFORM_TRANSFER_FM", allocation="uniform", genesis=False,
+        designer_kinds=("prior",), failure_memory=True, verified_transfer=True),
+    "RSI3_DUST_TRANSFER_FM": ArmConfig(
+        "RSI3_DUST_TRANSFER_FM", allocation="uniform", genesis=False,
+        designer_kinds=("prior",), failure_memory=True,
+        dust_learner=True, verified_transfer=True),
 }
 BASELINE = "RSI2"
 

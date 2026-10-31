@@ -28,9 +28,10 @@ With ``known_failures=None`` the search is exactly the one described above.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from collections import deque
 import time
 
-from rsi2.enumeration import enumerate_programs
+from rsi2.enumeration import enumerate_programs, Candidate
 from rsi2.evaluator import evaluate
 
 
@@ -58,6 +59,7 @@ class ResumableSearch:
             max_expansions=max_expansions, partial_heuristic=None,
             partial_features_only=True)
         self._seen: set = set()
+        self._pending_proposals = deque()
         self.known_failures = known_failures
         self.evaluated = 0
         self.skipped_known = 0
@@ -68,6 +70,17 @@ class ResumableSearch:
     def position(self) -> int:
         """Distinct programs passed in this grammar's order, evaluated or skipped."""
         return self.evaluated + self.skipped_known
+
+    def prepend_proposals(self, terms, grammar):
+        """Queue verified-donor perturbations ahead of the unchanged frontier.
+
+        Deduplication, failure-memory checks and candidate budget apply
+        identically to grammar enumeration; no free forward evaluation.
+        """
+        for term in terms:
+            if term not in self._seen:
+                self._pending_proposals.append(Candidate(
+                    term, grammar.log_probability(term, None)))
 
     def _matches(self, term) -> bool:
         for inputs, expected in self.examples:
@@ -87,7 +100,8 @@ class ResumableSearch:
         found = None
         while used < budget and not self.exhausted:
             try:
-                candidate = next(self._iterator)
+                candidate = (self._pending_proposals.popleft() if self._pending_proposals
+                             else next(self._iterator))
             except StopIteration:
                 self.exhausted = True
                 break

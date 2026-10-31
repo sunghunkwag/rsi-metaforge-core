@@ -1,0 +1,70 @@
+name: RSI-3 verified transfer pilot
+on:
+  push:
+    branches:
+      - research/verified-program-transfer-20261031
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  transfer-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install numpy
+      - name: Compile and all RSI-3 regression tests
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '1'
+        run: |
+          python -m compileall -q rsi3
+          python -m unittest discover -s rsi3/tests -t . -v
+      - name: Matched logical-budget pilot
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '1'
+        run: |
+          python -m rsi3.experiment --config rsi3/experiment_config_transfer_pilot.json --output verified-transfer-pilot --workers 2
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('verified-transfer-pilot')
+          for name in ['RSI3_UNIFORM_FM', 'RSI3_UNIFORM_TRANSFER_FM']:
+              r = json.loads((p / (name + '_seed11.json')).read_text())
+              print('TRANSFER_RESULT', name,
+                    'train', r['final']['train_solved'],
+                    'validation', r['generations'][-1]['validation']['solved'],
+                    'cpu', round(r['cpu_seconds'], 3),
+                    'wake_spent', [g['wake']['spent'] for g in r['generations']],
+                    'verified_by_gen', [g['wake']['verified'] for g in r['generations']])
+          PY
+      - name: Replicate transfer without retuning on seeds 22 and 33
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '1'
+        run: |
+          python -m rsi3.experiment --config rsi3/experiment_config_transfer_pilot.json --output verified-transfer-replication --workers 2 --arms RSI3_UNIFORM_TRANSFER_FM --seeds 22 33
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('verified-transfer-replication')
+          for seed in [22, 33]:
+              r = json.loads((p / ('RSI3_UNIFORM_TRANSFER_FM_seed' + str(seed) + '.json')).read_text())
+              print('REPLICATION_RESULT', seed,
+                    'train', r['final']['train_solved'],
+                    'validation', r['generations'][-1]['validation']['solved'],
+                    'cpu', round(r['cpu_seconds'], 3),
+                    'solves', [g['wake']['verified'] for g in r['generations']])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: verified-transfer-pilot-and-replication
+          path: |
+            verified-transfer-pilot
+            verified-transfer-replication
+          if-no-files-found: warn
