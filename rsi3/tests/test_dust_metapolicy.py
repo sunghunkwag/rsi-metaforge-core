@@ -67,6 +67,14 @@ class DustMetaPolicyTests(unittest.TestCase):
         self.assertEqual(policy.choose(["behave:map", "behave:any"], second, {}, 0),
                          "behave:any")
 
+    def test_forward_loss_accounting_is_exact(self):
+        policy = DustMetaPolicy(seed=2, steps=4, draws=6)
+        shape = np.zeros(11)
+        for reward in (0, 1, 0, 1, 0, 1):
+            policy.record(1, "prior", context(shape, 0, 0), reward)
+        metrics = policy.fit(1)
+        self.assertEqual(metrics["forward_loss_evaluations"], 6 * 7 * 4)
+
     def test_repeated_fit_is_byte_deterministic(self):
         policy, _, _ = self._make_policy()
         policy.fit(2)
