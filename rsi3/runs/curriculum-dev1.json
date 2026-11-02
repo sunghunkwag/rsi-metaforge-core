@@ -1,0 +1,9 @@
+{
+  "purpose": "Development only. Self-curriculum (HONEST + imagine/select/solve/learn): TRAIN only at seed 44, then RESERVE-NEAR, RESERVE-FAR2 and COMPOSE-24, all exposed.",
+  "config": "rsi3/experiment_config_curriculum.json",
+  "arms": ["RSI3_META_CURRICULUM"],
+  "seeds": [44],
+  "generations": 16,
+  "skip_validation": true,
+  "evaluate": ["near", "far2", "compose24"]
+}

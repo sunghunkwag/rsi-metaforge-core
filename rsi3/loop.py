@@ -114,6 +114,10 @@ class ArmConfig:
     # only, and used at held-out time; the wake offers exactly HONEST's
     # actions, so TRAIN and the library follow HONEST's trajectory.
     wake_new_actions: bool = True
+    # Self-curriculum (curriculum.py): the system imagines tasks from its
+    # own programs, solves the ones its prior cannot read off at once, and
+    # learns its library, grammar and recognition from those solutions too.
+    self_curriculum: bool = False
 
 
 def standardized_features(public_tasks) -> dict:
@@ -124,21 +128,30 @@ def standardized_features(public_tasks) -> dict:
     return {task.name: scaled[i] for i, task in enumerate(public_tasks)}
 
 
-def sleep_phase(state, public_train, config, generation, sink=None) -> dict:
+def sleep_phase(state, public_train, config, generation, sink=None, extra=None) -> dict:
     """RSI-2's post-wake learning, with RSI-2's arguments, on public task views.
 
     ``sink`` (optional dict) receives the dreamed pairs, so a later step can
     refit recognition on exactly the same corpus. It changes nothing here.
+    ``extra`` (optional: name -> (Task, program)) adds the self-curriculum's
+    solved imagined tasks to abstraction learning, grammar fitting and
+    recognition; their rewritten programs are returned in ``sink["extra"]``.
+    They never enter ``state.solutions``.
     """
     search = config["search"]
-    solutions, library, adopted = learn_abstractions(state.solutions, state.grammar.library,
-                                                     generation)
-    state.solutions = solutions
+    extra = dict(extra or {})
+    pooled = dict(state.solutions)
+    pooled.update({name: program for name, (_, program) in extra.items()})
+    solutions, library, adopted = learn_abstractions(pooled, state.grammar.library, generation)
+    state.solutions = {name: term for name, term in solutions.items() if name not in extra}
+    if sink is not None:
+        sink["extra"] = {name: term for name, term in solutions.items() if name in extra}
     state.grammar = Grammar(library=library, weights=state.grammar.weights,
                             context_weights=state.grammar.context_weights)
     state.library_history.extend(adopted)
     lookup = {task.name: task for task in public_train}
-    fitting = [(term, lookup[name].request_type) for name, term in state.solutions.items()]
+    lookup.update({name: task for name, (task, _) in extra.items()})
+    fitting = [(term, lookup[name].request_type) for name, term in solutions.items()]
     grammar_metrics = state.grammar.fit(fitting)
     rng = random.Random(state.seed * 1000003 + generation)
     dreams, dream_evaluations = dream_pairs(public_train, state.grammar, rng,
@@ -147,7 +160,7 @@ def sleep_phase(state, public_train, config, generation, sink=None) -> dict:
                                             step_budget=search["step_budget"])
     if sink is not None:
         sink["dreams"] = list(dreams)
-    pairs = [(lookup[name], term) for name, term in state.solutions.items()] + dreams
+    pairs = [(lookup[name], term) for name, term in solutions.items()] + dreams
     model = Recognition(state.seed * 1000003 + generation)
     recognition_metrics = model.fit(pairs, state.grammar)
     state.recognition = model
@@ -764,6 +777,28 @@ class Runtime:
                 "max_depth": max((e["start"] + e["evaluated"] for e in log), default=0),
                 "episodes": log}
 
+    def _curriculum(self, generation) -> dict:
+        """Imagine, select, solve (curriculum.py); the pool feeds this generation's sleep."""
+        from .curriculum import Pool, imagine, select_hard, solve
+        settings = self.config.get("curriculum", {})
+        if not hasattr(self, "curriculum_pool"):
+            self.curriculum_pool = Pool(int(settings.get("pool", 48)))
+            self.curriculum_record = []
+        tasks = imagine(self, generation, int(settings.get("count", 48)))
+        hard, probe_spent = select_hard(self, tasks, int(settings.get("hard_chunk", 16)))
+        hard = hard[:int(settings.get("solve", 24))]
+        programs, solve_spent = solve(self, hard, generation)
+        for task in hard:
+            if task.name in programs:
+                self.curriculum_pool.add(task, programs[task.name])
+        from rsi2.terms import pretty
+        self.curriculum_record.append({
+            "generation": generation, "imagined": len(tasks), "hard": len(hard),
+            "solved": sorted(programs), "programs": {n: pretty(t) for n, t in programs.items()}})
+        return {"imagined": len(tasks), "hard": len(hard), "solved": len(programs),
+                "pool": len(self.curriculum_pool.items),
+                "curriculum_evaluations": probe_spent + solve_spent}
+
     # ---- one generation --------------------------------------------------
     def generation(self) -> dict:
         generation = self.state.generation + 1
@@ -776,7 +811,13 @@ class Runtime:
                                    [self.memory.label(e) for e in replayed])
         before_rewrite = snapshot(self.state, "old")
         sink = {}
-        sleep = sleep_phase(self.state, self.public, self.config, generation, sink=sink)
+        curriculum = self._curriculum(generation) if self.arm.self_curriculum else None
+        sleep = sleep_phase(self.state, self.public, self.config, generation, sink=sink,
+                            extra=(self.curriculum_pool.items if curriculum is not None
+                                   else None))
+        if curriculum is not None:
+            self.curriculum_pool.rewrite(sink.get("extra", {}))
+            sleep["curriculum"] = curriculum
         continuity = self.continuity.after_sleep(
             self.state, before_rewrite, {t.name: t for t in self.public},
             sink.get("dreams", ()), generation)

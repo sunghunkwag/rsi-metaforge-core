@@ -78,7 +78,7 @@ def validation_record(state, model, validation, config: dict) -> dict:
 
 
 def agent_validation(runtime, model, validation, config: dict, verifier,
-                     generation: int) -> dict:
+                     generation: int, programs: dict | None = None) -> dict:
     """Transfer test: the arm's own TRAIN-trained solver on unseen VALIDATION tasks.
 
     Same budget as VALIDATION (B_eval per task). Actions: the prior,
@@ -195,6 +195,8 @@ def agent_validation(runtime, model, validation, config: dict, verifier,
             verdict = verifier.verify(task.name, found, library, generation).verdict
         if verdict:
             solved.append(task.name)
+            if programs is not None:
+                programs[task.name] = found
         record = {"name": task.name, "solved": verdict, "spent": used_by}
         if verdict and found_by in ("analogy", "chain"):
             record[f"{found_by}_from"] = list(searches[found_by].found_from)
@@ -221,7 +223,8 @@ def final_record(runtime) -> dict:
                         for name, term in sorted(runtime.state.grammar.library.items())},
             "adopted_concepts": runtime.adopted_concepts,
             "analogy": getattr(runtime, "analogy_record", {}),
-            "chain": getattr(runtime, "chain_record", {})}
+            "chain": getattr(runtime, "chain_record", {}),
+            "curriculum": getattr(runtime, "curriculum_record", [])}
 
 
 def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = None, *,
@@ -261,7 +264,8 @@ def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = N
                                          "meta": config.get("meta", {}),
                                          "behave": config.get("behave", {}),
                                          "analogy": config.get("analogy", {}),
-                                         "chain": config.get("chain", {})})
+                                         "chain": config.get("chain", {}),
+                                         "curriculum": config.get("curriculum", {})})
         records, cpu = {seed: [] for seed in seeds}, {seed: 0.0 for seed in seeds}
     from .verifier import FrozenVerifier
     agent_verifiers = {seed: FrozenVerifier(validation, step_budget=config["search"]["step_budget"])

@@ -208,6 +208,18 @@ ARMS = {
                                    decomposition_conjugate=True, behave=True,
                                    behave_folds=True, selfplay_honest=True, analogy=True,
                                    chain=True, wake_new_actions=False),
+    # Self-curriculum (PREDICTIONS_CURRICULUM.md): RSI3_META_HONEST, and each
+    # generation the system imagines tasks from its own programs, solves the
+    # ones its prior cannot read off at once, and learns its library,
+    # grammar and recognition from those solutions too (curriculum.py).
+    "RSI3_META_CURRICULUM": ArmConfig("RSI3_META_CURRICULUM", allocation="meta", genesis=False,
+                                      designer_kinds=("prior",), failure_memory=True,
+                                      invention=True, invention_near_misses=True,
+                                      invention_meta=True, decomposition_fold=True,
+                                      meta_extended=True, meta_selfplay=True,
+                                      decomposition_conjugate=True, behave=True,
+                                      behave_folds=True, selfplay_honest=True,
+                                      self_curriculum=True),
     # Dream practice (PREDICTIONS_DREAM.md): RSI3_META_HONEST, also
     # practising every action on dreams from the system's own grammar.
     "RSI3_META_DREAM": ArmConfig("RSI3_META_DREAM", allocation="meta", genesis=False,
