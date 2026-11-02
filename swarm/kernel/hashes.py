@@ -4,7 +4,9 @@
 checked by ``verify()`` when ``swarm.kernel`` is imported: a mismatch
 raises ``KernelTampered`` and no run can start. The pins are also copied
 into ``experiment_config.json`` at registration (P5); after that, the
-kernel does not change. ``hashes.py`` itself is pinned only by the config.
+kernel does not change. ``hashes.py`` and the package ``__init__.py`` are in
+the pin set too (a file's digest does not depend on its own pin), so the
+root of trust is the pins file plus the registered configuration.
 """
 from __future__ import annotations
 
@@ -16,7 +18,7 @@ KERNEL = Path(__file__).resolve().parent
 ROOT = KERNEL.parents[1]
 KERNEL_FILES = ("checker_lang.py", "executor.py", "vault.py", "budget.py", "ledger.py",
                 "replay.py", "admit.py", "crossing.py", "snapshot.py", "archive.py", "edits.py",
-                "runtime.py")
+                "runtime.py", "hashes.py", "__init__.py")
 # The one file of the Builder's mutable tree that is pinned: the evaluator,
 # whose METER is the only source of the Builder's evaluation counts.
 PINNED_MUTABLE = ("builder/mutable/evaluator.py",)

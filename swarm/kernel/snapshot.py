@@ -8,17 +8,19 @@ tree, and crossing checks run from the current snapshot: the certificate is
 computed on code that cannot change under it (``tests/test_kernel.py``
 plants a sandbagging live tree and asserts the snapshot is what runs).
 
-Calls into a snapshot go through ``Executor.isolated_call``: a child
-``python -I`` whose ``sys.path`` is the snapshot directory and the
-repository root, with the executor's memory cap and a timeout; the child
-imports ``mutable.solve`` from the snapshot and returns JSON. Evaluation
-counts come back in the payload from the pinned evaluator and are charged
-to the meter here.
+Calls into a snapshot go through ``Executor.isolated_call``: a guarded
+child whose ``sys.path`` is the snapshot directory and the repository
+root, confined by the executor's guard to reading its own tree and the
+kernel package and to writing inside its own tree, with the memory cap
+and a timeout; the child imports ``mutable.solve`` from the snapshot and
+returns JSON. Evaluation counts come back in the payload from the pinned
+evaluator and are charged to the meter here.
 """
 from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 
@@ -67,14 +69,20 @@ class SnapshotStore:
     def take(self, tree_dir: Path) -> str:
         """Snapshot a mutable tree; returns its content hash (idempotent)."""
         sha = tree_sha256(tree_dir)
-        target = self.store / sha / "mutable"
-        if not target.exists():
-            target.parent.mkdir(parents=True, exist_ok=True)
+        final = self.store / sha
+        if not (final / "mutable").exists():
+            # Copy into a temporary directory and rename it into place, so a
+            # kill mid-copy never leaves a partial snapshot under its hash.
+            staging = self.store / (sha + ".tmp")
+            if staging.exists():
+                shutil.rmtree(staging)
+            target = staging / "mutable"
             for path in tree_files(tree_dir):
                 destination = target / path.relative_to(tree_dir)
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(path, destination)
-            (target.parent / "SHA256").write_text(sha + "\n", encoding="utf-8")
+            (staging / "SHA256").write_text(sha + "\n", encoding="utf-8")
+            os.replace(staging, final)
         return sha
 
     def path(self, sha: str) -> Path:
@@ -86,7 +94,7 @@ class SnapshotStore:
     def call(self, sha: str, function: str, payload: dict, agent: str = "builder",
              timeout: float = SOLVE_TIMEOUT_S) -> dict | None:
         result = self.executor.isolated_call([self.path(sha), ROOT], "mutable.solve", function,
-                                             payload, timeout)
+                                             payload, timeout, read=[self.path(sha)], write=[self.path(sha)])
         if result is not None and self.meter is not None and "meter" in result:
             self.meter.charge(agent, f"snapshot:{function}", steps=result["meter"].get("steps", 0),
                               evaluations=result["meter"].get("candidates",
@@ -106,7 +114,7 @@ class SnapshotStore:
         if tree_dir.name != "mutable":
             raise ValueError("a live tree is a directory named 'mutable'")
         result = self.executor.isolated_call([tree_dir.parent, ROOT], "mutable.solve", function,
-                                             payload, timeout)
+                                             payload, timeout, read=[tree_dir.parent], write=[tree_dir.parent])
         if result is not None and self.meter is not None and "meter" in result:
             self.meter.charge(agent, f"live:{function}", steps=result["meter"].get("steps", 0),
                               evaluations=result["meter"].get("candidates",
@@ -143,5 +151,8 @@ class SnapshotStore:
 
     def inventory(self, sha: str) -> dict | None:
         result = self.executor.isolated_call([self.path(sha), ROOT], "mutable.solve", "inventory",
-                                             {}, 30.0)
+                                             {}, 30.0, read=[self.path(sha)], write=[self.path(sha)])
+        if result is None:
+            result = self.executor.isolated_call([self.path(sha), ROOT], "mutable.solve", "inventory",
+                                                 {}, 30.0, read=[self.path(sha)], write=[self.path(sha)])
         return result

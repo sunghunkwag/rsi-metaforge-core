@@ -43,8 +43,10 @@ class Mapper:
         self._k_inverse = np.linalg.inv(gram_x + self.ridge * np.eye(self.pairs))
         self._k_inverse_y = np.linalg.inv(gram_y + self.ridge * np.eye(self.pairs))
         predicted = np.stack([self.task_to_program(a) for a in self._x])
-        self.residual = float(np.mean(np.linalg.norm(predicted - self._y, axis=1)
-                                      / np.maximum(np.linalg.norm(self._y, axis=1), 1e-9)))
+        # Rounded before it is ledgered: the value is a BLAS float and
+        # byte-identity of the ledger must not hang on its last digits.
+        self.residual = round(float(np.mean(np.linalg.norm(predicted - self._y, axis=1)
+                                            / np.maximum(np.linalg.norm(self._y, axis=1), 1e-9))), 6)
         return {"pairs": self.pairs, "residual": self.residual}
 
     def fit_from_events(self, events) -> dict:

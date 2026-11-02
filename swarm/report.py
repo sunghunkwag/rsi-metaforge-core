@@ -117,6 +117,11 @@ def detectors(summary: dict) -> dict:
             "rejections": rejections,
             "kb_rejection_rate": rejections.get("Kb", 0) / proposals if proposals else None,
             "wake_failures": sum(1 for g in gens if g["wake_failed"]),
+            "kernel_failures": {"admission": sum(g.get("kernel_failed", 0) for g in gens),
+                                "mined_checks": sum(g.get("mined_checks_failed", 0) for g in gens),
+                                "crossing_checks": sum(g.get("crossing_checks_failed", 0) for g in gens),
+                                "judge": sum(g.get("judge_failed", 0) for g in gens)},
+            "forge_candidates": sum(g.get("forge_candidates", 0) for g in gens),
             "executors": summary["final"].get("executors")}
 
 
@@ -234,8 +239,8 @@ def render(runs: dict, comparisons_report: dict, k7_report: dict | None) -> str:
             adopted = "; ".join(f"g{a['generation']}: {a['kind']} {a['solves']}" for a in s["adopted"]) or "-"
             lines.append(f"| {arm} | {seed} | {s['primitives_forged']} | {s['library_entries']} | {s['learned_entries']} | "
                          f"{s['self_edits_adopted']} / {s['self_edits_proposed']} | {s['regressions']} | {adopted} |")
-    lines += ["", "## Channel and collapse detectors", "", "| Arm | Seed | retrieval hit rate | breaker norm | builder norm | mapper pairs | mapper residual | proposals | admitted | rejections | Kb rejection rate | wake failures |",
-              "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
+    lines += ["", "## Channel and collapse detectors", "", "| Arm | Seed | retrieval hit rate | breaker norm | builder norm | mapper pairs | mapper residual | proposals | admitted | rejections | Kb rejection rate | wake failures | kernel failures (admission / mined / crossing / judge) | forge candidates |",
+              "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     for arm in arms:
         for seed in seeds:
             run = runs.get((arm, seed))
@@ -245,7 +250,9 @@ def render(runs: dict, comparisons_report: dict, k7_report: dict | None) -> str:
             rejections = " ".join(f"{k}:{v}" for k, v in sorted(d["rejections"].items()) if v)
             lines.append(f"| {arm} | {seed} | {_fmt(c['retrieval_hit_rate'])} | {_fmt(c['breaker_norm'])} | {_fmt(c['builder_norm'])} | "
                          f"{_fmt(c['mapper_pairs'])} | {_fmt(c['mapper_residual'])} | {d['proposals']} | {d['admitted']} | {rejections or '-'} | "
-                         f"{_fmt(d['kb_rejection_rate'])} | {d['wake_failures']} |")
+                         f"{_fmt(d['kb_rejection_rate'])} | {d['wake_failures']} | "
+                         f"{d['kernel_failures']['admission']} / {d['kernel_failures']['mined_checks']} / "
+                         f"{d['kernel_failures']['crossing_checks']} / {d['kernel_failures']['judge']} | {d['forge_candidates']} |")
     lines += ["", "## Logical budget (cumulative candidate evaluations / interpreter steps)", "",
               "| Arm | Seed | Breaker steps | Builder candidates | Builder steps | Kernel candidates | Kernel steps | wall seconds |",
               "| --- | --- | --- | --- | --- | --- | --- | --- |"]

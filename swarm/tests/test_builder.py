@@ -86,7 +86,12 @@ class SelfEditJudgeTests(unittest.TestCase):
             self.assertTrue(self_edit.guard(candidate.parent, kernel.live), "the scope guard sees a code change")
             decision = kernel.judge.judge(candidate, sha0, 1, run_dir, {"kind": "planted"})
             self.assertFalse(decision["adopted"])
-            self.assertEqual(decision["reason"], "wrote outside its tree")
+            # The executor's guard refuses the write inside the child (the
+            # solver fails); the digest guard around the evaluation is the
+            # second line and would report "wrote outside its tree".
+            self.assertIn(decision["reason"], ("candidate evaluation failed: solver failed",
+                                               "wrote outside its tree"))
+            self.assertFalse((run_dir / "evil.txt").exists(), "the guard stopped the write")
             refused = kernel.judge.refuse(1, {"kind": "planted"}, "scope: solve.py: code changed")
             self.assertFalse(refused["adopted"])
             self.assertEqual(len(kernel.ledger.of_kind("self_edit")), 2)
@@ -185,7 +190,12 @@ class BuilderAgentTests(unittest.TestCase):
             field = latent.Field(d=D)
             builder = Builder(field.port("builder"), kernel.solver, kernel.batch_runner, kernel.tree,
                               seed=11, d=D, records=True)
+            # A task the Breaker's records do not carry yet is not boosted (the
+            # same one-generation lag as the latent arms); once recorded, it is.
             builder.records_in = {"tasks": {"t0100": {"output_kind": "list[int]"}}}
+            self.assertEqual(builder.read_state(kernel.archive.public_view()), {})
+            builder.records_in = {"tasks": {"t0100": {"output_kind": "list[int]"},
+                                            sort_task: {"output_kind": "list[int]"}}}
             boosts = builder.read_state(kernel.archive.public_view())
             self.assertEqual(boosts, {sort_task: {"f_sort": 4.0}})
             self.assertEqual(builder.write_state(kernel.archive.public_view()), 0)

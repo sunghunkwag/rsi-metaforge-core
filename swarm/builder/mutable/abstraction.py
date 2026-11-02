@@ -226,7 +226,8 @@ def _plan(solutions, library, entry, matches, name):
     }
 
 
-def learn_abstractions(solutions: dict[str, Term], library: dict[str, Term], generation: int):
+def learn_abstractions(solutions: dict[str, Term], library: dict[str, Term], generation: int,
+                       max_adoptions: int = MAX_ADOPTIONS):
     """Greedily adopt at most eight data-derived entries, examining 256 proposals.
 
     The proposal cap counts distinct lifted bodies during one call. Previously
@@ -239,7 +240,7 @@ def learn_abstractions(solutions: dict[str, Term], library: dict[str, Term], gen
         infer(term, library=entries)
     records, examined = [], set()
     serial = 0
-    for _ in range(MAX_ADOPTIONS):
+    for _ in range(int(max_adoptions)):
         while f"learned_g{generation}_{serial}" in entries:
             serial += 1
         name = f"learned_g{generation}_{serial}"

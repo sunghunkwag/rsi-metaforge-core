@@ -3,6 +3,9 @@
 Inputs are the artifacts a run writes: ``ledger.jsonl``, the kernel-only
 ``vault.json`` (sealed witnesses, checkers and hidden instances),
 ``archive.json`` and the snapshot store. Replay verifies the hash chain,
+checks that the vault and archive dumps hash to the digests the ledger
+recorded when each task was sealed (witness, checker, hidden instances,
+public examples) and that the archive's records agree with the ledger,
 then for every admission re-runs Kd, Ka and Kc from the sealed data and
 for every crossing re-runs the recorded program through the checker on
 the hidden instances and re-checks the own-solution exclusion against the
@@ -20,7 +23,7 @@ from .archive import Archive
 from .executor import Executor
 from .ledger import Ledger
 from .snapshot import SnapshotStore
-from .vault import Vault
+from .vault import Vault, _sha as digest_of
 
 
 def replay(run_dir: Path, full: bool = False, b_inst: int | None = None,
@@ -39,9 +42,27 @@ def replay(run_dir: Path, full: bool = False, b_inst: int | None = None,
     certificates = 0
     crossings = 0
     admissions = {e["payload"]["id"]: e["payload"] for e in ledger.of_kind("admission")}
+    proposals = {e["payload"]["id"]: e["payload"] for e in ledger.of_kind("proposal")}
     for task_id, payload in admissions.items():
         task = archive.tasks[task_id]
         witness, checker = vault.sealed_witness(task_id), vault.sealed_checker(task_id)
+        # The loaded artifacts must be the ones the ledger sealed: every
+        # digest recorded at proposal time is recomputed from vault.json and
+        # archive.json before anything is re-derived from them.
+        proposal = proposals.get(task_id, {})
+        recorded = {"witness_sha": proposal.get("witness_sha", payload.get("witness_sha")),
+                    "checker_sha": proposal.get("checker_sha", payload.get("checker_sha")),
+                    "hidden_sha": proposal.get("hidden_sha", payload.get("hidden_sha")),
+                    "examples_key": proposal.get("examples_key")}
+        actual = {"witness_sha": digest_of(witness), "checker_sha": digest_of(checker),
+                  "hidden_sha": digest_of(vault.sealed_hidden(task_id)),
+                  "examples_key": examples_key(task["examples"])}
+        for name in ("witness_sha", "checker_sha", "hidden_sha", "examples_key"):
+            if recorded[name] is not None and recorded[name] != actual[name]:
+                disagreements.append({"id": task_id, "artifact": name})
+        for name in ("signature", "admitted_generation", "snapshot", "kb_margin"):
+            if task.get(name) != payload.get(name):
+                disagreements.append({"id": task_id, "archive": name})
         hidden = [(i["inputs"][0], i["output"]) for i in vault.sealed_hidden(task_id)]
         public = [(i["inputs"][0], i["output"]) for i in task["examples"]]
         runs = executor.run_batch(witness, [[x] for x, _ in hidden + public])
@@ -73,6 +94,10 @@ def replay(run_dir: Path, full: bool = False, b_inst: int | None = None,
     for entry in ledger.of_kind("crossing"):
         payload = entry["payload"]
         task_id = payload["id"]
+        recorded_crossing = (archive.tasks.get(task_id) or {}).get("crossing") or {}
+        if (recorded_crossing.get("program") != payload["program"]
+                or recorded_crossing.get("generation") != payload["generation"]):
+            disagreements.append({"id": task_id, "archive": "crossing record"})
         checker = vault.sealed_checker(task_id)
         hidden = [(i["inputs"][0], i["output"]) for i in vault.sealed_hidden(task_id)]
         outs = executor.run_batch(payload["program"], [[x] for x, _ in hidden])

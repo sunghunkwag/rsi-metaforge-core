@@ -14,6 +14,11 @@ from __future__ import annotations
 import json
 
 
+def _copy(value):
+    """A detached copy through JSON: what leaves or enters the archive shares no object with it."""
+    return json.loads(json.dumps(value, default=str))
+
+
 class Archive:
     def __init__(self, horizon: int):
         self.horizon = int(horizon)
@@ -23,7 +28,7 @@ class Archive:
     def add(self, record: dict) -> None:
         if record["id"] in self.tasks:
             raise KeyError(f"duplicate task {record['id']}")
-        self.tasks[record["id"]] = dict(record, status="open", crossed_generation=None,
+        self.tasks[record["id"]] = dict(_copy(record), status="open", crossed_generation=None,
                                         crossing=None, mined=None)
         self.signatures.add(record["signature"])
 
@@ -37,12 +42,12 @@ class Archive:
         task = self.tasks[task_id]
         task["status"] = "crossed"
         task["crossed_generation"] = int(generation)
-        task["crossing"] = crossing
+        task["crossing"] = _copy(crossing)
 
     def mark_mined(self, task_id: str, generation: int, program) -> None:
         task = self.tasks[task_id]
         if task["mined"] is None:
-            task["mined"] = {"generation": int(generation), "program": program}
+            task["mined"] = {"generation": int(generation), "program": _copy(program)}
 
     def retire(self, generation: int) -> list:
         """Open tasks admitted more than ``horizon`` generations ago become markers."""
@@ -54,13 +59,13 @@ class Archive:
         return retired
 
     def public_view(self) -> list:
-        """What agents may see: ids, public examples, lineage, status, generations."""
-        return [{"id": t["id"], "lineage": t["lineage"], "examples": t["examples"],
+        """What agents may see: ids, public examples, lineage, status, generations (a copy, never a reference)."""
+        return [{"id": t["id"], "lineage": t["lineage"], "examples": _copy(t["examples"]),
                  "input_kind": t["input_kind"], "status": t["status"],
                  "admitted_generation": t["admitted_generation"],
                  "crossed_generation": t["crossed_generation"],
-                 "crossing_program": None if t["crossing"] is None else t["crossing"]["program"],
-                 "crossing_term": None if t["crossing"] is None else t["crossing"].get("term"),
+                 "crossing_program": None if t["crossing"] is None else _copy(t["crossing"]["program"]),
+                 "crossing_term": None if t["crossing"] is None else _copy(t["crossing"].get("term")),
                  "mined": t["mined"] is not None}
                 for t in self.tasks.values()]
 

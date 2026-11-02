@@ -16,8 +16,9 @@ the other's region or read anything but vectors. ``Codebook`` maps symbols
 to fixed random vectors (deterministic in the codebook seed, grown on
 demand); each agent has its own, which is why the mapper exists.
 
-``shuffled`` (arm S5) permutes every vector written by a fixed secret
-permutation before it is stored, so what the other agent reads carries
+``shuffled`` (arm S5) permutes every vector written by a fixed
+permutation seeded by the kernel (a value the agents are not handed)
+before it is stored, so what the other agent reads carries
 no information about what was written.
 """
 from __future__ import annotations
@@ -196,10 +197,13 @@ class Field:
 
     def port(self, agent: str) -> "Port":
         if agent == "breaker":
-            return Port(self, self.breaker, self.builder)
-        if agent == "builder":
-            return Port(self, self.builder, self.breaker)
-        raise KeyError(agent)
+            own, other = self.breaker, self.builder
+        elif agent == "builder":
+            own, other = self.builder, self.breaker
+        else:
+            raise KeyError(agent)
+        store = self._store
+        return Port(lambda vector, tag, own=own: store(own, vector, tag), other, self.d)
 
     def statistics(self) -> dict:
         return {"breaker_items": len(self.breaker), "builder_items": len(self.builder),
@@ -209,14 +213,13 @@ class Field:
 class Port:
     """What an agent holds: write to its own region, read the other's. Vectors only."""
 
-    def __init__(self, field: Field, own: Region, other: Region):
-        self._field = field
-        self._own = own
+    def __init__(self, store, other: Region, d: int):
+        self._store = store            # write callable; the Port holds no reference to the Field
         self._other = other
-        self.d = field.d
+        self.d = int(d)
 
     def write(self, vector: np.ndarray, tag: int = 0) -> None:
-        self._field._store(self._own, vector, tag)
+        self._store(vector, tag)
 
     def read(self) -> np.ndarray:
         """The other agent's items as a matrix (n x D)."""

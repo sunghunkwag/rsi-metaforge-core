@@ -15,7 +15,8 @@ partial matches, as the tree's allocation parameter says) and returns
 wake solutions and residues; ``learn`` offers kernel-verified programs
 (crossing programs, or mined wake solutions too, as the tree's learning
 parameter says) to the tree's own adoption rule; ``propose_edits`` forges
-primitives from residues and draws parameter changes from the menu,
+primitives from residues within the forge's share of the budget the loop
+sets (``forge_limit``) and draws parameter changes from the menu,
 choosing operator kinds by their own adoption record; ``write_state``
 publishes residue, solution and fragment vectors.
 
@@ -77,6 +78,9 @@ class Builder:
         self.records_in: dict = {}            # S1 only
         self.boosts: dict = {}
         self.retrieval_hits = 0
+        self.pending: dict = {}               # task id -> wake solution whose gate check failed (resubmitted)
+        self.rejected: dict = {}              # task id -> [term dicts] the gate rejected (passed over in later windows)
+        self.forge_limit = 4000               # candidate checks per forge attempt; the loop sets it from B_gen
         self._inventory = None
         self._fresh_residues: dict = {}
         self._written_solutions: set = set()
@@ -117,9 +121,12 @@ class Builder:
         if self.records:
             tasks_in = self.records_in.get("tasks") or {}
             for task in archive_view:
-                if task["status"] != "open":
+                if task["status"] != "open" or task["id"] not in tasks_in:
+                    # A task the Breaker has not yet recorded is not boosted:
+                    # the latent arms see a new task's signature one generation
+                    # after its admission, and the records arm keeps that lag.
                     continue
-                kind = (tasks_in.get(task["id"]) or {}).get("output_kind") or forging.output_kind(task["examples"])
+                kind = (tasks_in.get(task["id"]) or {}).get("output_kind")
                 chosen = [n for n in names
                           if any((tasks_in.get(s) or {}).get("output_kind") == kind
                                  for s in self.fragment_sources.get(n, []))][:TOP_K]
@@ -168,10 +175,14 @@ class Builder:
         if not targets:
             return {"solved": {}, "residues": {}, "budgets": {}, "failed": False}
         payload = {"tasks": [{"id": t["id"], "examples": t["examples"]} for t in targets],
-                   "budget": budgets, "boost": self.boosts, "state_path": str(self.live / "state.pkl")}
+                   "budget": budgets, "boost": self.boosts, "state_path": str(self.live / "state.pkl"),
+                   "skip": {t: list(terms) for t, terms in self.rejected.items() if t in budgets}}
         result = self.solver("solve_many", payload)
         if result is None:
-            return {"solved": {}, "residues": {}, "budgets": budgets, "failed": True}
+            return {"solved": dict(self.pending), "residues": {}, "budgets": budgets, "failed": True}
+        for task_id, solution in self.pending.items():
+            if task_id in budgets:
+                self.wake_solutions[task_id] = solution     # resubmitted to the gate after a failed check
         for record in result.get("results", []):
             if record.get("program") is not None:
                 self.wake_solutions[record["id"]] = {
@@ -187,12 +198,21 @@ class Builder:
         return {"solved": dict(self.wake_solutions), "residues": residues, "budgets": budgets,
                 "failed": False, "meter": result.get("meter", {})}
 
-    def observe_mined(self, task_id: str, accepted: bool) -> None:
-        """The kernel's verdict on a wake solution (hidden instances); accepted ones may be learned from."""
+    def observe_mined(self, task_id: str, accepted) -> None:
+        """The kernel's verdict on a wake solution: accepted (learnable), rejected (passed over from now
+        on) or None (the check failed; the solution is resubmitted next generation)."""
         solution = self.wake_solutions.get(task_id)
-        if solution is not None and accepted:
+        if solution is None:
+            return
+        if accepted is None:
+            self.pending[task_id] = solution
+            return
+        self.pending.pop(task_id, None)
+        if accepted:
             self.solutions[task_id] = solution
             self.residues.pop(task_id, None)
+        elif solution.get("term") is not None:
+            self.rejected.setdefault(task_id, []).append(solution["term"])
 
     def learn(self, generation: int, archive_view: list) -> dict:
         """Offer kernel-verified programs to the tree's own adoption rule (``params.json`` learn.from)."""
@@ -223,7 +243,7 @@ class Builder:
             heads = set(self.inventory().get("primitive_heads", []))
             for _, task_id in residues[:FORGE_RESIDUES]:
                 examples = open_ids[task_id]["examples"]
-                found = forging.forge(examples, self.batch_runner)
+                found = forging.forge(examples, self.batch_runner, limit=int(self.forge_limit))
                 self.edit_tries["forge"] += 1
                 self.forge_attempts[task_id] = "none" if found is None else "found"
                 if found is None:
@@ -310,4 +330,5 @@ class Builder:
                 "forge_attempts": {k: sum(1 for v in self.forge_attempts.values() if v == k)
                                    for k in ("found", "none")},
                 "solutions": len(self.solutions), "residues": len(self.residues),
+                "rejected_programs": sum(len(v) for v in self.rejected.values()),
                 "fragments": len(self.fragments)}

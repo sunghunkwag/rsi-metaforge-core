@@ -6,11 +6,13 @@ write the field, the mapper is refit, the kernel ledgers the generation.
        kernel seals, certifies (K0, Kd, Ka, Kc, Kb against the snapshot
        taken at the start of the generation) and ledgers each.
     2. Builder reads the Breaker's region (retrieval boosts through the
-       mapper), attacks the open tasks it has not solved under B_gen from
-       its live tree (resumable windows, failure memory, its allocation);
+       mapper), attacks the open tasks it has not solved under B_gen minus
+       what its forge spent last generation, from its live tree
+       (checkpointed search frontiers, failure memory, its allocation);
        every wake solution goes through the kernel's mined-solve gate.
-    3. Kernel runs the crossing check on every open task from the
-       generation's snapshot at B_inst with own-solution fragments excluded.
+    3. Kernel runs the crossing check on every open task admitted before
+       this generation, from the generation's snapshot at B_inst with
+       everything learned from the task itself excluded.
     4. Builder learns through its tree's own adoption rule from
        kernel-verified programs, then proposes at most k_edit patches; each
        candidate tree passes the Builder's scope guard and the kernel's
@@ -94,7 +96,7 @@ class Run:
         self.snapshots, self.admission, self.crossings, self.judge = (kernel.snapshots, kernel.admission,
                                                                       kernel.crossings, kernel.judge)
         d = int(config["latent"]["D"])
-        self.field = latent.Field(d=d, shuffled=arm.shuffled, seed=self.seed)
+        self.field = latent.Field(d=d, shuffled=arm.shuffled, seed=kernel.field_nonce(self.seed))
         self.mapper = Mapper(ridge=config["mapper"].get("ridge", 1.0)) if arm.mapper else None
         self.breaker = Breaker(self.field.port("breaker"), kernel.breaker_runner, self.seed, d,
                                lineages=tuple(config["breaker"]["lineages"]), regret=arm.regret,
@@ -104,6 +106,11 @@ class Run:
                                mapper=self.mapper, enable_self_edit=arm.self_edit,
                                enable_forge=arm.self_edit and bool(config["builder"]["forge"]),
                                records=arm.records)
+        # The forge spends the Builder's budget: at most a quarter of B_gen
+        # per generation, charged as candidate evaluations, and the next
+        # wake gets B_gen minus what the forge spent.
+        self.builder.forge_limit = int(budgets["B_gen"]) // 4
+        self._forge_spent = 0
         self.generation_number = 0
         self.crossings_cumulative = 0
         self.history: list = []
@@ -145,6 +152,7 @@ class Run:
         proposals = self.breaker.propose(g, view, self.kernel.ledger_view(), self.config["breaker"]["n_prop"])
         admitted, margins = [], []
         rejections = {c: 0 for c in CERTIFICATES}
+        kernel_failed = 0
         for proposal in proposals:
             key = proposal.pop("key")
             decision = self.admission.admit(proposal, g, sha)
@@ -152,6 +160,8 @@ class Run:
             if decision["admitted"]:
                 admitted.append(decision["id"])
                 margins.append(float(decision["kb_margin"]))
+            elif decision.get("kernel_failed"):
+                kernel_failed += 1
             else:
                 rejections[decision["certificate"]] += 1
         lap("propose_and_admit")
@@ -159,16 +169,21 @@ class Run:
         view = self.archive.public_view()
         boosts = self.builder.read_state(view)
         open_tasks = [t for t in view if t["status"] == "open"]
-        wake = self.builder.attack(g, open_tasks, self.config["budgets"]["B_gen"])
-        mined = []
+        wake_budget = max(0, int(self.config["budgets"]["B_gen"]) - self._forge_spent)
+        wake = self.builder.attack(g, open_tasks, wake_budget)
+        mined, mined_failed = [], 0
         for task_id, solution in wake["solved"].items():
             accepted = self.crossings.mined(task_id, solution["program"], g)
             self.builder.observe_mined(task_id, accepted)
             if accepted:
                 mined.append(task_id)
+            elif accepted is None:
+                mined_failed += 1
         lap("wake_and_mined")
         # 3. Crossing checks from the generation's snapshot.
+        checks_failed_before = len(self.ledger.of_kind("crossing_check_failed"))
         crossed = self.crossings.check([t["id"] for t in open_tasks], sha, g)
+        crossing_checks_failed = len(self.ledger.of_kind("crossing_check_failed")) - checks_failed_before
         retrieval_hits = 0
         for task_id in crossed:
             crossing = self.archive.tasks[task_id]["crossing"]
@@ -180,6 +195,7 @@ class Run:
         learned = self.builder.learn(g, view) if self.arm.learn else {"adopted": [], "offered": 0}
         lap("learn")
         edits = []
+        forge_before = self.meter.total("builder")["evaluations"]
         if self.arm.self_edit:
             incumbent = self.snapshots.take(self.live / "mutable")
             patches = self.builder.propose_edits(g, view, self.config["builder"]["k_edit"])
@@ -199,6 +215,7 @@ class Run:
                               "incumbent_solved": decision["incumbent_solved"],
                               "candidate_solved": decision["candidate_solved"]})
                 shutil.rmtree(candidate, ignore_errors=True)
+        self._forge_spent = self.meter.total("builder")["evaluations"] - forge_before
         lap("judge")
         # 5. Both agents write the field; the mapper is refit from scratch on paired events.
         view = self.archive.public_view()
@@ -219,9 +236,13 @@ class Run:
         summary = {
             "generation": g, "snapshot": sha, "archive": self.archive.counts(),
             "proposals": len(proposals), "admitted": len(admitted), "rejections": rejections,
+            "kernel_failed": kernel_failed,
             "kb_margin_mean": (sum(margins) / len(margins)) if margins else None,
             "open_attacked": len([t for t in open_tasks if t["id"] not in self.builder.solutions]),
+            "wake_budget": wake_budget, "forge_candidates": self._forge_spent,
             "wake_failed": bool(wake.get("failed")), "wake_solved": len(wake["solved"]), "mined": len(mined),
+            "mined_checks_failed": mined_failed, "crossing_checks_failed": crossing_checks_failed,
+            "judge_failed": sum(1 for e in edits if "evaluation failed" in e["reason"]),
             "crossings": len(crossed), "crossed_ids": crossed,
             "crossings_cumulative": self.crossings_cumulative,
             "crossings_per_budget": (self.crossings_cumulative / builder_total["evaluations"]
@@ -266,6 +287,5 @@ class Run:
                              "executors": self.kernel.timeouts()},
                    "ledger_digest": self.ledger.digest(), "ledger_entries": len(self.ledger.entries),
                    "wall_seconds": time.perf_counter() - self.wall_started}
-        (self.dir / "summary.json").write_text(json.dumps(summary, indent=1, default=str) + "\n",
-                                               encoding="utf-8")
+        self.kernel.write_atomic(self.dir / "summary.json", json.dumps(summary, indent=1, default=str) + "\n")
         return summary

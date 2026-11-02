@@ -271,6 +271,8 @@ class Breaker:
             if not self.regret:
                 self.credit[lineage] += 1.0
                 self._tune(lineage, True)
+        elif decision.get("kernel_failed"):
+            return                      # the kernel could not judge it: neither validated nor wasted
         else:
             self._tune(lineage, False)
 

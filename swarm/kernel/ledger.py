@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 
 GENESIS = "0" * 64
@@ -55,8 +56,12 @@ class Ledger:
         return [e for e in self.entries if e["kind"] == kind]
 
     def write(self, path: Path) -> None:
+        """Write every entry to ``path`` atomically (a temporary file renamed into place)."""
         text = "".join(_canonical(e) + "\n" for e in self.entries)
-        Path(path).write_text(text, encoding="utf-8")
+        path = Path(path)
+        tmp = path.with_name(path.name + ".tmp")
+        tmp.write_text(text, encoding="utf-8")
+        os.replace(tmp, path)
 
     @classmethod
     def load(cls, path: Path) -> "Ledger":

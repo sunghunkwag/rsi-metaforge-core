@@ -34,19 +34,20 @@ class Vault:
             raise SealedError(f"{task_id} is already sealed")
         if not hidden:
             raise SealedError("a task needs hidden instances")
-        record = {"witness": witness, "checker": checker, "hidden": list(hidden)}
+        # Sealed as a detached copy: the sealer keeps no reference into the vault.
+        record = json.loads(json.dumps({"witness": witness, "checker": checker, "hidden": list(hidden)}))
         self._sealed[task_id] = record
         return {"witness_sha": _sha(witness), "checker_sha": _sha(checker),
                 "hidden_sha": _sha(record["hidden"]), "hidden_count": len(hidden)}
 
     def sealed_witness(self, task_id: str):
-        return self._sealed[task_id]["witness"]
+        return json.loads(json.dumps(self._sealed[task_id]["witness"]))
 
     def sealed_checker(self, task_id: str):
-        return self._sealed[task_id]["checker"]
+        return json.loads(json.dumps(self._sealed[task_id]["checker"]))
 
     def sealed_hidden(self, task_id: str) -> list:
-        return list(self._sealed[task_id]["hidden"])
+        return json.loads(json.dumps(self._sealed[task_id]["hidden"]))
 
     def has(self, task_id: str) -> bool:
         return task_id in self._sealed

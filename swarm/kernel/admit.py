@@ -21,7 +21,10 @@ disposition:
   produce a program the checker accepts on every hidden instance. The
   snapshot's best public match fraction is the task's Kb margin.
 
-Every executor run here is charged to the meter under the kernel.
+Every executor run here is charged to the meter under the kernel. An
+executor failure while a certificate runs (a crashed or timed-out child)
+is not a verdict: it is retried once and then ledgered as
+``kernel_failed`` (disposition ``K!``), outside the rejection counts.
 """
 from __future__ import annotations
 
@@ -42,6 +45,19 @@ CERTIFICATES = ("K0", "Kd", "Ka", "Kc", "Kb")
 
 
 class Rejected(Exception):
+    def __init__(self, certificate: str, detail: str):
+        super().__init__(f"{certificate}: {detail}")
+        self.certificate, self.detail = certificate, detail
+
+
+class KernelFailed(Exception):
+    """The kernel could not run a certificate (executor crash or timeout): not a verdict on the proposal.
+
+    Ledgered as ``kernel_failed`` with disposition ``K!``; the proposal is
+    neither admitted nor counted as a rejection, and the Breaker is told
+    so (it is not a wasted proposal).
+    """
+
     def __init__(self, certificate: str, detail: str):
         super().__init__(f"{certificate}: {detail}")
         self.certificate, self.detail = certificate, detail
@@ -195,18 +211,26 @@ class Admission:
         if any(examples_key(t["examples"]) == examples_key(triple["examples"])
                for t in self.archive.tasks.values()):
             raise Rejected("Kc", "duplicate public examples")
-        # Kb: the admission-time Builder snapshot must fail at B_inst.
+        # Kb: the admission-time Builder snapshot must fail at B_inst. An
+        # executor failure here is retried once and then raised as a kernel
+        # failure, never read as "the snapshot fails".
         public_task = {"id": task_id, "examples": triple["examples"]}
         results = self.snapshots.solve(snapshot_sha, [public_task], self.b_inst, agent="kernel")
         if results is None:
-            raise Rejected("Kb", "snapshot solver crashed or timed out")
+            results = self.snapshots.solve(snapshot_sha, [public_task], self.b_inst, agent="kernel")
+        if results is None:
+            raise KernelFailed("Kb", "snapshot solver crashed or timed out")
         result = results[0]
         margin = float(result.get("best_public", 0.0))
         if result.get("program") is not None:
-            runs = self._run(result["program"], [x for x, _ in hidden])
-            outputs = [r["value"] if r["ok"] else None for r in runs]
-            accepted = self._verdicts(checker, [(x, o) for (x, _), o in zip(hidden, outputs)])
-            if all(v is True for v in accepted):
+            accepted, failed = self.executor.accepts(result["program"], [x for x, _ in hidden], checker,
+                                                     module="admit")
+            if failed:
+                accepted, failed = self.executor.accepts(result["program"], [x for x, _ in hidden], checker,
+                                                         module="admit")
+            if failed:
+                raise KernelFailed("Kb", "hidden-instance check crashed or timed out")
+            if accepted:
                 raise Rejected("Kb", "the frozen snapshot already solves the task")
         record = {"id": task_id, "lineage": triple["lineage"], "examples": triple["examples"],
                   "input_kind": triple["input_kind"], "signature": signature,
@@ -229,4 +253,9 @@ class Admission:
             self.ledger.append("rejection", {"generation": generation, "lineage": triple.get("lineage"),
                                              "certificate": "K0", "detail": str(exc)})
             return {"admitted": False, "certificate": "K0", "detail": str(exc)}
+        except KernelFailed as exc:
+            self.ledger.append("kernel_failed", {"generation": generation, "lineage": triple.get("lineage"),
+                                                 "certificate": exc.certificate, "detail": exc.detail})
+            return {"admitted": False, "certificate": "K!", "detail": f"{exc.certificate}: {exc.detail}",
+                    "kernel_failed": True}
         return {"admitted": True, "id": record["id"], "kb_margin": record["kb_margin"]}

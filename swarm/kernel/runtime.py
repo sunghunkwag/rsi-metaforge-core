@@ -14,7 +14,9 @@ child's error so the failure is a fact of the run, not a silent zero.
 """
 from __future__ import annotations
 
+import hashlib
 import json
+import os
 from pathlib import Path
 
 from .admit import CERTIFICATES, Admission
@@ -58,8 +60,14 @@ class KernelRuntime:
         return None if any(not r["ok"] for r in out) else [r["value"] for r in out]
 
     def builder_runner(self, programs, inputs):
-        """Per program, its outputs on ``inputs`` or None; charged to the Builder (the forge)."""
+        """Per program, its outputs on ``inputs`` or None; charged to the Builder (the forge).
+
+        Every program checked here against a task's public inputs is one
+        candidate evaluation by the meter's definition, charged as such
+        under ``builder/forge``: the forge spends the Builder's budget.
+        """
         out = self.builder_executor.run_items([(p, [x]) for p in programs for x in inputs], module="forge")
+        self.meter.charge("builder", "forge", evaluations=len(programs))
         results = []
         for index in range(len(programs)):
             chunk = out[index * len(inputs):(index + 1) * len(inputs)]
@@ -85,10 +93,18 @@ class KernelRuntime:
         """Public outcomes: rejections per certificate, crossings, self-edits adopted."""
         rejections = {c: 0 for c in CERTIFICATES}
         for entry in self.ledger.of_kind("rejection"):
-            rejections[entry["payload"]["certificate"]] += 1
+            certificate = entry["payload"]["certificate"]
+            rejections[certificate] = rejections.get(certificate, 0) + 1
         return {"rejections": rejections, "crossings": len(self.ledger.of_kind("crossing")),
                 "self_edits_adopted": sum(e["payload"]["adopted"] for e in self.ledger.of_kind("self_edit")),
-                "live_calls_failed": len(self.ledger.of_kind("live_call_failed"))}
+                "live_calls_failed": len(self.ledger.of_kind("live_call_failed")),
+                "kernel_failed": len(self.ledger.of_kind("kernel_failed")),
+                "crossing_checks_failed": len(self.ledger.of_kind("crossing_check_failed"))}
+
+    @staticmethod
+    def field_nonce(seed: int) -> int:
+        """The seed of the field's secret permutation (arm S5): derived here, never handed to an agent."""
+        return int(hashlib.sha256(f"swarm-field-permutation|{int(seed)}".encode("utf-8")).hexdigest()[:15], 16)
 
     def timeouts(self) -> dict:
         return {name: {"timeouts": e.timeouts, "failures": e.failures}
@@ -96,12 +112,27 @@ class KernelRuntime:
                                 ("builder", self.builder_executor))}
 
     # ---- artifacts --------------------------------------------------------------------
+    @staticmethod
+    def write_atomic(path: Path, text: str, mode: int | None = None) -> None:
+        """Write ``text`` to ``path`` through a temporary file renamed into place."""
+        path = Path(path)
+        tmp = path.with_name(path.name + ".tmp")
+        tmp.write_text(text, encoding="utf-8")
+        if mode is not None:
+            os.chmod(tmp, mode)
+        os.replace(tmp, path)
+
     def checkpoint(self) -> None:
-        """Write the ledger, the kernel-only vault dump, the archive and the replay configuration."""
+        """Write the ledger, the kernel-only vault dump, the archive and the replay configuration.
+
+        Every artifact is written atomically; the vault dump is owner-readable
+        only and, like every file of the run directory, outside what the
+        executor's guard lets a Builder tree read.
+        """
         self.ledger.write(self.dir / "ledger.jsonl")
-        (self.dir / "vault.json").write_text(json.dumps(self.vault.dump()), encoding="utf-8")
-        (self.dir / "archive.json").write_text(json.dumps(self.archive.dump(), default=str), encoding="utf-8")
-        (self.dir / "run_config.json").write_text(json.dumps(
+        self.write_atomic(self.dir / "vault.json", json.dumps(self.vault.dump()), mode=0o600)
+        self.write_atomic(self.dir / "archive.json", json.dumps(self.archive.dump(), default=str))
+        self.write_atomic(self.dir / "run_config.json", json.dumps(
             {"B_inst": self.b_inst, "probe_set_seed": self.probe_seed,
              "executor_timeout_s": self.executor_timeout_s, "executor_mem_mb": self.executor_mem_mb},
-            indent=1), encoding="utf-8")
+            indent=1))
