@@ -192,9 +192,28 @@ Config `rsi3/experiment_config_curriculum.json` at `8d794bb` (before the
   fit its own imagination and pays for it on TRAIN and on every held-out
   partition. Not carried forward in this form.
 
-## 6. Budget diagnostic: HONEST at 256 candidates (`rsi3/run-honest-b256`)
+## 6. Budget diagnostic: HONEST at 256 candidates (`rsi3/run-honest-b256`, run 41380583086)
 
-_Pending: B_wake = B_eval = 256._
+One development run of the registered HONEST config with B_wake = B_eval
+= 256 instead of 64, seed 44, 16 generations, VALIDATION skipped; the
+final solver ran on the exposed partitions RESERVE-NEAR, RESERVE-FAR2 and
+COMPOSE-24 at 256 candidates per task.
+
+| | 64 candidates (registered, seeds 11/22/33) | 256 candidates (seed 44) |
+| --- | --- | --- |
+| TRAIN | 29 / 36 | **31 / 36** (14 17 24 24 25 28 29 29 29 30 30 30 30 31 31 31) |
+| RESERVE-NEAR | 56–57 / 100 | **67 / 100** |
+| RESERVE-FAR2 | 5 / 21 | **13 / 21** (`drop-k` k = 0, 1, 3, 4; `take-k` k = 1–4; `remove-index-k` k = 2–4; `remove-mod-k` k = 2, 5) |
+| COMPOSE-24 | — | 4 / 24 (`reverse-dropped-suffix` p1–p4) |
+| Library entries | 18 | 15 |
+
+Four times the budget moves every exposed number, and FAR2 most: the
+routing misses listed in RESERVE2_RESULTS.md (`remove-mod-k`,
+`remove-index-k`, `take-k` with k ≥ 2) are reached once the action that
+fits gets a turn. The diagnostic says the 64-candidate ceiling is a
+budget ceiling before it is a capability ceiling; it does not say the
+policy routes better. One seed, exposed partitions, no registered
+prediction: a development number only.
 
 ## Scale
 
