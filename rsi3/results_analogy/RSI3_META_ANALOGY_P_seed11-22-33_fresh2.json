@@ -1,0 +1,2867 @@
+{
+ "arm": "RSI3_META_ANALOGY_P",
+ "partition": "fresh2",
+ "generation": 16,
+ "tasks": 100,
+ "seeds": {
+  "11": {
+   "solved": 14,
+   "solved_names": [
+    "((add-k (dyn . 0) (static . -2)) (is-squares (dyn . 1)))",
+    "((append-k (dyn . 0) (static . -2)) (head (dyn . 1)))",
+    "((identify-geq-k (dyn . 0) (static . 3)) (empty (dyn . 1)))",
+    "((identify-geq-k (dyn . 0) (static . 7)) (modulo-k (dyn . 1) (static . 4)))",
+    "((identify-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . -7)))",
+    "((identify-k (dyn . 0) (static . 10)) (len (dyn . 1)))",
+    "((modulo-k (dyn . 0) (static . 2)) (identify-is-prime (dyn . 1)))",
+    "((modulo-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))",
+    "((modulo-k (dyn . 0) (static . 3)) (modulo-k (dyn . 1) (static . 6)))",
+    "((mult-k (dyn . 0) (static . 10)) (is-odds (dyn . 1)))",
+    "((prepend-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))",
+    "((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (is-odds (dyn . 1)))",
+    "((reverse (dyn . 0)) (sum (dyn . 1)))",
+    "((rotate-k (dyn . 0) (static . 10)) (is-squares (dyn . 1)))"
+   ],
+   "tasks": [
+    {
+     "name": "((add-k (dyn . 0) (static . -2)) (is-squares (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "analogy": 1
+     },
+     "analogy_from": [
+      "is-mod-k with k=5",
+      "source"
+     ]
+    },
+    {
+     "name": "((add-k (dyn . 0) (static . 10)) (positions (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "analogy": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((add-k (dyn . 0) (static . 3)) (append-k (dyn . 1) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((add-k (dyn . 0) (static . 3)) (sort (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 16,
+      "behave:map_list": 32,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . -2)) (head (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 32,
+      "analogy": 3
+     },
+     "analogy_from": [
+      "index-k with k=5",
+      "replace[0, 0]"
+     ]
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 10)) (add-k (dyn . 1) (static . -7)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 2)) (positions (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 2)) (repeat-k (dyn . 1) (static . 4)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 2)) (rotate-k (dyn . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 3)) (sum (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((count-k (dyn . 0) (static . 10)) (fibonacci (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((dedup (dyn . 0)) (is-primes (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((dedup (dyn . 0)) (mult-k (dyn . 1) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((drop-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . -3)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "behave:whole": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((drop-k (dyn . 0) (static . 2)) (is-odds (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((drop-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . -5)))",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "analogy": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((drop-k (dyn . 0) (static . 5)) (len (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((dup (dyn . 0)) (dup (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 32,
+      "decompose:fold_nil": 16,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 2)) (is-evens (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 2)) (is-odds (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 2)) (mult-k (dyn . 1) (static . -3)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 64
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 3)) (empty (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "analogy": 2
+     },
+     "analogy_from": [
+      "is-mod-k with k=5",
+      "source"
+     ]
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 3)) (pow-k (dyn . 1) (static . 8)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 25
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 3)) (rotate-k (dyn . 1) (static . -1)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "analogy": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 7)) (modulo-k (dyn . 1) (static . 4)))",
+     "solved": true,
+     "spent": {
+      "behave:map": 27
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 3)) (sum (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 7)) (is-evens (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 7)) (pow-base-k (dyn . 1) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 64
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . -2)) (dedup (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . -7)))",
+     "solved": true,
+     "spent": {
+      "behave:map": 4
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 1)) (append-k (dyn . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 64
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 10)) (len (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 4
+     },
+     "analogy_from": [
+      "index-k with k=5",
+      "replace[0, 0]"
+     ]
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 2)) (sort (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "analogy": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 3)) (positions (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 3)) (repeat-k (dyn . 1) (static . 4)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 0)) (has-k (dyn . 1) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 0)) (reverse (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 1)) (dup (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 1)) (identify-is-mod-k (dyn . 1) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 1)) (mult-k (dyn . 1) (static . -1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 1)) (prepend-k (dyn . 1) (static . -8)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 1)) (replace-all-k-with-n (dyn . 1) (static . 5) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 10)) (append-k (dyn . 1) (static . 4)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((keep-mod-k (dyn . 0) (static . 2)) (identify-is-mod-k (dyn . 1) (static . -4)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((keep-mod-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "decompose:filter": 32
+     }
+    },
+    {
+     "name": "((keep-mod-k (dyn . 0) (static . 5)) (is-odds (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((modulo-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 64
+     }
+    },
+    {
+     "name": "((modulo-k (dyn . 0) (static . 2)) (identify-is-prime (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "behave:map": 3
+     }
+    },
+    {
+     "name": "((modulo-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))",
+     "solved": true,
+     "spent": {
+      "behave:map": 3
+     }
+    },
+    {
+     "name": "((modulo-k (dyn . 0) (static . 3)) (modulo-k (dyn . 1) (static . 6)))",
+     "solved": true,
+     "spent": {
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "((modulo-k (dyn . 0) (static . 3)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 64
+     }
+    },
+    {
+     "name": "((mult-k (dyn . 0) (static . 10)) (dedup (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((mult-k (dyn . 0) (static . 10)) (is-odds (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "analogy": 4
+     },
+     "analogy_from": [
+      "is-mod-k with k=5",
+      "replace[0, 1, 0, 1, 0, 1, 0, 1, 1]"
+     ]
+    },
+    {
+     "name": "((mult-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((positions (dyn . 0)) (dup (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((pow-base-k (dyn . 0) (static . 4)) (identify-geq-k (dyn . 1) (static . 4)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 48,
+      "behave:map_const": 16
+     }
+    },
+    {
+     "name": "((pow-base-k (dyn . 0) (static . 4)) (is-evens (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . -2)) (append-k (dyn . 1) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . -2)) (dup (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))",
+     "solved": true,
+     "spent": {
+      "analogy": 14
+     },
+     "analogy_from": [
+      "is-mod-k with k=5",
+      "replace[0, 1, 0, 1, 0, 1, 0, 1, 1]"
+     ]
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . -2)) (modulo-k (dyn . 1) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . 2)) (intersperse-k (dyn . 1) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . 3)) (append-k (dyn . 1) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((remove-mod-k (dyn . 0) (static . 2)) (mult-k (dyn . 1) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((repeat-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((repeat-k (dyn . 0) (static . 2)) (identify-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((repeat-k (dyn . 0) (static . 2)) (replace-all-k-with-n (dyn . 1) (static . 4) (static . 0)))",
+     "solved": false,
+     "spent": {
+      "analogy": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((repeat-k (dyn . 0) (static . 3)) (sum (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((repeat-k (dyn . 0) (static . 5)) (add-k (dyn . 1) (static . -5)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((repeat-k (dyn . 0) (static . 5)) (identify-geq-k (dyn . 1) (static . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (positions (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "analogy": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (identify-geq-k (dyn . 1) (static . 4)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 64
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (is-odds (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "analogy": 2
+     },
+     "analogy_from": [
+      "is-mod-k with k=5",
+      "source"
+     ]
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (identify-k (dyn . 1) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 16,
+      "behave:map_list": 32,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (keep-mod-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (sort (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "analogy": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 2) (static . 10)) (remove-mod-k (dyn . 1) (static . 4)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 3) (static . -2)) (has-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 3) (static . -2)) (uniq (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 5) (static . 0)) (count-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((reverse (dyn . 0)) (sum (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 4
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . -2)) (has-k (dyn . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . -2)) (identify-k (dyn . 1) (static . 1)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 64
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . 1)) (replace-all-k-with-n (dyn . 1) (static . -1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "analogy": 32,
+      "decompose:map_list": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . 10)) (is-squares (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "analogy": 7
+     },
+     "analogy_from": [
+      "is-mod-k with k=5",
+      "replace[0, 1, 0, 1, 0, 1, 1]"
+     ]
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "analogy": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 2) (static . 2)) (count-k (dyn . 1) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 6
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 2) (static . 2)) (prepend-k (dyn . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "behave:whole": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 2) (static . 3)) (sort (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 3) (static . 3)) (is-evens (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 3) (static . 3)) (is-odds (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 3) (static . 4)) (identify-geq-k (dyn . 1) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "behave:whole": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 3) (static . 4)) (repeat-k (dyn . 1) (static . 8)))",
+     "solved": false,
+     "spent": {
+      "analogy": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 3) (static . 4)) (uniq (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "analogy": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((sort (dyn . 0)) (rotate-k (dyn . 1) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "analogy": 32,
+      "decompose:map_list": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((take-k (dyn . 0) (static . 3)) (dedup (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "analogy": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((take-k (dyn . 0) (static . 3)) (rotate-k (dyn . 1) (static . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((uniq (dyn . 0)) (count-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    }
+   ],
+   "cpu_seconds": 124.716509797
+  },
+  "22": {
+   "solved": 14,
+   "solved_names": [
+    "((add-k (dyn . 0) (static . -2)) (is-squares (dyn . 1)))",
+    "((append-k (dyn . 0) (static . -2)) (head (dyn . 1)))",
+    "((identify-geq-k (dyn . 0) (static . 3)) (empty (dyn . 1)))",
+    "((identify-geq-k (dyn . 0) (static . 7)) (modulo-k (dyn . 1) (static . 4)))",
+    "((identify-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . -7)))",
+    "((identify-k (dyn . 0) (static . 10)) (len (dyn . 1)))",
+    "((modulo-k (dyn . 0) (static . 2)) (identify-is-prime (dyn . 1)))",
+    "((modulo-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))",
+    "((modulo-k (dyn . 0) (static . 3)) (modulo-k (dyn . 1) (static . 6)))",
+    "((mult-k (dyn . 0) (static . 10)) (is-odds (dyn . 1)))",
+    "((prepend-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))",
+    "((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (is-odds (dyn . 1)))",
+    "((reverse (dyn . 0)) (sum (dyn . 1)))",
+    "((rotate-k (dyn . 0) (static . 10)) (is-squares (dyn . 1)))"
+   ],
+   "tasks": [
+    {
+     "name": "((add-k (dyn . 0) (static . -2)) (is-squares (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "analogy": 1
+     },
+     "analogy_from": [
+      "is-mod-k with k=5",
+      "source"
+     ]
+    },
+    {
+     "name": "((add-k (dyn . 0) (static . 10)) (positions (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "analogy": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((add-k (dyn . 0) (static . 3)) (append-k (dyn . 1) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((add-k (dyn . 0) (static . 3)) (sort (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 16,
+      "behave:map_list": 32,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . -2)) (head (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 32,
+      "analogy": 3
+     },
+     "analogy_from": [
+      "index-k with k=5",
+      "replace[0, 0]"
+     ]
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 10)) (add-k (dyn . 1) (static . -7)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 2)) (positions (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 2)) (repeat-k (dyn . 1) (static . 4)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 2)) (rotate-k (dyn . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 3)) (sum (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((count-k (dyn . 0) (static . 10)) (fibonacci (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((dedup (dyn . 0)) (is-primes (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((dedup (dyn . 0)) (mult-k (dyn . 1) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((drop-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . -3)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "behave:whole": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((drop-k (dyn . 0) (static . 2)) (is-odds (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((drop-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . -5)))",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "analogy": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((drop-k (dyn . 0) (static . 5)) (len (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((dup (dyn . 0)) (dup (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 32,
+      "decompose:fold_nil": 16,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 2)) (is-evens (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 2)) (is-odds (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 2)) (mult-k (dyn . 1) (static . -3)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 64
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 3)) (empty (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "analogy": 2
+     },
+     "analogy_from": [
+      "is-mod-k with k=5",
+      "source"
+     ]
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 3)) (pow-k (dyn . 1) (static . 8)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 25
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 3)) (rotate-k (dyn . 1) (static . -1)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "analogy": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 7)) (modulo-k (dyn . 1) (static . 4)))",
+     "solved": true,
+     "spent": {
+      "behave:map": 27
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 3)) (sum (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 7)) (is-evens (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 7)) (pow-base-k (dyn . 1) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 64
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . -2)) (dedup (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . -7)))",
+     "solved": true,
+     "spent": {
+      "behave:map": 4
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 1)) (append-k (dyn . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 64
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 10)) (len (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 4
+     },
+     "analogy_from": [
+      "index-k with k=5",
+      "replace[0, 0]"
+     ]
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 2)) (sort (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "analogy": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 3)) (positions (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 3)) (repeat-k (dyn . 1) (static . 4)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 0)) (has-k (dyn . 1) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 0)) (reverse (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 1)) (dup (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 1)) (identify-is-mod-k (dyn . 1) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 1)) (mult-k (dyn . 1) (static . -1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 1)) (prepend-k (dyn . 1) (static . -8)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 1)) (replace-all-k-with-n (dyn . 1) (static . 5) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 10)) (append-k (dyn . 1) (static . 4)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((keep-mod-k (dyn . 0) (static . 2)) (identify-is-mod-k (dyn . 1) (static . -4)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((keep-mod-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "decompose:filter": 32
+     }
+    },
+    {
+     "name": "((keep-mod-k (dyn . 0) (static . 5)) (is-odds (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((modulo-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 64
+     }
+    },
+    {
+     "name": "((modulo-k (dyn . 0) (static . 2)) (identify-is-prime (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "behave:map": 3
+     }
+    },
+    {
+     "name": "((modulo-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))",
+     "solved": true,
+     "spent": {
+      "behave:map": 3
+     }
+    },
+    {
+     "name": "((modulo-k (dyn . 0) (static . 3)) (modulo-k (dyn . 1) (static . 6)))",
+     "solved": true,
+     "spent": {
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "((modulo-k (dyn . 0) (static . 3)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 64
+     }
+    },
+    {
+     "name": "((mult-k (dyn . 0) (static . 10)) (dedup (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((mult-k (dyn . 0) (static . 10)) (is-odds (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "analogy": 4
+     },
+     "analogy_from": [
+      "is-mod-k with k=5",
+      "replace[0, 1, 0, 1, 0, 1, 0, 1, 1]"
+     ]
+    },
+    {
+     "name": "((mult-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((positions (dyn . 0)) (dup (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((pow-base-k (dyn . 0) (static . 4)) (identify-geq-k (dyn . 1) (static . 4)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 48,
+      "behave:map_const": 16
+     }
+    },
+    {
+     "name": "((pow-base-k (dyn . 0) (static . 4)) (is-evens (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . -2)) (append-k (dyn . 1) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . -2)) (dup (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))",
+     "solved": true,
+     "spent": {
+      "analogy": 14
+     },
+     "analogy_from": [
+      "is-mod-k with k=5",
+      "replace[0, 1, 0, 1, 0, 1, 0, 1, 1]"
+     ]
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . -2)) (modulo-k (dyn . 1) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . 2)) (intersperse-k (dyn . 1) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . 3)) (append-k (dyn . 1) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((remove-mod-k (dyn . 0) (static . 2)) (mult-k (dyn . 1) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((repeat-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((repeat-k (dyn . 0) (static . 2)) (identify-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((repeat-k (dyn . 0) (static . 2)) (replace-all-k-with-n (dyn . 1) (static . 4) (static . 0)))",
+     "solved": false,
+     "spent": {
+      "analogy": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((repeat-k (dyn . 0) (static . 3)) (sum (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((repeat-k (dyn . 0) (static . 5)) (add-k (dyn . 1) (static . -5)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((repeat-k (dyn . 0) (static . 5)) (identify-geq-k (dyn . 1) (static . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (positions (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "analogy": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (identify-geq-k (dyn . 1) (static . 4)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 64
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (is-odds (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "analogy": 2
+     },
+     "analogy_from": [
+      "is-mod-k with k=5",
+      "source"
+     ]
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (identify-k (dyn . 1) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 16,
+      "behave:map_list": 32,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (keep-mod-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (sort (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "analogy": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 2) (static . 10)) (remove-mod-k (dyn . 1) (static . 4)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 3) (static . -2)) (has-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 3) (static . -2)) (uniq (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 5) (static . 0)) (count-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((reverse (dyn . 0)) (sum (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 4
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . -2)) (has-k (dyn . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . -2)) (identify-k (dyn . 1) (static . 1)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 64
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . 1)) (replace-all-k-with-n (dyn . 1) (static . -1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "analogy": 32,
+      "decompose:map_list": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . 10)) (is-squares (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "analogy": 7
+     },
+     "analogy_from": [
+      "is-mod-k with k=5",
+      "replace[0, 1, 0, 1, 0, 1, 1]"
+     ]
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "analogy": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 2) (static . 2)) (count-k (dyn . 1) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 6
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 2) (static . 2)) (prepend-k (dyn . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "behave:whole": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 2) (static . 3)) (sort (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 3) (static . 3)) (is-evens (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 3) (static . 3)) (is-odds (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 3) (static . 4)) (identify-geq-k (dyn . 1) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "behave:whole": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 3) (static . 4)) (repeat-k (dyn . 1) (static . 8)))",
+     "solved": false,
+     "spent": {
+      "analogy": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 3) (static . 4)) (uniq (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "analogy": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((sort (dyn . 0)) (rotate-k (dyn . 1) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "analogy": 32,
+      "decompose:map_list": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((take-k (dyn . 0) (static . 3)) (dedup (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "analogy": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((take-k (dyn . 0) (static . 3)) (rotate-k (dyn . 1) (static . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((uniq (dyn . 0)) (count-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    }
+   ],
+   "cpu_seconds": 125.72247263499999
+  },
+  "33": {
+   "solved": 14,
+   "solved_names": [
+    "((add-k (dyn . 0) (static . -2)) (is-squares (dyn . 1)))",
+    "((append-k (dyn . 0) (static . -2)) (head (dyn . 1)))",
+    "((identify-geq-k (dyn . 0) (static . 3)) (empty (dyn . 1)))",
+    "((identify-geq-k (dyn . 0) (static . 7)) (modulo-k (dyn . 1) (static . 4)))",
+    "((identify-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . -7)))",
+    "((identify-k (dyn . 0) (static . 10)) (len (dyn . 1)))",
+    "((modulo-k (dyn . 0) (static . 2)) (identify-is-prime (dyn . 1)))",
+    "((modulo-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))",
+    "((modulo-k (dyn . 0) (static . 3)) (modulo-k (dyn . 1) (static . 6)))",
+    "((mult-k (dyn . 0) (static . 10)) (is-odds (dyn . 1)))",
+    "((prepend-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))",
+    "((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (is-odds (dyn . 1)))",
+    "((reverse (dyn . 0)) (sum (dyn . 1)))",
+    "((rotate-k (dyn . 0) (static . 10)) (is-squares (dyn . 1)))"
+   ],
+   "tasks": [
+    {
+     "name": "((add-k (dyn . 0) (static . -2)) (is-squares (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "analogy": 1
+     },
+     "analogy_from": [
+      "is-mod-k with k=5",
+      "source"
+     ]
+    },
+    {
+     "name": "((add-k (dyn . 0) (static . 10)) (positions (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "analogy": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((add-k (dyn . 0) (static . 3)) (append-k (dyn . 1) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((add-k (dyn . 0) (static . 3)) (sort (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 16,
+      "behave:map_list": 32,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . -2)) (head (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 32,
+      "analogy": 3
+     },
+     "analogy_from": [
+      "index-k with k=5",
+      "replace[0, 0]"
+     ]
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 10)) (add-k (dyn . 1) (static . -7)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 2)) (positions (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 2)) (repeat-k (dyn . 1) (static . 4)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 2)) (rotate-k (dyn . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 3)) (sum (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((count-k (dyn . 0) (static . 10)) (fibonacci (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((dedup (dyn . 0)) (is-primes (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((dedup (dyn . 0)) (mult-k (dyn . 1) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((drop-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . -3)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "behave:whole": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((drop-k (dyn . 0) (static . 2)) (is-odds (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((drop-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . -5)))",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "analogy": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((drop-k (dyn . 0) (static . 5)) (len (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((dup (dyn . 0)) (dup (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 32,
+      "decompose:fold_nil": 16,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 2)) (is-evens (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 2)) (is-odds (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 2)) (mult-k (dyn . 1) (static . -3)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 64
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 3)) (empty (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "analogy": 2
+     },
+     "analogy_from": [
+      "is-mod-k with k=5",
+      "source"
+     ]
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 3)) (pow-k (dyn . 1) (static . 8)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 25
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 3)) (rotate-k (dyn . 1) (static . -1)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "analogy": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 7)) (modulo-k (dyn . 1) (static . 4)))",
+     "solved": true,
+     "spent": {
+      "behave:map": 27
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 3)) (sum (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 7)) (is-evens (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 7)) (pow-base-k (dyn . 1) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 64
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . -2)) (dedup (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . -7)))",
+     "solved": true,
+     "spent": {
+      "behave:map": 4
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 1)) (append-k (dyn . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 64
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 10)) (len (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 4
+     },
+     "analogy_from": [
+      "index-k with k=5",
+      "replace[0, 0]"
+     ]
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 2)) (sort (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "analogy": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 3)) (positions (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 3)) (repeat-k (dyn . 1) (static . 4)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 0)) (has-k (dyn . 1) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 0)) (reverse (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 1)) (dup (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 1)) (identify-is-mod-k (dyn . 1) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 1)) (mult-k (dyn . 1) (static . -1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 1)) (prepend-k (dyn . 1) (static . -8)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 1)) (replace-all-k-with-n (dyn . 1) (static . 5) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 10)) (append-k (dyn . 1) (static . 4)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((keep-mod-k (dyn . 0) (static . 2)) (identify-is-mod-k (dyn . 1) (static . -4)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((keep-mod-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "decompose:filter": 32
+     }
+    },
+    {
+     "name": "((keep-mod-k (dyn . 0) (static . 5)) (is-odds (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((modulo-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 64
+     }
+    },
+    {
+     "name": "((modulo-k (dyn . 0) (static . 2)) (identify-is-prime (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "behave:map": 3
+     }
+    },
+    {
+     "name": "((modulo-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))",
+     "solved": true,
+     "spent": {
+      "behave:map": 3
+     }
+    },
+    {
+     "name": "((modulo-k (dyn . 0) (static . 3)) (modulo-k (dyn . 1) (static . 6)))",
+     "solved": true,
+     "spent": {
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "((modulo-k (dyn . 0) (static . 3)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 64
+     }
+    },
+    {
+     "name": "((mult-k (dyn . 0) (static . 10)) (dedup (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((mult-k (dyn . 0) (static . 10)) (is-odds (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "analogy": 4
+     },
+     "analogy_from": [
+      "is-mod-k with k=5",
+      "replace[0, 1, 0, 1, 0, 1, 0, 1, 1]"
+     ]
+    },
+    {
+     "name": "((mult-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((positions (dyn . 0)) (dup (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((pow-base-k (dyn . 0) (static . 4)) (identify-geq-k (dyn . 1) (static . 4)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 48,
+      "behave:map_const": 16
+     }
+    },
+    {
+     "name": "((pow-base-k (dyn . 0) (static . 4)) (is-evens (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . -2)) (append-k (dyn . 1) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . -2)) (dup (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))",
+     "solved": true,
+     "spent": {
+      "analogy": 14
+     },
+     "analogy_from": [
+      "is-mod-k with k=5",
+      "replace[0, 1, 0, 1, 0, 1, 0, 1, 1]"
+     ]
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . -2)) (modulo-k (dyn . 1) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . 2)) (intersperse-k (dyn . 1) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . 3)) (append-k (dyn . 1) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((remove-mod-k (dyn . 0) (static . 2)) (mult-k (dyn . 1) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((repeat-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((repeat-k (dyn . 0) (static . 2)) (identify-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((repeat-k (dyn . 0) (static . 2)) (replace-all-k-with-n (dyn . 1) (static . 4) (static . 0)))",
+     "solved": false,
+     "spent": {
+      "analogy": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((repeat-k (dyn . 0) (static . 3)) (sum (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((repeat-k (dyn . 0) (static . 5)) (add-k (dyn . 1) (static . -5)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((repeat-k (dyn . 0) (static . 5)) (identify-geq-k (dyn . 1) (static . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (positions (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "analogy": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (identify-geq-k (dyn . 1) (static . 4)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 64
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (is-odds (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "analogy": 2
+     },
+     "analogy_from": [
+      "is-mod-k with k=5",
+      "source"
+     ]
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (identify-k (dyn . 1) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 16,
+      "behave:map_list": 32,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (keep-mod-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (sort (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "analogy": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 2) (static . 10)) (remove-mod-k (dyn . 1) (static . 4)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 3) (static . -2)) (has-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 3) (static . -2)) (uniq (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 5) (static . 0)) (count-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "((reverse (dyn . 0)) (sum (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "decompose:fold_zero": 4
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . -2)) (has-k (dyn . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . -2)) (identify-k (dyn . 1) (static . 1)))",
+     "solved": false,
+     "spent": {
+      "behave:map": 64
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . 1)) (replace-all-k-with-n (dyn . 1) (static . -1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "analogy": 32,
+      "decompose:map_list": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . 10)) (is-squares (dyn . 1)))",
+     "solved": true,
+     "spent": {
+      "analogy": 7
+     },
+     "analogy_from": [
+      "is-mod-k with k=5",
+      "replace[0, 1, 0, 1, 0, 1, 1]"
+     ]
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "analogy": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 2) (static . 2)) (count-k (dyn . 1) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 6
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 2) (static . 2)) (prepend-k (dyn . 1) (static . 5)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "behave:whole": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 2) (static . 3)) (sort (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 3) (static . 3)) (is-evens (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 3) (static . 3)) (is-odds (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 3) (static . 4)) (identify-geq-k (dyn . 1) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "behave:whole": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 3) (static . 4)) (repeat-k (dyn . 1) (static . 8)))",
+     "solved": false,
+     "spent": {
+      "analogy": 32,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((slice-k-n (dyn . 0) (static . 3) (static . 4)) (uniq (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "analogy": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((sort (dyn . 0)) (rotate-k (dyn . 1) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "analogy": 32,
+      "decompose:map_list": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((take-k (dyn . 0) (static . 3)) (dedup (dyn . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "analogy": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((take-k (dyn . 0) (static . 3)) (rotate-k (dyn . 1) (static . 1)))",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((uniq (dyn . 0)) (count-k (dyn . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    }
+   ],
+   "cpu_seconds": 124.63550028099999
+  }
+ }
+}

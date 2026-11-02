@@ -1,0 +1,791 @@
+{
+ "arm": "RSI3_META_COMPOSE",
+ "partition": "compose24",
+ "generation": 16,
+ "tasks": 24,
+ "seeds": {
+  "11": {
+   "solved": 9,
+   "solved_names": [
+    "fresh20261031::trim-and-increment::p1",
+    "fresh20261031::trim-and-increment::p2",
+    "fresh20261031::trim-and-increment::p3",
+    "fresh20261031::trim-and-increment::p4",
+    "fresh20261031::append-reversed-prefix::p1",
+    "fresh20261031::reverse-dropped-suffix::p1",
+    "fresh20261031::reverse-dropped-suffix::p2",
+    "fresh20261031::reverse-dropped-suffix::p3",
+    "fresh20261031::reverse-dropped-suffix::p4"
+   ],
+   "tasks": [
+    {
+     "name": "fresh20261031::trim-and-increment::p1",
+     "solved": true,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 30
+     },
+     "chain_from": [
+      "prim:tail",
+      "map"
+     ]
+    },
+    {
+     "name": "fresh20261031::trim-and-increment::p2",
+     "solved": true,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 30
+     },
+     "chain_from": [
+      "concept:c_a60e9b11ed",
+      "map"
+     ]
+    },
+    {
+     "name": "fresh20261031::trim-and-increment::p3",
+     "solved": true,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 30
+     },
+     "chain_from": [
+      "concept:c_2567f99d36",
+      "map"
+     ]
+    },
+    {
+     "name": "fresh20261031::trim-and-increment::p4",
+     "solved": true,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 30
+     },
+     "chain_from": [
+      "concept:c_79d12e9665",
+      "map"
+     ]
+    },
+    {
+     "name": "fresh20261031::trim-and-increment::p5",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "fresh20261031::trim-and-increment::p6",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "fresh20261031::append-reversed-prefix::p1",
+     "solved": true,
+     "spent": {
+      "analogy": 5
+     },
+     "analogy_from": [
+      "append-index-k with k=1",
+      "source"
+     ]
+    },
+    {
+     "name": "fresh20261031::append-reversed-prefix::p2",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "chain": 32,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "fresh20261031::append-reversed-prefix::p3",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "chain": 32,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "fresh20261031::append-reversed-prefix::p4",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "chain": 32,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "fresh20261031::append-reversed-prefix::p5",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "chain": 32,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "fresh20261031::append-reversed-prefix::p6",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "chain": 32,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "fresh20261031::reverse-dropped-suffix::p1",
+     "solved": true,
+     "spent": {
+      "analogy": 16,
+      "chain": 28
+     },
+     "chain_from": [
+      "prim:tail",
+      "whole"
+     ]
+    },
+    {
+     "name": "fresh20261031::reverse-dropped-suffix::p2",
+     "solved": true,
+     "spent": {
+      "analogy": 16,
+      "chain": 28
+     },
+     "chain_from": [
+      "concept:c_a60e9b11ed",
+      "whole"
+     ]
+    },
+    {
+     "name": "fresh20261031::reverse-dropped-suffix::p3",
+     "solved": true,
+     "spent": {
+      "analogy": 16,
+      "chain": 28
+     },
+     "chain_from": [
+      "concept:c_2567f99d36",
+      "whole"
+     ]
+    },
+    {
+     "name": "fresh20261031::reverse-dropped-suffix::p4",
+     "solved": true,
+     "spent": {
+      "analogy": 15
+     },
+     "analogy_from": [
+      "reverse",
+      "pre"
+     ]
+    },
+    {
+     "name": "fresh20261031::reverse-dropped-suffix::p5",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "chain": 27
+     }
+    },
+    {
+     "name": "fresh20261031::reverse-dropped-suffix::p6",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "chain": 32,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "fresh20261031::filter-nondivisible-and-shift::p1",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "fresh20261031::filter-nondivisible-and-shift::p2",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "fresh20261031::filter-nondivisible-and-shift::p3",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "fresh20261031::filter-nondivisible-and-shift::p4",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "fresh20261031::filter-nondivisible-and-shift::p5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "fresh20261031::filter-nondivisible-and-shift::p6",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    }
+   ],
+   "cpu_seconds": 40.179728311
+  },
+  "22": {
+   "solved": 9,
+   "solved_names": [
+    "fresh20261031::trim-and-increment::p1",
+    "fresh20261031::trim-and-increment::p2",
+    "fresh20261031::trim-and-increment::p3",
+    "fresh20261031::trim-and-increment::p4",
+    "fresh20261031::append-reversed-prefix::p1",
+    "fresh20261031::reverse-dropped-suffix::p1",
+    "fresh20261031::reverse-dropped-suffix::p2",
+    "fresh20261031::reverse-dropped-suffix::p3",
+    "fresh20261031::reverse-dropped-suffix::p4"
+   ],
+   "tasks": [
+    {
+     "name": "fresh20261031::trim-and-increment::p1",
+     "solved": true,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 30
+     },
+     "chain_from": [
+      "prim:tail",
+      "map"
+     ]
+    },
+    {
+     "name": "fresh20261031::trim-and-increment::p2",
+     "solved": true,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 30
+     },
+     "chain_from": [
+      "concept:c_a60e9b11ed",
+      "map"
+     ]
+    },
+    {
+     "name": "fresh20261031::trim-and-increment::p3",
+     "solved": true,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 30
+     },
+     "chain_from": [
+      "concept:c_2567f99d36",
+      "map"
+     ]
+    },
+    {
+     "name": "fresh20261031::trim-and-increment::p4",
+     "solved": true,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 30
+     },
+     "chain_from": [
+      "concept:c_79d12e9665",
+      "map"
+     ]
+    },
+    {
+     "name": "fresh20261031::trim-and-increment::p5",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "fresh20261031::trim-and-increment::p6",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "fresh20261031::append-reversed-prefix::p1",
+     "solved": true,
+     "spent": {
+      "analogy": 5
+     },
+     "analogy_from": [
+      "append-index-k with k=1",
+      "source"
+     ]
+    },
+    {
+     "name": "fresh20261031::append-reversed-prefix::p2",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "chain": 32,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "fresh20261031::append-reversed-prefix::p3",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "chain": 32,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "fresh20261031::append-reversed-prefix::p4",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "chain": 32,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "fresh20261031::append-reversed-prefix::p5",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "chain": 32,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "fresh20261031::append-reversed-prefix::p6",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "chain": 32,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "fresh20261031::reverse-dropped-suffix::p1",
+     "solved": true,
+     "spent": {
+      "analogy": 16,
+      "chain": 28
+     },
+     "chain_from": [
+      "prim:tail",
+      "whole"
+     ]
+    },
+    {
+     "name": "fresh20261031::reverse-dropped-suffix::p2",
+     "solved": true,
+     "spent": {
+      "analogy": 16,
+      "chain": 28
+     },
+     "chain_from": [
+      "concept:c_a60e9b11ed",
+      "whole"
+     ]
+    },
+    {
+     "name": "fresh20261031::reverse-dropped-suffix::p3",
+     "solved": true,
+     "spent": {
+      "analogy": 16,
+      "chain": 28
+     },
+     "chain_from": [
+      "concept:c_2567f99d36",
+      "whole"
+     ]
+    },
+    {
+     "name": "fresh20261031::reverse-dropped-suffix::p4",
+     "solved": true,
+     "spent": {
+      "analogy": 15
+     },
+     "analogy_from": [
+      "reverse",
+      "pre"
+     ]
+    },
+    {
+     "name": "fresh20261031::reverse-dropped-suffix::p5",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "chain": 27
+     }
+    },
+    {
+     "name": "fresh20261031::reverse-dropped-suffix::p6",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "chain": 32,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "fresh20261031::filter-nondivisible-and-shift::p1",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "fresh20261031::filter-nondivisible-and-shift::p2",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "fresh20261031::filter-nondivisible-and-shift::p3",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "fresh20261031::filter-nondivisible-and-shift::p4",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "fresh20261031::filter-nondivisible-and-shift::p5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "fresh20261031::filter-nondivisible-and-shift::p6",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    }
+   ],
+   "cpu_seconds": 41.079578312
+  },
+  "33": {
+   "solved": 9,
+   "solved_names": [
+    "fresh20261031::trim-and-increment::p1",
+    "fresh20261031::trim-and-increment::p2",
+    "fresh20261031::trim-and-increment::p3",
+    "fresh20261031::trim-and-increment::p4",
+    "fresh20261031::append-reversed-prefix::p1",
+    "fresh20261031::reverse-dropped-suffix::p1",
+    "fresh20261031::reverse-dropped-suffix::p2",
+    "fresh20261031::reverse-dropped-suffix::p3",
+    "fresh20261031::reverse-dropped-suffix::p4"
+   ],
+   "tasks": [
+    {
+     "name": "fresh20261031::trim-and-increment::p1",
+     "solved": true,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 30
+     },
+     "chain_from": [
+      "prim:tail",
+      "map"
+     ]
+    },
+    {
+     "name": "fresh20261031::trim-and-increment::p2",
+     "solved": true,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 30
+     },
+     "chain_from": [
+      "concept:c_a60e9b11ed",
+      "map"
+     ]
+    },
+    {
+     "name": "fresh20261031::trim-and-increment::p3",
+     "solved": true,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 30
+     },
+     "chain_from": [
+      "concept:c_2567f99d36",
+      "map"
+     ]
+    },
+    {
+     "name": "fresh20261031::trim-and-increment::p4",
+     "solved": true,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 30
+     },
+     "chain_from": [
+      "concept:c_79d12e9665",
+      "map"
+     ]
+    },
+    {
+     "name": "fresh20261031::trim-and-increment::p5",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "fresh20261031::trim-and-increment::p6",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "fresh20261031::append-reversed-prefix::p1",
+     "solved": true,
+     "spent": {
+      "analogy": 5
+     },
+     "analogy_from": [
+      "append-index-k with k=1",
+      "source"
+     ]
+    },
+    {
+     "name": "fresh20261031::append-reversed-prefix::p2",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "chain": 32,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "fresh20261031::append-reversed-prefix::p3",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "chain": 32,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "fresh20261031::append-reversed-prefix::p4",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "chain": 32,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "fresh20261031::append-reversed-prefix::p5",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "chain": 32,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "fresh20261031::append-reversed-prefix::p6",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "chain": 32,
+      "behave:whole": 16
+     }
+    },
+    {
+     "name": "fresh20261031::reverse-dropped-suffix::p1",
+     "solved": true,
+     "spent": {
+      "analogy": 16,
+      "chain": 28
+     },
+     "chain_from": [
+      "prim:tail",
+      "whole"
+     ]
+    },
+    {
+     "name": "fresh20261031::reverse-dropped-suffix::p2",
+     "solved": true,
+     "spent": {
+      "analogy": 16,
+      "chain": 28
+     },
+     "chain_from": [
+      "concept:c_a60e9b11ed",
+      "whole"
+     ]
+    },
+    {
+     "name": "fresh20261031::reverse-dropped-suffix::p3",
+     "solved": true,
+     "spent": {
+      "analogy": 16,
+      "chain": 28
+     },
+     "chain_from": [
+      "concept:c_2567f99d36",
+      "whole"
+     ]
+    },
+    {
+     "name": "fresh20261031::reverse-dropped-suffix::p4",
+     "solved": true,
+     "spent": {
+      "analogy": 15
+     },
+     "analogy_from": [
+      "reverse",
+      "pre"
+     ]
+    },
+    {
+     "name": "fresh20261031::reverse-dropped-suffix::p5",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "chain": 27
+     }
+    },
+    {
+     "name": "fresh20261031::reverse-dropped-suffix::p6",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "chain": 32,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "fresh20261031::filter-nondivisible-and-shift::p1",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "fresh20261031::filter-nondivisible-and-shift::p2",
+     "solved": false,
+     "spent": {
+      "analogy": 16,
+      "decompose:fold_nil": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "fresh20261031::filter-nondivisible-and-shift::p3",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "fresh20261031::filter-nondivisible-and-shift::p4",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "fresh20261031::filter-nondivisible-and-shift::p5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "fresh20261031::filter-nondivisible-and-shift::p6",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    }
+   ],
+   "cpu_seconds": 41.969201303999995
+  }
+ }
+}
