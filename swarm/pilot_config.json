@@ -11,7 +11,7 @@
   "ridge": 1.0
  },
  "breaker": {
-  "n_prop": 8,
+  "n_prop": 6,
   "lineages": [
    "analogy",
    "compose",
@@ -22,18 +22,18 @@
   "probe_set_seed": 11
  },
  "builder": {
-  "k_edit": 2,
+  "k_edit": 1,
   "forge": true,
   "regression_sample": 6
  },
  "budgets": {
-  "B_gen": 6000,
+  "B_gen": 4000,
   "B_inst": 200,
   "executor_timeout_s": 2,
   "executor_mem_mb": 512
  },
- "horizon": 10,
- "generations": 40,
+ "horizon": 8,
+ "generations": 20,
  "seeds": [
   11
  ],

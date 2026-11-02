@@ -128,6 +128,13 @@ class Run:
         g = self.generation_number + 1
         self.generation_number = g
         self.meter.mark_generation(g)
+        timings, clock = {}, [time.perf_counter()]
+
+        def lap(name):
+            now = time.perf_counter()
+            timings[name] = round(now - clock[0], 2)
+            clock[0] = now
+
         sha = self.snapshots.take(self.live / "mutable")
         if self.arm.records:
             view = self.archive.public_view()
@@ -147,6 +154,7 @@ class Run:
                 margins.append(float(decision["kb_margin"]))
             else:
                 rejections[decision["certificate"]] += 1
+        lap("propose_and_admit")
         # 2. Builder reads the field and attacks.
         view = self.archive.public_view()
         boosts = self.builder.read_state(view)
@@ -158,6 +166,7 @@ class Run:
             self.builder.observe_mined(task_id, accepted)
             if accepted:
                 mined.append(task_id)
+        lap("wake_and_mined")
         # 3. Crossing checks from the generation's snapshot.
         crossed = self.crossings.check([t["id"] for t in open_tasks], sha, g)
         retrieval_hits = 0
@@ -165,13 +174,16 @@ class Run:
             crossing = self.archive.tasks[task_id]["crossing"]
             self.breaker.observe_crossing(task_id, crossing["generations_to_crossing"])
             retrieval_hits += bool(set(crossing["fragments"]) & set(boosts.get(task_id, {})))
+        lap("crossing_check")
         # 4. Builder learns and proposes self-edits; kernel judges.
         view = self.archive.public_view()
         learned = self.builder.learn(g, view) if self.arm.learn else {"adopted": [], "offered": 0}
+        lap("learn")
         edits = []
         if self.arm.self_edit:
             incumbent = self.snapshots.take(self.live / "mutable")
             patches = self.builder.propose_edits(g, view, self.config["builder"]["k_edit"])
+            lap("propose_edits")
             for index, patch in enumerate(patches):
                 candidate = self_edit.make_candidate(self.live, self.candidates_root / f"g{g}", index, patch)
                 violations = self_edit.guard(candidate, self.live)
@@ -187,6 +199,7 @@ class Run:
                               "incumbent_solved": decision["incumbent_solved"],
                               "candidate_solved": decision["candidate_solved"]})
                 shutil.rmtree(candidate, ignore_errors=True)
+        lap("judge")
         # 5. Both agents write the field; the mapper is refit from scratch on paired events.
         view = self.archive.public_view()
         written = {"breaker": self.breaker.write_state(view), "builder": self.builder.write_state(view)}
@@ -225,7 +238,9 @@ class Run:
             "mapper": mapper_fit,
         }
         self.ledger.append("generation", summary)
-        self.history.append(summary)
+        lap("write_and_summarize")
+        # Wall-clock phase timings go to summary.json only; the ledger stays deterministic.
+        self.history.append(dict(summary, timings=timings))
         self.checkpoint()
         return summary
 
