@@ -93,20 +93,104 @@ only, offered at held-out time), chain needs a window of its own
 see compositions in practice (`meta.compose_selfplay`). Those are runs
 3–5 below.
 
-## 3. Practice-only new actions with windows (`rsi3/run-compose-dev2`)
+## 3. Practice-only new actions with windows (`rsi3/run-compose-dev2`, run 41379508390)
 
-_Pending: RSI3_META_ANALOGY_P, RSI3_META_CHAIN, RSI3_META_COMPOSE with
-`wake_new_actions = False`, `meta.windows.chain = 32`,
-`chain.max_stages = 1`._
+The decision from run 2, applied: the new actions take no TRAIN wake
+budget (`wake_new_actions = False`; they are trained by honest practice on
+imagined tasks and offered at held-out time), chain has a 32-candidate
+window of its own (`meta.windows.chain = 32`) and one stage
+(`chain.max_stages = 1`). Config `rsi3/experiment_config_analogy.json` at
+`13a92e7`; arms RSI3_META_ANALOGY_P (analogy only), RSI3_META_CHAIN (chain
+only), RSI3_META_COMPOSE (both).
 
-## 4. Composition practice (`rsi3/run-compose-dev3`)
+| | TRAIN g1–g16 | TRAIN g16 | NEAR | COMPOSE-24 | CPU s |
+| --- | --- | --- | --- | --- | --- |
+| HONEST (registered) | 10 14 17 22 24 25 25 25 25 25 25 26 28 28 29 29 | 29 | 56–57 | 0 | ~4,370 |
+| ANALOGY_P | 10 14 17 22 24 25 25 25 25 25 25 26 28 28 29 29 | 29 | **61** | 2 | 4,749 |
+| CHAIN | 10 14 17 22 24 25 25 25 25 25 25 26 28 28 29 29 | 29 | 52 | **8** | 5,333 |
+| COMPOSE | 10 14 17 22 24 25 25 25 25 25 25 26 28 28 29 29 | 29 | 60 | **9** | 7,190 |
 
-_Pending: RSI3_META_CHAIN, RSI3_META_COMPOSE as in run 3, plus
-`meta.compose_selfplay = 96`._
+- **TRAIN is HONEST's, generation for generation**, in all three arms:
+  with the new actions out of the wake, the budget-theft failure of run 2
+  is gone and the cascade (reverse at g13, the appends after it) arrives
+  as in HONEST. Every TRAIN solve has HONEST's provenance (24 behavioural,
+  4 decomposition, 1 invented); the actions solved nothing on TRAIN, as
+  intended.
+- **ANALOGY_P, NEAR 61.** Ten tasks no HONEST seed solves: `append-k`
+  k=0, 2, 3, `append-index-k k=5`, `is-mod-k` k=2, 3, 4, `slice-k-n`
+  (1,2), (2,1), (2,2). Five tasks every HONEST seed solves are lost:
+  `has-k` k=1, 4, 5 and `slice-k-n` (1,1), (4,1). Same pattern as run 1
+  (62): the append family is reached by editing the TRAIN appends; the
+  `has-k` family is lost where the analogy chunk displaces `behave:any`.
+  CPU 4,749 s against about 4,370 s, down from 7,127 s in run 1, because
+  the action no longer runs in the wake.
+- **CHAIN, NEAR 52, COMPOSE-24 8 of 24.** With a window of its own, chain
+  solves the two compositions its one stage can start: `trim-and-increment`
+  (p1–p4: `tail^k` then `map (add 1)`) and `reverse-dropped-suffix` (p1–p4:
+  `tail^k` then the verified reverse). Run 2 had 0 of 24 at 16 candidates.
+  On NEAR it loses four tasks HONEST solves (`index-k` k=1, 4; `slice-k-n`
+  (1,1), (4,1)) and gains none: the chain window is budget the behavioural
+  actions no longer have.
+- **COMPOSE, NEAR 60, COMPOSE-24 9 of 24.** The union: chain's eight
+  compositions plus `append-reversed-prefix p1` from analogy; on NEAR the
+  same nine gains and five losses as ANALOGY_P minus `append-index-k k=5`.
+  CPU 7,190 s: both actions' ranking and edit enumeration are interpreter
+  time outside the candidate count.
 
-## 5. Self-curriculum (`rsi3/run-curriculum-dev1`)
+## 4. Composition practice (`rsi3/run-compose-dev3`, run 41379755629)
 
-_Pending: RSI3_META_CURRICULUM (`curriculum.py`), NEAR, FAR2, COMPOSE-24._
+Run 3's CHAIN and COMPOSE plus `meta.compose_selfplay = 96`: the policy
+also practises on imagined two-stage compositions, so that it has seen
+the chain action pay before held-out time. Config at `213573f`.
+
+| | TRAIN g16 | NEAR | COMPOSE-24 | CPU s |
+| --- | --- | --- | --- | --- |
+| CHAIN + compose practice | 29 | 52 | 8 | 4,386 |
+| COMPOSE + compose practice | 29 | 60 | 9 | 6,426 |
+
+- **Identical held-out solved sets** to run 3, task for task, in both
+  arms. The practice changed what the policy was trained on and changed
+  no held-out decision: on COMPOSE-24 the solver already spends its chain
+  window on every task, and the eight compositions it solves are the ones
+  a single `tail^k` stage can start; the other sixteen need a stage the
+  system's own programs do not provide (`append-reversed-prefix` p2–p4,
+  the sort-based and index-based families). More practice on the same
+  action does not add a stage.
+- TRAIN unchanged (29, HONEST's trajectory). CPU lower than run 3 only
+  because the runner machines differed.
+
+## 5. Self-curriculum (`rsi3/run-curriculum-dev1`, run 41380581073)
+
+RSI3_META_CURRICULUM = HONEST plus `curriculum.py`: each generation the
+system imagines 48 tasks from its own grammar, keeps the 24 it cannot
+solve at once (`hard`), spends a 16-candidate hard chunk per hard task in
+the wake, and offers every solved imagined task to the library learner.
+Config `rsi3/experiment_config_curriculum.json` at `8d794bb` (before the
+`fe2c254` refit fix, which changes nothing for a single primary seed).
+
+| | TRAIN g1–g16 | TRAIN g16 | NEAR | FAR2 | COMPOSE-24 | library | CPU s |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| HONEST (registered) | 10 14 17 22 24 25 25 25 25 25 25 26 28 28 29 29 | 29 | 56–57 | 5 | 0 | 18 | ~4,370 |
+| CURRICULUM | 10 14 15 15 15 16 19 24 24 24 24 24 24 25 25 25 | **25** | **40** | 5 | 0 | 37 | 5,871 |
+
+- **TRAIN 25, four below HONEST, and the cascade never arrives**: no
+  reverse, no append. The hard chunks (24 imagined tasks × 16 candidates
+  a generation) are TRAIN wake budget taken from the actions that find
+  the cascade; this is the budget-theft mode of run 2 again, from a
+  different source.
+- **The library doubles and nothing on it transfers.** Thirty-seven entries
+  against eighteen: eleven to sixteen imagined tasks are solved each
+  generation (15, 14, 8, 14, 11, 12, 11, 14, 16, 15, 15, 13, 16, 11, 13,
+  12) and the learner adopts from them every generation (five entries at
+  g1 alone). The entries describe the system's own imagined distribution.
+  NEAR falls to 40: seventeen tasks every HONEST seed solves are lost
+  (`caesar-cipher` ×8, `bool-identify-k` ×3, `has-k` ×3, `pow-k k=2`,
+  `slice-k-n` (1,1), (4,1)), one is gained (`is-mod-k k=4`). FAR2 stays at
+  5 (the four `drop-k` and `remove-mod-k k=2`, HONEST's five). COMPOSE-24
+  0.
+- **What this is.** The self-curriculum as implemented makes the grammar
+  fit its own imagination and pays for it on TRAIN and on every held-out
+  partition. Not carried forward in this form.
 
 ## 6. Budget diagnostic: HONEST at 256 candidates (`rsi3/run-honest-b256`)
 
@@ -115,5 +199,5 @@ _Pending: B_wake = B_eval = 256._
 ## Scale
 
 36 TRAIN tasks, 64 candidates per task per generation (256 in run 6), one
-seed. No claim about recursive self-improvement, superintelligence or the
+seed, exposed held-out partitions. No claim about recursive self-improvement, superintelligence or the
 singularity.
