@@ -62,6 +62,12 @@ MAX_RANKED = 8
 MAX_STAGES = 3
 
 
+def _same_value(value, expected) -> bool:
+    if isinstance(expected, (list, tuple)):
+        return _is_list(value) and list(value) == list(expected)
+    return value == expected
+
+
 def _is_list(value) -> bool:
     return isinstance(value, (list, tuple)) and all(type(v) is int for v in value)
 
@@ -235,6 +241,15 @@ class ChainSearch:
         else:
             entry = next(e for e in entries if id(e) == current)
         window = min(budget, SLICE - self._used.get(stage, 0))
+        if self.max_evaluations is not None:
+            # Every slice is clamped to the remaining capacity, with one unit
+            # kept for the composition check below; nothing starts when none
+            # remains. (The residual's own completion checks may still run
+            # past the window, as BehaviouralSearch documents and charges.)
+            window = min(window, self.max_evaluations - self.evaluated - 1)
+            if window <= 0:
+                self.exhausted = True
+                return 0, None
         result = entry[3].run(window)
         self.evaluation_steps += result.evaluation_steps
         self._spent[stage] = self._spent.get(stage, 0) + max(result.evaluated, 1)
@@ -248,8 +263,18 @@ class ChainSearch:
         name, term, kind = entry[0], entry[1], entry[2]
         from .selfmodel import canonical_types, normalize
         program = canonical_types(normalize(Lam(LIST, App(result.term, App(term, Var(0))))))
+        # The pieces were checked apart; the whole composition is checked on
+        # every public example at the same step budget, charged one unit.
+        # When it fails (the stage plus the residual exceed the budget the
+        # pieces met separately) the search goes on.
+        units = result.evaluated + 1
+        for inputs, expected in self.examples:
+            check = evaluate(program, inputs, library=self.library, step_budget=self.step_budget)
+            self.evaluation_steps += check.steps
+            if not check.ok or not _same_value(check.value, expected):
+                return units, None
         self.found_from = (name, kind)
-        return result.evaluated, program
+        return units, program
 
     def _pick_stage(self):
         """Deficit round robin over stages, weights halving with rank; None when all are spent.

@@ -63,6 +63,33 @@ class ChainTests(unittest.TestCase):
                          None if b.term is None else pretty(b.term))
         self.assertEqual(a.evaluated + b.evaluated, whole.evaluated)
 
+    def test_composition_is_rechecked_under_the_step_budget(self):
+        # The stage and the residual each fit the budget alone; the whole
+        # composition does not, so it must not be returned (Codex, PR #47).
+        examples = examples_of(lambda x: [v + 1 for v in x[1:]])
+        stages = {"prim:tail": Prim("tail")}
+        search = ChainSearch(examples, REQUEST, stages, {}, behave_settings=SETTINGS, step_budget=69)
+        result = search.run(64)
+        from rsi2.evaluator import evaluate
+        if result.term is not None:
+            for inputs, expected in examples:
+                check = evaluate(result.term, inputs, library={}, step_budget=69)
+                self.assertTrue(check.ok and list(check.value) == list(expected),
+                                "a returned composition fits every public example under the budget")
+        loose = ChainSearch(examples, REQUEST, stages, {}, behave_settings=SETTINGS, step_budget=2000).run(64)
+        self.assertIsNotNone(loose.term, "the same composition is found when the budget allows it")
+
+    def test_each_slice_is_clamped_to_the_remaining_cap(self):
+        examples = examples_of(lambda x: [v + 2 for v in x[1:]])
+        stages = {"prim:tail": Prim("tail")}
+        search = ChainSearch(examples, REQUEST, stages, {}, behave_settings=SETTINGS, max_evaluations=48)
+        search.run(2)                         # the stage is ranked, residuals started
+        search.evaluated = 47
+        result = search.run(32)
+        self.assertLessEqual(search.evaluated, 48)
+        self.assertLessEqual(result.evaluated, 1)
+        self.assertTrue(search.exhausted or search.evaluated == 48)
+
     def test_relevance_prefers_a_shape_the_residual_can_take(self):
         examples = examples_of(lambda x: [v + 1 for v in x[1:]])
         tail = [x[1:] for x in INPUTS]
