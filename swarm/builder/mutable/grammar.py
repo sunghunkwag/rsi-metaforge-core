@@ -14,18 +14,17 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from collections import Counter, defaultdict
-from itertools import count
 import math
 
 from .terms import Term
 from .types import (
-    Arrow, BOOL, INT, PRIMITIVE_TYPES, TVar, Type, TypeInferenceError,
+    Arrow, BOOL, FreshCounter, INT, PRIMITIVE_TYPES, TVar, Type, TypeInferenceError,
     function_parts, infer, instantiate, library_entries, substitute, unify,
 )
 
 
 ROOT_CONTEXT = ("ROOT", 0)
-_fresh = count()
+_fresh = FreshCounter()      # SWARM addition: readable watermark (see types.FreshCounter)
 
 
 @dataclass(frozen=True)

@@ -26,7 +26,7 @@ ROOT = Path(__file__).resolve().parents[2]
 EXCLUDED_DIRS = {"__pycache__"}
 EXCLUDED_SUFFIXES = {".pyc", ".pkl"}
 SOLVE_TIMEOUT_S = 120.0
-SECONDS_PER_CANDIDATE = 0.02      # measured about 0.005 s on the development machine; 4x margin
+SECONDS_PER_CANDIDATE = 0.03      # measured 0.005-0.012 s per candidate on the development machine; 2.5x margin
 
 
 def solve_timeout(candidates: int) -> float:

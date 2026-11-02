@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import pickle
+import zlib
 
 from . import evaluator
 from .abstraction import learn_abstractions
@@ -148,15 +149,31 @@ def solve_many(payload: dict) -> dict:
                                    max_size=search["max_size"],
                                    max_expansions=search["max_expansions"],
                                    known_failures=failures, near_misses=near_miss)
-        position = persisted.setdefault("positions", {}).get((task_id, grammar_key(grammar)), 0) if state_path else 0
-        if position:
+        key = (task_id, grammar_key(grammar))
+        # SWARM addition: the search frontier is checkpointed per task and
+        # grammar order (compressed pickle in the Builder's state file), so
+        # a wake resumes where the last one stopped instead of
+        # re-enumerating its prefix, whose cost grew with every
+        # generation. The position-based fast-forward remains the
+        # fallback when no checkpoint can be restored.
+        frontiers = persisted.setdefault("frontiers", {}) if state_path else {}
+        restored = False
+        if key in frontiers:
+            try:
+                searcher.restore(pickle.loads(zlib.decompress(frontiers[key])))
+                restored = True
+            except Exception:
+                restored = False
+        position = persisted.setdefault("positions", {}).get(key, 0) if state_path else 0
+        if position and not restored:
             searcher.fast_forward(position)
         start = evaluator.METER["evaluations"]
         budget = payload["budget"]
         budget = int(budget[task_id]) if isinstance(budget, dict) else int(budget)
         result = searcher.run(budget)
         if state_path:
-            persisted["positions"][(task_id, grammar_key(grammar))] = searcher.position
+            persisted["positions"][key] = searcher.position
+            frontiers[key] = zlib.compress(pickle.dumps(searcher.state(), protocol=pickle.HIGHEST_PROTOCOL), 1)
         record = {"id": task_id, "program": None, "dsl": None, "fragments": [],
                   "evaluations": evaluator.METER["evaluations"] - start,
                   "candidates": result.evaluated,

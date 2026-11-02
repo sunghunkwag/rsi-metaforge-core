@@ -25,6 +25,8 @@ from itertools import count
 import math
 
 from .terms import Term
+from . import grammar as _grammar_module
+from . import types as _types_module
 from .grammar import Grammar, ROOT_CONTEXT
 from .types import Type, substitute
 
@@ -127,56 +129,104 @@ def _finite_score(value):
     return value
 
 
-def _frontier(request_type, grammar, max_size, max_depth, max_expansions,
-              partial_heuristic, heuristic, partial_features_only=False):
-    serials = count()
-    initial = _Hole(request_type, (), ROOT_CONTEXT)
-    heap = []
+class Frontier:
+    """The typed best-first frontier as an iterator with explicit, picklable state.
 
-    def push(tree, constraints, log_probability):
+    SWARM addition. ``_frontier`` below is the generation-0 generator; this
+    class is the same loop with its heap, serial counter and expansion
+    count held as attributes, so a search can be checkpointed between
+    generations (``state``) and resumed in a fresh process (``restore``)
+    instead of re-enumerating its prefix. Only the heuristic-free frontier
+    can be checkpointed: a heuristic is a callable and is not stored.
+    Pop order is identical to the generator's: the heap keys are
+    ``(-score, serial)`` and both are restored exactly.
+    """
+
+    def __init__(self, request_type, grammar, max_size, max_depth=None, max_expansions=None,
+                 partial_heuristic=None, heuristic=None, partial_features_only=False):
+        self.grammar = grammar
+        self.max_size, self.max_depth, self.max_expansions = max_size, max_depth, max_expansions
+        self.partial_heuristic, self.heuristic = partial_heuristic, heuristic
+        self.partial_features_only = partial_features_only
+        self.heap = []
+        self.serial = 0
+        self.expansions = 0
+        self.done = False
+        self._push(_Hole(request_type, (), ROOT_CONTEXT), {}, 0.0)
+
+    def _push(self, tree, constraints, log_probability):
         size, depth = _features(tree)
-        if size > max_size or (max_depth is not None and depth > max_depth):
+        if size > self.max_size or (self.max_depth is not None and depth > self.max_depth):
             return
         pending = _first_hole(tree)
         complete = pending is None
         score = log_probability
         term = None
-        if partial_heuristic is not None and not complete and not partial_features_only:
+        if self.partial_heuristic is not None and not complete and not self.partial_features_only:
             term = _materialize(tree, constraints)
-        if partial_heuristic is not None and not complete:
-            score += _finite_score(partial_heuristic(
+        if self.partial_heuristic is not None and not complete:
+            score += _finite_score(self.partial_heuristic(
                 PartialProgram(term, log_probability, size, depth, False)))
-        heapq.heappush(heap, (-score, next(serials), tree, constraints,
-                              log_probability, pending, term, False))
+        heapq.heappush(self.heap, (-score, self.serial, tree, constraints,
+                                   log_probability, pending, term, False))
+        self.serial += 1
 
-    push(initial, {}, 0.0)
-    expansions = 0
-    while heap and (max_expansions is None or expansions < max_expansions):
-        priority, _, tree, constraints, log_probability, pending, cached_term, scored = heapq.heappop(heap)
-        expansions += 1
-        if pending is None:
-            term = cached_term if cached_term is not None else _materialize(tree, constraints)
-            if not scored and (heuristic is not None or partial_heuristic is not None):
-                if heuristic is not None:
-                    bonus = _finite_score(heuristic(term))
-                else:
-                    size, depth = _features(tree)
-                    bonus = _finite_score(partial_heuristic(
-                        PartialProgram(term, log_probability, size, depth, True)))
-                # Probe only a dequeued complete program. Semantic zero must
-                # preserve both grammar order and the evaluated prefix under
-                # a logical candidate budget, including ties.
-                if bonus != 0.0:
-                    heapq.heappush(heap, (-(log_probability + bonus), next(serials),
-                                          tree, constraints, log_probability,
-                                          None, term, True))
-                    continue
-            yield Candidate(term, log_probability, -priority)
-            continue
-        path, hole = pending
-        for production in grammar.productions(hole.type, hole.env, constraints, hole.context):
-            expanded = _replace(tree, path, _expand(production, hole))
-            push(expanded, production.substitutions, log_probability + production.log_probability)
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        while not self.done:
+            if not self.heap or (self.max_expansions is not None
+                                 and self.expansions >= self.max_expansions):
+                self.done = True
+                break
+            priority, _, tree, constraints, log_probability, pending, cached_term, scored = heapq.heappop(self.heap)
+            self.expansions += 1
+            if pending is None:
+                term = cached_term if cached_term is not None else _materialize(tree, constraints)
+                if not scored and (self.heuristic is not None or self.partial_heuristic is not None):
+                    if self.heuristic is not None:
+                        bonus = _finite_score(self.heuristic(term))
+                    else:
+                        size, depth = _features(tree)
+                        bonus = _finite_score(self.partial_heuristic(
+                            PartialProgram(term, log_probability, size, depth, True)))
+                    if bonus != 0.0:
+                        heapq.heappush(self.heap, (-(log_probability + bonus), self.serial,
+                                                   tree, constraints, log_probability,
+                                                   None, term, True))
+                        self.serial += 1
+                        continue
+                return Candidate(term, log_probability, -priority)
+            path, hole = pending
+            for production in self.grammar.productions(hole.type, hole.env, constraints, hole.context):
+                expanded = _replace(tree, path, _expand(production, hole))
+                self._push(expanded, production.substitutions, log_probability + production.log_probability)
+        raise StopIteration
+
+    def state(self) -> dict:
+        """The frontier's picklable state (heuristic-free frontiers only)."""
+        if self.heuristic is not None or self.partial_heuristic is not None:
+            raise ValueError("a frontier with heuristics cannot be checkpointed")
+        return {"heap": list(self.heap), "serial": self.serial, "expansions": self.expansions,
+                "done": self.done,
+                "fresh": {"types": _types_module._fresh_ids.value, "grammar": _grammar_module._fresh.value}}
+
+    def restore(self, state: dict) -> "Frontier":
+        self.heap = list(state["heap"])
+        self.serial = int(state["serial"])
+        self.expansions = int(state["expansions"])
+        self.done = bool(state["done"])
+        fresh = state.get("fresh", {})
+        _types_module._fresh_ids.advance_to(fresh.get("types", 0))
+        _grammar_module._fresh.advance_to(fresh.get("grammar", 0))
+        return self
+
+
+def _frontier(request_type, grammar, max_size, max_depth, max_expansions,
+              partial_heuristic, heuristic, partial_features_only=False):
+    yield from Frontier(request_type, grammar, max_size, max_depth, max_expansions,
+                        partial_heuristic, heuristic, partial_features_only)
 
 
 def enumerate_programs(request_type, grammar=None, max_size=14, heuristic=None, *,

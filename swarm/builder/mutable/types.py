@@ -123,7 +123,28 @@ def unify(left: Type, right: Type, substitutions=None) -> dict[str, Type]:
     return result
 
 
-_fresh_ids = count()
+class FreshCounter:
+    """SWARM addition: ``count()`` with a readable value, so a checkpointed
+    search can record the watermark of generated names and a resuming
+    process can advance past it (names from a restored frontier must not
+    collide with names generated afterwards)."""
+
+    def __init__(self, start: int = 0):
+        self.value = int(start)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self) -> int:
+        value = self.value
+        self.value += 1
+        return value
+
+    def advance_to(self, watermark: int) -> None:
+        self.value = max(self.value, int(watermark))
+
+
+_fresh_ids = FreshCounter()
 
 
 def instantiate(type_: Type, prefix: str = "t") -> Type:

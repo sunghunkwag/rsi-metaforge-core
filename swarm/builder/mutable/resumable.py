@@ -34,7 +34,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 import time
 
-from .enumeration import enumerate_programs
+from .enumeration import Frontier
+from .types import Type
 from .evaluator import evaluate
 
 
@@ -57,10 +58,15 @@ class ResumableSearch:
         self.examples = tuple(examples)
         self.library = grammar.library
         self.step_budget = int(step_budget)
-        self._iterator = enumerate_programs(
-            request_type, grammar=grammar, max_size=max_size,
-            max_expansions=max_expansions, partial_heuristic=None,
-            partial_features_only=True)
+        if not isinstance(request_type, Type):
+            raise TypeError("request_type must be a Type")
+        # SWARM addition: the heuristic-free frontier is held as an object
+        # with explicit state (same order as ``enumerate_programs``), so
+        # the search can be checkpointed (``state``) and resumed
+        # (``restore``) across the Builder's per-generation processes.
+        self._frontier = Frontier(request_type, grammar, max_size, None, max_expansions,
+                                  None, None, partial_features_only=True)
+        self._iterator = self._frontier
         self._seen: set = set()
         self.known_failures = known_failures
         # SWARM addition: callback(term, matched, total) for a failed
@@ -101,6 +107,27 @@ class ResumableSearch:
             passed += 1
         self.skipped_known += passed
         return passed
+
+    def state(self) -> dict:
+        """Picklable checkpoint of the search: frontier, distinct-term set and counters.
+
+        SWARM addition. ``known_failures`` is not part of it (the caller
+        owns and persists that shared set); ``examples`` and the grammar
+        are not either, so a checkpoint is only valid for a search built
+        with the same examples and the same grammar order.
+        """
+        return {"frontier": self._frontier.state(), "seen": set(self._seen),
+                "evaluated": self.evaluated, "skipped_known": self.skipped_known,
+                "exhausted": self.exhausted, "evaluation_steps": self.evaluation_steps}
+
+    def restore(self, state: dict) -> "ResumableSearch":
+        self._frontier.restore(state["frontier"])
+        self._seen = set(state["seen"])
+        self.evaluated = int(state["evaluated"])
+        self.skipped_known = int(state["skipped_known"])
+        self.exhausted = bool(state["exhausted"])
+        self.evaluation_steps = int(state["evaluation_steps"])
+        return self
 
     def _matches(self, term) -> bool:
         if self.near_misses is None:
