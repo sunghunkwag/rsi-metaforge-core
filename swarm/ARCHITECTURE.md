@@ -42,23 +42,24 @@ flowchart LR
 
 ## 1. The frozen kernel (`swarm/kernel/`)
 
-Every kernel file and the Builder's evaluator are hash-pinned
-(`kernel/pins.json`); importing `swarm.kernel` verifies the pins and
-aborts on a mismatch (`tests/test_integrity.py`).
+Every kernel file (`hashes.py` and the package `__init__.py` included)
+and the Builder's evaluator are hash-pinned (`kernel/pins.json`);
+importing `swarm.kernel` verifies the pins and aborts on a mismatch
+(`tests/test_integrity.py`).
 
 | Piece | File | What it does |
 | --- | --- | --- |
 | Checker language | `checker_lang.py` | JSON S-expressions over ints, bools, lists, strings and tuples: `lambda`, `rec` (bounded recursion), `let`, `if`, `and`/`or`, about 55 primitives (arithmetic, comparison, `map`/`filter`/`fold`, `sort`, `reverse`, `unique`, `take`/`drop`, `zip`, `count`, `index-of`, strings). Step, depth, integer-size and length limits. Richer than the Builder's generation-0 DSL by design. |
-| Executor | `executor.py` | Runs programs in a child `python -I` with a memory cap (`RLIMIT_AS`) and a wall-clock timeout, batched; a timeout fails the whole batch. `isolated_call` runs a function of a Builder tree the same way. Three executor instances share one meter so that steps are charged to the kernel, the Breaker or the Builder. |
+| Executor | `executor.py` | Runs programs in a guarded child (`python -s -P -B`, fixed environment with `PYTHONHASHSEED=0`, memory cap `RLIMIT_AS`, wall-clock timeout), batched; a timeout fails the whole batch and charges no steps. The guard is an audit hook installed before any import: the child reads only its own tree, the kernel package and the Python installation, writes only inside its tree, imports no other `swarm` module, and cannot spawn processes, open sockets or load native code. `isolated_call` runs a function of a Builder tree the same way (the directive's filesystem path guard, §9). `accepts` is the one verdict routine (program on the hidden inputs, checker on the outputs) and reports an executor failure separately from a rejection. Three executor instances share one meter so that steps are charged to the kernel, the Breaker or the Builder. |
 | Witness vault | `vault.py` | Write-once; holds each sealed task's witness, checker and hidden instances. Every accessor is `sealed_*`; the AST audit asserts no module outside `kernel/` names a vault symbol. |
 | Budget meter | `budget.py` | The sole counter of logical cost: interpreter steps and candidate evaluations, per generation, agent and module. No other module charges it (`test_meter_is_the_sole_cost_counter`). |
-| Ledger and replay | `ledger.py`, `replay.py` | Append-only SHA-256 chain of every proposal, certificate outcome, admission, mined solve, crossing, self-edit decision, mapper refit, live-call failure and generation summary. `replay` re-derives Kd, Ka and Kc from the sealed data (fast) and Kb and the crossing solves from the snapshots (`--full`). |
-| Admission | `admit.py` | K0 structure (well-formed programs, 8 public and 6 hidden instances with distinct inputs, values in the shared domain), **Kd** well-posedness (the checker returns a bool on every instance, for the witness's output and for null outputs), **Ka** feasibility (the witness reproduces the public outputs and the checker accepts it on every hidden instance), **Kc** novelty (behaviour on the canonical probe set and the public example set are new), **Kb** difficulty (the Builder snapshot taken at the start of the generation, run fresh at `B_inst`, does not produce a program the checker accepts on every hidden instance; its best public match is the Kb margin). |
+| Ledger and replay | `ledger.py`, `replay.py` | Append-only SHA-256 chain of every proposal, certificate outcome, admission, mined solve, crossing, self-edit decision, mapper refit, live-call failure and generation summary. `replay` first checks that `vault.json` and `archive.json` hash to the digests the ledger recorded at sealing (witness, checker, hidden instances, public examples) and agree with the admission and crossing records, then re-derives Kd, Ka and Kc from the sealed data (fast) and Kb and the crossing solves from the snapshots (`--full`). Written atomically. |
+| Admission | `admit.py` | K0 structure (well-formed programs, 8 public and 6 hidden instances with distinct inputs, values in the shared domain), **Kd** well-posedness (the checker returns a bool on every instance, for the witness's output and for null outputs), **Ka** feasibility (the witness reproduces the public outputs and the checker accepts it on every hidden instance), **Kc** novelty (behaviour on the canonical probe set and the public example set are new), **Kb** difficulty (the Builder snapshot taken at the start of the generation, run fresh at `B_inst`, does not produce a program the checker accepts on every hidden instance; its best public match is the Kb margin). An executor failure while Kb runs is retried once and then ledgered as `kernel_failed` (disposition `K!`): neither an admission nor a rejection, and not a wasted proposal for the Breaker. |
 | Archive | `archive.py` | The public face of admitted tasks: examples, lineage, status (`open`, `crossed`, `marker`), admission and crossing generations, the crossing program and its DSL term. Open tasks older than the horizon become markers: kept, never deleted, no longer checked. |
-| Crossing | `crossing.py` | **Mined solve**: a wake solution run on the hidden instances; accepted ones may be learned from, and are not crossings. **Crossing**: the current snapshot, run fresh at `B_inst` on the public examples with every library entry and forged primitive sourced from the task itself excluded, yields a program the checker accepts on every hidden instance. The record carries the program, its fragments and their source tasks. |
+| Crossing | `crossing.py` | **Mined solve**: a wake solution run on the hidden instances; accepted ones may be learned from, and are not crossings. **Crossing**: the current snapshot, run fresh at `B_inst` on the public examples with everything learned from the task itself excluded (its sourced library entries and forged primitives, every entry that references one of them, and the grammar weights refit without the task's own solutions), yields a program the checker accepts on every hidden instance. The record carries the program, its fragments (closed through the library entries' bodies) and their source tasks. Verdicts are memoized per snapshot; a task admitted in the current generation is not checked (Kb ran on the same snapshot); a failed executor check leaves no verdict and is ledgered. |
 | Snapshots | `snapshot.py` | Content-addressed copies of the Builder's mutable tree (`sha256` over paths and contents). Kb, crossing checks and the judge run `mutable.solve` from a snapshot in an isolated child. `call_tree` is the metered call into the live tree for the wake. Timeouts scale with the requested budget. |
-| Self-edit judge | `edits.py` | A candidate tree is snapshotted and solved on every open task plus a sample of six crossed tasks, with own-fragment exclusion, at `B_inst`; so is the incumbent (cached). Adopted iff accepted solves per candidate strictly increase and no crossed task the incumbent solves is lost. An isolation guard requires every file of the run directory outside the candidate and its snapshot to be unchanged (size and mtime) across the evaluation. |
-| Runtime | `runtime.py` | Wires all of the above over a run directory; the loop never names the vault. Live-call failures (crash, timeout) are ledgered with the child's error. |
+| Self-edit judge | `edits.py` | A candidate tree is snapshotted and solved on every open task plus a sample of six crossed tasks, with own-task exclusion, at `B_inst`; so is the incumbent (cached). Adopted iff accepted solves of **open** tasks per candidate spent on them strictly increase and no crossed task of the sample the incumbent solves is lost (the sample is the regression test only). An executor failure on either side refuses the candidate and caches nothing. An isolation guard requires every file of the run directory outside the candidate and its snapshot to be unchanged (size and mtime) across the evaluation. |
+| Runtime | `runtime.py` | Wires all of the above over a run directory; the loop never names the vault. Live-call failures (crash, timeout) are ledgered with the child's error. The forge's program checks are charged as Builder candidate evaluations. Checkpoints are atomic; the vault dump is owner-readable only and, like the rest of the run directory, outside what the guard lets a Builder tree read. The field's shuffle permutation (S5) is seeded here, from a value the agents are not handed. |
 
 ## 2. The latent field (`swarm/latent.py`) and the mapper (`swarm/mapper.py`)
 
@@ -136,7 +137,7 @@ nearest fragment vectors and boosts their grammar weights for that task
 (`boost`), attacks the open tasks it has not solved under `B_gen` (even
 split, or committed to high partial matches, as `allocation.strategy`
 says) through the kernel's metered live call with persistent search state
-(resumable positions, failure memory), hands wake solutions to the mined
+(checkpointed search frontiers per task and grammar order, failure memory), hands wake solutions to the mined
 gate, learns, then proposes at most `k_edit` patches: a **forge** (the
 first checker-language body over a template vocabulary of depth ≤ 2 that
 reproduces the public examples of its highest partial-match residue, as a
@@ -211,6 +212,43 @@ seeds with one process per job.
 - **Horizon.** Open tasks older than `horizon` generations become markers
   and stop being checked, which bounds the kernel's per-generation cost;
   they count as never crossed.
+- **The forge spends the Builder's budget.** Every forge body checked
+  against a task's public inputs is a candidate evaluation; the forge is
+  capped at `B_gen / 4` per generation and the next wake receives `B_gen`
+  minus what the forge spent, so every arm's Builder spends at most
+  `B_gen` candidate evaluations per generation (S3, with no forge, spends
+  it all on the wake).
+- **The learning corpus is part of the tree.** `library.json` keeps one
+  rewritten solution per source task; the stored weights are the fit on
+  that corpus, and an own-task exclusion refits without the excluded
+  tasks. Learning from a task's own mined solution therefore cannot
+  cross it (`test_review_fixes`), and the exclusion is transitive
+  through library bodies.
+- **Kernel failures are counted, not interpreted.** A crashed or
+  timed-out child during Kb, a mined check, a crossing check or the judge
+  is ledgered (`kernel_failed`, `mined_check_failed`,
+  `crossing_check_failed`, a refused self-edit) and reported in the
+  summaries; it never becomes a certificate, a crossing or an adoption.
+- **The analogy lineage reads the public archive.** Its program vector
+  `P_C` is the Breaker's own encoding of the crossing program's DSL text
+  from the archive's public view (a kernel record), not a vector the
+  Builder wrote; the field contributes the task signatures and the
+  Builder's residue, solution and fragment vectors through retrieval.
+  S2 and S5 therefore act on the mapper and on what the Builder reads,
+  not on `P_C`.
+- **Floating point in the ledger.** The mapper's residual is a BLAS
+  float rounded to six decimals before it is ledgered; the retrieval
+  sign decisions are taken on BLAS outputs. Byte-identity of the ledger
+  holds on one machine and library build; the re-run check is on the
+  same machine.
+- **The records arm keeps the latent arms' lag.** A task the Breaker has
+  not recorded yet (admitted this generation) is not boosted in S1, as
+  it cannot be in the latent arms, whose signature is written one
+  generation after admission.
+- **A wake solution the gate could not check** (executor failure) is
+  resubmitted next generation; one the gate rejected on the hidden
+  instances is passed over in later windows (the search's skip set), so
+  the window does not stall on it.
 
 ## 7. Integrity invariants and the tests that hold them
 
@@ -224,7 +262,14 @@ seeds with one process per job.
 | one shared import, `np.ndarray` only | `test_interface.*` |
 | mapper fit on paired events only | `test_latent.*` |
 | meter the sole cost counter | `test_integrity.test_meter_is_the_sole_cost_counter` |
-| self-edit isolation; writes outside the tree rejected | `test_builder.test_candidate_that_writes_outside_its_tree_is_rejected` |
+| self-edit isolation; writes outside the tree rejected | `test_builder.test_candidate_that_writes_outside_its_tree_is_rejected`, `test_review_fixes.GuardTests` |
+| filesystem path guard in the executor | `test_review_fixes.GuardTests.test_child_cannot_read_the_run_directory_or_import_agents` |
+| own-solution exclusion covers learned weights and dependent entries | `test_review_fixes.OwnSolutionExclusionTests` |
+| kernel failures are not verdicts | `test_review_fixes.KernelFailureTests`, `test_review_fixes.JudgeTests` |
+| replay checks the artifacts' digests | `test_review_fixes.ReplayTests` |
+| forge checks charged as Builder evaluations; timeouts charge nothing | `test_review_fixes.AccountingTests` |
+| import audit sees relative and dynamic imports and the mutable tree | `test_interface.test_relative_and_dynamic_imports_are_seen`, `test_mutable_tree_imports_only_the_checker_language` |
+| fixed hash seed in every child | `test_review_fixes.GuardTests.test_child_hash_seed_is_fixed` |
 | determinism | the byte-identical re-run recorded in RESULTS.md |
 
 ## 8. Claim boundary

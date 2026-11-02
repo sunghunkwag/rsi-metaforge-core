@@ -27,6 +27,16 @@ run alongside and reported, not compared.
   fix: 0 crossings, 13 tasks admitted, wake 41-57 s.
 - Two earlier development runs (smoke2, smoke3) at other constants:
   smoke3 produced the first crossing at g3 and two forge adoptions.
+- One `SWARM_FROZEN` sanity run of 20 generations at the registered
+  constants, on the code before the review fixes: 0 crossings, 57 tasks
+  admitted, about 90 s per generation.
+- An adversarial review of the package (two workflow runs, 6 confirmed
+  findings, the rest unverified) was folded in before registration
+  (commit 969d2be; ARCHITECTURE.md §6 lists the disclosures). Its
+  reproductions ran on the generation-0 tree with planted tasks, not on
+  any arm's run. One three-generation end-to-end check of S0 and S1 at
+  B_gen 2000 followed, to see the fixed loop run; its numbers are not
+  used here.
 
 No final-run output exists. Nothing in the predictions is derived from a
 final run.
@@ -55,6 +65,16 @@ these and RESULTS.md scores them as such.
 - "Retrieval hit rate": the fraction of crossings whose crossing program
   references a fragment the Builder's mapper boosted for that task in the
   wake that produced it.
+- Budget: every arm's Builder spends at most B_gen candidate evaluations
+  per generation, the wake and the forge together (the forge is capped
+  at B_gen / 4 and the next wake gets B_gen minus what it spent); S3 has
+  no forge and spends it all on the wake. "Builder candidates" in the
+  report is this sum.
+- Kernel failures (a crashed or timed-out executor child during Kb, a
+  mined check, a crossing check or the judge) are ledgered dispositions,
+  not verdicts; they are reported per run and excluded from the
+  rejection counts. Admission rate below is admitted / proposed, with
+  kernel failures in the denominator.
 
 ## Predictions
 
@@ -77,6 +97,8 @@ hits if every seed's value lies inside the range.
 | P12 | S0 admission rate (admitted / proposed) pooled over seeds | 0.85 (range 0.70-0.95); Kb (too easy) is the most frequent rejection | moderate |
 | P13 | `SWARM_FROZEN` sanity, seed 11 | 0 crossings | high |
 | P14 | Three channel arms identical until the channel has something to carry | S0, S1 and S2 have identical archives and meters on every seed up to and including the generation of the first crossing or the first adopted self-edit in any of them, whichever comes first | high |
+| P15 | Kernel failures across all 18 runs (admission K!, failed mined, crossing or judge checks) | at most 3 in total | moderate |
+| P16 | Crossings credited with an empty credit chain (no fragment and no source task) across all 18 runs | 0 | high |
 
 ## Reasons
 
@@ -105,6 +127,11 @@ hits if every seed's value lies inside the range.
   §6).
 - **P12.** The Breaker's proposals straddle the generation-0 language by
   construction, and Kb rejects the ones the snapshot already solves.
+- **P15-P16.** The executor's timeouts are generous (step budgets bind
+  first) and the machine is otherwise idle; a crossing now requires a
+  fragment sourced from another task or a weight refit on other tasks'
+  solutions, so an empty credit chain would mean a defect in the
+  exclusion, not a result.
 
 ## Interpretation rules (OWNER_DIRECTIVE.md §8, verbatim)
 

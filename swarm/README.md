@@ -20,10 +20,15 @@ human-set task.
 
 ## Status
 
-P0–P4 built and tested (49 unit tests: kernel, certificates, crossings,
-replay, integrity audits, latent field and mapper, Breaker, Builder,
-interface). The P4 pilot is in progress; `PREDICTIONS.md`,
-`experiment_config.json` and `RESULTS.md` follow it (P5–P6).
+P0–P5 built and tested (67 unit tests: kernel, certificates, crossings,
+self-edit judge, executor guard, replay, agents, channel, interface,
+search checkpoint, review fixes). The P4 pilot is recorded in
+[`pilot/PILOT.md`](pilot/PILOT.md); an adversarial review of the package
+was folded in before registration (commit 969d2be: own-solution
+exclusion of learned weights, guarded executor, kernel failures as
+non-verdicts, judge on open tasks, replay digests, forge accounting).
+`PREDICTIONS.md` and `experiment_config.json` are the registration; the
+final runs and `RESULTS.md` follow (P6).
 
 ## Layout
 

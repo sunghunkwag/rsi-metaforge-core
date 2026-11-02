@@ -243,7 +243,9 @@ class Builder:
             heads = set(self.inventory().get("primitive_heads", []))
             for _, task_id in residues[:FORGE_RESIDUES]:
                 examples = open_ids[task_id]["examples"]
-                found = forging.forge(examples, self.batch_runner, limit=int(self.forge_limit))
+                # The forge's per-generation cap is split over the residues it may try.
+                found = forging.forge(examples, self.batch_runner,
+                                      limit=max(1, int(self.forge_limit) // FORGE_RESIDUES))
                 self.edit_tries["forge"] += 1
                 self.forge_attempts[task_id] = "none" if found is None else "found"
                 if found is None:
