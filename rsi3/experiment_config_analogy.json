@@ -7,7 +7,7 @@
   ],
   "generations": 16,
   "arms": [
-    "RSI3_META_ANALOGY",
+    "RSI3_META_ANALOGY_P",
     "RSI3_META_CHAIN",
     "RSI3_META_COMPOSE"
   ],
@@ -29,7 +29,10 @@
   },
   "meta": {
     "chunk": 16,
-    "selfplay": 256
+    "selfplay": 256,
+    "windows": {
+      "chain": 32
+    }
   },
   "behave": {
     "max_size": 10,
@@ -44,7 +47,7 @@
   },
   "chain": {
     "max_ranked": 8,
-    "max_stages": 3,
+    "max_stages": 1,
     "max_evaluations": 48
   }
 }

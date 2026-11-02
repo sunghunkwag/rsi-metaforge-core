@@ -109,6 +109,11 @@ class ArmConfig:
     # the system's own list programs first and solves the residual task with
     # its behavioural search, in the wake, in practice and at held-out time.
     chain: bool = False
+    # Whether the analogy and chain actions are also offered in the TRAIN
+    # wake. False: they are trained by honest practice on imagined tasks
+    # only, and used at held-out time; the wake offers exactly HONEST's
+    # actions, so TRAIN and the library follow HONEST's trajectory.
+    wake_new_actions: bool = True
 
 
 def standardized_features(public_tasks) -> dict:
@@ -352,9 +357,9 @@ class Runtime:
         actions += [f"behave:{name}" for name in problems]
         if self.arm.behave_dual:
             actions += [f"behave0:{name}" for name in problems]
-        if self.arm.analogy and self.registry.analogy_open(task):
+        if self.arm.analogy and self.arm.wake_new_actions and self.registry.analogy_open(task):
             actions.append("analogy")
-        if self.arm.chain and self.registry.chain_open(task):
+        if self.arm.chain and self.arm.wake_new_actions and self.registry.chain_open(task):
             actions.append("chain")
         return [a for a in actions if not self.registry.peek(task, a, self.state)[1]]
 
@@ -383,7 +388,8 @@ class Runtime:
                 total = sum(history.values())
                 action = self.metapolicy.choose(actions, self.shapes[task], history, total)
                 x = context(self.shapes[task], history.get(action, 0), total)
-                window = min(chunk, remaining)
+                window = min(int(self.config.get("meta", {}).get("windows", {}).get(
+                    action, chunk)), remaining)
                 used = self._run_window(task, action, 0.0, window, generation, pending, log)
                 reward = int(task in self.state.solutions and task in pending)
                 self.metapolicy.record(generation, action, x, reward)
@@ -564,7 +570,8 @@ class Runtime:
                                     self.arm.meta_fixed_length))
         spent = 0
         for action, practice in searches.items():
-            result = practice.run(chunk)
+            result = practice.run(int(self.config.get("meta", {}).get("windows", {}).get(
+                action, chunk)))
             spent += result.evaluated
             self.metapolicy.record(generation, action, context(shape, 0, 0),
                                    int(result.term is not None))

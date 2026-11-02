@@ -168,7 +168,11 @@ def agent_validation(runtime, model, validation, config: dict, verifier,
                 if not live:
                     break
                 action = runtime.metapolicy.choose(live, shape, history, sum(history.values()))
-                window = min(chunk, budget - spent)
+                # An action may have its own window (``meta.windows``): chain
+                # ranks its stages before any residual search, so one chunk
+                # cannot reach a composition.
+                window = min(int(config.get("meta", {}).get("windows", {}).get(action, chunk)),
+                             budget - spent)
                 result = searches[action].run(window)
                 spent += max(result.evaluated, 1)
                 history[action] = history.get(action, 0) + 1

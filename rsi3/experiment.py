@@ -179,6 +179,15 @@ ARMS = {
                                    meta_extended=True, meta_selfplay=True,
                                    decomposition_conjugate=True, behave=True,
                                    behave_folds=True, selfplay_honest=True, analogy=True),
+    # RSI3_META_ANALOGY with analogy trained by practice only (wake_new_actions).
+    "RSI3_META_ANALOGY_P": ArmConfig("RSI3_META_ANALOGY_P", allocation="meta", genesis=False,
+                                     designer_kinds=("prior",), failure_memory=True,
+                                     invention=True, invention_near_misses=True,
+                                     invention_meta=True, decomposition_fold=True,
+                                     meta_extended=True, meta_selfplay=True,
+                                     decomposition_conjugate=True, behave=True,
+                                     behave_folds=True, selfplay_honest=True, analogy=True,
+                                     wake_new_actions=False),
     # Residual decomposition (PREDICTIONS_ANALOGY.md): RSI3_META_HONEST, with
     # one more meta-RL action that runs one of the system's own list programs
     # first and solves the residual task with its behavioural search (chain.py).
@@ -188,7 +197,8 @@ ARMS = {
                                  invention_meta=True, decomposition_fold=True,
                                  meta_extended=True, meta_selfplay=True,
                                  decomposition_conjugate=True, behave=True,
-                                 behave_folds=True, selfplay_honest=True, chain=True),
+                                 behave_folds=True, selfplay_honest=True, chain=True,
+                                 wake_new_actions=False),
     # Both new actions (PREDICTIONS_ANALOGY.md).
     "RSI3_META_COMPOSE": ArmConfig("RSI3_META_COMPOSE", allocation="meta", genesis=False,
                                    designer_kinds=("prior",), failure_memory=True,
@@ -197,7 +207,7 @@ ARMS = {
                                    meta_extended=True, meta_selfplay=True,
                                    decomposition_conjugate=True, behave=True,
                                    behave_folds=True, selfplay_honest=True, analogy=True,
-                                   chain=True),
+                                   chain=True, wake_new_actions=False),
     # Dream practice (PREDICTIONS_DREAM.md): RSI3_META_HONEST, also
     # practising every action on dreams from the system's own grammar.
     "RSI3_META_DREAM": ArmConfig("RSI3_META_DREAM", allocation="meta", genesis=False,
