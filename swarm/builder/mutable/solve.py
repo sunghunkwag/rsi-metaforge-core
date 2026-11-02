@@ -171,9 +171,31 @@ def grammar_for(state: dict, exclude: set, boost: dict | None = None) -> Grammar
         context = {k: dict(v) for k, v in state["context_weights"].items()}
     for name, factor in (boost or {}).items():
         if name in library or name in primitives:
-            weights[name] = max(float(weights.get(name, 1.0)) * float(factor), 1e-6)
+            weights, context = apply_boost(weights, context, name, float(factor))
     return Grammar(library=library, primitives=primitives, weights=weights or None,
                    context_weights=context or None)
+
+
+def apply_boost(weights: dict, context: dict, name: str, factor: float) -> tuple:
+    """Multiply every weight of production ``name`` (plain and per-arity keys, in every table).
+
+    The grammar looks a production up by ``name/arity`` before ``name`` and
+    in the context table before the global one, so a boost has to reach
+    every key that can answer for the name; an unfitted grammar (no key)
+    gets the plain key, whose default weight is one.
+    """
+    def boosted(table):
+        out, matched = dict(table), False
+        for key in list(out):
+            if key == name or key.startswith(name + "/"):
+                out[key] = max(float(out[key]) * factor, 1e-6)
+                matched = True
+        return out, matched
+    weights, matched = boosted(weights)
+    if not matched:
+        weights[name] = max(factor, 1e-6)
+    context = {ctx: boosted(table)[0] for ctx, table in context.items()}
+    return weights, context
 
 
 def grammar_key(grammar: Grammar, search: dict | None = None) -> str:

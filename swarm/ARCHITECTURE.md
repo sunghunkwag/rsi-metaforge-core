@@ -249,6 +249,20 @@ seeds with one process per job.
   resubmitted next generation; one the gate rejected on the hidden
   instances is passed over in later windows (the search's skip set), so
   the window does not stall on it.
+- **The library is capped** at 64 entries (`learn.max_library`, not on
+  the self-edit menu): adoption stops at the cap, so solver cost per
+  candidate stays bounded; pruning by a judged edit reopens room.
+- **The excluded refit is conservative.** A corpus solution of another
+  task that was rewritten with an entry sourced from the excluded task
+  is left out of the refit (its original form is not kept), so the
+  excluded grammar has at most the evidence of the counterfactual, never
+  more: the exclusion can lose a crossing, not invent one.
+- **Retrieval boosts reach fitted weights.** The grammar looks a
+  production up by `name/arity` and by context before the plain name, so
+  a boost multiplies every key that can answer for the fragment. Before
+  this fix (commit after 46308bf) a boost on a fitted grammar was inert,
+  which the pilot did not expose because no arm's grammar had been fit
+  while a boost was offered.
 
 ## 7. Integrity invariants and the tests that hold them
 

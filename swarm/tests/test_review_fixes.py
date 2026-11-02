@@ -12,6 +12,7 @@ from swarm import latent
 from swarm.breaker.agent import Breaker
 from swarm.builder import self_edit
 from swarm.builder.agent import Builder
+from swarm.builder.mutable import solve as solve_module
 from swarm.builder.mutable.terms import Term, term_to_dict
 from swarm.builder.mutable.types import INT, ListOf
 from swarm.kernel.executor import ROOT, Executor
@@ -81,6 +82,19 @@ class OwnSolutionExclusionTests(unittest.TestCase):
             self.assertIsNotNone(results, "a dependent entry no longer crashes the excluded solve")
             self.assertNotIn("grammar failed", results[0].get("reason") or "")
             self.assertEqual(kernel.crossings.check([task_id], sha1, 2), [])
+
+
+class BoostTests(unittest.TestCase):
+    def test_boosts_reach_fitted_and_contextual_weight_keys(self):
+        fitted = {"entries": {}, "sources": {}, "fit_solutions": {},
+                  "weights": {"add/2": 3.0, "add": 2.0, "sub/2": 1.0},
+                  "context_weights": {("ROOT", 0): {"add/2": 5.0, "sub/2": 1.0}}}
+        grammar = solve_module.grammar_for(fitted, set(), {"add": 4.0})
+        self.assertEqual((grammar.weights["add/2"], grammar.weights["add"], grammar.weights["sub/2"]), (12.0, 8.0, 1.0))
+        self.assertEqual(grammar.context_weights[("ROOT", 0)]["add/2"], 20.0)
+        plain = solve_module.grammar_for({"entries": {}, "sources": {}, "fit_solutions": {},
+                                          "weights": {}, "context_weights": {}}, set(), {"add": 4.0})
+        self.assertEqual(plain.weights["add"], 4.0)
 
 
 class KernelFailureTests(unittest.TestCase):
