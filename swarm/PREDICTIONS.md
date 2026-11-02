@@ -31,12 +31,18 @@ run alongside and reported, not compared.
   constants, on the code before the review fixes: 0 crossings, 57 tasks
   admitted, about 90 s per generation.
 - An adversarial review of the package (two workflow runs, 6 confirmed
-  findings, the rest unverified) was folded in before registration
-  (commits 969d2be, 46308bf and 420a40e; ARCHITECTURE.md §6 lists the
-  disclosures). A verification pass over those commits was still running
-  at registration; whatever it confirms afterwards is handled as a
-  disclosed follow-up, and a defect that touches the measurement would
-  mean a new registration, stated as such. Its
+  findings, the rest unverified) was folded in before a first
+  registration (commits 969d2be, 46308bf and 420a40e). A verification
+  pass over those commits then confirmed further defects (an executor
+  escape through the `_ctypes` extension and `os.mknod`/`os.mkfifo`, a
+  per-generation Builder budget that could reach 1.25 B_gen, a dropped
+  gate verdict after a failed wake, a judge cache keyed without task
+  status, and two readings in this file that did not match `report.py`);
+  these were fixed and this file corrected, which made the registration
+  this commit. The first registration's runs (commit fb55d0c) were
+  stopped by a session restart after 15-19 generations of four seed-11
+  runs; their logs showed 0 crossings in every arm up to then and are
+  not used. ARCHITECTURE.md §6 lists the disclosures. Its
   reproductions ran on the generation-0 tree with planted tasks, not on
   any arm's run. One three-generation end-to-end check of S0 and S1 at
   B_gen 2000 followed, to see the fixed loop run; its numbers are not
@@ -56,9 +62,10 @@ these and RESULTS.md scores them as such.
   than S4's AND S0's never-crossed fraction (tasks admitted and not
   crossed by G, markers included) is strictly lower than S4's. A seed on
   which S0 has no crossing has no mean and fails.
-- K6: the second differences of `X(g)` (the differences of consecutive
-  increments, G-2 values for G generations) are all >= 0 over the last
-  half of that sequence (its last floor((G-2)/2) = 9 values), on every
+- K6: with `X(0) = 0`, the increments `ΔX(g) = X(g) - X(g-1)` are G
+  values and their consecutive differences, the second differences, are
+  G-1 = 19 values; all of the last half of that sequence (`report.py`
+  takes the values from index 9 on, ten values) must be >= 0, on every
   seed. If any is < 0, the generation at which the increment peaked (the
   earliest maximum) and the archive state at that generation are
   reported.
@@ -67,13 +74,14 @@ these and RESULTS.md scores them as such.
   them with the summaries; the kernel pins match `pins.json`; the AST
   audits in `tests/test_integrity.py` pass at the registration commit.
 - "Retrieval hit rate": the fraction of crossings whose crossing program
-  references a fragment the Builder's mapper boosted for that task in the
-  wake that produced it.
+  (the kernel's own unboosted solve from the generation's snapshot)
+  references a fragment that the Builder's retrieval had boosted for
+  that task in the same generation's wake.
 - Budget: every arm's Builder spends at most B_gen candidate evaluations
-  per generation, the wake and the forge together (the forge is capped
-  at B_gen / 4 and the next wake gets B_gen minus what it spent); S3 has
-  no forge and spends it all on the wake. "Builder candidates" in the
-  report is this sum.
+  per generation, the wake and the forge together: a quarter of B_gen is
+  reserved for the forge and the wake gets the rest; S3 has no forge and
+  gives the wake all of B_gen. "Builder candidates" in the report is this
+  sum.
 - Kernel failures (a crashed or timed-out executor child during Kb, a
   mined check, a crossing check or the judge) are ledgered dispositions,
   not verdicts; they are reported per run and excluded from the

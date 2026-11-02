@@ -73,7 +73,8 @@ class EditJudge:
 
     def score(self, sha: str, task_ids: list) -> dict:
         """Accepted solves and the candidates spent on open tasks; ``failed`` when the executor failed."""
-        key = (sha, tuple(task_ids))
+        statuses = tuple(self.archive.tasks[t]["status"] for t in task_ids)
+        key = (sha, tuple(task_ids), statuses)
         if key in self._cache:
             return self._cache[key]
         tasks = [{"id": t, "examples": self.archive.tasks[t]["examples"]} for t in task_ids]

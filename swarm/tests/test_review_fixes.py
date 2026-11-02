@@ -243,19 +243,28 @@ class GuardTests(unittest.TestCase):
                         import subprocess; out["subprocess"] = "allowed"
                     except Exception as exc:
                         out["subprocess"] = str(exc)[:60]
+                    try:
+                        import _ctypes; out["_ctypes"] = "allowed"
+                    except Exception as exc:
+                        out["_ctypes"] = str(exc)[:60]
+                    try:
+                        os.mkfifo(payload["fifo"]); out["mkfifo"] = "allowed"
+                    except Exception as exc:
+                        out["mkfifo"] = str(exc)[:60]
                     open(os.path.join(os.path.dirname(__file__), "inside.txt"), "w").write("ok")
                     out["inside"] = "allowed"
                     return out
                 """), encoding="utf-8")
             out = executor.isolated_call([tree, ROOT], "probe", "attempt",
                                          {"vault": str(run_dir / "vault.json"), "outside": str(run_dir / "evil.txt"),
-                                          "run_dir": str(run_dir)}, 30.0)
+                                          "run_dir": str(run_dir), "fifo": str(run_dir / "evil.fifo")}, 30.0)
             self.assertIsNotNone(out, executor.last_error)
-            for key in ("read", "import", "write", "list", "subprocess"):
+            for key in ("read", "import", "write", "list", "subprocess", "_ctypes", "mkfifo"):
                 self.assertTrue(out[key].startswith("guard:"), (key, out[key]))
             self.assertEqual(out["inside"], "allowed")
             self.assertTrue((tree / "inside.txt").exists())
             self.assertFalse((run_dir / "evil.txt").exists())
+            self.assertFalse((run_dir / "evil.fifo").exists())
 
     def test_child_hash_seed_is_fixed(self):
         executor = Executor()

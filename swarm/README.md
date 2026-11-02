@@ -20,7 +20,7 @@ human-set task.
 
 ## Status
 
-P0–P5 built and tested (67 unit tests: kernel, certificates, crossings,
+P0–P5 built and tested (69 unit tests: kernel, certificates, crossings,
 self-edit judge, executor guard, replay, agents, channel, interface,
 search checkpoint, review fixes). The P4 pilot is recorded in
 [`pilot/PILOT.md`](pilot/PILOT.md); an adversarial review of the package

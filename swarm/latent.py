@@ -17,8 +17,9 @@ to fixed random vectors (deterministic in the codebook seed, grown on
 demand); each agent has its own, which is why the mapper exists.
 
 ``shuffled`` (arm S5) permutes every vector written by a fixed
-permutation seeded by the kernel (a value the agents are not handed)
-before it is stored, so what the other agent reads carries
+permutation seeded by the kernel (from the run seed through a
+kernel-side hash the agents cannot import) before it is stored, so what
+the other agent reads carries
 no information about what was written.
 """
 from __future__ import annotations

@@ -106,10 +106,11 @@ class Run:
                                mapper=self.mapper, enable_self_edit=arm.self_edit,
                                enable_forge=arm.self_edit and bool(config["builder"]["forge"]),
                                records=arm.records)
-        # The forge spends the Builder's budget: at most a quarter of B_gen
-        # per generation, charged as candidate evaluations, and the next
-        # wake gets B_gen minus what the forge spent.
-        self.builder.forge_limit = int(budgets["B_gen"]) // 4
+        # The forge spends the Builder's budget: a quarter of B_gen per
+        # generation is reserved for it (charged as candidate evaluations)
+        # and the wake gets the rest, so wake plus forge never exceed B_gen
+        # in any generation; an arm without a forge gives the wake all of it.
+        self.builder.forge_limit = int(budgets["B_gen"]) // 4 if self.builder.enable_forge else 0
         self._forge_spent = 0
         self.generation_number = 0
         self.crossings_cumulative = 0
@@ -169,7 +170,7 @@ class Run:
         view = self.archive.public_view()
         boosts = self.builder.read_state(view)
         open_tasks = [t for t in view if t["status"] == "open"]
-        wake_budget = max(0, int(self.config["budgets"]["B_gen"]) - self._forge_spent)
+        wake_budget = int(self.config["budgets"]["B_gen"]) - int(self.builder.forge_limit)
         wake = self.builder.attack(g, open_tasks, wake_budget)
         mined, mined_failed = [], 0
         for task_id, solution in wake["solved"].items():

@@ -178,11 +178,11 @@ class Builder:
                    "budget": budgets, "boost": self.boosts, "state_path": str(self.live / "state.pkl"),
                    "skip": {t: list(terms) for t, terms in self.rejected.items() if t in budgets}}
         result = self.solver("solve_many", payload)
-        if result is None:
-            return {"solved": dict(self.pending), "residues": {}, "budgets": budgets, "failed": True}
         for task_id, solution in self.pending.items():
             if task_id in budgets:
                 self.wake_solutions[task_id] = solution     # resubmitted to the gate after a failed check
+        if result is None:
+            return {"solved": dict(self.wake_solutions), "residues": {}, "budgets": budgets, "failed": True}
         for record in result.get("results", []):
             if record.get("program") is not None:
                 self.wake_solutions[record["id"]] = {
@@ -244,8 +244,10 @@ class Builder:
             for _, task_id in residues[:FORGE_RESIDUES]:
                 examples = open_ids[task_id]["examples"]
                 # The forge's per-generation cap is split over the residues it may try.
+                # The per-generation cap is split over the residues it may try,
+                # one check per attempt kept for the inner-stage run below.
                 found = forging.forge(examples, self.batch_runner,
-                                      limit=max(1, int(self.forge_limit) // FORGE_RESIDUES))
+                                      limit=max(1, int(self.forge_limit) // FORGE_RESIDUES - 1))
                 self.edit_tries["forge"] += 1
                 self.forge_attempts[task_id] = "none" if found is None else "found"
                 if found is None:

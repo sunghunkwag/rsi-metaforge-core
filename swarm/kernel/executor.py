@@ -42,8 +42,10 @@ KERNEL_READS = [str(ROOT / "swarm" / "__init__.py"), str(ROOT / "swarm" / "__pyc
                 str(ROOT / "swarm" / "kernel"),
                 str(ROOT / "swarm" / "builder" / "mutable" / "evaluator.py")]
 ALLOWED_SWARM = ["swarm", "swarm.kernel", "swarm.kernel.hashes", "swarm.kernel.checker_lang"]
-DENIED_MODULES = ["subprocess", "socket", "ctypes", "multiprocessing", "asyncio", "http", "urllib",
-                  "ftplib", "smtplib", "telnetlib", "xmlrpc", "pty", "signal", "webbrowser",
+DENIED_MODULES = ["subprocess", "_posixsubprocess", "socket", "_socket", "ctypes", "_ctypes",
+                  "multiprocessing", "_multiprocessing", "mmap", "_ssl", "asyncio",
+                  "http", "urllib", "ftplib", "smtplib", "telnetlib", "xmlrpc", "pty", "signal",
+                  "webbrowser", "_posixshmem", "fcntl", "termios",
                   "swarm.breaker", "swarm.builder", "swarm.loop", "swarm.experiment", "swarm.report",
                   "swarm.mapper", "swarm.latent", "swarm.tests"]
 
@@ -98,7 +100,8 @@ def _install_guard(spec):
                     or (isinstance(path, str) and os.path.realpath(path) in listable)):
                 deny(event + " of " + str(path))
         elif event in ("os.remove", "os.unlink", "os.rename", "os.replace", "os.rmdir", "os.mkdir",
-                       "os.truncate", "os.chmod", "os.chown", "os.link", "os.symlink", "shutil.rmtree",
+                       "os.mknod", "os.mkfifo", "os.truncate", "os.chmod", "os.chown", "os.link",
+                       "os.symlink", "shutil.rmtree",
                        "shutil.copyfile", "shutil.copymode", "shutil.move", "shutil.copytree",
                        "os.utime", "tempfile.mkstemp", "tempfile.mkdtemp"):
             for p in args[:2]:
@@ -109,6 +112,19 @@ def _install_guard(spec):
                                "webbrowser.", "os.putenv", "os.unsetenv", "os.add_dll_directory")):
             deny(event)
     sys.addaudithook(hook)
+    # os.mknod and os.mkfifo raise no audit event: they are wrapped on the
+    # os and posix modules so that a path outside the tree is refused.
+    import posix
+    def wrapped(name, real):
+        def guarded(path, *args, **kwargs):
+            if not within(path, write_roots):
+                deny(name + " outside the tree: " + str(path))
+            return real(path, *args, **kwargs)
+        return guarded
+    for module in (os, posix):
+        for name in ("mknod", "mkfifo"):
+            if hasattr(module, name):
+                setattr(module, name, wrapped("os." + name, getattr(os, name)))
 """
 
 _RUNNER = _GUARD + r"""

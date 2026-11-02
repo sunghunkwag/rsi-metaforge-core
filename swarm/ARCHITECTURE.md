@@ -59,7 +59,7 @@ importing `swarm.kernel` verifies the pins and aborts on a mismatch
 | Crossing | `crossing.py` | **Mined solve**: a wake solution run on the hidden instances; accepted ones may be learned from, and are not crossings. **Crossing**: the current snapshot, run fresh at `B_inst` on the public examples with everything learned from the task itself excluded (its sourced library entries and forged primitives, every entry that references one of them, and the grammar weights refit without the task's own solutions), yields a program the checker accepts on every hidden instance. The record carries the program, its fragments (closed through the library entries' bodies) and their source tasks. Verdicts are memoized per snapshot; a task admitted in the current generation is not checked (Kb ran on the same snapshot); a failed executor check leaves no verdict and is ledgered. |
 | Snapshots | `snapshot.py` | Content-addressed copies of the Builder's mutable tree (`sha256` over paths and contents). Kb, crossing checks and the judge run `mutable.solve` from a snapshot in an isolated child. `call_tree` is the metered call into the live tree for the wake. Timeouts scale with the requested budget. |
 | Self-edit judge | `edits.py` | A candidate tree is snapshotted and solved on every open task plus a sample of six crossed tasks, with own-task exclusion, at `B_inst`; so is the incumbent (cached). Adopted iff accepted solves of **open** tasks per candidate spent on them strictly increase and no crossed task of the sample the incumbent solves is lost (the sample is the regression test only). An executor failure on either side refuses the candidate and caches nothing. An isolation guard requires every file of the run directory outside the candidate and its snapshot to be unchanged (size and mtime) across the evaluation. |
-| Runtime | `runtime.py` | Wires all of the above over a run directory; the loop never names the vault. Live-call failures (crash, timeout) are ledgered with the child's error. The forge's program checks are charged as Builder candidate evaluations. Checkpoints are atomic; the vault dump is owner-readable only and, like the rest of the run directory, outside what the guard lets a Builder tree read. The field's shuffle permutation (S5) is seeded here, from a value the agents are not handed. |
+| Runtime | `runtime.py` | Wires all of the above over a run directory; the loop never names the vault. Live-call failures (crash, timeout) are ledgered with the child's error. The forge's program checks are charged as Builder candidate evaluations. Checkpoints are atomic; the vault dump is owner-readable only and, like the rest of the run directory, outside what the guard lets a Builder tree read. The field's shuffle permutation (S5) is seeded here from the run seed through a kernel-side hash; an agent could recompute it only by reproducing kernel code, which the import audit forbids. |
 
 ## 2. The latent field (`swarm/latent.py`) and the mapper (`swarm/mapper.py`)
 
@@ -213,11 +213,12 @@ seeds with one process per job.
   and stop being checked, which bounds the kernel's per-generation cost;
   they count as never crossed.
 - **The forge spends the Builder's budget.** Every forge body checked
-  against a task's public inputs is a candidate evaluation; the forge is
-  capped at `B_gen / 4` per generation and the next wake receives `B_gen`
-  minus what the forge spent, so every arm's Builder spends at most
-  `B_gen` candidate evaluations per generation (S3, with no forge, spends
-  it all on the wake).
+  against a task's public inputs is a candidate evaluation; a quarter of
+  `B_gen` is reserved for the forge each generation and the wake gets
+  the rest, so every arm's Builder spends at most `B_gen` candidate
+  evaluations per generation (S3, with no forge, gives the wake all of
+  `B_gen`; an arm with a forge that finds nothing to forge leaves the
+  reserve unspent).
 - **The learning corpus is part of the tree.** `library.json` keeps one
   rewritten solution per source task; the stored weights are the fit on
   that corpus, and an own-task exclusion refits without the excluded
@@ -249,6 +250,12 @@ seeds with one process per job.
   resubmitted next generation; one the gate rejected on the hidden
   instances is passed over in later windows (the search's skip set), so
   the window does not stall on it.
+- **What the guard does not cover.** `pwd` and `grp` (imported by
+  `pathlib`) read the system account files through C calls that raise
+  no audit event, and a directory listing of the repository root or the
+  `swarm` package exposes file metadata beyond names; neither reaches
+  the run directory or the vault. Native-code escapes through `ctypes`,
+  `_ctypes`, `mmap`, sockets and subprocesses are denied at import.
 - **The library is capped** at 64 entries (`learn.max_library`, not on
   the self-edit menu): adoption stops at the cap, so solver cost per
   candidate stays bounded; pruning by a judged edit reopens room.
@@ -282,7 +289,7 @@ seeds with one process per job.
 | kernel failures are not verdicts | `test_review_fixes.KernelFailureTests`, `test_review_fixes.JudgeTests` |
 | replay checks the artifacts' digests | `test_review_fixes.ReplayTests` |
 | forge checks charged as Builder evaluations; timeouts charge nothing | `test_review_fixes.AccountingTests` |
-| import audit sees relative and dynamic imports and the mutable tree | `test_interface.test_relative_and_dynamic_imports_are_seen`, `test_mutable_tree_imports_only_the_checker_language` |
+| import audit resolves relative imports, bans dynamic-import and object-graph names, scans the mutable tree | `test_interface.test_relative_imports_are_resolved`, `test_agents_do_not_read_each_other_or_the_kernel`, `test_mutable_tree_imports_only_the_checker_language` |
 | fixed hash seed in every child | `test_review_fixes.GuardTests.test_child_hash_seed_is_fixed` |
 | determinism | the byte-identical re-run recorded in RESULTS.md |
 

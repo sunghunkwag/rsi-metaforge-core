@@ -50,7 +50,7 @@ def agent_files(name: str, recursive: bool = False):
 
 
 class ImportTests(unittest.TestCase):
-    def test_relative_and_dynamic_imports_are_seen(self):
+    def test_relative_imports_are_resolved(self):
         with tempfile.TemporaryDirectory() as directory:
             probe = Path(directory) / "probe.py"
             probe.write_text("from ..kernel import vault\nfrom .. import mapper\nfrom . import forge\n"
