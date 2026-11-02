@@ -53,19 +53,36 @@ def shared_trajectory_ok(arm) -> bool:
             and not arm.genesis and arm.continuity == "off")
 
 
-def seed_recognition(state, public, config: dict, seed: int, generation: int):
-    """The dreams and recognition model RSI-2's sleep would fit for ``seed``."""
+def seed_recognition(state, public, config: dict, seed: int, generation: int, extra=None):
+    """The dreams and recognition model RSI-2's sleep would fit for ``seed``.
+
+    ``extra`` (name -> (Task, program)) is the self-curriculum's solved pool
+    with the programs as the sleep's abstraction learner rewrote them
+    (``loop.sleep_phase(extra=...)`` fitted the primary seed's model on
+    TRAIN solutions plus this pool), so every seed's model is fitted on the
+    same non-dream corpus. Without it a curriculum arm's refitted seeds
+    would differ from the primary seed in training membership, not only in
+    the dream sample (finding by the Codex review of 8d794bb).
+    """
     search = config["search"]
     rng = random.Random(seed * 1000003 + generation)
     dreams, evaluations = dream_pairs(public, state.grammar, rng, count=config.get("dreams", 16),
                                       max_size=search["max_size"],
                                       step_budget=search["step_budget"])
     lookup = {task.name: task for task in public}
-    pairs = [(lookup[name], term) for name, term in state.solutions.items()] + dreams
+    pairs = [(lookup[name], term) for name, term in state.solutions.items()]
+    pairs += [(task, program) for task, program in (extra or {}).values()]
+    pairs += dreams
     model = Recognition(seed * 1000003 + generation)
     metrics = model.fit(pairs, state.grammar)
     return model, {"dreams": len(dreams), "dream_candidate_evaluations": evaluations,
                    "recognition_examples": metrics["examples"]}
+
+
+def curriculum_extra(runtime):
+    """The self-curriculum pool a refit must include, or None for every other arm."""
+    pool = getattr(runtime, "curriculum_pool", None)
+    return None if pool is None else pool.items
 
 
 def validation_record(state, model, validation, config: dict) -> dict:
@@ -287,7 +304,7 @@ def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = N
                 model = runtime.state.recognition
             else:
                 model, sleep = seed_recognition(runtime.state, runtime.public, rsi2_config,
-                                                seed, generation)
+                                                seed, generation, curriculum_extra(runtime))
                 seed_record["sleep"].update(sleep)
             seed_record["validation"] = validation_record(runtime.state, model, validation,
                                                           rsi2_config)

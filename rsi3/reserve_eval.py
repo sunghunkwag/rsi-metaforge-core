@@ -26,7 +26,7 @@ import time
 
 from rsi2.corpus import load_validation
 
-from .longrun import agent_validation, seed_recognition
+from .longrun import agent_validation, curriculum_extra, seed_recognition
 from .fresh import load_fresh
 from .reserve import load_reserve
 from .verifier import FrozenVerifier
@@ -55,7 +55,7 @@ def evaluate(checkpoint: Path, config: dict, partition: str) -> dict:
             model = runtime.state.recognition
         else:
             model, _ = seed_recognition(runtime.state, runtime.public, rsi2_config, seed,
-                                        generation)
+                                        generation, curriculum_extra(runtime))
         verifier = FrozenVerifier(tasks, step_budget=config["search"]["step_budget"])
         record = agent_validation(runtime, model, tasks,
                                   rsi2_config | {"meta": config.get("meta", {}),
