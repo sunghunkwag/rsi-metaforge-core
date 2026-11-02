@@ -6,7 +6,9 @@ name: RSI-3 runs
 #   {"config": "...", "arms": [...], "seeds": [...], "generations": 16,
 #    "skip_validation": true, "evaluate": ["near"]}
 # "evaluate" lists rsi3.reserve_eval partitions run once on each final
-# checkpoint (seed list from the same config). Nothing here reads TEST.
+# checkpoint (seed list from the same config). An optional "configs" map
+# (arm -> config path) overrides "config" per arm, so one plan can run arms
+# registered under different configs. Nothing here reads TEST.
 on:
   push:
     branches:
@@ -31,7 +33,10 @@ jobs:
           import json, os, sys
           name = sys.argv[1]
           plan = json.load(open(f"rsi3/runs/{name}.json"))
-          matrix = {"include": [{"arm": a, "seed": s} for a in plan["arms"] for s in plan["seeds"]]}
+          configs = plan.get("configs", {})
+          matrix = {"include": [{"arm": a, "seed": s, "config": configs.get(a, plan.get("config"))}
+                                for a in plan["arms"] for s in plan["seeds"]]}
+          assert all(item["config"] for item in matrix["include"]), "every arm needs a config"
           with open(os.environ["GITHUB_OUTPUT"], "a") as out:
               out.write(f"matrix={json.dumps(matrix)}\n")
               out.write(f"name={name}\n")
@@ -50,6 +55,7 @@ jobs:
       OMP_NUM_THREADS: '1'
       ARM: ${{ matrix.arm }}
       SEED: ${{ matrix.seed }}
+      CONFIG: ${{ matrix.config }}
       NAME: ${{ needs.plan.outputs.name }}
     steps:
       - uses: actions/checkout@v4
@@ -58,7 +64,7 @@ jobs:
           python-version: '3.11'
       - run: python -m pip install numpy
       - name: Unit tests
-        run: python -m unittest rsi3.tests.test_sealing rsi3.tests.test_analogy rsi3.tests.test_chain rsi3.tests.test_fresh
+        run: python -m unittest rsi3.tests.test_sealing rsi3.tests.test_analogy rsi3.tests.test_chain rsi3.tests.test_fresh rsi3.tests.test_acceleration
       - name: Train
         run: |
           python3 - <<'PY' > args.txt
@@ -67,10 +73,10 @@ jobs:
           extra = ["--generations", str(plan.get("generations", 16)), "--seeds", os.environ["SEED"]]
           if plan.get("skip_validation", True):
               extra.append("--skip-validation")
-          print(plan["config"]); print(" ".join(extra))
+          print(" ".join(extra))
           PY
-          config=$(sed -n 1p args.txt); extra=$(sed -n 2p args.txt)
-          python -m rsi3.longrun --config "$config" --arm "$ARM" --output "out" $extra
+          extra=$(sed -n 1p args.txt)
+          python -m rsi3.longrun --config "$CONFIG" --arm "$ARM" --output "out" $extra
       - name: Evaluate the final checkpoint
         run: |
           python3 - <<'PY' > parts.txt
@@ -78,8 +84,7 @@ jobs:
           plan = json.load(open(f"rsi3/runs/{os.environ['NAME']}.json"))
           print(" ".join(plan.get("evaluate", [])))
           PY
-          config=$(python3 -c "import json,os; print(json.load(open(f'rsi3/runs/{os.environ[\"NAME\"]}.json'))['config'])")
-          python3 -c "import json,sys; c=json.load(open('$config')); c['seeds']=[int('$SEED')]; json.dump(c, open('eval_config.json','w'))"
+          python3 -c "import json,sys; c=json.load(open('$CONFIG')); c['seeds']=[int('$SEED')]; json.dump(c, open('eval_config.json','w'))"
           for part in $(cat parts.txt); do
             python -m rsi3.reserve_eval --checkpoint "out/$ARM.checkpoint.pkl" --config eval_config.json \
               --partition "$part" --output "out/${ARM}_seed${SEED}_${part}.json"
