@@ -72,8 +72,7 @@ class EditJudge:
         if key in self._cache:
             return self._cache[key]
         tasks = [{"id": t, "examples": self.archive.tasks[t]["examples"]} for t in task_ids]
-        results = (self.snapshots.solve(sha, tasks, self.b_inst, exclude={t: [t] for t in task_ids},
-                                        agent="kernel") if tasks else [])
+        results = self.snapshots.solve_excluded(sha, tasks, self.b_inst, agent="kernel") if tasks else []
         if results is None:
             score = {"solved": set(), "budget": 0, "failed": True}
         else:

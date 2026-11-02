@@ -1,15 +1,51 @@
 {
  "schema_version": 1,
  "purpose": "P4 pilot: 30 minutes per arm to choose D, n_prop, B_gen, B_inst, k_edit, G (not registered)",
- "latent": {"D": 8192, "codebook_seed": 7},
- "mapper": {"kind": "least_squares", "refit": "full_replay_each_generation", "ridge": 1.0},
- "breaker": {"n_prop": 12, "lineages": ["analogy", "compose", "mutate", "distinguisher"],
-             "regret_f": "1/(1+generations_to_crossing)", "probe_set_seed": 11},
- "builder": {"k_edit": 2, "forge": true, "regression_sample": 6},
- "budgets": {"B_gen": 2000, "B_inst": 100, "executor_timeout_s": 2, "executor_mem_mb": 512},
- "horizon": 8,
+ "latent": {
+  "D": 8192,
+  "codebook_seed": 7
+ },
+ "mapper": {
+  "kind": "least_squares",
+  "refit": "full_replay_each_generation",
+  "ridge": 1.0
+ },
+ "breaker": {
+  "n_prop": 8,
+  "lineages": [
+   "analogy",
+   "compose",
+   "mutate",
+   "distinguisher"
+  ],
+  "regret_f": "1/(1+generations_to_crossing)",
+  "probe_set_seed": 11
+ },
+ "builder": {
+  "k_edit": 2,
+  "forge": true,
+  "regression_sample": 6
+ },
+ "budgets": {
+  "B_gen": 6000,
+  "B_inst": 200,
+  "executor_timeout_s": 2,
+  "executor_mem_mb": 512
+ },
+ "horizon": 10,
  "generations": 40,
- "seeds": [11],
- "arms": ["SWARM_FULL", "SWARM_RECORDS", "SWARM_NO_MAPPER", "SWARM_NO_SELFEDIT", "SWARM_NO_BREAKER_REGRET", "SWARM_SHUFFLED_FIELD"],
- "resources": {"workers": 3}
+ "seeds": [
+  11
+ ],
+ "arms": [
+  "SWARM_FULL",
+  "SWARM_RECORDS",
+  "SWARM_NO_MAPPER",
+  "SWARM_NO_SELFEDIT",
+  "SWARM_NO_BREAKER_REGRET",
+  "SWARM_SHUFFLED_FIELD"
+ ],
+ "resources": {
+  "workers": 3
+ }
 }

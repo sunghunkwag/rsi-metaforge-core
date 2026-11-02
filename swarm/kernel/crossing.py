@@ -17,6 +17,9 @@ hidden instances and nothing else:
   substrate change driven by other tasks (own-solution fragments
   excluded). The crossing record carries the program, the fragments it
   used and their source tasks: the credit chain ``replay.py`` re-derives.
+  Solves are memoized per (snapshot, task) in the snapshot store: an
+  unchanged snapshot cannot newly cross a task, so a task is re-solved
+  only when the snapshot changed.
 """
 from __future__ import annotations
 
@@ -56,8 +59,7 @@ class Crossings:
         if not tasks:
             return []
         public = [{"id": t["id"], "examples": t["examples"]} for t in tasks]
-        results = self.snapshots.solve(snapshot_sha, public, self.b_inst,
-                                       exclude={t["id"]: [t["id"]] for t in tasks}, agent="kernel")
+        results = self.snapshots.solve_excluded(snapshot_sha, public, self.b_inst, agent="kernel")
         if results is None:
             self.ledger.append("crossing_check_failed", {"generation": generation,
                                                          "snapshot": snapshot_sha})

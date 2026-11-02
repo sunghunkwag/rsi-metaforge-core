@@ -62,6 +62,7 @@ class SnapshotStore:
         self.store.mkdir(parents=True, exist_ok=True)
         self.executor = executor
         self.meter = meter
+        self._memo: dict = {}          # (sha, task id, budget) -> result of the self-excluded fresh solve
 
     def take(self, tree_dir: Path) -> str:
         """Snapshot a mutable tree; returns its content hash (idempotent)."""
@@ -119,6 +120,26 @@ class SnapshotStore:
                                                 "exclude": exclude or {}}, agent=agent,
                            timeout=solve_timeout(int(budget) * len(tasks)))
         return None if result is None else result["results"]
+
+    def solve_excluded(self, sha: str, tasks: list, budget: int, agent: str = "kernel") -> list | None:
+        """Fresh solves at ``budget`` with each task's own fragments excluded, memoized per (sha, task, budget).
+
+        A solve from a content-addressed snapshot is deterministic and
+        independent across tasks, so a (sha, task, budget) result is final:
+        the crossing check and the self-edit judge share this memo, and a
+        memoized result charges nothing because its cost was counted when
+        it was run. Returns None when the solver child failed.
+        """
+        budget = int(budget)
+        pending = [t for t in tasks if (sha, t["id"], budget) not in self._memo]
+        if pending:
+            results = self.solve(sha, pending, budget, exclude={t["id"]: [t["id"]] for t in pending},
+                                 agent=agent)
+            if results is None:
+                return None
+            for result in results:
+                self._memo[(sha, result["id"], budget)] = result
+        return [self._memo[(sha, t["id"], budget)] for t in tasks]
 
     def inventory(self, sha: str) -> dict | None:
         result = self.executor.isolated_call([self.path(sha), ROOT], "mutable.solve", "inventory",
