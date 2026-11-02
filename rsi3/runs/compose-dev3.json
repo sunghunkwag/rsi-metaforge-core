@@ -1,0 +1,9 @@
+{
+  "purpose": "Development only. As compose-dev2, plus composition practice: the new actions also practise on two-stage tasks imagined from the system's own programs (meta.compose_selfplay 96). TRAIN only at seed 44, then RESERVE-NEAR and COMPOSE-24, both exposed.",
+  "config": "rsi3/experiment_config_compose.json",
+  "arms": ["RSI3_META_CHAIN", "RSI3_META_COMPOSE"],
+  "seeds": [44],
+  "generations": 16,
+  "skip_validation": true,
+  "evaluate": ["near", "compose24"]
+}

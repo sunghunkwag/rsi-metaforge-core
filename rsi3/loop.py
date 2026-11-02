@@ -461,13 +461,87 @@ class Runtime:
             made += 1
             if self.arm.behave:
                 practice += self._practice(examples, shape, generation)
+        composed = 0
+        if int(self.config.get("meta", {}).get("compose_selfplay", 0)) and (
+                self.arm.chain or self.arm.analogy):
+            composed, compose_practice = self._compose_practice(generation, family, templates)
+            practice += compose_practice
         dreamt = 0
         if self.arm.selfplay_dreams:
             dreamt, dream_practice = self._dream_practice(generation)
             practice += dream_practice
         return {"imagined": made, "program_runs": runs, "dreams_practised": dreamt,
+                "composed_practised": composed,
                 "practice_evaluations": (practice if self.arm.behave or self.arm.selfplay_honest
                                          else None)}
+
+    def _compose_practice(self, generation, family, templates) -> tuple[int, int]:
+        """Practise the new actions on two-stage tasks the system imagines from its own programs.
+
+        Skeleton-imagined tasks are single routines, so practice never shows
+        the policy a composition. Here each imagined task is
+        ``lambda x. S[h] (f x)``:
+
+        - ``f`` is one of the system's own list programs (chain's stage set:
+          library concepts, ``tail``, verified solutions);
+        - ``S`` is a skeleton, and its hole ``h`` is sampled from the
+          current grammar;
+        - the task is run on a TRAIN task's public inputs.
+
+        Only the new actions (analogy, chain) practise on these tasks, and
+        each is credited by its actual outcome. The wake's actions get no
+        episodes here, so their models, and TRAIN, are unchanged. The random
+        stream is separate and depends on the generation only.
+        """
+        from rsi2.evaluator import evaluate
+        from rsi2.sampling import sample_program
+        from rsi2.terms import App, Lam, Var
+        from .chain import LIST, stage_candidates
+        from .decompose import skeletons_for
+        from .selfmodel import canonical_types, normalize
+        count = int(self.config.get("meta", {}).get("compose_selfplay", 0))
+        rng = random.Random(f"rsi3-compose-selfplay-{generation}")
+        types = {t.name: t.request_type for t in self.public}
+        stages = list(stage_candidates(self.state.solutions, types,
+                                       self.registry.library(self.state)).values())
+        library = self.registry.library(self.state)
+        step_budget = self.config["search"]["step_budget"]
+        made, spent = 0, 0
+        for _ in range(count):
+            stage = stages[rng.randrange(len(stages))]
+            skeleton = family[rng.randrange(len(family))]
+            hole = sample_program(skeleton.hole_type, self.state.grammar, rng, max_size=8,
+                                  max_attempts=20)
+            if hole is None:
+                continue
+            template = templates[rng.randrange(len(templates))]
+            try:
+                program = canonical_types(normalize(
+                    Lam(LIST, App(skeleton.compose(hole), App(stage, Var(0))))))
+            except Exception:
+                continue
+            examples, middle = [], []
+            for inputs, _ in template.examples:
+                first = evaluate(stage, inputs, library=library, step_budget=step_budget)
+                result = evaluate(program, inputs, library=library, step_budget=step_budget)
+                if not result.ok or not first.ok:
+                    break
+                examples.append((inputs, result.value))
+                middle.append(first.value)
+            if len(examples) != len(template.examples):
+                continue
+            outputs = [repr(o) for _, o in examples]
+            if (len(set(outputs)) == 1 or all(repr(o) == repr(i[0]) for i, o in examples)
+                    or all(repr(o) == repr(m) for (_, o), m in zip(examples, middle))):
+                continue                  # constant, the identity, or the stage alone
+            if skeleton.name not in {sk.name for sk in skeletons_for(
+                    [((m,), o) for m, (_, o) in zip(middle, examples)],
+                    self.arm.decomposition_fold)}:
+                continue
+            shape = shape_features(examples, self.arm.meta_extended, self.arm.meta_fixed_length)
+            spent += self._practice_searches(examples, shape, generation, only_new=True)
+            made += 1
+        return made, spent
 
     def _dream_practice(self, generation) -> tuple[int, int]:
         """Practise every action on dreams sampled from the system's own grammar.
@@ -511,7 +585,7 @@ class Runtime:
             practised += 1
         return practised, spent
 
-    def _practice_searches(self, examples, shape, generation) -> int:
+    def _practice_searches(self, examples, shape, generation, only_new: bool = False) -> int:
         """Honest practice: run the prior and each fitting skeleton for one chunk.
 
         The generating skeleton is not credited by construction: whether its
@@ -531,16 +605,18 @@ class Runtime:
         library = self.registry.library(self.state)
         hole_grammar = Grammar(library=library, weights=self.state.grammar.weights,
                                context_weights=self.state.grammar.context_weights)
-        searches = {"prior": ResumableSearch(examples, request,
-                                             self.registry.base_grammar(self.state),
-                                             step_budget=search["step_budget"],
-                                             max_size=search["max_size"],
-                                             max_expansions=search["max_expansions"])}
-        for sk in skeletons_for(examples, self.arm.decomposition_fold):
-            searches[f"decompose:{sk.name}"] = ResumableSearch(
-                examples, sk.hole_type, hole_grammar, compose=sk.compose,
-                step_budget=search["step_budget"], max_size=search["max_size"],
-                max_expansions=search["max_expansions"])
+        searches = {}
+        if not only_new:
+            searches["prior"] = ResumableSearch(examples, request,
+                                                self.registry.base_grammar(self.state),
+                                                step_budget=search["step_budget"],
+                                                max_size=search["max_size"],
+                                                max_expansions=search["max_expansions"])
+            for sk in skeletons_for(examples, self.arm.decomposition_fold):
+                searches[f"decompose:{sk.name}"] = ResumableSearch(
+                    examples, sk.hole_type, hole_grammar, compose=sk.compose,
+                    step_budget=search["step_budget"], max_size=search["max_size"],
+                    max_expansions=search["max_expansions"])
         if self.arm.analogy:
             from .analogy import AnalogySearch
             settings = self.config.get("analogy", {})
