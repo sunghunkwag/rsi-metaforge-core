@@ -57,6 +57,8 @@ class Executor:
         self.agent = agent
         self.calls = 0
         self.timeouts = 0
+        self.failures = 0
+        self.last_error = None          # tail of the child's stderr on its last failure
 
     def _child(self, code: str, argv: list, payload: dict, timeout: float) -> list:
         self.calls += 1
@@ -66,22 +68,31 @@ class Executor:
                                        text=True, timeout=timeout, cwd=str(ROOT))
         except subprocess.TimeoutExpired:
             self.timeouts += 1
+            self.last_error = f"timeout after {timeout:.0f}s"
             return None
         if completed.returncode != 0:
+            self.failures += 1
+            self.last_error = f"exit {completed.returncode}: {completed.stderr[-1500:]}"
             return None
         try:
             return json.loads(completed.stdout)
         except json.JSONDecodeError:
+            self.failures += 1
+            self.last_error = f"unreadable output: {completed.stdout[-300:]!r}"
             return None
 
     def run_batch(self, program, inputs: list, module: str = "executor") -> list:
         """Run ``program`` on each input list; returns one dict per input."""
+        return self.run_items([(program, args) for args in inputs], module)
+
+    def run_items(self, items: list, module: str = "executor") -> list:
+        """Run ``(program, args)`` pairs, batched per child; returns one dict per item."""
         results = []
-        for start in range(0, len(inputs), BATCH):
-            chunk = inputs[start:start + BATCH]
+        for start in range(0, len(items), BATCH):
+            chunk = items[start:start + BATCH]
             payload = {"step_budget": self.step_budget,
                        "items": [{"program": program, "args": [checker_lang.to_jsonable(a) for a in args]}
-                                 for args in chunk]}
+                                 for program, args in chunk]}
             timeout = self.timeout_s * (1 + len(chunk) / 16)
             out = self._child(_RUNNER, [str(ROOT), str(self.memory_mb)], payload, timeout)
             if out is None:

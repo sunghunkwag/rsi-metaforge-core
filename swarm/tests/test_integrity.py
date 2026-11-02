@@ -93,12 +93,18 @@ class IntegrityTests(unittest.TestCase):
         except (OSError, subprocess.CalledProcessError) as exc:
             self.skipTest(f"git unavailable: {exc}")
         self.assertEqual(result.stdout.strip(), "", result.stdout)
+        # Provenance comments may name the original core; no module imports it or rsi2/rsi3.
         for path in python_files(PACKAGE, exclude=("tests",)):
-            text = path.read_text(encoding="utf-8")
-            self.assertNotIn("rsi_levels_metaforge_unified", text, str(path))
-            if "mutable" not in path.parts:
-                for module in ("import rsi2", "from rsi2", "import rsi3", "from rsi3"):
-                    self.assertNotIn(module, text, f"{path} imports a protected package")
+            for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+                names = []
+                if isinstance(node, ast.Import):
+                    names = [alias.name for alias in node.names]
+                elif isinstance(node, ast.ImportFrom) and node.level == 0:
+                    names = [node.module or ""]
+                for name in names:
+                    root = name.split(".")[0]
+                    self.assertNotIn(root, ("rsi_levels_metaforge_unified", "rsi2", "rsi3"),
+                                     f"{path} imports protected code ({name})")
 
     def test_mutable_tree_is_self_contained(self):
         tree = PACKAGE / "builder" / "mutable"

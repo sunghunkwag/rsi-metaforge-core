@@ -80,13 +80,20 @@ def request_type(examples):
     return request
 
 
-def grammar_for(state: dict, exclude: set) -> Grammar:
-    """The current grammar without entries and forged primitives sourced from excluded tasks."""
+def grammar_for(state: dict, exclude: set, boost: dict | None = None) -> Grammar:
+    """The current grammar without entries and forged primitives sourced from excluded tasks.
+
+    ``boost`` (name -> factor) multiplies the weight of retrieved fragments:
+    how the Builder's latent retrieval reaches the search order.
+    """
     library = {name: term for name, term in state["entries"].items()
                if not set(state["sources"].get(name, [])) & exclude}
     primitives = {name: type_ for name, type_ in PRIMITIVE_TYPES.items()
                   if name not in FORGED or not set(FORGED[name]["sources"]) & exclude}
     weights = {k: v for k, v in state["weights"].items()}
+    for name, factor in (boost or {}).items():
+        if name in library or name in primitives:
+            weights[name] = max(float(weights.get(name, 1.0)) * float(factor), 1e-6)
     context = {k: dict(v) for k, v in state["context_weights"].items()}
     return Grammar(library=library, primitives=primitives, weights=weights or None,
                    context_weights=context or None)
@@ -128,13 +135,14 @@ def solve_many(payload: dict) -> dict:
             results.append({"id": task_id, "program": None, "reason": "outside the DSL",
                             "evaluations": 0, "best_public": 0.0})
             continue
-        grammar = grammar_for(state, exclude)
+        grammar = grammar_for(state, exclude, payload.get("boost", {}).get(task_id))
         failures = persisted.setdefault("failures", {}).setdefault(task_id, set()) if state_path else None
-        best = {"matched": 0, "total": len(examples)}
+        best = {"matched": 0, "total": len(examples), "term": None}
 
         def near_miss(term, matched, total, best=best):
             if matched > best["matched"]:
                 best["matched"] = matched
+                best["term"] = term
 
         searcher = ResumableSearch(examples, request, grammar, step_budget=search["step_budget"],
                                    max_size=search["max_size"],
@@ -142,9 +150,11 @@ def solve_many(payload: dict) -> dict:
                                    known_failures=failures, near_misses=near_miss)
         position = persisted.setdefault("positions", {}).get((task_id, grammar_key(grammar)), 0) if state_path else 0
         if position:
-            searcher.fast_forward(position, 0, 0, 0)
+            searcher.fast_forward(position)
         start = evaluator.METER["evaluations"]
-        result = searcher.run(int(payload["budget"]))
+        budget = payload["budget"]
+        budget = int(budget[task_id]) if isinstance(budget, dict) else int(budget)
+        result = searcher.run(budget)
         if state_path:
             persisted["positions"][(task_id, grammar_key(grammar))] = searcher.position
         record = {"id": task_id, "program": None, "dsl": None, "fragments": [],
@@ -152,10 +162,12 @@ def solve_many(payload: dict) -> dict:
                   "candidates": result.evaluated,
                   "best_public": (1.0 if result.term is not None
                                   else best["matched"] / max(best["total"], 1)),
+                  "best_dsl": None if best["term"] is None else pretty(best["term"]),
                   "exhausted": result.exhausted}
         if result.term is not None:
             record["program"] = compile_program(result.term, state["entries"])
             record["dsl"] = pretty(result.term)
+            record["term"] = term_to_dict(result.term)
             record["fragments"] = sorted(_references(result.term))
         candidates += result.evaluated
         results.append(record)

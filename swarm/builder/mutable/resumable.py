@@ -78,6 +78,30 @@ class ResumableSearch:
         """Distinct programs passed in this grammar's order, evaluated or skipped."""
         return self.evaluated + self.skipped_known
 
+    def fast_forward(self, position: int) -> int:
+        """Advance past ``position`` distinct programs without evaluating them.
+
+        SWARM addition: the wake runs in a fresh process every generation,
+        so a search resumes by rebuilding the enumerator (same grammar,
+        same order) and skipping what earlier windows already passed. The
+        skip costs enumeration time and no logical budget; the skipped
+        programs were evaluated (and remembered as failures) or skipped
+        before. Returns the number of programs passed.
+        """
+        passed = 0
+        while passed < int(position) and not self.exhausted:
+            try:
+                candidate = next(self._iterator)
+            except StopIteration:
+                self.exhausted = True
+                break
+            if candidate.term in self._seen:
+                continue
+            self._seen.add(candidate.term)
+            passed += 1
+        self.skipped_known += passed
+        return passed
+
     def _matches(self, term) -> bool:
         if self.near_misses is None:
             for inputs, expected in self.examples:

@@ -83,6 +83,7 @@ class Crossings:
                 continue
             crossing = {"generation": int(generation), "snapshot": snapshot_sha,
                         "program": result["program"], "dsl": result.get("dsl"),
+                        "term": result.get("term"),
                         "fragments": fragments, "sources": sources,
                         "candidates": result.get("candidates"),
                         "generations_to_crossing": int(generation) - self.archive.tasks[task_id]["admitted_generation"]}

@@ -59,7 +59,9 @@ class Archive:
                  "input_kind": t["input_kind"], "status": t["status"],
                  "admitted_generation": t["admitted_generation"],
                  "crossed_generation": t["crossed_generation"],
-                 "crossing_program": None if t["crossing"] is None else t["crossing"]["program"]}
+                 "crossing_program": None if t["crossing"] is None else t["crossing"]["program"],
+                 "crossing_term": None if t["crossing"] is None else t["crossing"].get("term"),
+                 "mined": t["mined"] is not None}
                 for t in self.tasks.values()]
 
     def counts(self) -> dict:

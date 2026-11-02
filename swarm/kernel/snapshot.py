@@ -26,6 +26,12 @@ ROOT = Path(__file__).resolve().parents[2]
 EXCLUDED_DIRS = {"__pycache__"}
 EXCLUDED_SUFFIXES = {".pyc", ".pkl"}
 SOLVE_TIMEOUT_S = 120.0
+SECONDS_PER_CANDIDATE = 0.02      # measured about 0.005 s on the development machine; 4x margin
+
+
+def solve_timeout(candidates: int) -> float:
+    """Wall-clock allowance for a solve of ``candidates`` logical candidates in a child."""
+    return SOLVE_TIMEOUT_S + SECONDS_PER_CANDIDATE * max(int(candidates), 0)
 
 
 def tree_files(tree_dir: Path) -> list:
@@ -86,11 +92,32 @@ class SnapshotStore:
                                                               result["meter"].get("evaluations", 0)))
         return result
 
+    def call_tree(self, tree_dir: Path, function: str, payload: dict, agent: str = "builder",
+                  timeout: float = SOLVE_TIMEOUT_S) -> dict | None:
+        """A metered isolated call into a live tree (the Builder's wake and learning).
+
+        ``tree_dir`` is the tree's ``mutable`` directory; the child imports
+        ``mutable.solve`` from its parent, under the executor's memory cap
+        and ``timeout``. Counts come back from the pinned evaluator and are
+        charged to ``agent`` here, as for snapshots.
+        """
+        tree_dir = Path(tree_dir)
+        if tree_dir.name != "mutable":
+            raise ValueError("a live tree is a directory named 'mutable'")
+        result = self.executor.isolated_call([tree_dir.parent, ROOT], "mutable.solve", function,
+                                             payload, timeout)
+        if result is not None and self.meter is not None and "meter" in result:
+            self.meter.charge(agent, f"live:{function}", steps=result["meter"].get("steps", 0),
+                              evaluations=result["meter"].get("candidates",
+                                                              result["meter"].get("evaluations", 0)))
+        return result
+
     def solve(self, sha: str, tasks: list, budget: int, exclude: dict | None = None,
               agent: str = "kernel") -> list | None:
         """Fresh solves of ``tasks`` (public views) at ``budget`` in the snapshot; None on failure."""
         result = self.call(sha, "solve_many", {"tasks": tasks, "budget": int(budget),
-                                                "exclude": exclude or {}}, agent=agent)
+                                                "exclude": exclude or {}}, agent=agent,
+                           timeout=solve_timeout(int(budget) * len(tasks)))
         return None if result is None else result["results"]
 
     def inventory(self, sha: str) -> dict | None:

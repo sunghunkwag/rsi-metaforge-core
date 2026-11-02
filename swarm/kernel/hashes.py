@@ -15,7 +15,8 @@ from pathlib import Path
 KERNEL = Path(__file__).resolve().parent
 ROOT = KERNEL.parents[1]
 KERNEL_FILES = ("checker_lang.py", "executor.py", "vault.py", "budget.py", "ledger.py",
-                "replay.py", "admit.py", "crossing.py", "snapshot.py", "archive.py")
+                "replay.py", "admit.py", "crossing.py", "snapshot.py", "archive.py", "edits.py",
+                "runtime.py")
 # The one file of the Builder's mutable tree that is pinned: the evaluator,
 # whose METER is the only source of the Builder's evaluation counts.
 PINNED_MUTABLE = ("builder/mutable/evaluator.py",)
