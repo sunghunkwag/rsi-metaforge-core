@@ -1,0 +1,5 @@
+{
+ "search": {"max_size": 12, "max_expansions": 20000, "step_budget": 2000},
+ "learn": {"from": "crossed", "max_adoptions": 8},
+ "allocation": {"strategy": "even", "window": 16}
+}

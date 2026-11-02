@@ -1,0 +1,1 @@
+"""The Builder's mutable tree: generation 0 is a copy of RSI-2's DSL, evaluator, enumerator, grammar, abstraction and search plus RSI-3's resumable search and failure memory (OWNER_DIRECTIVE.md §5). The kernel runs it from content-addressed snapshots."""
