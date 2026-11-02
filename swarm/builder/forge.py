@@ -42,44 +42,49 @@ def _sub(template, inner):
 
 
 def candidates(output_kind: str):
-    """Bodies over x, by increasing size, for a task whose outputs are of ``output_kind``."""
+    """``(body, inner)`` pairs over x by increasing size for a task whose outputs are of ``output_kind``.
+
+    ``inner`` is the innermost stage of a two-stage body (the stage applied
+    to x first), or None for a single stage.
+    """
     lists = [_sub(s, X) for s in STAGES]
     lists += [["map", ["lambda", [V], p], X] for p in POINTWISE]
     lists += [["filter", ["lambda", [V], p], X] for p in PREDICATES]
     if output_kind == "list[int]":
-        yield from lists
+        for body in lists:
+            yield body, None
         for outer in STAGES:
             for inner in lists:
-                yield _sub(outer, inner)
+                yield _sub(outer, inner), inner
         for p in POINTWISE:
             for inner in lists:
-                yield ["map", ["lambda", [V], p], inner]
+                yield ["map", ["lambda", [V], p], inner], inner
         for p in PREDICATES:
             for inner in lists:
-                yield ["filter", ["lambda", [V], p], inner]
+                yield ["filter", ["lambda", [V], p], inner], inner
     elif output_kind == "int":
         for r in REDUCTIONS:
-            yield _sub(r, X)
+            yield _sub(r, X), None
         for r in REDUCTIONS:
             for inner in lists:
-                yield _sub(r, inner)
+                yield _sub(r, inner), inner
         for p in POINTWISE:
             for r in REDUCTIONS:
-                yield _apply_int(p, _sub(r, X))
+                yield _apply_int(p, _sub(r, X)), _sub(r, X)
     elif output_kind == "bool":
         for b in BOOLS:
-            yield _sub(b, X)
+            yield _sub(b, X), None
         for b in BOOLS:
             for inner in lists:
-                yield _sub(b, inner)
+                yield _sub(b, inner), inner
         for p in PREDICATES:
             for r in REDUCTIONS:
-                yield _apply_int(p, _sub(r, X))
+                yield _apply_int(p, _sub(r, X)), _sub(r, X)
     elif output_kind == "list[bool]":
         for p in PREDICATES:
-            yield ["map", ["lambda", [V], p], X]
+            yield ["map", ["lambda", [V], p], X], None
             for inner in lists:
-                yield ["map", ["lambda", [V], p], inner]
+                yield ["map", ["lambda", [V], p], inner], inner
 
 
 def _apply_int(pointwise, inner):
@@ -118,7 +123,8 @@ def forge(examples, batch_runner, limit: int = 4000, batch: int = 64) -> dict | 
     ``batch_runner(programs, inputs)`` runs checker-language programs on
     inputs (the metered runner the loop hands the Builder) and returns, per
     program, the outputs or None. Returns {"body": checker-language lambda,
-    "type": DSL type text, "tried": n}. Public inputs only.
+    "inner": the innermost stage as a lambda or None, "type": DSL type
+    text, "tried": n}. Public inputs only.
     """
     kind = output_kind(examples)
     if kind is None:
@@ -127,29 +133,39 @@ def forge(examples, batch_runner, limit: int = 4000, batch: int = 64) -> dict | 
     outputs = [item["output"] for item in examples]
     tried = 0
     pending = []
-    for body in candidates(kind):
-        pending.append(body)
+    for pair in candidates(kind):
+        pending.append(pair)
         if len(pending) < batch and tried + len(pending) < limit:
             continue
-        found = _run_batch(pending, inputs, outputs, batch_runner)
+        index = _run_batch([body for body, _ in pending], inputs, outputs, batch_runner)
         tried += len(pending)
-        if found is not None:
-            return {"body": ["lambda", [X], found], "type": f"list[int] -> {kind}",
-                    "tried": tried - len(pending) + pending.index(found) + 1, "text": json.dumps(found)}
+        if index is not None:
+            return _found(pending[index], kind, tried - len(pending) + index + 1)
         pending = []
         if tried >= limit:
             return None
     if pending:
-        found = _run_batch(pending, inputs, outputs, batch_runner)
-        if found is not None:
-            return {"body": ["lambda", [X], found], "type": f"list[int] -> {kind}",
-                    "tried": tried + pending.index(found) + 1, "text": json.dumps(found)}
+        index = _run_batch([body for body, _ in pending], inputs, outputs, batch_runner)
+        if index is not None:
+            return _found(pending[index], kind, tried + index + 1)
     return None
+
+
+def _found(pair, kind, tried):
+    body, inner = pair
+    return {"body": ["lambda", [X], body], "inner": None if inner is None else ["lambda", [X], inner],
+            "type": f"list[int] -> {kind}", "tried": tried, "text": json.dumps(body)}
+
+
+def head(program) -> str | None:
+    """The outermost primitive of a lambda body (``None`` for a bare variable or constant)."""
+    body = program[2] if isinstance(program, list) and program and program[0] == "lambda" else program
+    return body[0] if isinstance(body, list) and body and isinstance(body[0], str) else None
 
 
 def _run_batch(bodies, inputs, outputs, batch_runner):
     results = batch_runner([["lambda", [X], body] for body in bodies], inputs)
-    for body, got in zip(bodies, results):
+    for index, got in enumerate(results):
         if got is not None and all(o == y for o, y in zip(got, outputs)):
-            return body
+            return index
     return None

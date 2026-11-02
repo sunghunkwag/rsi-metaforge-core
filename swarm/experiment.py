@@ -16,6 +16,9 @@ import os
 
 os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
 os.environ.setdefault("OMP_NUM_THREADS", "1")
+# Children (the executor's python -I) inherit this: string-hash order never
+# enters a ledger even if some set iteration slipped through.
+os.environ.setdefault("PYTHONHASHSEED", "0")
 
 import argparse
 from concurrent.futures import ProcessPoolExecutor

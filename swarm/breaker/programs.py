@@ -29,28 +29,42 @@ def filtered(test):
 
 
 SEED = [
-    ["sort", X], ["reverse", X], ["unique", X], ["tail", X], ["take", 2, X], ["drop", 2, X],
-    ["sum", X], ["len", X], ["last", X], ["head", X], ["count", X, 0], ["index-of", X, 1],
-    ["empty?", X], ["contains", X, 3], ["<", ["len", X], 4],
-    mapped(["+", V, 1]), mapped(["*", V, 2]), mapped(["-", V, 1]), mapped(["mod", V, 2]),
-    mapped(["neg", V]), mapped(["max", V, 3]), mapped([">", V, 2]), mapped(["=", ["mod", V, 2], 0]),
-    filtered([">", V, 2]), filtered(["=", ["mod", V, 2], 0]), filtered(["!=", V, 0]),
-    ["fold", "+", 0, X], ["fold", "max", 0, X], ["fold", ["lambda", ["a", "b"], ["cons", "b", "a"]], ["list"], X],
+    # Stages the checker language has and the generation-0 DSL lacks.
+    ["sort", X], ["reverse", X], ["unique", X], ["take", 2, X], ["drop", 2, X],
+    ["count", X, 0], ["index-of", X, 1], ["contains", X, 3],
     ["append", X, ["reverse", X]], ["append", ["take", 1, X], ["drop", 2, X]],
     ["sort", ["unique", X]], ["reverse", ["sort", X]], ["take", 3, ["sort", X]], ["drop", 1, ["reverse", X]],
-    ["map", ["lambda", [V], ["*", V, V]], X], ["concat", ["list", X, X]],
-    ["zip-free-rotate", X],
+    ["concat", ["list", X, X]], ["append", ["drop", 1, X], ["take", 1, X]],
+    # Stages within reach of the generation-0 DSL (map, filter, fold, head, tail, cons, arithmetic),
+    # so that mutations and compositions of them sit on the frontier rather than beyond it.
+    ["tail", X], ["sum", X], ["len", X], ["last", X], ["head", X], ["empty?", X], ["<", ["len", X], 4],
+    mapped(["+", V, 1]), mapped(["*", V, 2]), mapped(["-", V, 1]), mapped(["mod", V, 2]),
+    mapped(["neg", V]), mapped(["max", V, 3]), mapped([">", V, 2]), mapped(["=", ["mod", V, 2], 0]),
+    mapped(["*", V, V]), mapped(["+", V, V]), mapped(["-", 0, V]), mapped(["mod", V, 3]),
+    filtered([">", V, 2]), filtered(["=", ["mod", V, 2], 0]), filtered(["!=", V, 0]), filtered(["<", V, 3]),
+    filtered(["=", ["mod", V, 3], 0]), filtered(["<", 1, V]),
+    ["fold", "+", 0, X], ["fold", "max", 0, X], ["fold", ["lambda", ["a", "b"], ["cons", "b", "a"]], ["list"], X],
+    ["fold", "+", 0, mapped(["*", V, V])], ["fold", "+", 1, X], ["fold", "*", 1, X],
+    ["cons", ["head", X], X], ["cons", 0, X], ["cons", ["sum", X], X], ["tail", ["tail", X]],
+    ["cons", ["head", X], ["tail", ["tail", X]]], ["len", filtered([">", V, 0])], ["sum", mapped(["+", V, 1])],
+    ["sum", filtered(["=", ["mod", V, 2], 0])], ["head", ["tail", X]], ["cons", ["len", X], X],
+    mapped(["+", V, ["len", X]]), mapped(["-", V, ["head", X]]), mapped(["*", V, ["sum", X]]),
+    filtered(["<", V, ["head", X]]), filtered(["=", V, ["head", X]]), ["=", ["sum", X], 0], ["<", ["head", X], ["last", X]],
+    [">", ["len", X], 2], ["contains", X, ["len", X]],
 ]
-SEED = [p for p in SEED if p[0] != "zip-free-rotate"] + [["append", ["drop", 1, X], ["take", 1, X]]]
 
 UNARY_LIST = [["sort", "_"], ["reverse", "_"], ["unique", "_"], ["tail", "_"], ["take", 2, "_"],
               ["drop", 1, "_"], ["take", 3, "_"], ["drop", 2, "_"], ["append", "_", ["reverse", "_"]],
               ["map", ["lambda", [V], ["+", V, 1]], "_"], ["map", ["lambda", [V], ["*", V, 2]], "_"],
-              ["filter", ["lambda", [V], [">", V, 1]], "_"], ["filter", ["lambda", [V], ["=", ["mod", V, 2], 0]], "_"]]
+              ["map", ["lambda", [V], ["-", V, 1]], "_"], ["map", ["lambda", [V], ["*", V, V]], "_"],
+              ["map", ["lambda", [V], ["mod", V, 2]], "_"], ["map", ["lambda", [V], ["neg", V]], "_"],
+              ["filter", ["lambda", [V], [">", V, 1]], "_"], ["filter", ["lambda", [V], ["=", ["mod", V, 2], 0]], "_"],
+              ["filter", ["lambda", [V], ["!=", V, 0]], "_"], ["filter", ["lambda", [V], ["<", V, 2]], "_"],
+              ["tail", ["tail", "_"]], ["cons", ["head", "_"], "_"], ["cons", 0, "_"], ["cons", ["sum", "_"], "_"]]
 LIST_TO_INT = [["sum", "_"], ["len", "_"], ["head", "_"], ["last", "_"], ["fold", "max", 0, "_"],
-               ["count", "_", 1], ["index-of", "_", 2]]
+               ["count", "_", 1], ["index-of", "_", 2], ["fold", "+", 1, "_"], ["head", ["tail", "_"]]]
 INT_TO_INT = [["+", "_", 1], ["*", "_", 2], ["-", "_", 3], ["mod", "_", 3], ["neg", "_"], ["abs", "_"],
-              ["*", "_", "_"]]
+              ["*", "_", "_"], ["-", 0, "_"], ["+", "_", "_"]]
 INT_TO_BOOL = [[">", "_", 2], ["=", "_", 0], ["<", "_", 5], ["=", ["mod", "_", 2], 0]]
 SWAPS = {"+": ["-", "*", "max", "min"], "-": ["+", "*", "min"], "*": ["+", "-", "max"],
          "<": ["<=", ">", ">="], ">": [">=", "<", "<="], "=": ["!=", "<", ">"], "!=": ["="],

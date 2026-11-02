@@ -220,16 +220,32 @@ class Builder:
         if self.enable_forge:
             residues = sorted(((r["best_public"], t) for t, r in self.residues.items()
                                if t in open_ids and t not in self.forge_attempts), reverse=True)
+            heads = set(self.inventory().get("primitive_heads", []))
             for _, task_id in residues[:FORGE_RESIDUES]:
-                found = forging.forge(open_ids[task_id]["examples"], self.batch_runner)
+                examples = open_ids[task_id]["examples"]
+                found = forging.forge(examples, self.batch_runner)
                 self.edit_tries["forge"] += 1
                 self.forge_attempts[task_id] = "none" if found is None else "found"
-                if found is not None:
-                    self.forged_count += 1
-                    patches.append({"kind": "forge", "name": f"forged_{self.forged_count}",
-                                    "type": found["type"], "body": found["body"], "sources": [task_id],
-                                    "tried": found["tried"]})
-                    break
+                if found is None:
+                    continue
+                # The innermost stage first, when it is one the tree's own
+                # primitives do not provide (the stage it lacks), then the whole body.
+                inner = found.get("inner")
+                if inner is not None and forging.head(inner) not in heads:
+                    inputs = [e["inputs"][0] for e in examples]
+                    outputs = self.batch_runner([inner], inputs)[0]
+                    kind = (forging.output_kind([{"inputs": [x], "output": o} for x, o in zip(inputs, outputs)])
+                            if outputs is not None else None)
+                    if kind is not None:
+                        self.forged_count += 1
+                        patches.append({"kind": "forge", "name": f"forged_{self.forged_count}",
+                                        "type": f"list[int] -> {kind}", "body": inner, "sources": [task_id],
+                                        "tried": found["tried"], "stage": True})
+                self.forged_count += 1
+                patches.append({"kind": "forge", "name": f"forged_{self.forged_count}",
+                                "type": found["type"], "body": found["body"], "sources": [task_id],
+                                "tried": found["tried"], "stage": False})
+                break
         kinds = [k for k in ("param", "prune", "unforge") if self.edit_credit[k] > 0]
         while len(patches) < k_edit and kinds:
             weights = [self.edit_credit[k] / (1 + self.edit_tries[k]) for k in kinds]

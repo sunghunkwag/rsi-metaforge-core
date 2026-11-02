@@ -18,7 +18,7 @@ import pickle
 
 from . import evaluator
 from .abstraction import learn_abstractions
-from .compile import compile_program
+from .compile import PRIMITIVE_MAP, compile_program
 from .grammar import Grammar
 from .memory import FailureMemory
 from .resumable import ResumableSearch
@@ -224,4 +224,5 @@ def inventory(payload: dict) -> dict:
                         for name, term in state["entries"].items()},
             "forged": {name: {"type": str(entry["type"]), "sources": entry["sources"]}
                        for name, entry in FORGED.items()},
-            "params": params()}
+            "params": params(),
+            "primitive_heads": sorted(set(PRIMITIVE_MAP.values()))}

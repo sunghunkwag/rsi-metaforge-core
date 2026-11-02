@@ -155,12 +155,12 @@ class BuilderAgentTests(unittest.TestCase):
             self.assertTrue(accepted)
             builder.observe_mined(sort_task, accepted)
             self.assertIn(sort_task, builder.solutions)
-            self.assertEqual(builder.learn(2, kernel.archive.public_view())["offered"], 0,
-                             "the generation-0 rule learns from crossings only")
+            self.assertEqual(builder.learn(2, kernel.archive.public_view())["offered"], 1,
+                             "the generation-0 rule learns from kernel-verified wake solutions")
             kernel.forge("f_sort", "list[int] -> list[int]", SORT, ["t9999"])
             self.assertEqual(kernel.crossings.check([sort_task], kernel.snapshot(), 3), [sort_task])
             learned = builder.learn(3, kernel.archive.public_view())
-            self.assertEqual(learned["offered"], 1)
+            self.assertEqual(learned["offered"], 1, "the crossing term and the mined solution are one task")
             patches = builder.propose_edits(3, kernel.archive.public_view(), k_edit=2)
             self.assertTrue(patches)
             self.assertLessEqual(len(patches), 2)
