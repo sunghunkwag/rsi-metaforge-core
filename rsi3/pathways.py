@@ -228,6 +228,35 @@ class PathwayRegistry:
         return self.analogy_index.sources(self.analogy_solutions, public.request_type,
                                           public.examples, exclude=task)
 
+    def analogy_key(self, task: str) -> tuple:
+        """The task's ranked source set: the programs its analogy search would run."""
+        ranked = list(self.analogy_sources(task).items())
+        limit = self.analogy_settings.get("max_ranked", 6)
+        if limit is not None:
+            ranked = ranked[:int(limit)]
+        blob = json.dumps([(n, pretty(t)) for n, t in ranked])
+        return task, hashlib.sha256(blob.encode("utf-8")).hexdigest()[:20]
+
+    def analogy_open(self, task: str) -> bool:
+        """Whether the task's current source set still has analogy budget (``max_evaluations``).
+
+        Analogy is a local search around a few programs. Its budget for a
+        task is capped per source set, across generations: the grammar's
+        refit each generation does not reopen it, a new nearby solution
+        does.
+        """
+        if not self.analogy_sources(task):
+            return False
+        cap = self.analogy_settings.get("max_evaluations")
+        spent = getattr(self, "analogy_spent", {}).get(self.analogy_key(task), 0)
+        return cap is None or spent < int(cap)
+
+    def charge_analogy(self, task: str, evaluated: int) -> None:
+        if not hasattr(self, "analogy_spent"):
+            self.analogy_spent = {}
+        key = self.analogy_key(task)
+        self.analogy_spent[key] = self.analogy_spent.get(key, 0) + int(evaluated)
+
     def add_invented_pathway(self) -> None:
         """A separate pathway searching with this generation's concepts at full weight."""
         self.pathways.setdefault("invented", Pathway("invented", "invented", "designer", 0,

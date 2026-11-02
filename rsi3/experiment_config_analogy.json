@@ -37,6 +37,7 @@
   "workers": 2,
   "analogy": {
     "max_ranked": 6,
-    "max_sources": 4
+    "max_sources": 4,
+    "max_evaluations": 32
   }
 }

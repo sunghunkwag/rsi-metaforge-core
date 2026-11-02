@@ -240,6 +240,8 @@ class Runtime:
         features = slot_features(self.features[task], kind, similarity, search.evaluated, budget)
         cpu_started = time.process_time()
         result = search.run(budget, self.integrator.skip_callback(task, library, self.memory))
+        if kind == "analogy":
+            self.registry.charge_analogy(task, result.evaluated)
         outcome, digest, receipt = "none", None, None
         if result.term is not None:
             digest = term_digest(result.term)
@@ -335,7 +337,7 @@ class Runtime:
         actions += [f"behave:{name}" for name in problems]
         if self.arm.behave_dual:
             actions += [f"behave0:{name}" for name in problems]
-        if self.arm.analogy and self.registry.analogy_sources(task):
+        if self.arm.analogy and self.registry.analogy_open(task):
             actions.append("analogy")
         return [a for a in actions if not self.registry.peek(task, a, self.state)[1]]
 
