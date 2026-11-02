@@ -1,0 +1,1187 @@
+{
+ "arm": "SWARM_SHUFFLED_FIELD",
+ "seed": 11,
+ "config": {
+  "schema_version": 1,
+  "purpose": "P4 pilot: 30 minutes per arm to choose D, n_prop, B_gen, B_inst, k_edit, G (not registered)",
+  "latent": {
+   "D": 8192,
+   "codebook_seed": 7
+  },
+  "mapper": {
+   "kind": "least_squares",
+   "refit": "full_replay_each_generation",
+   "ridge": 1.0
+  },
+  "breaker": {
+   "n_prop": 6,
+   "lineages": [
+    "analogy",
+    "compose",
+    "mutate",
+    "distinguisher"
+   ],
+   "regret_f": "1/(1+generations_to_crossing)",
+   "probe_set_seed": 11
+  },
+  "builder": {
+   "k_edit": 1,
+   "forge": true,
+   "regression_sample": 6
+  },
+  "budgets": {
+   "B_gen": 4000,
+   "B_inst": 200,
+   "executor_timeout_s": 2,
+   "executor_mem_mb": 512
+  },
+  "horizon": 8,
+  "generations": 20,
+  "seeds": [
+   11
+  ],
+  "arms": [
+   "SWARM_FULL",
+   "SWARM_RECORDS",
+   "SWARM_NO_MAPPER",
+   "SWARM_NO_SELFEDIT",
+   "SWARM_NO_BREAKER_REGRET",
+   "SWARM_SHUFFLED_FIELD"
+  ],
+  "resources": {
+   "workers": 3
+  }
+ },
+ "generations": [
+  {
+   "generation": 1,
+   "snapshot": "a60bacab506a44b39198edfefb600c2db32361cae4705f4e319cb675391b4c5c",
+   "archive": {
+    "open": 5,
+    "crossed": 0,
+    "marker": 0,
+    "total": 5
+   },
+   "proposals": 5,
+   "admitted": 5,
+   "rejections": {
+    "K0": 0,
+    "Kd": 0,
+    "Ka": 0,
+    "Kc": 0,
+    "Kb": 0
+   },
+   "kb_margin_mean": 0.425,
+   "open_attacked": 5,
+   "wake_failed": false,
+   "wake_solved": 0,
+   "mined": 0,
+   "crossings": 0,
+   "crossed_ids": [],
+   "crossings_cumulative": 0,
+   "crossings_per_budget": 0.0,
+   "retrieval_hits": 0,
+   "retired": 0,
+   "budget": {
+    "breaker": {
+     "steps": 5347,
+     "evaluations": 0
+    },
+    "builder": {
+     "steps": 1094447,
+     "evaluations": 4000
+    },
+    "kernel": {
+     "steps": 671775,
+     "evaluations": 3000
+    }
+   },
+   "budget_cumulative": {
+    "breaker": {
+     "steps": 5347,
+     "evaluations": 0
+    },
+    "builder": {
+     "steps": 1094447,
+     "evaluations": 4000
+    },
+    "kernel": {
+     "steps": 671775,
+     "evaluations": 3000
+    }
+   },
+   "primitives_forged": 0,
+   "library_entries": 0,
+   "params": {
+    "search": {
+     "max_size": 12,
+     "max_expansions": 20000,
+     "step_budget": 2000
+    },
+    "learn": {
+     "from": "mined",
+     "max_adoptions": 8
+    },
+    "allocation": {
+     "strategy": "even",
+     "window": 16
+    }
+   },
+   "learned": [],
+   "learn_offered": 0,
+   "self_edits": {
+    "proposed": 1,
+    "adopted": 0,
+    "decisions": [
+     {
+      "kind": "forge",
+      "adopted": false,
+      "reason": "no strict gain",
+      "incumbent_solved": 0,
+      "candidate_solved": 0
+     }
+    ]
+   },
+   "lineage_credit": {
+    "analogy": 0.0,
+    "compose": 0.0,
+    "mutate": 0.0,
+    "distinguisher": 0.0
+   },
+   "lineage_multiplier": {
+    "analogy": 1.0,
+    "compose": 1.0,
+    "mutate": 1.0,
+    "distinguisher": 1.0
+   },
+   "field": {
+    "breaker_items": 6,
+    "builder_items": 5,
+    "breaker_norm": 0.072998046875,
+    "builder_norm": 0.04388427734375
+   },
+   "written": {
+    "breaker": 6,
+    "builder": 5
+   },
+   "mapper": {
+    "pairs": 0,
+    "residual": null
+   },
+   "timings": {
+    "propose_and_admit": 13.82,
+    "wake_and_mined": 37.4,
+    "crossing_check": 12.54,
+    "learn": 0.0,
+    "propose_edits": 2.51,
+    "judge": 12.76,
+    "write_and_summarize": 0.02
+   }
+  },
+  {
+   "generation": 2,
+   "snapshot": "a60bacab506a44b39198edfefb600c2db32361cae4705f4e319cb675391b4c5c",
+   "archive": {
+    "open": 10,
+    "crossed": 0,
+    "marker": 0,
+    "total": 10
+   },
+   "proposals": 6,
+   "admitted": 5,
+   "rejections": {
+    "K0": 0,
+    "Kd": 0,
+    "Ka": 0,
+    "Kc": 0,
+    "Kb": 1
+   },
+   "kb_margin_mean": 0.175,
+   "open_attacked": 10,
+   "wake_failed": false,
+   "wake_solved": 0,
+   "mined": 0,
+   "crossings": 0,
+   "crossed_ids": [],
+   "crossings_cumulative": 0,
+   "crossings_per_budget": 0.0,
+   "retrieval_hits": 0,
+   "retired": 0,
+   "budget": {
+    "breaker": {
+     "steps": 4320,
+     "evaluations": 0
+    },
+    "builder": {
+     "steps": 1703082,
+     "evaluations": 4000
+    },
+    "kernel": {
+     "steps": 915408,
+     "evaluations": 4001
+    }
+   },
+   "budget_cumulative": {
+    "breaker": {
+     "steps": 9667,
+     "evaluations": 0
+    },
+    "builder": {
+     "steps": 2797529,
+     "evaluations": 8000
+    },
+    "kernel": {
+     "steps": 1587183,
+     "evaluations": 7001
+    }
+   },
+   "primitives_forged": 0,
+   "library_entries": 0,
+   "params": {
+    "search": {
+     "max_size": 12,
+     "max_expansions": 20000,
+     "step_budget": 2000
+    },
+    "learn": {
+     "from": "mined",
+     "max_adoptions": 8
+    },
+    "allocation": {
+     "strategy": "even",
+     "window": 16
+    }
+   },
+   "learned": [],
+   "learn_offered": 0,
+   "self_edits": {
+    "proposed": 1,
+    "adopted": 0,
+    "decisions": [
+     {
+      "kind": "forge",
+      "adopted": false,
+      "reason": "no strict gain",
+      "incumbent_solved": 0,
+      "candidate_solved": 0
+     }
+    ]
+   },
+   "lineage_credit": {
+    "analogy": 0.0,
+    "compose": 0.0,
+    "mutate": 0.0,
+    "distinguisher": 0.0
+   },
+   "lineage_multiplier": {
+    "analogy": 1.0,
+    "compose": 1.0,
+    "mutate": 0.75,
+    "distinguisher": 1.0
+   },
+   "field": {
+    "breaker_items": 12,
+    "builder_items": 14,
+    "breaker_norm": 0.07925692471590909,
+    "builder_norm": 0.03416090745192308
+   },
+   "written": {
+    "breaker": 6,
+    "builder": 9
+   },
+   "mapper": {
+    "pairs": 0,
+    "residual": null
+   },
+   "timings": {
+    "propose_and_admit": 13.15,
+    "wake_and_mined": 69.73,
+    "crossing_check": 11.67,
+    "learn": 0.0,
+    "propose_edits": 10.77,
+    "judge": 25.01,
+    "write_and_summarize": 0.03
+   }
+  },
+  {
+   "generation": 3,
+   "snapshot": "a60bacab506a44b39198edfefb600c2db32361cae4705f4e319cb675391b4c5c",
+   "archive": {
+    "open": 16,
+    "crossed": 0,
+    "marker": 0,
+    "total": 16
+   },
+   "proposals": 6,
+   "admitted": 6,
+   "rejections": {
+    "K0": 0,
+    "Kd": 0,
+    "Ka": 0,
+    "Kc": 0,
+    "Kb": 0
+   },
+   "kb_margin_mean": 0.2916666666666667,
+   "open_attacked": 16,
+   "wake_failed": false,
+   "wake_solved": 0,
+   "mined": 0,
+   "crossings": 0,
+   "crossed_ids": [],
+   "crossings_cumulative": 0,
+   "crossings_per_budget": 0.0,
+   "retrieval_hits": 0,
+   "retired": 0,
+   "budget": {
+    "breaker": {
+     "steps": 4391,
+     "evaluations": 0
+    },
+    "builder": {
+     "steps": 1666277,
+     "evaluations": 4000
+    },
+    "kernel": {
+     "steps": 1289255,
+     "evaluations": 5600
+    }
+   },
+   "budget_cumulative": {
+    "breaker": {
+     "steps": 14058,
+     "evaluations": 0
+    },
+    "builder": {
+     "steps": 4463806,
+     "evaluations": 12000
+    },
+    "kernel": {
+     "steps": 2876438,
+     "evaluations": 12601
+    }
+   },
+   "primitives_forged": 0,
+   "library_entries": 0,
+   "params": {
+    "search": {
+     "max_size": 12,
+     "max_expansions": 20000,
+     "step_budget": 2000
+    },
+    "learn": {
+     "from": "mined",
+     "max_adoptions": 8
+    },
+    "allocation": {
+     "strategy": "even",
+     "window": 16
+    }
+   },
+   "learned": [],
+   "learn_offered": 0,
+   "self_edits": {
+    "proposed": 1,
+    "adopted": 0,
+    "decisions": [
+     {
+      "kind": "param",
+      "adopted": false,
+      "reason": "no strict gain",
+      "incumbent_solved": 0,
+      "candidate_solved": 0
+     }
+    ]
+   },
+   "lineage_credit": {
+    "analogy": 0.0,
+    "compose": 0.0,
+    "mutate": 0.0,
+    "distinguisher": 0.0
+   },
+   "lineage_multiplier": {
+    "analogy": 1.0,
+    "compose": 1.0,
+    "mutate": 0.75,
+    "distinguisher": 1.0
+   },
+   "field": {
+    "breaker_items": 19,
+    "builder_items": 25,
+    "breaker_norm": 0.08209906684027778,
+    "builder_norm": 0.037465413411458336
+   },
+   "written": {
+    "breaker": 7,
+    "builder": 11
+   },
+   "mapper": {
+    "pairs": 0,
+    "residual": null
+   },
+   "timings": {
+    "propose_and_admit": 15.68,
+    "wake_and_mined": 105.5,
+    "crossing_check": 13.84,
+    "learn": 0.0,
+    "propose_edits": 14.41,
+    "judge": 37.35,
+    "write_and_summarize": 0.03
+   }
+  },
+  {
+   "generation": 4,
+   "snapshot": "a60bacab506a44b39198edfefb600c2db32361cae4705f4e319cb675391b4c5c",
+   "archive": {
+    "open": 21,
+    "crossed": 0,
+    "marker": 0,
+    "total": 21
+   },
+   "proposals": 5,
+   "admitted": 5,
+   "rejections": {
+    "K0": 0,
+    "Kd": 0,
+    "Ka": 0,
+    "Kc": 0,
+    "Kb": 0
+   },
+   "kb_margin_mean": 0.45,
+   "open_attacked": 21,
+   "wake_failed": false,
+   "wake_solved": 0,
+   "mined": 0,
+   "crossings": 0,
+   "crossed_ids": [],
+   "crossings_cumulative": 0,
+   "crossings_per_budget": 0.0,
+   "retrieval_hits": 0,
+   "retired": 0,
+   "budget": {
+    "breaker": {
+     "steps": 3799,
+     "evaluations": 0
+    },
+    "builder": {
+     "steps": 1246701,
+     "evaluations": 4000
+    },
+    "kernel": {
+     "steps": 1456251,
+     "evaluations": 6200
+    }
+   },
+   "budget_cumulative": {
+    "breaker": {
+     "steps": 17857,
+     "evaluations": 0
+    },
+    "builder": {
+     "steps": 5710507,
+     "evaluations": 16000
+    },
+    "kernel": {
+     "steps": 4332689,
+     "evaluations": 18801
+    }
+   },
+   "primitives_forged": 0,
+   "library_entries": 0,
+   "params": {
+    "search": {
+     "max_size": 12,
+     "max_expansions": 20000,
+     "step_budget": 2000
+    },
+    "learn": {
+     "from": "mined",
+     "max_adoptions": 8
+    },
+    "allocation": {
+     "strategy": "even",
+     "window": 16
+    }
+   },
+   "learned": [],
+   "learn_offered": 0,
+   "self_edits": {
+    "proposed": 1,
+    "adopted": 0,
+    "decisions": [
+     {
+      "kind": "forge",
+      "adopted": false,
+      "reason": "no strict gain",
+      "incumbent_solved": 0,
+      "candidate_solved": 0
+     }
+    ]
+   },
+   "lineage_credit": {
+    "analogy": 0.0,
+    "compose": 0.0,
+    "mutate": 0.0,
+    "distinguisher": 0.0
+   },
+   "lineage_multiplier": {
+    "analogy": 1.0,
+    "compose": 1.0,
+    "mutate": 0.75,
+    "distinguisher": 1.0
+   },
+   "field": {
+    "breaker_items": 25,
+    "builder_items": 42,
+    "breaker_norm": 0.08531697591145833,
+    "builder_norm": 0.03684737042682927
+   },
+   "written": {
+    "breaker": 6,
+    "builder": 17
+   },
+   "mapper": {
+    "pairs": 0,
+    "residual": null
+   },
+   "timings": {
+    "propose_and_admit": 12.02,
+    "wake_and_mined": 135.32,
+    "crossing_check": 11.23,
+    "learn": 0.0,
+    "propose_edits": 4.58,
+    "judge": 55.89,
+    "write_and_summarize": 0.04
+   }
+  },
+  {
+   "generation": 5,
+   "snapshot": "a60bacab506a44b39198edfefb600c2db32361cae4705f4e319cb675391b4c5c",
+   "archive": {
+    "open": 26,
+    "crossed": 0,
+    "marker": 0,
+    "total": 26
+   },
+   "proposals": 5,
+   "admitted": 5,
+   "rejections": {
+    "K0": 0,
+    "Kd": 0,
+    "Ka": 0,
+    "Kc": 0,
+    "Kb": 0
+   },
+   "kb_margin_mean": 0.575,
+   "open_attacked": 26,
+   "wake_failed": false,
+   "wake_solved": 0,
+   "mined": 0,
+   "crossings": 0,
+   "crossed_ids": [],
+   "crossings_cumulative": 0,
+   "crossings_per_budget": 0.0,
+   "retrieval_hits": 0,
+   "retired": 0,
+   "budget": {
+    "breaker": {
+     "steps": 5145,
+     "evaluations": 0
+    },
+    "builder": {
+     "steps": 1131537,
+     "evaluations": 4000
+    },
+    "kernel": {
+     "steps": 1663710,
+     "evaluations": 7200
+    }
+   },
+   "budget_cumulative": {
+    "breaker": {
+     "steps": 23002,
+     "evaluations": 0
+    },
+    "builder": {
+     "steps": 6842044,
+     "evaluations": 20000
+    },
+    "kernel": {
+     "steps": 5996399,
+     "evaluations": 26001
+    }
+   },
+   "primitives_forged": 0,
+   "library_entries": 0,
+   "params": {
+    "search": {
+     "max_size": 12,
+     "max_expansions": 20000,
+     "step_budget": 2000
+    },
+    "learn": {
+     "from": "mined",
+     "max_adoptions": 8
+    },
+    "allocation": {
+     "strategy": "even",
+     "window": 16
+    }
+   },
+   "learned": [],
+   "learn_offered": 0,
+   "self_edits": {
+    "proposed": 1,
+    "adopted": 0,
+    "decisions": [
+     {
+      "kind": "forge",
+      "adopted": false,
+      "reason": "no strict gain",
+      "incumbent_solved": 0,
+      "candidate_solved": 0
+     }
+    ]
+   },
+   "lineage_credit": {
+    "analogy": 0.0,
+    "compose": 0.0,
+    "mutate": 0.0,
+    "distinguisher": 0.0
+   },
+   "lineage_multiplier": {
+    "analogy": 1.0,
+    "compose": 1.0,
+    "mutate": 0.75,
+    "distinguisher": 1.0
+   },
+   "field": {
+    "breaker_items": 31,
+    "builder_items": 65,
+    "breaker_norm": 0.08609212239583333,
+    "builder_norm": 0.036479949951171875
+   },
+   "written": {
+    "breaker": 6,
+    "builder": 23
+   },
+   "mapper": {
+    "pairs": 0,
+    "residual": null
+   },
+   "timings": {
+    "propose_and_admit": 13.89,
+    "wake_and_mined": 171.62,
+    "crossing_check": 11.48,
+    "learn": 0.0,
+    "propose_edits": 1.99,
+    "judge": 65.84,
+    "write_and_summarize": 0.06
+   }
+  },
+  {
+   "generation": 6,
+   "snapshot": "a60bacab506a44b39198edfefb600c2db32361cae4705f4e319cb675391b4c5c",
+   "archive": {
+    "open": 31,
+    "crossed": 0,
+    "marker": 0,
+    "total": 31
+   },
+   "proposals": 5,
+   "admitted": 5,
+   "rejections": {
+    "K0": 0,
+    "Kd": 0,
+    "Ka": 0,
+    "Kc": 0,
+    "Kb": 0
+   },
+   "kb_margin_mean": 0.3,
+   "open_attacked": 31,
+   "wake_failed": true,
+   "wake_solved": 0,
+   "mined": 0,
+   "crossings": 0,
+   "crossed_ids": [],
+   "crossings_cumulative": 0,
+   "crossings_per_budget": 0.0,
+   "retrieval_hits": 0,
+   "retired": 0,
+   "budget": {
+    "breaker": {
+     "steps": 4663,
+     "evaluations": 0
+    },
+    "builder": {
+     "steps": 33669,
+     "evaluations": 0
+    },
+    "kernel": {
+     "steps": 1914289,
+     "evaluations": 8200
+    }
+   },
+   "budget_cumulative": {
+    "breaker": {
+     "steps": 27665,
+     "evaluations": 0
+    },
+    "builder": {
+     "steps": 6875713,
+     "evaluations": 20000
+    },
+    "kernel": {
+     "steps": 7910688,
+     "evaluations": 34201
+    }
+   },
+   "primitives_forged": 0,
+   "library_entries": 0,
+   "params": {
+    "search": {
+     "max_size": 12,
+     "max_expansions": 20000,
+     "step_budget": 2000
+    },
+    "learn": {
+     "from": "mined",
+     "max_adoptions": 8
+    },
+    "allocation": {
+     "strategy": "even",
+     "window": 16
+    }
+   },
+   "learned": [],
+   "learn_offered": 0,
+   "self_edits": {
+    "proposed": 1,
+    "adopted": 0,
+    "decisions": [
+     {
+      "kind": "forge",
+      "adopted": false,
+      "reason": "no strict gain",
+      "incumbent_solved": 0,
+      "candidate_solved": 0
+     }
+    ]
+   },
+   "lineage_credit": {
+    "analogy": 0.0,
+    "compose": 0.0,
+    "mutate": 0.0,
+    "distinguisher": 0.0
+   },
+   "lineage_multiplier": {
+    "analogy": 1.0,
+    "compose": 1.0,
+    "mutate": 0.75,
+    "distinguisher": 1.0
+   },
+   "field": {
+    "breaker_items": 37,
+    "builder_items": 65,
+    "breaker_norm": 0.08530680338541667,
+    "builder_norm": 0.036479949951171875
+   },
+   "written": {
+    "breaker": 6,
+    "builder": 0
+   },
+   "mapper": {
+    "pairs": 0,
+    "residual": null
+   },
+   "timings": {
+    "propose_and_admit": 12.38,
+    "wake_and_mined": 200.12,
+    "crossing_check": 11.38,
+    "learn": 0.0,
+    "propose_edits": 0.84,
+    "judge": 74.34,
+    "write_and_summarize": 0.0
+   }
+  },
+  {
+   "generation": 7,
+   "snapshot": "a60bacab506a44b39198edfefb600c2db32361cae4705f4e319cb675391b4c5c",
+   "archive": {
+    "open": 34,
+    "crossed": 0,
+    "marker": 0,
+    "total": 34
+   },
+   "proposals": 6,
+   "admitted": 3,
+   "rejections": {
+    "K0": 0,
+    "Kd": 0,
+    "Ka": 0,
+    "Kc": 1,
+    "Kb": 2
+   },
+   "kb_margin_mean": 0.5,
+   "open_attacked": 34,
+   "wake_failed": true,
+   "wake_solved": 0,
+   "mined": 0,
+   "crossings": 0,
+   "crossed_ids": [],
+   "crossings_cumulative": 0,
+   "crossings_per_budget": 0.0,
+   "retrieval_hits": 0,
+   "retired": 0,
+   "budget": {
+    "breaker": {
+     "steps": 3855,
+     "evaluations": 0
+    },
+    "builder": {
+     "steps": 207055,
+     "evaluations": 0
+    },
+    "kernel": {
+     "steps": 1841209,
+     "evaluations": 7996
+    }
+   },
+   "budget_cumulative": {
+    "breaker": {
+     "steps": 31520,
+     "evaluations": 0
+    },
+    "builder": {
+     "steps": 7082768,
+     "evaluations": 20000
+    },
+    "kernel": {
+     "steps": 9751897,
+     "evaluations": 42197
+    }
+   },
+   "primitives_forged": 1,
+   "library_entries": 0,
+   "params": {
+    "search": {
+     "max_size": 12,
+     "max_expansions": 20000,
+     "step_budget": 2000
+    },
+    "learn": {
+     "from": "mined",
+     "max_adoptions": 8
+    },
+    "allocation": {
+     "strategy": "even",
+     "window": 16
+    }
+   },
+   "learned": [],
+   "learn_offered": 0,
+   "self_edits": {
+    "proposed": 1,
+    "adopted": 1,
+    "decisions": [
+     {
+      "kind": "forge",
+      "adopted": true,
+      "reason": "adopted",
+      "incumbent_solved": 0,
+      "candidate_solved": 1
+     }
+    ]
+   },
+   "lineage_credit": {
+    "analogy": 0.0,
+    "compose": 0.0,
+    "mutate": 0.0,
+    "distinguisher": 0.0
+   },
+   "lineage_multiplier": {
+    "analogy": 0.5625,
+    "compose": 1.0,
+    "mutate": 0.75,
+    "distinguisher": 0.75
+   },
+   "field": {
+    "breaker_items": 41,
+    "builder_items": 66,
+    "breaker_norm": 0.086297607421875,
+    "builder_norm": 0.037447415865384616
+   },
+   "written": {
+    "breaker": 4,
+    "builder": 1
+   },
+   "mapper": {
+    "pairs": 0,
+    "residual": null
+   },
+   "timings": {
+    "propose_and_admit": 9.56,
+    "wake_and_mined": 200.11,
+    "crossing_check": 6.65,
+    "learn": 0.0,
+    "propose_edits": 4.75,
+    "judge": 80.19,
+    "write_and_summarize": 0.0
+   }
+  },
+  {
+   "generation": 8,
+   "snapshot": "be4ae69fff97abd54533c73c08adb3b3f710cca8da603fa75d21a9f87c7f661b",
+   "archive": {
+    "open": 37,
+    "crossed": 1,
+    "marker": 0,
+    "total": 38
+   },
+   "proposals": 5,
+   "admitted": 4,
+   "rejections": {
+    "K0": 0,
+    "Kd": 0,
+    "Ka": 0,
+    "Kc": 0,
+    "Kb": 1
+   },
+   "kb_margin_mean": 0.53125,
+   "open_attacked": 37,
+   "wake_failed": false,
+   "wake_solved": 1,
+   "mined": 1,
+   "crossings": 1,
+   "crossed_ids": [
+    "t0028"
+   ],
+   "crossings_cumulative": 1,
+   "crossings_per_budget": 4.1776329531687346e-05,
+   "retrieval_hits": 1,
+   "retired": 0,
+   "budget": {
+    "breaker": {
+     "steps": 3593,
+     "evaluations": 0
+    },
+    "builder": {
+     "steps": 1412203,
+     "evaluations": 3937
+    },
+    "kernel": {
+     "steps": 3893210,
+     "evaluations": 16466
+    }
+   },
+   "budget_cumulative": {
+    "breaker": {
+     "steps": 35113,
+     "evaluations": 0
+    },
+    "builder": {
+     "steps": 8494971,
+     "evaluations": 23937
+    },
+    "kernel": {
+     "steps": 13645107,
+     "evaluations": 58663
+    }
+   },
+   "primitives_forged": 1,
+   "library_entries": 0,
+   "params": {
+    "search": {
+     "max_size": 12,
+     "max_expansions": 20000,
+     "step_budget": 2000
+    },
+    "learn": {
+     "from": "mined",
+     "max_adoptions": 8
+    },
+    "allocation": {
+     "strategy": "even",
+     "window": 16
+    }
+   },
+   "learned": [],
+   "learn_offered": 1,
+   "self_edits": {
+    "proposed": 1,
+    "adopted": 0,
+    "decisions": [
+     {
+      "kind": "forge",
+      "adopted": false,
+      "reason": "no strict gain",
+      "incumbent_solved": 1,
+      "candidate_solved": 1
+     }
+    ]
+   },
+   "lineage_credit": {
+    "analogy": 0.3333333333333333,
+    "compose": 0.0,
+    "mutate": 0.0,
+    "distinguisher": 0.0
+   },
+   "lineage_multiplier": {
+    "analogy": 0.421875,
+    "compose": 1.0,
+    "mutate": 0.5625,
+    "distinguisher": 0.75
+   },
+   "field": {
+    "breaker_items": 47,
+    "builder_items": 98,
+    "breaker_norm": 0.08665399966032608,
+    "builder_norm": 0.04199722132731959
+   },
+   "written": {
+    "breaker": 6,
+    "builder": 32
+   },
+   "mapper": {
+    "pairs": 1,
+    "residual": 0.5
+   },
+   "timings": {
+    "propose_and_admit": 10.81,
+    "wake_and_mined": 162.58,
+    "crossing_check": 9.16,
+    "learn": 0.07,
+    "propose_edits": 1.79,
+    "judge": 193.78,
+    "write_and_summarize": 0.07
+   }
+  }
+ ],
+ "final": {
+  "archive": {
+   "open": 37,
+   "crossed": 1,
+   "marker": 0,
+   "total": 38
+  },
+  "crossings": 1,
+  "generations_to_crossing": [
+   2
+  ],
+  "tree": {
+   "primitives_forged": 1,
+   "library_entries": 0,
+   "params": {
+    "search": {
+     "max_size": 12,
+     "max_expansions": 20000,
+     "step_budget": 2000
+    },
+    "learn": {
+     "from": "mined",
+     "max_adoptions": 8
+    },
+    "allocation": {
+     "strategy": "even",
+     "window": 16
+    }
+   }
+  },
+  "breaker": {
+   "credit": {
+    "analogy": 0.3333333333333333,
+    "compose": 0.0,
+    "mutate": 0.0,
+    "distinguisher": 0.0
+   },
+   "multiplier": {
+    "analogy": 0.421875,
+    "compose": 1.0,
+    "mutate": 0.5625,
+    "distinguisher": 0.75
+   },
+   "validated": {
+    "analogy": 1,
+    "compose": 0,
+    "mutate": 0,
+    "distinguisher": 0
+   },
+   "wasted": {
+    "analogy": 3,
+    "compose": 3,
+    "mutate": 3,
+    "distinguisher": 1
+   },
+   "authored": 38
+  },
+  "builder": {
+   "edit_credit": {
+    "forge": 2.0,
+    "param": 1.0,
+    "prune": 1.0,
+    "unforge": 1.0
+   },
+   "edit_tries": {
+    "forge": 12,
+    "param": 1,
+    "prune": 0,
+    "unforge": 0
+   },
+   "forged": 9,
+   "retrieval_hits": 1,
+   "forge_attempts": {
+    "found": 7,
+    "none": 5
+   },
+   "solutions": 1,
+   "residues": 37,
+   "fragments": 1
+  },
+  "meter": {
+   "breaker/breaker": {
+    "steps": 35113,
+    "evaluations": 0
+   },
+   "builder/forge": {
+    "steps": 1968200,
+    "evaluations": 0
+   },
+   "builder/live:solve_many": {
+    "steps": 6526771,
+    "evaluations": 23937
+   },
+   "kernel/admit": {
+    "steps": 121754,
+    "evaluations": 0
+   },
+   "kernel/crossing": {
+    "steps": 1020,
+    "evaluations": 0
+   },
+   "kernel/edits": {
+    "steps": 1530,
+    "evaluations": 0
+   },
+   "kernel/snapshot:solve_many": {
+    "steps": 13520803,
+    "evaluations": 58663
+   }
+  },
+  "executors": {
+   "kernel": {
+    "timeouts": 2,
+    "failures": 0
+   },
+   "breaker": {
+    "timeouts": 0,
+    "failures": 0
+   },
+   "builder": {
+    "timeouts": 0,
+    "failures": 0
+   }
+  }
+ },
+ "ledger_digest": "3a57b6cb75baccc6",
+ "ledger_entries": 115,
+ "wall_seconds": 1858.8297114819998
+}
