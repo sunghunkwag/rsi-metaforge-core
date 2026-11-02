@@ -257,6 +257,58 @@ class PathwayRegistry:
         key = self.analogy_key(task)
         self.analogy_spent[key] = self.analogy_spent.get(key, 0) + int(evaluated)
 
+    def add_chain_pathway(self, settings: dict, behave_settings: dict, folds: bool) -> None:
+        """Residual decomposition (chain.py): one of the system's programs, then the rest."""
+        from .analogy import SourceIndex
+        self.chain_settings = dict(settings)
+        self.chain_behave = dict(behave_settings)
+        self.chain_folds = bool(folds)
+        if not hasattr(self, "analogy_index"):
+            self.analogy_index = SourceIndex(self.tasks.values())
+        self.chain_solutions: dict = {}
+        self.chain_library: dict = {}
+        self.chain_router = None
+        self.chain_digest = ""
+        self.pathways.setdefault("chain", Pathway("chain", "chain", "designer", 0,
+                                                  status="dormant"))
+
+    def refresh_chain(self, state, router, tag) -> int:
+        """Per generation: stages are the solutions and library before this wake."""
+        self.chain_solutions = dict(state.solutions)
+        self.chain_library = self.library(state)
+        self.chain_router = router
+        blob = json.dumps([sorted((n, pretty(t)) for n, t in self.chain_solutions.items()),
+                           sorted(self.chain_library), str(tag)])
+        self.chain_digest = hashlib.sha256(blob.encode("utf-8")).hexdigest()[:20]
+        self._generation_cache.pop(("*", "chain"), None)
+        return len(self.chain_solutions)
+
+    def chain_stages(self, task: str) -> dict:
+        from .chain import stage_candidates
+        types = {name: t.request_type for name, t in self.tasks.items()}
+        solutions = {n: t for n, t in self.chain_solutions.items() if n != task}
+        return stage_candidates(solutions, types, self.chain_library, self.analogy_index,
+                                self.tasks[task].examples)
+
+    def chain_key(self, task: str) -> tuple:
+        blob = json.dumps(sorted(self.chain_stages(task)))
+        return task, hashlib.sha256(blob.encode("utf-8")).hexdigest()[:20]
+
+    def chain_open(self, task: str) -> bool:
+        """Whether the task's current stage set still has chain budget (``max_evaluations``)."""
+        public = self.tasks[task]
+        if not all(len(i) == 1 and isinstance(i[0], (list, tuple)) for i, _ in public.examples):
+            return False
+        cap = self.chain_settings.get("max_evaluations")
+        spent = getattr(self, "chain_spent", {}).get(self.chain_key(task), 0)
+        return cap is None or spent < int(cap)
+
+    def charge_chain(self, task: str, evaluated: int) -> None:
+        if not hasattr(self, "chain_spent"):
+            self.chain_spent = {}
+        key = self.chain_key(task)
+        self.chain_spent[key] = self.chain_spent.get(key, 0) + int(evaluated)
+
     def add_invented_pathway(self) -> None:
         """A separate pathway searching with this generation's concepts at full weight."""
         self.pathways.setdefault("invented", Pathway("invented", "invented", "designer", 0,
@@ -283,6 +335,9 @@ class PathwayRegistry:
             if not self.behave_library or pid.startswith("behave0:"):
                 return Grammar()
             return Grammar(library=self.library(state), weights=state.grammar.weights,
+                           context_weights=state.grammar.context_weights)
+        if pathway.kind == "chain":
+            return Grammar(library=self.chain_library, weights=state.grammar.weights,
                            context_weights=state.grammar.context_weights)
         if pathway.kind in ("invented", "decompose", "analogy"):
             # Decomposition holes use the same grammar as the invented pathway:
@@ -314,6 +369,9 @@ class PathwayRegistry:
                 # The search also depends on its sources.
                 fingerprint = hashlib.sha256(
                     (fingerprint + self.analogy_digest).encode("utf-8")).hexdigest()[:20]
+            if self.pathways[pid].kind == "chain":
+                fingerprint = hashlib.sha256(
+                    (fingerprint + self.chain_digest).encode("utf-8")).hexdigest()[:20]
             cached = (fingerprint, grammar)
             self._generation_cache[key] = cached
         return cached
@@ -352,6 +410,22 @@ class PathwayRegistry:
                 max_sources=int(settings.get("max_sources", 4)),
                 max_ranked=settings.get("max_ranked", 6),
                 max_evaluations=settings.get("max_evaluations"))
+            cached = (fingerprint, search)
+            parked = self._parked.pop((task, pid), None)
+            if parked is not None and parked[0] == fingerprint:
+                search.fast_forward(*parked[1:5])
+            self._live[(task, pid)] = cached
+        if (cached is None or cached[0] != fingerprint) and self.pathways[pid].kind == "chain":
+            from .chain import ChainSearch
+            settings = self.chain_settings
+            public = self.tasks[task]
+            search = ChainSearch(
+                public.examples, public.request_type, self.chain_stages(task), grammar.library,
+                weights=grammar.weights, behave_settings=self.chain_behave,
+                folds=self.chain_folds, step_budget=self.search_config["step_budget"],
+                max_ranked=int(settings.get("max_ranked", 8)),
+                max_stages=int(settings.get("max_stages", 3)),
+                max_evaluations=settings.get("max_evaluations"), router=self.chain_router)
             cached = (fingerprint, search)
             parked = self._parked.pop((task, pid), None)
             if parked is not None and parked[0] == fingerprint:

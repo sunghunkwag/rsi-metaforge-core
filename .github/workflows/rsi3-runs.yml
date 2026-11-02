@@ -58,7 +58,7 @@ jobs:
           python-version: '3.11'
       - run: python -m pip install numpy
       - name: Unit tests
-        run: python -m unittest rsi3.tests.test_sealing rsi3.tests.test_analogy rsi3.tests.test_fresh
+        run: python -m unittest rsi3.tests.test_sealing rsi3.tests.test_analogy rsi3.tests.test_chain rsi3.tests.test_fresh
       - name: Train
         run: |
           python3 - <<'PY' > args.txt

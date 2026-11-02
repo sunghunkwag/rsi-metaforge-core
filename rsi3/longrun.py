@@ -142,6 +142,22 @@ def agent_validation(runtime, model, validation, config: dict, verifier,
                     max_sources=int(settings.get("max_sources", 4)),
                     max_ranked=settings.get("max_ranked", 6),
                     max_evaluations=settings.get("max_evaluations"))
+        if getattr(arm, "chain", False) and all(
+                len(i) == 1 and isinstance(i[0], (list, tuple)) for i, _ in public.examples):
+            from .chain import ChainSearch, PolicyRouter, stage_candidates
+            settings = config.get("chain", {})
+            types = {name: t.request_type for name, t in runtime.registry.tasks.items()}
+            stages = stage_candidates(runtime.state.solutions, types, library,
+                                      runtime.registry.analogy_index, public.examples)
+            searches["chain"] = ChainSearch(
+                public.examples, public.request_type, stages, library,
+                weights=runtime.state.grammar.weights, behave_settings=config.get("behave", {}),
+                folds=getattr(arm, "behave_folds", False), step_budget=search["step_budget"],
+                max_ranked=int(settings.get("max_ranked", 8)),
+                max_stages=int(settings.get("max_stages", 3)),
+                max_evaluations=settings.get("max_evaluations"),
+                router=PolicyRouter(runtime.metapolicy, arm.meta_extended,
+                                    getattr(arm, "meta_fixed_length", False)))
         found, found_by, spent, used_by = None, None, 0, {}
         if runtime.metapolicy is not None:
             shape = shape_features(public.examples, arm.meta_extended,
@@ -176,8 +192,8 @@ def agent_validation(runtime, model, validation, config: dict, verifier,
         if verdict:
             solved.append(task.name)
         record = {"name": task.name, "solved": verdict, "spent": used_by}
-        if verdict and found_by == "analogy":
-            record["analogy_from"] = list(searches["analogy"].found_from)
+        if verdict and found_by in ("analogy", "chain"):
+            record[f"{found_by}_from"] = list(searches[found_by].found_from)
         records.append(record)
     return {"solved": len(solved), "solved_names": solved, "tasks": records}
 
@@ -200,7 +216,8 @@ def final_record(runtime) -> dict:
             "library": {name: pretty(term)
                         for name, term in sorted(runtime.state.grammar.library.items())},
             "adopted_concepts": runtime.adopted_concepts,
-            "analogy": getattr(runtime, "analogy_record", {})}
+            "analogy": getattr(runtime, "analogy_record", {}),
+            "chain": getattr(runtime, "chain_record", {})}
 
 
 def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = None, *,
@@ -239,7 +256,8 @@ def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = N
                                          "compact_searches": True,
                                          "meta": config.get("meta", {}),
                                          "behave": config.get("behave", {}),
-                                         "analogy": config.get("analogy", {})})
+                                         "analogy": config.get("analogy", {}),
+                                         "chain": config.get("chain", {})})
         records, cpu = {seed: [] for seed in seeds}, {seed: 0.0 for seed in seeds}
     from .verifier import FrozenVerifier
     agent_verifiers = {seed: FrozenVerifier(validation, step_budget=config["search"]["step_budget"])
@@ -268,7 +286,8 @@ def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = N
             seed_record["validation_agent"] = agent_validation(
                 runtime, model, validation, rsi2_config | {"meta": config.get("meta", {}),
                                                            "behave": config.get("behave", {}),
-                                                           "analogy": config.get("analogy", {})},
+                                                           "analogy": config.get("analogy", {}),
+                                                           "chain": config.get("chain", {})},
                 agent_verifiers[seed], generation)
             seed_record["cpu_seconds"] = record["cpu_seconds"] + (
                 time.process_time() - seed_started)

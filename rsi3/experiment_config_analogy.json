@@ -7,7 +7,9 @@
   ],
   "generations": 16,
   "arms": [
-    "RSI3_META_ANALOGY"
+    "RSI3_META_ANALOGY",
+    "RSI3_META_CHAIN",
+    "RSI3_META_COMPOSE"
   ],
   "B_wake": 64,
   "B_eval": 64,
@@ -39,5 +41,10 @@
     "max_ranked": 6,
     "max_sources": 4,
     "max_evaluations": 32
+  },
+  "chain": {
+    "max_ranked": 8,
+    "max_stages": 3,
+    "max_evaluations": 48
   }
 }

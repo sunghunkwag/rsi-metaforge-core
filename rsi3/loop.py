@@ -105,6 +105,10 @@ class ArmConfig:
     # system's verified programs (best first by conditional description
     # length), in the wake, in honest practice and in the held-out solver.
     analogy: bool = False
+    # Residual decomposition (chain.py): one meta-RL action that runs one of
+    # the system's own list programs first and solves the residual task with
+    # its behavioural search, in the wake, in practice and at held-out time.
+    chain: bool = False
 
 
 def standardized_features(public_tasks) -> dict:
@@ -197,6 +201,9 @@ class Runtime:
                                               arm.behave_folds, arm.behave_dual)
         if arm.analogy:
             self.registry.add_analogy_pathway(config.get("analogy", {}))
+        if arm.chain:
+            self.registry.add_chain_pathway(config.get("chain", {}), config.get("behave", {}),
+                                            arm.behave_folds)
         self.metapolicy = MetaPolicy(wipe=arm.meta_wipe) if meta else None
         self.shapes = {task.name: shape_features(task.examples, arm.meta_extended,
                                                  arm.meta_fixed_length)
@@ -242,6 +249,8 @@ class Runtime:
         result = search.run(budget, self.integrator.skip_callback(task, library, self.memory))
         if kind == "analogy":
             self.registry.charge_analogy(task, result.evaluated)
+        if kind == "chain":
+            self.registry.charge_chain(task, result.evaluated)
         outcome, digest, receipt = "none", None, None
         if result.term is not None:
             digest = term_digest(result.term)
@@ -253,6 +262,12 @@ class Runtime:
                 self._adopt(result.term, task, generation)
                 if kind == "analogy":
                     self._record_analogy(task, search, generation)
+                if kind == "chain":
+                    if not hasattr(self, "chain_record"):
+                        self.chain_record = {}
+                    stage, problem = search.found_from or (None, None)
+                    self.chain_record[task] = {"generation": generation, "stage": stage,
+                                               "residual": problem}
                 self.state.solutions[task] = result.term
                 record = SolutionRecord(task, digest, pid, kind, pathway.origin, generation,
                                         receipt.receipt_id)
@@ -339,6 +354,8 @@ class Runtime:
             actions += [f"behave0:{name}" for name in problems]
         if self.arm.analogy and self.registry.analogy_open(task):
             actions.append("analogy")
+        if self.arm.chain and self.registry.chain_open(task):
+            actions.append("chain")
         return [a for a in actions if not self.registry.peek(task, a, self.state)[1]]
 
     def _meta_wake(self, budget_total, unsolved, generation, pending, log) -> int:
@@ -346,6 +363,11 @@ class Runtime:
         chunk = int(self.config.get("meta", {}).get("chunk", 16))
         if self.arm.analogy:
             self.analogy_sources = self.registry.refresh_analogy(self.state)
+        if self.arm.chain:
+            from .chain import PolicyRouter
+            self.registry.refresh_chain(self.state, PolicyRouter(
+                self.metapolicy, self.arm.meta_extended, self.arm.meta_fixed_length),
+                len(self.metapolicy.episodes))
         if self.arm.decomposition_conjugate:
             self.conjugates = self.registry.refresh_conjugates(
                 self.state, self.config["search"]["step_budget"], self.arm.decomposition_fold)
@@ -525,6 +547,21 @@ class Runtime:
                     max_sources=int(settings.get("max_sources", 4)),
                     max_ranked=settings.get("max_ranked", 6),
                     max_evaluations=settings.get("max_evaluations"))
+        if self.arm.chain and all(len(i) == 1 and isinstance(i[0], (list, tuple))
+                                  for i, _ in examples):
+            from .chain import ChainSearch, PolicyRouter, stage_candidates
+            settings = self.config.get("chain", {})
+            types = {t.name: t.request_type for t in self.public}
+            stages = stage_candidates(self.state.solutions, types, library,
+                                      self.registry.analogy_index, examples)
+            searches["chain"] = ChainSearch(
+                examples, request, stages, library, weights=self.state.grammar.weights,
+                behave_settings=self.config.get("behave", {}), folds=self.arm.behave_folds,
+                step_budget=search["step_budget"], max_ranked=int(settings.get("max_ranked", 8)),
+                max_stages=int(settings.get("max_stages", 3)),
+                max_evaluations=settings.get("max_evaluations"),
+                router=PolicyRouter(self.metapolicy, self.arm.meta_extended,
+                                    self.arm.meta_fixed_length))
         spent = 0
         for action, practice in searches.items():
             result = practice.run(chunk)
