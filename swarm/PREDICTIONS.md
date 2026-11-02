@@ -32,7 +32,11 @@ run alongside and reported, not compared.
   admitted, about 90 s per generation.
 - An adversarial review of the package (two workflow runs, 6 confirmed
   findings, the rest unverified) was folded in before registration
-  (commit 969d2be; ARCHITECTURE.md §6 lists the disclosures). Its
+  (commits 969d2be, 46308bf and 420a40e; ARCHITECTURE.md §6 lists the
+  disclosures). A verification pass over those commits was still running
+  at registration; whatever it confirms afterwards is handled as a
+  disclosed follow-up, and a defect that touches the measurement would
+  mean a new registration, stated as such. Its
   reproductions ran on the generation-0 tree with planted tasks, not on
   any arm's run. One three-generation end-to-end check of S0 and S1 at
   B_gen 2000 followed, to see the fixed loop run; its numbers are not
