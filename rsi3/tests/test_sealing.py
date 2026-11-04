@@ -7,7 +7,8 @@ PACKAGE = Path(__file__).resolve().parents[1]
 SOURCES = sorted(p for p in PACKAGE.glob("*.py"))
 # Runners load the splits to drive and measure runs; nothing they load is
 # passed to a learning component except TRAIN public views.
-RUNNERS = ("experiment.py", "longrun.py", "reserve.py", "reserve_eval.py")
+RUNNERS = ("experiment.py", "longrun.py", "reserve.py", "reserve_eval.py", "fresh.py",
+           "compose24.py")
 LEARNING = [p for p in SOURCES if p.name not in (*RUNNERS, "verifier.py", "__init__.py")]
 
 

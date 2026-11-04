@@ -1,0 +1,920 @@
+{
+ "arm": "RSI3_META_PORTFOLIO",
+ "partition": "fresh1",
+ "generation": 16,
+ "tasks": 33,
+ "seeds": {
+  "11": {
+   "solved": 5,
+   "solved_names": [
+    "((add-k (dyn . 0) (static . -2)))",
+    "((identify-is-mod-k (dyn . 0) (static . 2)))",
+    "((identify-k (dyn . 0) (static . -2)))",
+    "((mult-k (dyn . 0) (static . -2)))",
+    "((prepend-k (dyn . 0) (static . -2)))"
+   ],
+   "tasks": [
+    {
+     "name": "((add-k (dyn . 0) (static . -2)))",
+     "solved": true,
+     "spent": {
+      "behave0:map": 7
+     }
+    },
+    {
+     "name": "((add-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((has-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "behave0:any_list": 16
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 2)))",
+     "solved": true,
+     "spent": {
+      "behave0:map": 10
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((identify-is-prime (dyn . 0)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . -2)))",
+     "solved": true,
+     "spent": {
+      "behave0:map": 24
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 1)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((mult-k (dyn . 0) (static . -2)))",
+     "solved": true,
+     "spent": {
+      "behave0:map": 9
+     }
+    },
+    {
+     "name": "((mult-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((positions (dyn . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . -2)))",
+     "solved": true,
+     "spent": {
+      "decompose:prepend_of": 37
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:prepend_of": 48,
+      "behave0:whole": 16
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "prior": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 2) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "behave0:map_list": 64
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 3) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "prior": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 5) (static . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "prior": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 16,
+      "prior": 16,
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 16,
+      "prior": 16,
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16
+     }
+    },
+    {
+     "name": "((uniq (dyn . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 64
+     }
+    }
+   ],
+   "cpu_seconds": 14.193683121000001
+  },
+  "22": {
+   "solved": 5,
+   "solved_names": [
+    "((add-k (dyn . 0) (static . -2)))",
+    "((identify-is-mod-k (dyn . 0) (static . 2)))",
+    "((identify-k (dyn . 0) (static . -2)))",
+    "((mult-k (dyn . 0) (static . -2)))",
+    "((prepend-k (dyn . 0) (static . -2)))"
+   ],
+   "tasks": [
+    {
+     "name": "((add-k (dyn . 0) (static . -2)))",
+     "solved": true,
+     "spent": {
+      "behave0:map": 7
+     }
+    },
+    {
+     "name": "((add-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((has-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "behave0:any_list": 16
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 2)))",
+     "solved": true,
+     "spent": {
+      "behave0:map": 10
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((identify-is-prime (dyn . 0)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . -2)))",
+     "solved": true,
+     "spent": {
+      "behave0:map": 24
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 1)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((mult-k (dyn . 0) (static . -2)))",
+     "solved": true,
+     "spent": {
+      "behave0:map": 9
+     }
+    },
+    {
+     "name": "((mult-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((positions (dyn . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . -2)))",
+     "solved": true,
+     "spent": {
+      "decompose:prepend_of": 37
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:prepend_of": 48,
+      "behave0:whole": 16
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "prior": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 2) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "behave0:map_list": 64
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 3) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "prior": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 5) (static . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "prior": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 16,
+      "prior": 16,
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 16,
+      "prior": 16,
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16
+     }
+    },
+    {
+     "name": "((uniq (dyn . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 64
+     }
+    }
+   ],
+   "cpu_seconds": 15.366779518
+  },
+  "33": {
+   "solved": 5,
+   "solved_names": [
+    "((add-k (dyn . 0) (static . -2)))",
+    "((identify-is-mod-k (dyn . 0) (static . 2)))",
+    "((identify-k (dyn . 0) (static . -2)))",
+    "((mult-k (dyn . 0) (static . -2)))",
+    "((prepend-k (dyn . 0) (static . -2)))"
+   ],
+   "tasks": [
+    {
+     "name": "((add-k (dyn . 0) (static . -2)))",
+     "solved": true,
+     "spent": {
+      "behave0:map": 7
+     }
+    },
+    {
+     "name": "((add-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "behave:whole": 16,
+      "behave:fold": 16
+     }
+    },
+    {
+     "name": "((has-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:fold_false": 16,
+      "decompose:any": 16,
+      "behave0:any_list": 16
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 2)))",
+     "solved": true,
+     "spent": {
+      "behave0:map": 10
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((identify-is-prime (dyn . 0)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . -2)))",
+     "solved": true,
+     "spent": {
+      "behave0:map": 24
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 1)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((mult-k (dyn . 0) (static . -2)))",
+     "solved": true,
+     "spent": {
+      "behave0:map": 9
+     }
+    },
+    {
+     "name": "((mult-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((positions (dyn . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16,
+      "behave0:fold": 16,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . -2)))",
+     "solved": true,
+     "spent": {
+      "decompose:prepend_of": 37
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:prepend_of": 48,
+      "behave0:whole": 16
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "behave0:map": 32,
+      "behave:map": 16,
+      "behave0:map_list": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "prior": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 2) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "behave0:map_list": 64
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 3) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "prior": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 5) (static . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "prior": 16,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 16,
+      "prior": 16,
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 16,
+      "prior": 16,
+      "decompose:fold_nil": 16,
+      "behave0:whole": 16
+     }
+    },
+    {
+     "name": "((uniq (dyn . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 64
+     }
+    }
+   ],
+   "cpu_seconds": 15.305125291
+  }
+ }
+}

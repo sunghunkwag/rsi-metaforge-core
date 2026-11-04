@@ -1,0 +1,9 @@
+{
+  "purpose": "Development only. ANALOGY with the per-source-set cap (max_evaluations 32), TRAIN only at seed 44; the final solver on RESERVE-NEAR, which is exposed.",
+  "config": "rsi3/experiment_config_analogy.json",
+  "arms": ["RSI3_META_ANALOGY"],
+  "seeds": [44],
+  "generations": 16,
+  "skip_validation": true,
+  "evaluate": ["near"]
+}

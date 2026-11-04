@@ -1,0 +1,14 @@
+{
+  "purpose": "Registered (PREDICTIONS_ANALOGY.md). The practice-only new actions at held-out time: RSI3_META_ANALOGY_P and RSI3_META_COMPOSE against a retrained RSI3_META_HONEST, seeds 11/22/33 in one job per arm (shared TRAIN trajectory, per-seed dreams and recognition, VALIDATION reported). The final checkpoints run FRESH-1 and FRESH-2 (never run before by any arm here) and, for reporting only, the exposed partitions RESERVE-NEAR, RESERVE-FAR2 and COMPOSE-24.",
+  "configs": {
+    "RSI3_META_HONEST": "rsi3/experiment_config_honest.json",
+    "RSI3_META_ANALOGY_P": "rsi3/experiment_config_analogy.json",
+    "RSI3_META_COMPOSE": "rsi3/experiment_config_analogy.json"
+  },
+  "arms": ["RSI3_META_HONEST", "RSI3_META_ANALOGY_P", "RSI3_META_COMPOSE"],
+  "seeds": [11, 22, 33],
+  "shared_seeds": true,
+  "generations": 16,
+  "skip_validation": false,
+  "evaluate": ["fresh1", "fresh2", "near", "far2", "compose24"]
+}
