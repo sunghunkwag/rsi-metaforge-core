@@ -53,19 +53,36 @@ def shared_trajectory_ok(arm) -> bool:
             and not arm.genesis and arm.continuity == "off")
 
 
-def seed_recognition(state, public, config: dict, seed: int, generation: int):
-    """The dreams and recognition model RSI-2's sleep would fit for ``seed``."""
+def seed_recognition(state, public, config: dict, seed: int, generation: int, extra=None):
+    """The dreams and recognition model RSI-2's sleep would fit for ``seed``.
+
+    ``extra`` (name -> (Task, program)) is the self-curriculum's solved pool
+    with the programs as the sleep's abstraction learner rewrote them
+    (``loop.sleep_phase(extra=...)`` fitted the primary seed's model on
+    TRAIN solutions plus this pool), so every seed's model is fitted on the
+    same non-dream corpus. Without it a curriculum arm's refitted seeds
+    would differ from the primary seed in training membership, not only in
+    the dream sample (finding by the Codex review of 8d794bb).
+    """
     search = config["search"]
     rng = random.Random(seed * 1000003 + generation)
     dreams, evaluations = dream_pairs(public, state.grammar, rng, count=config.get("dreams", 16),
                                       max_size=search["max_size"],
                                       step_budget=search["step_budget"])
     lookup = {task.name: task for task in public}
-    pairs = [(lookup[name], term) for name, term in state.solutions.items()] + dreams
+    pairs = [(lookup[name], term) for name, term in state.solutions.items()]
+    pairs += [(task, program) for task, program in (extra or {}).values()]
+    pairs += dreams
     model = Recognition(seed * 1000003 + generation)
     metrics = model.fit(pairs, state.grammar)
     return model, {"dreams": len(dreams), "dream_candidate_evaluations": evaluations,
                    "recognition_examples": metrics["examples"]}
+
+
+def curriculum_extra(runtime):
+    """The self-curriculum pool a refit must include, or None for every other arm."""
+    pool = getattr(runtime, "curriculum_pool", None)
+    return None if pool is None else pool.items
 
 
 def validation_record(state, model, validation, config: dict) -> dict:
@@ -78,7 +95,7 @@ def validation_record(state, model, validation, config: dict) -> dict:
 
 
 def agent_validation(runtime, model, validation, config: dict, verifier,
-                     generation: int) -> dict:
+                     generation: int, programs: dict | None = None) -> dict:
     """Transfer test: the arm's own TRAIN-trained solver on unseen VALIDATION tasks.
 
     Same budget as VALIDATION (B_eval per task). Actions: the prior,
@@ -129,7 +146,36 @@ def agent_validation(runtime, model, validation, config: dict, verifier,
                         max_size=int(settings.get("max_size", 10)),
                         combo_limit=int(settings.get("combo_limit", 2_000_000)),
                         weights=pool_weights)
-        found, spent, used_by = None, 0, {}
+        if getattr(arm, "analogy", False):
+            from .analogy import AnalogySearch
+            settings = config.get("analogy", {})
+            sources = runtime.registry.analogy_index.sources(
+                runtime.state.solutions, public.request_type, public.examples)
+            if sources:
+                searches["analogy"] = AnalogySearch(
+                    public.examples, public.request_type, sources, runtime.state.grammar,
+                    step_budget=search["step_budget"], max_size=search["max_size"],
+                    max_expansions=search["max_expansions"],
+                    max_sources=int(settings.get("max_sources", 4)),
+                    max_ranked=settings.get("max_ranked", 6),
+                    max_evaluations=settings.get("max_evaluations"))
+        if getattr(arm, "chain", False) and all(
+                len(i) == 1 and isinstance(i[0], (list, tuple)) for i, _ in public.examples):
+            from .chain import ChainSearch, PolicyRouter, stage_candidates
+            settings = config.get("chain", {})
+            types = {name: t.request_type for name, t in runtime.registry.tasks.items()}
+            stages = stage_candidates(runtime.state.solutions, types, library,
+                                      runtime.registry.analogy_index, public.examples)
+            searches["chain"] = ChainSearch(
+                public.examples, public.request_type, stages, library,
+                weights=runtime.state.grammar.weights, behave_settings=config.get("behave", {}),
+                folds=getattr(arm, "behave_folds", False), step_budget=search["step_budget"],
+                max_ranked=int(settings.get("max_ranked", 8)),
+                max_stages=int(settings.get("max_stages", 3)),
+                max_evaluations=settings.get("max_evaluations"),
+                router=PolicyRouter(runtime.metapolicy, arm.meta_extended,
+                                    getattr(arm, "meta_fixed_length", False)))
+        found, found_by, spent, used_by = None, None, 0, {}
         if runtime.metapolicy is not None:
             shape = shape_features(public.examples, arm.meta_extended,
                                    getattr(arm, "meta_fixed_length", False))
@@ -139,12 +185,17 @@ def agent_validation(runtime, model, validation, config: dict, verifier,
                 if not live:
                     break
                 action = runtime.metapolicy.choose(live, shape, history, sum(history.values()))
-                window = min(chunk, budget - spent)
+                # An action may have its own window (``meta.windows``): chain
+                # ranks its stages before any residual search, so one chunk
+                # cannot reach a composition.
+                window = min(int(config.get("meta", {}).get("windows", {}).get(action, chunk)),
+                             budget - spent)
                 result = searches[action].run(window)
                 spent += max(result.evaluated, 1)
                 history[action] = history.get(action, 0) + 1
                 used_by[action] = used_by.get(action, 0) + result.evaluated
                 found = result.term
+                found_by = action
         else:
             skeleton_ids = [a for a in searches if a != "prior"]
             share = int(budget * arm.decomposition_split) if skeleton_ids else 0
@@ -161,7 +212,12 @@ def agent_validation(runtime, model, validation, config: dict, verifier,
             verdict = verifier.verify(task.name, found, library, generation).verdict
         if verdict:
             solved.append(task.name)
-        records.append({"name": task.name, "solved": verdict, "spent": used_by})
+            if programs is not None:
+                programs[task.name] = found
+        record = {"name": task.name, "solved": verdict, "spent": used_by}
+        if verdict and found_by in ("analogy", "chain"):
+            record[f"{found_by}_from"] = list(searches[found_by].found_from)
+        records.append(record)
     return {"solved": len(solved), "solved_names": solved, "tasks": records}
 
 
@@ -182,7 +238,10 @@ def final_record(runtime) -> dict:
             "failure_memory": (None if runtime.failures is None else runtime.failures.sizes()),
             "library": {name: pretty(term)
                         for name, term in sorted(runtime.state.grammar.library.items())},
-            "adopted_concepts": runtime.adopted_concepts}
+            "adopted_concepts": runtime.adopted_concepts,
+            "analogy": getattr(runtime, "analogy_record", {}),
+            "chain": getattr(runtime, "chain_record", {}),
+            "curriculum": getattr(runtime, "curriculum_record", [])}
 
 
 def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = None, *,
@@ -220,7 +279,10 @@ def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = N
                                          "invention": config.get("invention", {}),
                                          "compact_searches": True,
                                          "meta": config.get("meta", {}),
-                                         "behave": config.get("behave", {})})
+                                         "behave": config.get("behave", {}),
+                                         "analogy": config.get("analogy", {}),
+                                         "chain": config.get("chain", {}),
+                                         "curriculum": config.get("curriculum", {})})
         records, cpu = {seed: [] for seed in seeds}, {seed: 0.0 for seed in seeds}
     from .verifier import FrozenVerifier
     agent_verifiers = {seed: FrozenVerifier(validation, step_budget=config["search"]["step_budget"])
@@ -242,13 +304,15 @@ def run(arm_name: str, config: dict, output: Path, max_minutes: float | None = N
                 model = runtime.state.recognition
             else:
                 model, sleep = seed_recognition(runtime.state, runtime.public, rsi2_config,
-                                                seed, generation)
+                                                seed, generation, curriculum_extra(runtime))
                 seed_record["sleep"].update(sleep)
             seed_record["validation"] = validation_record(runtime.state, model, validation,
                                                           rsi2_config)
             seed_record["validation_agent"] = agent_validation(
                 runtime, model, validation, rsi2_config | {"meta": config.get("meta", {}),
-                                                           "behave": config.get("behave", {})},
+                                                           "behave": config.get("behave", {}),
+                                                           "analogy": config.get("analogy", {}),
+                                                           "chain": config.get("chain", {})},
                 agent_verifiers[seed], generation)
             seed_record["cpu_seconds"] = record["cpu_seconds"] + (
                 time.process_time() - seed_started)

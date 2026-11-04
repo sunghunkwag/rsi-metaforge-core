@@ -101,6 +101,23 @@ class ArmConfig:
     # Dream practice only on hard dreams: those the prior does not find in
     # one chunk (removes the prior's advantage on samples of its own grammar).
     selfplay_dreams_hard: bool = False
+    # Analogical repair (analogy.py): one meta-RL action that edits the
+    # system's verified programs (best first by conditional description
+    # length), in the wake, in honest practice and in the held-out solver.
+    analogy: bool = False
+    # Residual decomposition (chain.py): one meta-RL action that runs one of
+    # the system's own list programs first and solves the residual task with
+    # its behavioural search, in the wake, in practice and at held-out time.
+    chain: bool = False
+    # Whether the analogy and chain actions are also offered in the TRAIN
+    # wake. False: they are trained by honest practice on imagined tasks
+    # only, and used at held-out time; the wake offers exactly HONEST's
+    # actions, so TRAIN and the library follow HONEST's trajectory.
+    wake_new_actions: bool = True
+    # Self-curriculum (curriculum.py): the system imagines tasks from its
+    # own programs, solves the ones its prior cannot read off at once, and
+    # learns its library, grammar and recognition from those solutions too.
+    self_curriculum: bool = False
 
 
 def standardized_features(public_tasks) -> dict:
@@ -111,21 +128,30 @@ def standardized_features(public_tasks) -> dict:
     return {task.name: scaled[i] for i, task in enumerate(public_tasks)}
 
 
-def sleep_phase(state, public_train, config, generation, sink=None) -> dict:
+def sleep_phase(state, public_train, config, generation, sink=None, extra=None) -> dict:
     """RSI-2's post-wake learning, with RSI-2's arguments, on public task views.
 
     ``sink`` (optional dict) receives the dreamed pairs, so a later step can
     refit recognition on exactly the same corpus. It changes nothing here.
+    ``extra`` (optional: name -> (Task, program)) adds the self-curriculum's
+    solved imagined tasks to abstraction learning, grammar fitting and
+    recognition; their rewritten programs are returned in ``sink["extra"]``.
+    They never enter ``state.solutions``.
     """
     search = config["search"]
-    solutions, library, adopted = learn_abstractions(state.solutions, state.grammar.library,
-                                                     generation)
-    state.solutions = solutions
+    extra = dict(extra or {})
+    pooled = dict(state.solutions)
+    pooled.update({name: program for name, (_, program) in extra.items()})
+    solutions, library, adopted = learn_abstractions(pooled, state.grammar.library, generation)
+    state.solutions = {name: term for name, term in solutions.items() if name not in extra}
+    if sink is not None:
+        sink["extra"] = {name: term for name, term in solutions.items() if name in extra}
     state.grammar = Grammar(library=library, weights=state.grammar.weights,
                             context_weights=state.grammar.context_weights)
     state.library_history.extend(adopted)
     lookup = {task.name: task for task in public_train}
-    fitting = [(term, lookup[name].request_type) for name, term in state.solutions.items()]
+    lookup.update({name: task for name, (task, _) in extra.items()})
+    fitting = [(term, lookup[name].request_type) for name, term in solutions.items()]
     grammar_metrics = state.grammar.fit(fitting)
     rng = random.Random(state.seed * 1000003 + generation)
     dreams, dream_evaluations = dream_pairs(public_train, state.grammar, rng,
@@ -134,7 +160,7 @@ def sleep_phase(state, public_train, config, generation, sink=None) -> dict:
                                             step_budget=search["step_budget"])
     if sink is not None:
         sink["dreams"] = list(dreams)
-    pairs = [(lookup[name], term) for name, term in state.solutions.items()] + dreams
+    pairs = [(lookup[name], term) for name, term in solutions.items()] + dreams
     model = Recognition(state.seed * 1000003 + generation)
     recognition_metrics = model.fit(pairs, state.grammar)
     state.recognition = model
@@ -191,6 +217,11 @@ class Runtime:
         if arm.behave:
             self.registry.add_behave_pathways(config.get("behave", {}), arm.behave_library,
                                               arm.behave_folds, arm.behave_dual)
+        if arm.analogy:
+            self.registry.add_analogy_pathway(config.get("analogy", {}))
+        if arm.chain:
+            self.registry.add_chain_pathway(config.get("chain", {}), config.get("behave", {}),
+                                            arm.behave_folds)
         self.metapolicy = MetaPolicy(wipe=arm.meta_wipe) if meta else None
         self.shapes = {task.name: shape_features(task.examples, arm.meta_extended,
                                                  arm.meta_fixed_length)
@@ -234,6 +265,10 @@ class Runtime:
         features = slot_features(self.features[task], kind, similarity, search.evaluated, budget)
         cpu_started = time.process_time()
         result = search.run(budget, self.integrator.skip_callback(task, library, self.memory))
+        if kind == "analogy":
+            self.registry.charge_analogy(task, result.evaluated)
+        if kind == "chain":
+            self.registry.charge_chain(task, result.evaluated)
         outcome, digest, receipt = "none", None, None
         if result.term is not None:
             digest = term_digest(result.term)
@@ -243,6 +278,14 @@ class Runtime:
             if receipt.verdict:
                 outcome = "verified"
                 self._adopt(result.term, task, generation)
+                if kind == "analogy":
+                    self._record_analogy(task, search, generation)
+                if kind == "chain":
+                    if not hasattr(self, "chain_record"):
+                        self.chain_record = {}
+                    stage, problem = search.found_from or (None, None)
+                    self.chain_record[task] = {"generation": generation, "stage": stage,
+                                               "residual": problem}
                 self.state.solutions[task] = result.term
                 record = SolutionRecord(task, digest, pid, kind, pathway.origin, generation,
                                         receipt.receipt_id)
@@ -266,6 +309,20 @@ class Runtime:
         if self.registry.compact and not self._task_turn:
             self.registry.release(task, pid)
         return result.evaluated
+
+    def _record_analogy(self, task, search, generation) -> None:
+        """Which verified program a solve was edited from, and the length of that chain.
+
+        A solve's depth is 1 + its source's depth; a source found any other
+        way has depth 0. Depth 2 means a program edited from a program that
+        was itself edited from another: transfer built on transfer.
+        """
+        source, edit = search.found_from or (None, None)
+        if not hasattr(self, "analogy_record"):
+            self.analogy_record = {}
+        depth = 1 + self.analogy_record.get(source, {}).get("depth", 0)
+        self.analogy_record[task] = {"generation": generation, "source": source, "edit": edit,
+                                     "depth": depth}
 
     def _adopt(self, term, task, generation) -> None:
         """A concept joins the language only through a verified program that uses it."""
@@ -313,11 +370,22 @@ class Runtime:
         actions += [f"behave:{name}" for name in problems]
         if self.arm.behave_dual:
             actions += [f"behave0:{name}" for name in problems]
+        if self.arm.analogy and self.arm.wake_new_actions and self.registry.analogy_open(task):
+            actions.append("analogy")
+        if self.arm.chain and self.arm.wake_new_actions and self.registry.chain_open(task):
+            actions.append("chain")
         return [a for a in actions if not self.registry.peek(task, a, self.state)[1]]
 
     def _meta_wake(self, budget_total, unsolved, generation, pending, log) -> int:
         """Each task's even share, spent in chunks on actions the meta-policy picks."""
         chunk = int(self.config.get("meta", {}).get("chunk", 16))
+        if self.arm.analogy:
+            self.analogy_sources = self.registry.refresh_analogy(self.state)
+        if self.arm.chain:
+            from .chain import PolicyRouter
+            self.registry.refresh_chain(self.state, PolicyRouter(
+                self.metapolicy, self.arm.meta_extended, self.arm.meta_fixed_length),
+                len(self.metapolicy.episodes))
         if self.arm.decomposition_conjugate:
             self.conjugates = self.registry.refresh_conjugates(
                 self.state, self.config["search"]["step_budget"], self.arm.decomposition_fold)
@@ -333,7 +401,8 @@ class Runtime:
                 total = sum(history.values())
                 action = self.metapolicy.choose(actions, self.shapes[task], history, total)
                 x = context(self.shapes[task], history.get(action, 0), total)
-                window = min(chunk, remaining)
+                window = min(int(self.config.get("meta", {}).get("windows", {}).get(
+                    action, chunk)), remaining)
                 used = self._run_window(task, action, 0.0, window, generation, pending, log)
                 reward = int(task in self.state.solutions and task in pending)
                 self.metapolicy.record(generation, action, x, reward)
@@ -405,13 +474,87 @@ class Runtime:
             made += 1
             if self.arm.behave:
                 practice += self._practice(examples, shape, generation)
+        composed = 0
+        if int(self.config.get("meta", {}).get("compose_selfplay", 0)) and (
+                self.arm.chain or self.arm.analogy):
+            composed, compose_practice = self._compose_practice(generation, family, templates)
+            practice += compose_practice
         dreamt = 0
         if self.arm.selfplay_dreams:
             dreamt, dream_practice = self._dream_practice(generation)
             practice += dream_practice
         return {"imagined": made, "program_runs": runs, "dreams_practised": dreamt,
+                "composed_practised": composed,
                 "practice_evaluations": (practice if self.arm.behave or self.arm.selfplay_honest
                                          else None)}
+
+    def _compose_practice(self, generation, family, templates) -> tuple[int, int]:
+        """Practise the new actions on two-stage tasks the system imagines from its own programs.
+
+        Skeleton-imagined tasks are single routines, so practice never shows
+        the policy a composition. Here each imagined task is
+        ``lambda x. S[h] (f x)``:
+
+        - ``f`` is one of the system's own list programs (chain's stage set:
+          library concepts, ``tail``, verified solutions);
+        - ``S`` is a skeleton, and its hole ``h`` is sampled from the
+          current grammar;
+        - the task is run on a TRAIN task's public inputs.
+
+        Only the new actions (analogy, chain) practise on these tasks, and
+        each is credited by its actual outcome. The wake's actions get no
+        episodes here, so their models, and TRAIN, are unchanged. The random
+        stream is separate and depends on the generation only.
+        """
+        from rsi2.evaluator import evaluate
+        from rsi2.sampling import sample_program
+        from rsi2.terms import App, Lam, Var
+        from .chain import LIST, stage_candidates
+        from .decompose import skeletons_for
+        from .selfmodel import canonical_types, normalize
+        count = int(self.config.get("meta", {}).get("compose_selfplay", 0))
+        rng = random.Random(f"rsi3-compose-selfplay-{generation}")
+        types = {t.name: t.request_type for t in self.public}
+        stages = list(stage_candidates(self.state.solutions, types,
+                                       self.registry.library(self.state)).values())
+        library = self.registry.library(self.state)
+        step_budget = self.config["search"]["step_budget"]
+        made, spent = 0, 0
+        for _ in range(count):
+            stage = stages[rng.randrange(len(stages))]
+            skeleton = family[rng.randrange(len(family))]
+            hole = sample_program(skeleton.hole_type, self.state.grammar, rng, max_size=8,
+                                  max_attempts=20)
+            if hole is None:
+                continue
+            template = templates[rng.randrange(len(templates))]
+            try:
+                program = canonical_types(normalize(
+                    Lam(LIST, App(skeleton.compose(hole), App(stage, Var(0))))))
+            except Exception:
+                continue
+            examples, middle = [], []
+            for inputs, _ in template.examples:
+                first = evaluate(stage, inputs, library=library, step_budget=step_budget)
+                result = evaluate(program, inputs, library=library, step_budget=step_budget)
+                if not result.ok or not first.ok:
+                    break
+                examples.append((inputs, result.value))
+                middle.append(first.value)
+            if len(examples) != len(template.examples):
+                continue
+            outputs = [repr(o) for _, o in examples]
+            if (len(set(outputs)) == 1 or all(repr(o) == repr(i[0]) for i, o in examples)
+                    or all(repr(o) == repr(m) for (_, o), m in zip(examples, middle))):
+                continue                  # constant, the identity, or the stage alone
+            if skeleton.name not in {sk.name for sk in skeletons_for(
+                    [((m,), o) for m, (_, o) in zip(middle, examples)],
+                    self.arm.decomposition_fold)}:
+                continue
+            shape = shape_features(examples, self.arm.meta_extended, self.arm.meta_fixed_length)
+            spent += self._practice_searches(examples, shape, generation, only_new=True)
+            made += 1
+        return made, spent
 
     def _dream_practice(self, generation) -> tuple[int, int]:
         """Practise every action on dreams sampled from the system's own grammar.
@@ -455,7 +598,7 @@ class Runtime:
             practised += 1
         return practised, spent
 
-    def _practice_searches(self, examples, shape, generation) -> int:
+    def _practice_searches(self, examples, shape, generation, only_new: bool = False) -> int:
         """Honest practice: run the prior and each fitting skeleton for one chunk.
 
         The generating skeleton is not credited by construction: whether its
@@ -475,19 +618,49 @@ class Runtime:
         library = self.registry.library(self.state)
         hole_grammar = Grammar(library=library, weights=self.state.grammar.weights,
                                context_weights=self.state.grammar.context_weights)
-        searches = {"prior": ResumableSearch(examples, request,
-                                             self.registry.base_grammar(self.state),
-                                             step_budget=search["step_budget"],
-                                             max_size=search["max_size"],
-                                             max_expansions=search["max_expansions"])}
-        for sk in skeletons_for(examples, self.arm.decomposition_fold):
-            searches[f"decompose:{sk.name}"] = ResumableSearch(
-                examples, sk.hole_type, hole_grammar, compose=sk.compose,
-                step_budget=search["step_budget"], max_size=search["max_size"],
-                max_expansions=search["max_expansions"])
+        searches = {}
+        if not only_new:
+            searches["prior"] = ResumableSearch(examples, request,
+                                                self.registry.base_grammar(self.state),
+                                                step_budget=search["step_budget"],
+                                                max_size=search["max_size"],
+                                                max_expansions=search["max_expansions"])
+            for sk in skeletons_for(examples, self.arm.decomposition_fold):
+                searches[f"decompose:{sk.name}"] = ResumableSearch(
+                    examples, sk.hole_type, hole_grammar, compose=sk.compose,
+                    step_budget=search["step_budget"], max_size=search["max_size"],
+                    max_expansions=search["max_expansions"])
+        if self.arm.analogy:
+            from .analogy import AnalogySearch
+            settings = self.config.get("analogy", {})
+            sources = self.registry.analogy_index.sources(self.state.solutions, request, examples)
+            if sources:
+                searches["analogy"] = AnalogySearch(
+                    examples, request, sources, hole_grammar,
+                    step_budget=search["step_budget"], max_size=search["max_size"],
+                    max_expansions=search["max_expansions"],
+                    max_sources=int(settings.get("max_sources", 4)),
+                    max_ranked=settings.get("max_ranked", 6),
+                    max_evaluations=settings.get("max_evaluations"))
+        if self.arm.chain and all(len(i) == 1 and isinstance(i[0], (list, tuple))
+                                  for i, _ in examples):
+            from .chain import ChainSearch, PolicyRouter, stage_candidates
+            settings = self.config.get("chain", {})
+            types = {t.name: t.request_type for t in self.public}
+            stages = stage_candidates(self.state.solutions, types, library,
+                                      self.registry.analogy_index, examples)
+            searches["chain"] = ChainSearch(
+                examples, request, stages, library, weights=self.state.grammar.weights,
+                behave_settings=self.config.get("behave", {}), folds=self.arm.behave_folds,
+                step_budget=search["step_budget"], max_ranked=int(settings.get("max_ranked", 8)),
+                max_stages=int(settings.get("max_stages", 3)),
+                max_evaluations=settings.get("max_evaluations"),
+                router=PolicyRouter(self.metapolicy, self.arm.meta_extended,
+                                    self.arm.meta_fixed_length))
         spent = 0
         for action, practice in searches.items():
-            result = practice.run(chunk)
+            result = practice.run(int(self.config.get("meta", {}).get("windows", {}).get(
+                action, chunk)))
             spent += result.evaluated
             self.metapolicy.record(generation, action, context(shape, 0, 0),
                                    int(result.term is not None))
@@ -604,6 +777,28 @@ class Runtime:
                 "max_depth": max((e["start"] + e["evaluated"] for e in log), default=0),
                 "episodes": log}
 
+    def _curriculum(self, generation) -> dict:
+        """Imagine, select, solve (curriculum.py); the pool feeds this generation's sleep."""
+        from .curriculum import Pool, imagine, select_hard, solve
+        settings = self.config.get("curriculum", {})
+        if not hasattr(self, "curriculum_pool"):
+            self.curriculum_pool = Pool(int(settings.get("pool", 48)))
+            self.curriculum_record = []
+        tasks = imagine(self, generation, int(settings.get("count", 48)))
+        hard, probe_spent = select_hard(self, tasks, int(settings.get("hard_chunk", 16)))
+        hard = hard[:int(settings.get("solve", 24))]
+        programs, solve_spent = solve(self, hard, generation)
+        for task in hard:
+            if task.name in programs:
+                self.curriculum_pool.add(task, programs[task.name])
+        from rsi2.terms import pretty
+        self.curriculum_record.append({
+            "generation": generation, "imagined": len(tasks), "hard": len(hard),
+            "solved": sorted(programs), "programs": {n: pretty(t) for n, t in programs.items()}})
+        return {"imagined": len(tasks), "hard": len(hard), "solved": len(programs),
+                "pool": len(self.curriculum_pool.items),
+                "curriculum_evaluations": probe_spent + solve_spent}
+
     # ---- one generation --------------------------------------------------
     def generation(self) -> dict:
         generation = self.state.generation + 1
@@ -616,7 +811,13 @@ class Runtime:
                                    [self.memory.label(e) for e in replayed])
         before_rewrite = snapshot(self.state, "old")
         sink = {}
-        sleep = sleep_phase(self.state, self.public, self.config, generation, sink=sink)
+        curriculum = self._curriculum(generation) if self.arm.self_curriculum else None
+        sleep = sleep_phase(self.state, self.public, self.config, generation, sink=sink,
+                            extra=(self.curriculum_pool.items if curriculum is not None
+                                   else None))
+        if curriculum is not None:
+            self.curriculum_pool.rewrite(sink.get("extra", {}))
+            sleep["curriculum"] = curriculum
         continuity = self.continuity.after_sleep(
             self.state, before_rewrite, {t.name: t for t in self.public},
             sink.get("dreams", ()), generation)

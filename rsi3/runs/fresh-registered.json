@@ -1,0 +1,17 @@
+{
+  "purpose": "Registered (PREDICTIONS_FRESH.md, commit c81f086). FRESH-1 and FRESH-2 for the six registered arms: each arm is retrained on its registered config with seeds 11/22/33 in one job (shared TRAIN trajectory, per-seed dreams and recognition, VALIDATION reported), and its final checkpoint runs fresh1 and fresh2. At scoring time each arm's TRAIN trajectory and VALIDATION records are compared with rsi3/results_*/<ARM>_seed*.json; a mismatch is reported, not repaired.",
+  "configs": {
+    "RSI3_META_CONJ": "rsi3/experiment_config_cascade.json",
+    "RSI3_META_BEH": "rsi3/experiment_config_behave.json",
+    "RSI3_META_BEH_BASE": "rsi3/experiment_config_behave.json",
+    "RSI3_META_BEH_FOLD": "rsi3/experiment_config_behave_fold.json",
+    "RSI3_META_HONEST": "rsi3/experiment_config_honest.json",
+    "RSI3_META_PORTFOLIO": "rsi3/experiment_config_portfolio.json"
+  },
+  "arms": ["RSI3_META_CONJ", "RSI3_META_BEH", "RSI3_META_BEH_BASE", "RSI3_META_BEH_FOLD", "RSI3_META_HONEST", "RSI3_META_PORTFOLIO"],
+  "seeds": [11, 22, 33],
+  "shared_seeds": true,
+  "generations": 16,
+  "skip_validation": false,
+  "evaluate": ["fresh1", "fresh2"]
+}

@@ -1,0 +1,632 @@
+{
+ "arm": "RSI3_META_COMPOSE",
+ "partition": "far2",
+ "generation": 16,
+ "tasks": 21,
+ "seeds": {
+  "11": {
+   "solved": 6,
+   "solved_names": [
+    "drop-k with k=0",
+    "drop-k with k=1",
+    "drop-k with k=3",
+    "drop-k with k=4",
+    "drop-k with k=5",
+    "take-k with k=4"
+   ],
+   "tasks": [
+    {
+     "name": "count-k with k=0",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "count-k with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "count-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "count-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "count-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "drop-k with k=0",
+     "solved": true,
+     "spent": {
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "drop-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 13
+     },
+     "analogy_from": [
+      "prepend-k with k=5",
+      "replace[0, 0, 0]"
+     ]
+    },
+    {
+     "name": "drop-k with k=3",
+     "solved": true,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 16
+     },
+     "analogy_from": [
+      "prepend-k with k=4",
+      "replace[0, 0, 0]"
+     ]
+    },
+    {
+     "name": "drop-k with k=4",
+     "solved": true,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 15
+     },
+     "analogy_from": [
+      "prepend-k with k=5",
+      "replace[0, 0, 0]"
+     ]
+    },
+    {
+     "name": "drop-k with k=5",
+     "solved": true,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 13
+     },
+     "analogy_from": [
+      "prepend-index-k with k=2",
+      "replace[0, 0]"
+     ]
+    },
+    {
+     "name": "remove-index-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "remove-index-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "remove-index-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "remove-index-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "remove-mod-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "decompose:filter": 32
+     }
+    },
+    {
+     "name": "remove-mod-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "decompose:filter": 32
+     }
+    },
+    {
+     "name": "remove-mod-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "decompose:filter": 32
+     }
+    },
+    {
+     "name": "take-k with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "take-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "analogy": 16,
+      "chain": 16
+     }
+    },
+    {
+     "name": "take-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "analogy": 16,
+      "chain": 16
+     }
+    },
+    {
+     "name": "take-k with k=4",
+     "solved": true,
+     "spent": {
+      "decompose:filter_list": 32,
+      "analogy": 2
+     },
+     "analogy_from": [
+      "slice-k-n with k=1 and n=4",
+      "source"
+     ]
+    }
+   ],
+   "cpu_seconds": 28.271277285
+  },
+  "22": {
+   "solved": 6,
+   "solved_names": [
+    "drop-k with k=0",
+    "drop-k with k=1",
+    "drop-k with k=3",
+    "drop-k with k=4",
+    "drop-k with k=5",
+    "take-k with k=4"
+   ],
+   "tasks": [
+    {
+     "name": "count-k with k=0",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "count-k with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "count-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "count-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "count-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "drop-k with k=0",
+     "solved": true,
+     "spent": {
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "drop-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 13
+     },
+     "analogy_from": [
+      "prepend-k with k=5",
+      "replace[0, 0, 0]"
+     ]
+    },
+    {
+     "name": "drop-k with k=3",
+     "solved": true,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 16
+     },
+     "analogy_from": [
+      "prepend-k with k=4",
+      "replace[0, 0, 0]"
+     ]
+    },
+    {
+     "name": "drop-k with k=4",
+     "solved": true,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 15
+     },
+     "analogy_from": [
+      "prepend-k with k=5",
+      "replace[0, 0, 0]"
+     ]
+    },
+    {
+     "name": "drop-k with k=5",
+     "solved": true,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 13
+     },
+     "analogy_from": [
+      "prepend-index-k with k=2",
+      "replace[0, 0]"
+     ]
+    },
+    {
+     "name": "remove-index-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "remove-index-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "remove-index-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "remove-index-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "remove-mod-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "decompose:filter": 32
+     }
+    },
+    {
+     "name": "remove-mod-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "decompose:filter": 32
+     }
+    },
+    {
+     "name": "remove-mod-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "decompose:filter": 32
+     }
+    },
+    {
+     "name": "take-k with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "take-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "analogy": 16,
+      "chain": 16
+     }
+    },
+    {
+     "name": "take-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "analogy": 16,
+      "chain": 16
+     }
+    },
+    {
+     "name": "take-k with k=4",
+     "solved": true,
+     "spent": {
+      "decompose:filter_list": 32,
+      "analogy": 2
+     },
+     "analogy_from": [
+      "slice-k-n with k=1 and n=4",
+      "source"
+     ]
+    }
+   ],
+   "cpu_seconds": 29.200222098999998
+  },
+  "33": {
+   "solved": 6,
+   "solved_names": [
+    "drop-k with k=0",
+    "drop-k with k=1",
+    "drop-k with k=3",
+    "drop-k with k=4",
+    "drop-k with k=5",
+    "take-k with k=4"
+   ],
+   "tasks": [
+    {
+     "name": "count-k with k=0",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "count-k with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "count-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "count-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "count-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:fold_zero": 48,
+      "analogy": 16
+     }
+    },
+    {
+     "name": "drop-k with k=0",
+     "solved": true,
+     "spent": {
+      "behave:map": 10
+     }
+    },
+    {
+     "name": "drop-k with k=1",
+     "solved": true,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 13
+     },
+     "analogy_from": [
+      "prepend-k with k=5",
+      "replace[0, 0, 0]"
+     ]
+    },
+    {
+     "name": "drop-k with k=3",
+     "solved": true,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 16
+     },
+     "analogy_from": [
+      "prepend-k with k=4",
+      "replace[0, 0, 0]"
+     ]
+    },
+    {
+     "name": "drop-k with k=4",
+     "solved": true,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 15
+     },
+     "analogy_from": [
+      "prepend-k with k=5",
+      "replace[0, 0, 0]"
+     ]
+    },
+    {
+     "name": "drop-k with k=5",
+     "solved": true,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 13
+     },
+     "analogy_from": [
+      "prepend-index-k with k=2",
+      "replace[0, 0]"
+     ]
+    },
+    {
+     "name": "remove-index-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "remove-index-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "remove-index-k with k=4",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "remove-index-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "remove-mod-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "decompose:filter": 32
+     }
+    },
+    {
+     "name": "remove-mod-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "decompose:filter": 32
+     }
+    },
+    {
+     "name": "remove-mod-k with k=5",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "decompose:filter": 32
+     }
+    },
+    {
+     "name": "take-k with k=1",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 16,
+      "analogy": 16,
+      "chain": 32
+     }
+    },
+    {
+     "name": "take-k with k=2",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "analogy": 16,
+      "chain": 16
+     }
+    },
+    {
+     "name": "take-k with k=3",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 32,
+      "analogy": 16,
+      "chain": 16
+     }
+    },
+    {
+     "name": "take-k with k=4",
+     "solved": true,
+     "spent": {
+      "decompose:filter_list": 32,
+      "analogy": 2
+     },
+     "analogy_from": [
+      "slice-k-n with k=1 and n=4",
+      "source"
+     ]
+    }
+   ],
+   "cpu_seconds": 28.984899035000005
+  }
+ }
+}

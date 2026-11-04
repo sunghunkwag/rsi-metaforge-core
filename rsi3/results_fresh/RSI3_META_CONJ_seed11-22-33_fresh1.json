@@ -1,0 +1,815 @@
+{
+ "arm": "RSI3_META_CONJ",
+ "partition": "fresh1",
+ "generation": 16,
+ "tasks": 33,
+ "seeds": {
+  "11": {
+   "solved": 1,
+   "solved_names": [
+    "((prepend-k (dyn . 0) (static . -2)))"
+   ],
+   "tasks": [
+    {
+     "name": "((add-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((add-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((has-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:any": 16,
+      "decompose:all": 16,
+      "decompose:fold_false": 16
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-is-prime (dyn . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 64
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 64
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 64
+     }
+    },
+    {
+     "name": "((mult-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((mult-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((positions (dyn . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 64
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . -2)))",
+     "solved": true,
+     "spent": {
+      "decompose:prepend_of": 30
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:prepend_of": 64
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 2) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 3) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 5) (static . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:fold_nil": 32
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:fold_nil": 32
+     }
+    },
+    {
+     "name": "((uniq (dyn . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    }
+   ],
+   "cpu_seconds": 29.699798288
+  },
+  "22": {
+   "solved": 1,
+   "solved_names": [
+    "((prepend-k (dyn . 0) (static . -2)))"
+   ],
+   "tasks": [
+    {
+     "name": "((add-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((add-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((has-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:any": 16,
+      "decompose:all": 16,
+      "decompose:fold_false": 16
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-is-prime (dyn . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 64
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 64
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 64
+     }
+    },
+    {
+     "name": "((mult-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((mult-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((positions (dyn . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 64
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . -2)))",
+     "solved": true,
+     "spent": {
+      "decompose:prepend_of": 30
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:prepend_of": 64
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 2) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 3) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 5) (static . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:fold_nil": 32
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:fold_nil": 32
+     }
+    },
+    {
+     "name": "((uniq (dyn . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    }
+   ],
+   "cpu_seconds": 30.840384775000004
+  },
+  "33": {
+   "solved": 1,
+   "solved_names": [
+    "((prepend-k (dyn . 0) (static . -2)))"
+   ],
+   "tasks": [
+    {
+     "name": "((add-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((add-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((append-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 48,
+      "prior": 16
+     }
+    },
+    {
+     "name": "((has-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:any_list": 16,
+      "decompose:any": 16,
+      "decompose:all": 16,
+      "decompose:fold_false": 16
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-geq-k (dyn . 0) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-is-mod-k (dyn . 0) (static . 7)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-is-prime (dyn . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((identify-k (dyn . 0) (static . 3)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 64
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 64
+     }
+    },
+    {
+     "name": "((intersperse-k (dyn . 0) (static . 1)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 64
+     }
+    },
+    {
+     "name": "((mult-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((mult-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((positions (dyn . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:fold_nil": 64
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . -2)))",
+     "solved": true,
+     "spent": {
+      "decompose:prepend_of": 30
+     }
+    },
+    {
+     "name": "((prepend-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:prepend_of": 64
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:map": 32
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 2) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 3) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((replace-index-k-with-n (dyn . 0) (static . 5) (static . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 48,
+      "decompose:fold_nil": 16
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . -2)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:fold_nil": 32
+     }
+    },
+    {
+     "name": "((rotate-k (dyn . 0) (static . 10)))",
+     "solved": false,
+     "spent": {
+      "decompose:map_list": 32,
+      "decompose:fold_nil": 32
+     }
+    },
+    {
+     "name": "((uniq (dyn . 0)))",
+     "solved": false,
+     "spent": {
+      "decompose:filter_list": 48,
+      "decompose:fold_nil": 16
+     }
+    }
+   ],
+   "cpu_seconds": 30.152342653000005
+  }
+ }
+}

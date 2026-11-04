@@ -1,0 +1,9 @@
+{
+  "purpose": "Development only. CHAIN (HONEST + residual decomposition) and COMPOSE (HONEST + analogy + chain): TRAIN only at seed 44, then the final solver on RESERVE-NEAR and COMPOSE-24, which are both exposed.",
+  "config": "rsi3/experiment_config_analogy.json",
+  "arms": ["RSI3_META_CHAIN", "RSI3_META_COMPOSE"],
+  "seeds": [44],
+  "generations": 16,
+  "skip_validation": true,
+  "evaluate": ["near", "compose24"]
+}

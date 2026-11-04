@@ -1,0 +1,9 @@
+{
+  "purpose": "Diagnostic. HONEST at 256 candidates per task (B_wake = B_eval = 256): is the plateau a budget ceiling or a language/search ceiling? TRAIN only at seed 44, then RESERVE-FAR2, COMPOSE-24 and RESERVE-NEAR, all exposed.",
+  "config": "rsi3/experiment_config_honest_b256.json",
+  "arms": ["RSI3_META_HONEST"],
+  "seeds": [44],
+  "generations": 16,
+  "skip_validation": true,
+  "evaluate": ["far2", "compose24", "near"]
+}
