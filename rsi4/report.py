@@ -27,6 +27,32 @@ REGISTERED_FRESH1 = {"RSI3_META_HONEST": REPO / "rsi3" / "results_fresh"
                      / "RSI3_META_HONEST_seed11-22-33_fresh1.json"}
 
 
+# Keys the base code (1e6868a) writes that the registered HONEST files (written
+# at 03e7e2f) lack: rsi3's later dream-practice and composition-practice
+# studies added them to the record schema. For this arm each holds an empty
+# value. PREDICTIONS_P1.md registers G1a in two readings: literal, and with
+# exactly these keys removed after checking that they are empty.
+ADDED_GENERATION_KEYS = {"composed_practised": 0, "dreams_practised": 0}   # wake.meta.selfplay
+ADDED_FINAL_KEYS = {"analogy": {}, "chain": {}, "curriculum": []}
+
+
+def drop_added(generations: list, final: dict) -> tuple[list, dict, bool]:
+    """The records without the keys added after registration; and whether all were empty."""
+    empty, out = True, []
+    for record in generations:
+        record = json.loads(json.dumps(record))
+        selfplay = ((record.get("wake") or {}).get("meta") or {}).get("selfplay") or {}
+        for key, value in ADDED_GENERATION_KEYS.items():
+            if key in selfplay:
+                empty &= selfplay.pop(key) == value
+        out.append(record)
+    final = dict(final)
+    for key, value in ADDED_FINAL_KEYS.items():
+        if key in final:
+            empty &= final.pop(key) == value
+    return out, final, empty
+
+
 def _load(path: Path):
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
@@ -47,10 +73,14 @@ def base_check(run: Path, arm: str) -> dict:
                "trajectory": [g["train_solved"] for g in ours["generations"]]}
         if registered is not None:
             theirs = _load(registered / f"{arm}_seed{seed}.json")
-            row["generations_identical"] = (canonical(strip_timing(ours["generations"]))
-                                            == canonical(strip_timing(theirs["generations"])))
-            row["final_identical"] = (canonical(strip_timing(ours["final"]))
-                                      == canonical(strip_timing(theirs["final"])))
+            mine_g, mine_f = strip_timing(ours["generations"]), strip_timing(ours["final"])
+            reg_g, reg_f = strip_timing(theirs["generations"]), strip_timing(theirs["final"])
+            row["generations_identical"] = canonical(mine_g) == canonical(reg_g)
+            row["final_identical"] = canonical(mine_f) == canonical(reg_f)
+            exact_g, exact_f, empty = drop_added(mine_g, mine_f)
+            row["key_exact"] = {"added_keys_empty": empty,
+                                "generations_identical": canonical(exact_g) == canonical(reg_g),
+                                "final_identical": canonical(exact_f) == canonical(reg_f)}
             row["config_identical"] = ours["config"] == theirs["config"]
         out["train"][seed] = row
     fresh = run / f"{arm}_seed{'-'.join(map(str, seeds))}_fresh1.json"

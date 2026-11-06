@@ -477,9 +477,14 @@ def main(argv=None):
     parser.add_argument("--max-minutes", type=float, default=None)
     args = parser.parse_args(argv)
     args.output.mkdir(parents=True, exist_ok=True)
+    # Under ``python -m rsi4.stages`` this module is ``__main__``. The worker
+    # must come from the module under its real name, or every object it
+    # pickles (the runtime in each checkpoint) would name ``__main__`` as its
+    # module, and no other process (J, rsi3.reserve_eval) could load it.
+    from rsi4 import stages as module
     context = multiprocessing.get_context("spawn")
-    process = context.Process(target=_worker, args=(str(args.plan), args.arm, str(args.output),
-                                                    args.max_minutes))
+    process = context.Process(target=module._worker, args=(str(args.plan), args.arm,
+                                                           str(args.output), args.max_minutes))
     record = run_watched(process, cap_bytes=RSS_CAP_BYTES,
                          log_path=args.output / "watchdog.jsonl", label=f"train {args.arm}")
     status_path = args.output / "STATUS.json"

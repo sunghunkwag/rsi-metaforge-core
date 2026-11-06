@@ -126,5 +126,32 @@ class StreamTests(unittest.TestCase):
             runtime.begin_stage("S1", self.train[:1])
 
 
+class EntryPointTests(unittest.TestCase):
+    def test_checkpoints_of_the_real_entry_point_load_elsewhere(self):
+        """``python -m rsi4.stages`` pickles runtimes that J and rsi3 can load.
+
+        Found by the Phase 1 development run: a worker started from the
+        ``__main__`` module pickled ``__main__.StageRuntime``.
+        """
+        tmp, config, plan, *_ = _setup()
+        plan = dict(plan, train_generations=1, stage_generations=0, train_validation=False,
+                    final_reports=["exposed:far2"])
+        plan_path, out = tmp / "plan.json", tmp / "entry"
+        plan_path.write_text(json.dumps(plan))
+        subprocess.run([sys.executable, "-m", "rsi4.stages", "--plan", str(plan_path), "--arm",
+                        ARM, "--output", str(out)], cwd=fixtures.REPO, check=True,
+                       capture_output=True)
+        loaded = subprocess.run(
+            [sys.executable, "-c", "import pickle, sys; r = pickle.load(open(sys.argv[1], 'rb'))"
+             "['runtime']; print(type(r).__module__, type(r).__name__)",
+             str(out / f"{ARM}.after_TRAIN.pkl")],
+            cwd=fixtures.REPO, check=True, capture_output=True, text=True).stdout.split()
+        self.assertEqual(loaded, ["rsi4.stages", "StageRuntime"])
+        status = json.loads((out / "STATUS.json").read_text())
+        self.assertTrue(status["complete"])
+        self.assertIn("final_far2", status["evaluations"])          # J loaded it too
+        self.assertFalse(status["workers"][-1]["breach"])
+
+
 if __name__ == "__main__":
     unittest.main()
