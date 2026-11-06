@@ -1,0 +1,19 @@
+{
+  "name": "p1",
+  "purpose": "Phase 1 (rsi4/PREDICTIONS_P1.md). B0/B1: RSI3_META_HONEST on its registered config, TRAIN for 16 generations (VALIDATION recorded each generation, as the registered runs did), then S1 -> S2 -> S3 for 8 generations each, unchanged. B2: RSI3_META_ANALOGY_P the same way. One job chain per arm, seeds 11/22/33 shared (one trajectory, per-seed recognition). J evaluates R[i][j] on the three stage-eval pools after TRAIN and after each stage. Report-only: the exposed partitions and TRAIN/stage-train retention on the final solver; FRESH-1 and TRAIN retention on the after-TRAIN solver; rsi3.reserve_eval FRESH-1 on the after-TRAIN checkpoint for the Gate 1 byte check.",
+  "arms": {
+    "RSI3_META_HONEST": "rsi3/experiment_config_honest.json",
+    "RSI3_META_ANALOGY_P": "rsi3/experiment_config_analogy.json"
+  },
+  "seeds": [11, 22, 33],
+  "shared_seeds": true,
+  "train_generations": 16,
+  "stage_generations": 8,
+  "train_validation": true,
+  "evaluate_stage_eval": true,
+  "final_reports": ["exposed:validation", "exposed:near", "exposed:far2", "exposed:fresh1",
+                    "exposed:fresh2", "exposed:compose24", "report:train",
+                    "report:stage_train_S1", "report:stage_train_S2", "report:stage_train_S3"],
+  "train_reports": ["exposed:fresh1", "report:train"],
+  "rsi3_reserve_eval_after_train": ["fresh1"]
+}

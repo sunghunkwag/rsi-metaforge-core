@@ -1,0 +1,140 @@
+name: RSI-4 runs
+
+# Long RSI-4 runs on GitHub-hosted runners, modelled on rsi3-runs.yml.
+# Triggered only by pushes to branches named rsi4/run-<name>; the run plan is
+# rsi4/runs/<name>.json on that branch:
+#   {"arms": {"<ARM>": "<config path>", ...}, "seeds": [11, 22, 33],
+#    "shared_seeds": true, "train_generations": 16, "stage_generations": 8,
+#    "exposed": ["fresh1", ...]}
+# One job chain per arm runs every seed of the plan the way the registered
+# rsi3 runs did (shared_seeds: one TRAIN trajectory, each other seed's dreams
+# and recognition refitted, every seed evaluated from the one checkpoint).
+# A GitHub-hosted job stops at 6 hours, so each arm runs as up to three
+# chained segments: rsi4.stages checkpoints after every generation and stops
+# cleanly after --max-minutes; the next segment downloads the previous
+# segment's output and resumes from it. J's evaluations run inside the job
+# in their own spawned process. Nothing here reads TEST.
+on:
+  push:
+    branches:
+      - 'rsi4/run-*'
+
+permissions:
+  contents: read
+
+env:
+  OPENBLAS_NUM_THREADS: '1'
+  OMP_NUM_THREADS: '1'
+  SEGMENT_MINUTES: '320'
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      name: ${{ steps.plan.outputs.name }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: plan
+        run: |
+          name="${GITHUB_REF_NAME#rsi4/run-}"
+          python3 - "$name" <<'PY'
+          import json, os, sys
+          name = sys.argv[1]
+          plan = json.load(open(f"rsi4/runs/{name}.json"))
+          matrix = {"include": [{"arm": arm, "config": config}
+                                for arm, config in plan["arms"].items()]}
+          assert matrix["include"], "the plan names no arm"
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write(f"matrix={json.dumps(matrix)}\n")
+              out.write(f"name={name}\n")
+          print(json.dumps(plan, indent=1))
+          PY
+
+  segment-1:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.plan.outputs.matrix) }}
+    env:
+      ARM: ${{ matrix.arm }}
+      NAME: ${{ needs.plan.outputs.name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install numpy
+      - name: Unit and red-team tests
+        run: python -m unittest discover -s rsi4/tests -t .
+      - name: Train and evaluate (segment 1)
+        run: python -m rsi4.stages --plan "rsi4/runs/$NAME.json" --arm "$ARM" --output out --max-minutes "$SEGMENT_MINUTES"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ needs.plan.outputs.name }}-${{ matrix.arm }}-segment1
+          path: out
+          if-no-files-found: warn
+
+  segment-2:
+    needs: [plan, segment-1]
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.plan.outputs.matrix) }}
+    env:
+      ARM: ${{ matrix.arm }}
+      NAME: ${{ needs.plan.outputs.name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install numpy
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.plan.outputs.name }}-${{ matrix.arm }}-segment1
+          path: out
+      - name: Resume (segment 2)
+        run: python -m rsi4.stages --plan "rsi4/runs/$NAME.json" --arm "$ARM" --output out --max-minutes "$SEGMENT_MINUTES"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ needs.plan.outputs.name }}-${{ matrix.arm }}-segment2
+          path: out
+          if-no-files-found: warn
+
+  segment-3:
+    needs: [plan, segment-2]
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.plan.outputs.matrix) }}
+    env:
+      ARM: ${{ matrix.arm }}
+      NAME: ${{ needs.plan.outputs.name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install numpy
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.plan.outputs.name }}-${{ matrix.arm }}-segment2
+          path: out
+      - name: Resume (segment 3); fails if the run is still incomplete
+        run: |
+          python -m rsi4.stages --plan "rsi4/runs/$NAME.json" --arm "$ARM" --output out --max-minutes "$SEGMENT_MINUTES"
+          python3 -c "import json,sys; s=json.load(open('out/STATUS.json')); print(s); sys.exit(0 if s['complete'] else 1)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ needs.plan.outputs.name }}-${{ matrix.arm }}-final
+          path: out
+          if-no-files-found: warn
