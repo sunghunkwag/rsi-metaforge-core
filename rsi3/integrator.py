@@ -26,6 +26,7 @@ from __future__ import annotations
 import json
 
 from rsi2.evaluator import evaluate
+from .verifier import term_digest
 
 
 def _probe_value(value, mode: str):
@@ -51,7 +52,10 @@ def probe_inputs(examples) -> list[tuple]:
 
 
 class BindingIntegrator:
-    def __init__(self, tasks, step_budget: int = 2000):
+    def __init__(self, tasks, step_budget: int = 2000, *, skip_mode: str = "signature"):
+        if skip_mode not in ("signature", "exact"):
+            raise ValueError("skip_mode must be signature or exact")
+        self.skip_mode = skip_mode
         self.probes = {task.name: probe_inputs(task.examples) for task in tasks}
         self.step_budget = int(step_budget)
         self.probe_evaluations = 0
@@ -68,6 +72,18 @@ class BindingIntegrator:
         return json.dumps(outputs, sort_keys=True, default=str)
 
     def skip_callback(self, task: str, library, memory):
+        """Opt-in exact matching avoids false equivalence from finite probes."""
+        if self.skip_mode == "exact":
+            if not memory.rejected_digests.get(task):
+                return None
+
+            def skip(term) -> bool:
+                if memory.is_rejected_program(task, term_digest(term)):
+                    self.skipped_equivalent += 1
+                    return True
+                return False
+            return skip
+
         if not memory.rejected_signatures.get(task):
             return None
 
