@@ -102,7 +102,9 @@ class Runtime:
         self.value_model = ValueModel()
         self.controller = Controller(chunk=controller_config["chunk"],
                                      exploration=controller_config["exploration"], seed=seed)
-        self.integrator = BindingIntegrator(self.public, step_budget=search["step_budget"])
+        self.integrator = BindingIntegrator(
+            self.public, step_budget=search["step_budget"],
+            skip_mode=config.get("binding_skip_mode", "signature"))
 
     # ---- wake ------------------------------------------------------------
     def _slots(self, unsolved, pending, window) -> list[Slot]:

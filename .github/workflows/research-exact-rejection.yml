@@ -1,0 +1,37 @@
+name: Research exact-rejection unit checks
+
+on:
+  push:
+    branches:
+      - research/exact-rejection-20261108
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exact-rejection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install minimal test dependency
+        run: python -m pip install numpy
+      - name: Compile modified modules
+        run: python -m py_compile rsi3/memory.py rsi3/integrator.py rsi3/loop.py rsi3/tests/test_exact_rejection.py
+      - name: Exact-rejection and regression tests
+        run: python -m unittest rsi3.tests.test_exact_rejection rsi3.tests.test_components rsi3.tests.test_verifier_memory
+      - name: Run frozen TRAIN-only A/B smoke protocol
+        env:
+          OPENBLAS_NUM_THREADS: "1"
+          OMP_NUM_THREADS: "1"
+        run: python -m rsi3.exact_rejection_pilot --output /tmp/exact-rejection-pilot.json
+      - name: Upload developmental pilot data
+        uses: actions/upload-artifact@v4
+        with:
+          name: exact-rejection-train-pilot
+          path: /tmp/exact-rejection-pilot.json
+          retention-days: 7

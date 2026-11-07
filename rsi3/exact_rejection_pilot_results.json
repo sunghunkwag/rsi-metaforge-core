@@ -1,0 +1,130 @@
+{
+  "config": {
+    "B_eval": 16,
+    "B_wake": 16,
+    "controller": {
+      "analog_neighbors": 2,
+      "chunk": 8,
+      "exploration": 0.3
+    },
+    "dreams": 4,
+    "search": {
+      "max_expansions": 20000,
+      "max_size": 12,
+      "step_budget": 2000
+    }
+  },
+  "generations": 2,
+  "rows": [
+    {
+      "cpu_seconds_cumulative": 7.06,
+      "generation": 1,
+      "logical_evaluations": 537,
+      "mode": "signature",
+      "new_skips": 0,
+      "new_verifier_queries": 5,
+      "rejected_receipts": 0,
+      "seed": 11,
+      "total_skips": 0,
+      "total_verifier_queries": 5,
+      "train_solved": 5
+    },
+    {
+      "cpu_seconds_cumulative": 15.735,
+      "generation": 2,
+      "logical_evaluations": 1108,
+      "mode": "signature",
+      "new_skips": 0,
+      "new_verifier_queries": 1,
+      "rejected_receipts": 0,
+      "seed": 11,
+      "total_skips": 0,
+      "total_verifier_queries": 6,
+      "train_solved": 6
+    },
+    {
+      "cpu_seconds_cumulative": 6.606,
+      "generation": 1,
+      "logical_evaluations": 537,
+      "mode": "exact",
+      "new_skips": 0,
+      "new_verifier_queries": 5,
+      "rejected_receipts": 0,
+      "seed": 11,
+      "total_skips": 0,
+      "total_verifier_queries": 5,
+      "train_solved": 5
+    },
+    {
+      "cpu_seconds_cumulative": 15.299,
+      "generation": 2,
+      "logical_evaluations": 1108,
+      "mode": "exact",
+      "new_skips": 0,
+      "new_verifier_queries": 1,
+      "rejected_receipts": 0,
+      "seed": 11,
+      "total_skips": 0,
+      "total_verifier_queries": 6,
+      "train_solved": 6
+    },
+    {
+      "cpu_seconds_cumulative": 6.968,
+      "generation": 1,
+      "logical_evaluations": 533,
+      "mode": "signature",
+      "new_skips": 0,
+      "new_verifier_queries": 5,
+      "rejected_receipts": 0,
+      "seed": 22,
+      "total_skips": 0,
+      "total_verifier_queries": 5,
+      "train_solved": 5
+    },
+    {
+      "cpu_seconds_cumulative": 15.666,
+      "generation": 2,
+      "logical_evaluations": 1104,
+      "mode": "signature",
+      "new_skips": 0,
+      "new_verifier_queries": 1,
+      "rejected_receipts": 0,
+      "seed": 22,
+      "total_skips": 0,
+      "total_verifier_queries": 6,
+      "train_solved": 6
+    },
+    {
+      "cpu_seconds_cumulative": 6.819,
+      "generation": 1,
+      "logical_evaluations": 533,
+      "mode": "exact",
+      "new_skips": 0,
+      "new_verifier_queries": 5,
+      "rejected_receipts": 0,
+      "seed": 22,
+      "total_skips": 0,
+      "total_verifier_queries": 5,
+      "train_solved": 5
+    },
+    {
+      "cpu_seconds_cumulative": 15.171,
+      "generation": 2,
+      "logical_evaluations": 1104,
+      "mode": "exact",
+      "new_skips": 0,
+      "new_verifier_queries": 1,
+      "rejected_receipts": 0,
+      "seed": 22,
+      "total_skips": 0,
+      "total_verifier_queries": 6,
+      "train_solved": 6
+    }
+  ],
+  "seeds": [
+    11,
+    22
+  ],
+  "status": "development_train_only",
+  "train_count": 36
+}

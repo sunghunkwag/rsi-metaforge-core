@@ -91,6 +91,7 @@ class EpisodicMemory:
         self.episodes: list[Episode] = []
         self.solutions: dict[str, SolutionRecord] = {}
         self.rejected_signatures: dict[str, set] = {}
+        self.rejected_digests: dict[str, set[str]] = {}
         self.slot_windows: Counter = Counter()
 
     def record(self, episode: Episode, receipt=None) -> None:
@@ -122,9 +123,15 @@ class EpisodicMemory:
         if not self._verifier.is_authentic(receipt) or receipt.verdict or receipt.task != task:
             raise ContaminationError("only verifier-rejected behaviour can be marked rejected")
         self.rejected_signatures.setdefault(task, set()).add(signature)
+        # The authenticated receipt names the exact rejected program AST.
+        self.rejected_digests.setdefault(task, set()).add(receipt.digest)
 
     def is_rejected_behaviour(self, task: str, signature) -> bool:
         return signature in self.rejected_signatures.get(task, ())
+
+    def is_rejected_program(self, task: str, digest: str) -> bool:
+        """Check only exact programs certified by a negative verifier receipt."""
+        return digest in self.rejected_digests.get(task, ())
 
     def replay(self, mode: str, generation: int) -> list[Episode]:
         """Episodes used to refit the value model after ``generation``."""
