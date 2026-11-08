@@ -160,6 +160,8 @@ class Schedule:
             return self.uniform.sample(rng)
         if self.learned_every == 1:
             return self.learned.sample(rng)
+        if self.learned_every == 0:  # 75% learned, 25% guaranteed uniform
+            return self.uniform.sample(rng) if proposal_index % 4 == 0 else self.learned.sample(rng)
         if (proposal_index + 1) % self.learned_every == 0:
             return self.learned.sample(rng)
         return self.uniform.sample(rng)
@@ -183,7 +185,7 @@ def make_arms(prior, vm, learned_weights):
         "uniform_floor_50": (
             learned_weights, Schedule(uniform, learned, 2)),
         "uniform_floor_25": (
-            learned_weights, Schedule(uniform, learned, 4 / 3)),
+            learned_weights, Schedule(uniform, learned, 0)),
     }
 
 
