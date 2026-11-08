@@ -128,6 +128,70 @@ def measure_search(mod, arms, seeds: int, iterations: int):
     }
 
 
+
+
+def fixed_proposal_budget_probe(mod, arms, seeds: int = 256) -> dict:
+    """Exactly one original random proposal per seed per arm on four public tasks.
+
+    This equalizes the number of scored candidate programs, but NOT the CPU
+    time or the number of VM steps inside individual program evaluations.
+    It is an initialization-distribution ablation, not a full learning trial.
+    """
+    import random
+    targets = {
+        "length": lambda xs: len(xs),
+        "sum": lambda xs: sum(xs),
+        "head": lambda xs: xs[0] if xs else 0,
+        "max": lambda xs: max(xs) if xs else 0,
+    }
+    shift = [
+        tuple((i * 3 + j) % 19 for i in range(length))
+        for j in range(5) for length in (5, 8, 13, 21, 34)
+    ]
+    results = {}
+    fingerprints = {}
+    for name, state in arms.items():
+        summary = {
+            task: {"train_solved": 0, "shift_passed": 0}
+            for task in targets
+        }
+        per_seed = []
+        for seed in range(seeds):
+            # Exact initial state used by synthesize's exploit restart r=0.
+            rng = random.Random(seed * 1_000_003)
+            tokens = tuple(mod._random_tokens(rng, state))
+            outcomes = {}
+            for task, oracle in targets.items():
+                pairs = tuple((xs, oracle(xs)) for xs in mod.TRAIN_INPUTS)
+                train_ok = mod._score_tokens(tokens, state.macros, pairs) == 1.0
+                shifted_ok = False
+                if train_ok:
+                    try:
+                        compiled = mod.expand_tokens(tokens, state.macros)
+                        shifted_ok = all(
+                            mod.run_base_program(compiled, xs) == oracle(xs)
+                            for xs in shift
+                        )
+                    except mod.VMCrash:
+                        shifted_ok = False
+                summary[task]["train_solved"] += int(train_ok)
+                summary[task]["shift_passed"] += int(shifted_ok)
+                outcomes[task] = (train_ok, shifted_ok)
+            per_seed.append((tokens, outcomes))
+        results[name] = summary
+        fingerprints[name] = per_seed
+    assert fingerprints["baseline"] == fingerprints["uniform_null"]
+    return {
+        "proposals_per_arm": seeds,
+        "train_tasks": list(targets),
+        "scored_programs_per_arm": seeds * len(targets),
+        "shift_examples_per_task": len(shift),
+        "source_of_candidates": "unmodified original _random_tokens",
+        "equal_scored_program_counts": True,
+        "equal_cpu_budget": False,
+        "results": results,
+    }
+
 def test_original_gate(mod, weighted):
     # The gate itself is from the original commit; only caps are lowered.
     mod.ENUM_SURFACE_MAX = 2
@@ -225,7 +289,7 @@ def historical_cli_probe(source: str) -> dict:
         script.write_text(source)
         try:
             finished = subprocess.run(
-                [sys.executable, str(script), "--mode", "run-adaptive"],
+                [sys.executable, str(script), "--help"],
                 cwd=tmp, capture_output=True, text=True, timeout=15,
                 check=False,
             )
@@ -258,6 +322,7 @@ def main():
             "weighted": weighted,
         }, args.seeds, args.iterations,
     )
+    fixed = fixed_proposal_budget_probe(mod, {"baseline": baseline, "uniform_null": uniform, "weighted": weighted})
     gate = test_original_gate(mod, weighted)
     namespace = namespace_shadow_audit(source)
     cli_probe = historical_cli_probe(source)
@@ -267,12 +332,14 @@ def main():
         "static": contract,
         "search": search,
         "gate": gate,
+        "fixed_proposals": fixed,
         "namespace": namespace,
         "historical_cli": cli_probe,
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
     print(json.dumps({
+        "fixed_proposals": fixed,
         "static": contract,
         "search": search["summary"],
         "gate": gate,
