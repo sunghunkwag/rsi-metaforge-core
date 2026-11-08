@@ -51,7 +51,7 @@ DEV = {
     "directed_graph": (
         ("reverse_edges", "sink_count"), ("dedup_edges", "edge_count"),
         ("no_loops", "source_count"), ("up_edges", "distinct_endpoints"),
-        ("even_sources", "loop_count"), ("undirected", "up_edge_count")),
+        ("even_sources", "sink_count"), ("undirected", "up_edge_count")),
 }
 AUDIT = {
     "integer_list": (
