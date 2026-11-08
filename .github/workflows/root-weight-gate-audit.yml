@@ -1,0 +1,41 @@
+name: Historical MetaForge gate audit
+
+on:
+  push:
+    branches:
+      - research/root-weight-gate-audit-20261108
+  pull_request:
+    paths:
+      - research/root_weight_gate_audit_20261108.py
+      - .github/workflows/root-weight-gate-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  historical-weight-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out history without modifying historical sources
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run paired historical synthetic probe
+        run: |
+          python research/root_weight_gate_audit_20261108.py \
+            --repo . --seeds 32 --iterations 120 \
+            --out historical_weight_gate_results.json
+      - name: Preserve raw audit results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: historical-weight-gate-results
+          path: historical_weight_gate_results.json
+          if-no-files-found: warn
