@@ -1,0 +1,31 @@
+name: Preflight external DreamCoder metacontroller
+
+on:
+  push:
+    branches:
+      - research/external-preregistered-metacontrol-20261108
+    paths:
+      - research/external_metacontrol_experiment_20261108.py
+      - .github/workflows/external-meta-preflight.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  external-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out main-derived research branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and check source, split, manifest, external support/development semantics
+        run: |
+          python -m py_compile research/external_metacontrol_experiment_20261108.py
+          python research/external_metacontrol_experiment_20261108.py --self-test
