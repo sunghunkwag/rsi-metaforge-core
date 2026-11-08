@@ -1,0 +1,44 @@
+name: Equal-VM typed incumbent conservative replay
+
+on:
+  push:
+    branches:
+      - research/typed-replay-duplicate-reclamation-20261108
+  pull_request:
+    paths:
+      - research/typed_replay_duplicate_reclamation_20261108.py
+      - .github/workflows/typed-replay-reclaim.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  equal-vm-replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout full history including immutable experiment dependency
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate source and conservation invariants
+        run: |
+          python -m py_compile research/typed_replay_duplicate_reclamation_20261108.py
+          python research/typed_replay_duplicate_reclamation_20261108.py --self-test --repo .
+      - name: Run fresh development and independent audit at matched VM budget
+        run: |
+          python research/typed_replay_duplicate_reclamation_20261108.py \
+            --repo . --seeds 32 --out typed_replay_results.json
+      - name: Preserve all per-seed costs and negative results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: equal-vm-typed-replay-evidence
+          path: typed_replay_results.json
+          if-no-files-found: warn
