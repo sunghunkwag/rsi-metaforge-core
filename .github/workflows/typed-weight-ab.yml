@@ -1,0 +1,45 @@
+name: Experimental typed-weight A/B gate
+
+on:
+  push:
+    branches:
+      - research/type-directed-ab-gate-20261108
+  pull_request:
+    paths:
+      - research/typed_weight_ab_gate_20261108.py
+      - .github/workflows/typed-weight-ab.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  typed-weight-ab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout full immutable history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Verify the isolated synthetic experiment
+        run: |
+          python -m py_compile research/typed_weight_ab_gate_20261108.py
+          python research/typed_weight_ab_gate_20261108.py --repo . --self-test
+      - name: Run preregistered equal-proposal and probe-slot A/B
+        run: |
+          python research/typed_weight_ab_gate_20261108.py \
+            --repo . --seeds 32 --proposals 20 \
+            --out typed_weight_ab_results.json
+      - name: Archive all per-task and per-seed results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: typed-weight-ab-results
+          path: typed_weight_ab_results.json
+          if-no-files-found: warn
