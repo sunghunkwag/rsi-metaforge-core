@@ -19,9 +19,9 @@ def _is(e, name):
     return e.kind == "prim" and e.head == name
 
 
-def _lam_body(e):
-    """The body of a one-binder lambda, or None."""
-    return e.args[0] if e.kind == "lam" else None
+def _lam_body(e, binders=1):
+    """The body of a lambda with exactly ``binders`` binders, or None."""
+    return e.args[0] if e.kind == "lam" and len(e.head) == binders else None
 
 
 def normal(name: str, args) -> bool:
@@ -78,8 +78,7 @@ def normal(name: str, args) -> bool:
         f, z, xs = args
         if _is(xs, "nil"):
             return False
-        inner = _lam_body(f)
-        body = _lam_body(inner) if inner is not None else None
+        body = _lam_body(f, 2)
         if body is not None and body.kind == "var" and body.head == 1:   # λacc.λe. acc
             return False
         return True
@@ -91,8 +90,7 @@ def normal(name: str, args) -> bool:
         stop = _lam_body(args[0])
         return not (stop is not None and _lit(stop))
     if name == "fix1":
-        inner = _lam_body(args[1])
-        body = _lam_body(inner) if inner is not None else None
+        body = _lam_body(args[1], 2)
         if body is not None and 1 not in body.uses:        # the body never recurses
             return False
         return True

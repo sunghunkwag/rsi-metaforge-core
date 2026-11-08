@@ -163,12 +163,16 @@ class Searches(unittest.TestCase):
             self.assertGreater(large.candidates_to_solution, 500)
 
     def test_restored_vocabulary_reaches_is_prime(self):
-        engine = Engine(RESTORED)
-        examples = [(([10, 13, 2, 4, 4, 14],), [0, 1, 1, 0, 0, 0]), (([8, 5, 5, 5, 13, 5, 3],), [0, 1, 1, 1, 1, 1, 1]),
-                    (([],), []), (([1, 14],), [0, 0]), (([7, 9, 11],), [1, 0, 1])]
-        result = engine.search(examples, LIST, [], budget=40000)
+        """`map (λx. is_prime x) xs` (four symbols) is found; the original vocabulary cannot
+        express it at any budget this test can afford."""
+        examples = [(([10, 13, 2, 4, 4, 14],), [False, True, True, False, False, False]),
+                    (([8, 5, 5, 5, 13, 5, 3],), [False, True, True, True, True, True, True]),
+                    (([],), []), (([1, 14],), [False, False]), (([7, 9, 11],), [True, False, True])]
+        result = Engine(RESTORED).search(examples, Arrow(ListOf(INT), ListOf(BOOL)), [], budget=20000)
         self.assertIsNotNone(result.term)
         self.assertIn("is_prime", str(result.term))
+        control = Engine(ORIGINAL).search(examples, Arrow(ListOf(INT), ListOf(BOOL)), [], budget=20000)
+        self.assertIsNone(control.term)
 
     def test_public_match_is_rechecked_by_reference(self):
         """A term the closures accept but the interpreter rejects is never returned."""

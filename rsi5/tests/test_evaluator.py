@@ -101,7 +101,7 @@ class RestoredPrimitivesAreTotal(unittest.TestCase):
         prime = Lam(INT, apply(Prim("is_prime"), Var(0)))
         self.assertEqual([evaluate(prime, (n,)).value for n in range(-2, 14)],
                          [False, False, False, False, True, True, False, True, False, True,
-                          False, False, False, True, False, False])
+                          False, False, False, True, False, True])
         square = Lam(INT, apply(Prim("is_square"), Var(0)))
         self.assertEqual([evaluate(square, (n,)).value for n in (-4, 0, 1, 2, 4, 9, 10, 16)],
                          [False, True, True, False, True, True, False, True])

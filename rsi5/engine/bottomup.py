@@ -34,6 +34,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from itertools import product
+import sys
 import time
 
 from ..dsl.evaluator import evaluate as reference_evaluate
@@ -41,7 +42,7 @@ from ..dsl.terms import App, Bool, Int, Lam, Prim, Term, Var, apply
 from ..dsl.types import (BOOL, INT, ListOf, PairOf, Type, function_parts, instantiate,
                          is_ground, substitute, unify, TypeInferenceError)
 from ..dsl.vocabulary import Vocabulary
-from .closures import Fail, LIST_CAP, STEP_BUDGET, compile_term
+from .closures import Fail, LIST_CAP, RECURSION_LIMIT, STEP_BUDGET, compile_term, raise_recursion_limit
 from .normal_forms import normal
 from .oe import ERR, OETable, freeze, key_of
 
@@ -663,6 +664,7 @@ class Engine:
                 spurious += 1
 
         self._record = record
+        previous_limit = raise_recursion_limit()
         try:
             for size in range(1, self.max_size + 1):
                 for context in list(self.contexts):
@@ -673,6 +675,9 @@ class Engine:
                     break
         except StopSearch:
             pass
+        finally:
+            if previous_limit < RECURSION_LIMIT:
+                sys.setrecursionlimit(previous_limit)
         wall = time.perf_counter() - started
         return SearchResult(solution, self.candidates, candidates_to_solution, wall, exhausted,
                             sum(c.oe.pruned for c in self.contexts), spurious,

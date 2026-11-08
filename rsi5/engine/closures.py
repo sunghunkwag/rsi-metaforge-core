@@ -15,6 +15,7 @@ with the interpreter before it is reported (``bottomup.py``).
 from __future__ import annotations
 
 import math
+import sys
 
 from ..dsl.terms import Term
 from ..dsl.types import PRIMITIVE_TYPES, function_parts
@@ -290,10 +291,26 @@ def compile_term(term: Term, cache: dict | None = None):
     return fn
 
 
+RECURSION_LIMIT = 20000
+
+
+def raise_recursion_limit() -> int:
+    """Lift the host recursion limit so the step budget, not the host, ends deep
+    recursion (the reference interpreter does the same); returns the previous limit."""
+    previous = sys.getrecursionlimit()
+    if previous < RECURSION_LIMIT:
+        sys.setrecursionlimit(RECURSION_LIMIT)
+    return previous
+
+
 def run_closure(fn, env, step_budget: int = STEP_BUDGET):
     """Apply a compiled closure at one point; failures become ``None`` with a reason."""
     budget = [step_budget]
+    previous = raise_recursion_limit()
     try:
         return fn(env, budget), None
     except (Fail, ZeroDivisionError, IndexError, TypeError, RecursionError, OverflowError) as exc:
         return None, type(exc).__name__
+    finally:
+        if previous < RECURSION_LIMIT:
+            sys.setrecursionlimit(previous)
