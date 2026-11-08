@@ -180,6 +180,25 @@ def compute_table(found: dict) -> str:
     return "\n".join(lines)
 
 
+def replay_table(results: Path) -> str:
+    """Digest identity between the run and its replay (plan field ``replay``)."""
+    replay = Path(results) / "replay"
+    if not replay.exists():
+        return "(no replay directory)"
+    lines = ["| Partition | Vocabulary | Run digest | Replay digest | Identical |",
+             "| --- | --- | --- | --- | --- |"]
+    for path in sorted(replay.glob("*_*.json")):
+        second = json.loads(path.read_text(encoding="utf-8"))
+        first_path = Path(results) / path.name
+        if not first_path.exists():
+            continue
+        first = json.loads(first_path.read_text(encoding="utf-8"))
+        same = first["digest"] == second["digest"]
+        lines.append(f"| {PARTITIONS[first['partition']][0]} | {first['vocabulary']} | `{first['digest'][:16]}` | "
+                     f"`{second['digest'][:16]}` | {'yes' if same else '**no**'} |")
+    return "\n".join(lines)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--results", type=Path, default=Path(__file__).resolve().parent / "results_p1")
@@ -204,6 +223,8 @@ def main(argv=None):
     print(per_task_table(found, "far2", 1000000))
     print("\n## Compute\n")
     print(compute_table(found))
+    print("\n## Replay\n")
+    print(replay_table(args.results))
 
 
 if __name__ == "__main__":
