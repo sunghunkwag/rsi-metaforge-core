@@ -170,6 +170,74 @@ def test_original_gate(mod, weighted):
     }
 
 
+
+
+def namespace_shadow_audit(source: str) -> dict:
+    """Find globals redefined in the originally shipped monolithic file."""
+    tree = ast.parse(source)
+    defs = {}
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            defs.setdefault(node.name, []).append(node.lineno)
+    duplicated = {k: v for k, v in defs.items() if len(v) > 1}
+    critical = {
+        k: defs.get(k, []) for k in
+        ("synthesize", "run_system", "compile_program", "mine_macros",
+         "run_tests", "main", "meta_gate")
+    }
+    # The final CLI calls run_system(adaptive=...), while the final bound
+    # run_system declaration does not accept adaptive or arbitrary keywords.
+    final_system = [
+        node for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "run_system"
+    ][-1]
+    params = [p.arg for p in final_system.args.args]
+    last_main = [
+        node for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "main"
+    ][-1]
+    adaptive_call = any(
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "run_system"
+        and any(kw.arg == "adaptive" for kw in node.keywords)
+        for node in ast.walk(last_main)
+    )
+    return {
+        "duplicate_top_level_names": len(duplicated),
+        "critical_definitions_by_line": critical,
+        "final_run_system_parameters": params,
+        "final_run_system_accepts_kwargs": final_system.args.kwarg is not None,
+        "final_cli_requests_adaptive": adaptive_call,
+        "cli_signature_incompatibility": (
+            adaptive_call and "adaptive" not in params
+            and final_system.args.kwarg is None
+        ),
+        "scope": "static audit of full historical 33k-line module",
+    }
+
+
+def historical_cli_probe(source: str) -> dict:
+    """Check the shipped historical CLI without modifying the archive."""
+    import tempfile
+    with tempfile.TemporaryDirectory(prefix="metaforge-root-probe-") as tmp:
+        script = Path(tmp) / PATH
+        script.write_text(source)
+        try:
+            finished = subprocess.run(
+                [sys.executable, str(script), "--mode", "run-adaptive"],
+                cwd=tmp, capture_output=True, text=True, timeout=15,
+                check=False,
+            )
+            return {
+                "exit_code": finished.returncode,
+                "stderr_tail": finished.stderr.splitlines()[-8:],
+                "stdout_tail": finished.stdout.splitlines()[-5:],
+                "timeout": False,
+            }
+        except subprocess.TimeoutExpired:
+            return {"exit_code": None, "timeout": True}
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", type=Path, default=Path("."))
@@ -191,12 +259,16 @@ def main():
         }, args.seeds, args.iterations,
     )
     gate = test_original_gate(mod, weighted)
+    namespace = namespace_shadow_audit(source)
+    cli_probe = historical_cli_probe(source)
     payload = {
         "design": "exploratory synthetic length task; historical root source; no sealed evaluation",
         "source": f"https://github.com/sunghunkwag/rsi-metaforge-core/commit/{ROOT_SHA}",
         "static": contract,
         "search": search,
         "gate": gate,
+        "namespace": namespace,
+        "historical_cli": cli_probe,
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
@@ -204,6 +276,8 @@ def main():
         "static": contract,
         "search": search["summary"],
         "gate": gate,
+        "namespace": namespace,
+        "historical_cli": cli_probe,
         "result_file": str(args.out),
     }, indent=2, sort_keys=True))
     print(
