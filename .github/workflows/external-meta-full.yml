@@ -1,4 +1,5 @@
 name: Preregistered external DreamCoder multi-generation test
+# Pre-audit rerun after missing-key bug fix; preregistration and gate unchanged.
 
 on:
   push:
