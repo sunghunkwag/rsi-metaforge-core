@@ -1,0 +1,43 @@
+name: Cross-substrate conservative RSI portfolio
+
+on:
+  push:
+    branches:
+      - research/tri-substrate-conservative-portfolio-20261108
+  pull_request:
+    paths:
+      - research/tri_substrate_portfolio_20261108.py
+      - .github/workflows/tri-substrate-portfolio.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  portfolio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out isolated research branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile and test invariants
+        run: |
+          python -m py_compile research/tri_substrate_portfolio_20261108.py
+          python research/tri_substrate_portfolio_20261108.py --self-test
+      - name: Run prespecified three-substrate development and fresh audit
+        run: |
+          python research/tri_substrate_portfolio_20261108.py \
+            --seeds 24 --out tri_substrate_portfolio_results.json
+      - name: Preserve complete development, audit, costs, and failure data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tri-substrate-portfolio-raw-results
+          path: tri_substrate_portfolio_results.json
+          if-no-files-found: warn
