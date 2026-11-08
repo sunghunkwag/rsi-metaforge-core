@@ -1,0 +1,45 @@
+name: Worst-domain guarded transfer experiment
+
+on:
+  push:
+    branches:
+      - research/worst-domain-transfer-gate-20261108
+  pull_request:
+    paths:
+      - research/worst_domain_transfer_gate_20261108.py
+      - .github/workflows/worst-domain-transfer.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  domain-robustness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out full immutable history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Static compilation and research invariants
+        run: |
+          python -m py_compile research/worst_domain_transfer_gate_20261108.py
+          python research/worst_domain_transfer_gate_20261108.py --repo . --self-test
+      - name: Fresh-domain preregistered evaluation
+        run: |
+          python research/worst_domain_transfer_gate_20261108.py \
+            --repo . --seeds 64 --support-budget 768 \
+            --out worst_domain_transfer_results.json
+      - name: Archive complete per-seed data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: worst-domain-transfer-results
+          path: worst_domain_transfer_results.json
+          if-no-files-found: warn
