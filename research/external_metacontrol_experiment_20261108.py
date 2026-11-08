@@ -228,8 +228,8 @@ def mutate_candidate(rng, vocab, best, action, history, zero_failures):
         return rng.choice(same_k or vocab)
     pool = [rng.choice(vocab) for _ in range(6)]
     if action == "novelty":
-        return min(pool, key=lambda x: (history[x], x))
-    return min(pool, key=lambda x: (zero_failures[external_meta(x)[0]], x))
+        return min(pool, key=lambda x: (history.get(x, 0), x))
+    return min(pool, key=lambda x: (zero_failures.get(external_meta(x)[0], 0), x))
 
 
 class Learner:
@@ -616,6 +616,10 @@ def main():
         a.reward("uniform",0.0)
         a.finish_generation(0)
         assert a.weights["parameter_mutation"]>a.weights["uniform"]
+        for action in ACTIONS:
+            vocab=vocabulary("list-of-int")
+            candidate=mutate_candidate(random.Random(909),vocab,vocab[0],action,{}, {})
+            assert candidate in vocab
         x=episode(manifest["support_rounds"][0][0],0,0,"dedup_uniform",Learner("dedup_uniform"),"smoke")
         assert x["actual_public_vm_calls"]==CANDIDATES*TRAIN_N
         assert x["actual_shift_vm_calls"]==SHIFT_N
