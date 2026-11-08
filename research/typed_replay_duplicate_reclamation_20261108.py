@@ -297,7 +297,7 @@ def select_development(summary, seed_count):
             "eligible": accept,
             "by_domain_ood_gain": by_domain,
             "by_task_ood_gain": by_task,
-            "matched_interpreter_calls": budget_parity,
+            "matched_training_interpreter_calls": budget_parity,
         }
         if accept:
             eligible.append(arm)
@@ -337,7 +337,7 @@ def independent_gate(summary, selected):
         "pass": pass_all,
         "by_domain_ood_gain": deltas,
         "by_task_ood_gain": task_deltas,
-        "actual_interpreter_calls_matched": True,
+        "actual_training_interpreter_calls_matched": True,
         "reason": (
             "Finite-substrate prespecified test passed; still NOT general RSI"
             if pass_all else "At least one preregistered condition failed"
