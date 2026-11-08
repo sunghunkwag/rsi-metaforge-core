@@ -1,0 +1,54 @@
+name: Preregistered external DreamCoder multi-generation test
+# Pre-audit rerun after missing-key bug fix; preregistration and gate unchanged.
+
+on:
+  push:
+    branches:
+      - research/external-preregistered-metacontrol-20261108
+    paths:
+      - .github/workflows/external-meta-full.yml
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: external-meta-single-use-20261108
+  cancel-in-progress: false
+
+jobs:
+  full-preregistered-experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout main-derived branch and pre-frozen data
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Re-validate locked source, test exclusion and support semantics only
+        run: |
+          python -m py_compile research/external_metacontrol_experiment_20261108.py
+          python research/external_metacontrol_experiment_20261108.py --self-test
+      - name: Run the one-shot preregistered study and single-use external audit
+        run: |
+          python research/external_metacontrol_experiment_20261108.py \
+            --out research/results/external_metacontrol_raw.json
+      - name: Commit complete raw JSON in the research branch even on negative findings
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add research/results/external_metacontrol_raw.json
+          git commit -m "research: archive preregistered raw external multigen results (single audit)"
+          git push origin HEAD:refs/heads/research/external-preregistered-metacontrol-20261108
+      - name: Preserve backup raw JSON artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: preregistered-external-multigen-raw
+          path: research/results/external_metacontrol_raw.json
+          if-no-files-found: warn

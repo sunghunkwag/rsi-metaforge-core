@@ -1,0 +1,100 @@
+{
+  "schema": "external-dreamcoder-unseen-groups-v1",
+  "created_before_experiment_execution": true,
+  "original_source": {
+    "repository": "https://github.com/ellisk42/ec",
+    "commit": "cb0e63f5c33cd2de360b791038b0f5272750270e",
+    "path": "data/list_tasks.json",
+    "git_blob_sha": "2816d1ee51ff2f523704c1930d8736eb99711036",
+    "main_repository_copy": "rsi2/data/source_list_tasks.json"
+  },
+  "protected_existing_split": {
+    "git_blob_sha": "afac5b3f2dc346027caaba36f308f2b1e078ebda",
+    "path": "rsi2/data/split_manifest.json",
+    "rule": "Exclude every task identifier in old train, validation and TEST, without opening original TEST labels."
+  },
+  "selection_rule": "Task identifiers must exactly match externally published source names, types list-of-int input to list-of-int or int output; exclude protected prior split names. Select the prespecified families exactly; sorted lexicographically before assignment to 3 rounds. No audit performance inspected.",
+  "support_rounds": [
+    [
+      "add-k with k=0",
+      "add-k with k=1",
+      "add-k with k=2",
+      "add-k with k=3",
+      "add-k with k=4"
+    ],
+    [
+      "count-k with k=0",
+      "count-k with k=1",
+      "count-k with k=2",
+      "count-k with k=3",
+      "count-k with k=4"
+    ],
+    [
+      "count-k with k=5",
+      "mult-k with k=0",
+      "mult-k with k=1",
+      "mult-k with k=2",
+      "mult-k with k=3",
+      "mult-k with k=5"
+    ]
+  ],
+  "development_rounds": [
+    [
+      "drop-k with k=0",
+      "drop-k with k=1",
+      "drop-k with k=2",
+      "drop-k with k=3",
+      "drop-k with k=4"
+    ],
+    [
+      "drop-k with k=5",
+      "pow-k with k=1",
+      "pow-k with k=2",
+      "pow-k with k=3",
+      "pow-k with k=5"
+    ],
+    [
+      "take-k with k=1",
+      "take-k with k=2",
+      "take-k with k=3",
+      "take-k with k=4",
+      "take-k with k=5"
+    ]
+  ],
+  "audit_tasks": [
+    "append-k with k=0",
+    "append-k with k=2",
+    "append-k with k=3",
+    "append-k with k=5",
+    "keep-mod-k with k=1",
+    "keep-mod-k with k=3",
+    "keep-mod-k with k=4",
+    "keep-mod-k with k=5",
+    "modulo-k with k=1",
+    "modulo-k with k=4",
+    "modulo-k with k=5",
+    "remove-mod-k with k=2",
+    "remove-mod-k with k=3",
+    "remove-mod-k with k=4",
+    "remove-mod-k with k=5",
+    "rotate-k with k=1",
+    "rotate-k with k=2",
+    "rotate-k with k=3",
+    "rotate-k with k=5"
+  ],
+  "external_original_examples_per_task": 15,
+  "shifted_inputs_per_task_per_seed": 32,
+  "shifted_input_length_values": [
+    0,
+    1,
+    2,
+    3,
+    5,
+    8,
+    13,
+    21,
+    34
+  ],
+  "oracle_reconstruction_contract": "Experiment code must implement externally named semantics, compare independently against upstream examples, and abort (not revise) on any mismatch. FRESH shifted inputs are generated with a fixed seed outside the source example distribution. The original test split is never loaded.",
+  "raw_upstream_labels_policy": "Audit source examples are not accessed until after development selection is frozen; audit selection uses only published task IDs in this preregistered file."
+}

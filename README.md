@@ -10,6 +10,15 @@ The question this repository is built to answer is not *"can a system look like 
 
 Project write-ups: [research overview](https://sunghunkwag.github.io/research/#program-synthesis) · [recursive self-improvement guide and test checklist](https://sunghunkwag.github.io/research/recursive-self-improvement/).
 
+
+### 2026-11-08: externally preregistered multi-generation meta-controller experiment (negative)
+
+A **single-use, independently audited, externally sourced** DreamCoder integer-list task experiment tested three generations of learned proposal-action weights. The externally pinned task manifest was committed first (`ff193281`), then predictions and acceptance gates (`a576be9c`; audit-curve addendum `a70e1a2d`), and only then the experiment runner. The source corpus was pinned to upstream DreamCoder commit `cb0e63f5` and the existing protected RSI-2 train/validation/TEST split was excluded; **no sealed TEST/J pool or unmerged PR implementation was used**.
+
+Forty independent seed trajectories were evaluated on **19 previously unseen external audit tasks**, with 32 varied-size, shifted verification inputs per task/seed. All arms spent **36,480 candidate evaluations, 437,760 actual public training VM calls, and 24,320 independent verification VM calls** in the final audit. The adaptive persistent controller passed **649/760** cases; a strong **frozen parameter-mutation baseline passed 690/760**. Adaptive versus frozen: **38 paired wins / 79 losses / 643 ties**, an absolute effect of **-5.39 percentage points**, seed-cluster bootstrap 95% CI **[-8.82, -2.11] pp**. There was no increasing independent audit advantage across generations. Measured CPU usage also differed by more than the preregistered 10% parity limit.
+
+**Preregistered outcome: FAIL**. This is a negative learning-to-search result, **not** recursive self-improvement or an all-domain breakthrough. The independent audit is spent and must not be used for tuning. [Locked task manifest](research/external_metacontrol_task_manifest.json) · [Predictions and strict gates](research/PREREG_EXTERNAL_METACONTROL_20261108.md) · [Pre-run audit-curve addendum](research/PREREG_ADDENDUM_AUDIT_CURVE_20261108.md) · [Reproducible runner](research/external_metacontrol_experiment_20261108.py) · [Complete English results](research/RESULTS_EXTERNAL_METACONTROL_20261108.md) · [Committed raw JSON](research/results/external_metacontrol_raw.json) · [Successful execution CI](https://github.com/sunghunkwag/rsi-metaforge-core/actions/runs/42472451356).
+
 ---
 
 ## How it works
