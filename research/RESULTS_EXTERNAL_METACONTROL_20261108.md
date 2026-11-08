@@ -59,6 +59,22 @@ All comparisons are on **760 identical task/seed cases**, with 40 independent se
 
 The independent 95% CI against the strongest fixed baseline is entirely **negative**, which is inconsistent with the preregistered +8 percentage-point primary expectation.
 
+## Secondary paired McNemar diagnostics (postprocessing only)
+
+As preregistered, we compute **two-sided exact McNemar/binomial p-values** from the already recorded discordant paired case counts (`wins`, `losses`), without any rerun, policy selection or changed gate. Because multiple tasks belong to the same seed trajectory, these per-case p-values can overstate independent evidence; the **seed-cluster bootstrap confidence intervals above are primary**.
+
+| Comparator | Discordant cases | Two-sided exact McNemar p |
+|---|---:|---:|
+| Deduplicated uniform | 157 | 0.523301 |
+| Strongest frozen mutation | 117 | **0.0001893** |
+| Untrained/no memory | 150 | 0.567775 |
+| Memory wiped | 50 | 0.322236 |
+| Equal-total-compute one update | 43 | 0.760792 |
+| Inverted-feedback control | 95 | 1.000000 |
+
+The fixed-mutation result is a statistically clear negative comparison even at this secondary diagnostic level. No p-value is used to alter the preregistered binary decision.
+
+
 ## Previously unseen audit families, across frozen checkpoints
 Adaptive-minus-strongest-fixed OOD margin at the **same** external audit family tasks and common paired random tapes:
 
