@@ -1,0 +1,1 @@
+{"vocabulary": "original", "partition": "fresh1", "tasks": 33, "solved": 10, "solved_at": {"1000": 2, "10000": 4, "100000": 6, "1000000": 10}, "wall_seconds": 212.2, "digest": "e0c447248af39613", "file": "rsi5/results_p1/original_fresh1.json"}
