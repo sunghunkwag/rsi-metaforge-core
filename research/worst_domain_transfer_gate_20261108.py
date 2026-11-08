@@ -454,8 +454,35 @@ def self_test(repo):
             assert vm.static_plausible(tokens, vm.build_type_sigs({}))
     for name in ("minimum", "prefix_max_sum", "sum_squares"):
         assert name in meta["support_task_records"]
-    print("PASS 5 research checks: isolated source, task disjointness, "
-          "reachable grammar, fixed mixture policy, support credit")
+    # Unit-test the strict worst-domain acceptance guard without audit labels.
+    import copy
+    base_summary = {
+        "by_task": {name: 1 for name in DEVELOPMENT_TASKS},
+        "by_task_ood": {name: 1 for name in DEVELOPMENT_TASKS},
+        "candidate_evals": 100,
+        "charged_probe_slots": 2000,
+        "cpu_cap_breaches": 0,
+    }
+    fake = {"summary": {arm: copy.deepcopy(base_summary) for arm in ARMS}}
+    arm = "uniform_floor_75"
+    for domain in DEVELOPMENT_TASKS:
+        fake["summary"][arm]["by_task"][domain] = 2
+        fake["summary"][arm]["by_task_ood"][domain] = 2
+    assert select_on_development(fake, DEVELOPMENT_TASKS)["selected"] == arm
+    worst = DEVELOPMENT_TASKS[0]
+    fake["summary"][arm]["by_task"][worst] = 0
+    assert select_on_development(fake, DEVELOPMENT_TASKS)["selected"] is None
+    fake["summary"][arm]["by_task"][worst] = 2
+    fake["summary"][arm]["by_task_ood"][worst] = 0
+    assert select_on_development(fake, DEVELOPMENT_TASKS)["selected"] is None
+    fake["summary"][arm]["by_task_ood"][worst] = 2
+    fake["summary"][arm]["charged_probe_slots"] = 1999
+    assert select_on_development(fake, DEVELOPMENT_TASKS)["selected"] is None
+    fake["summary"][arm]["charged_probe_slots"] = 2000
+    fake["summary"][arm]["cpu_cap_breaches"] = 1
+    assert select_on_development(fake, DEVELOPMENT_TASKS)["selected"] is None
+    print("PASS guarded-gate tests: gain required, per-domain and OOD regressions "
+          "blocked, unequal budgets and CPU ceiling violations blocked")
 
 
 def main():
