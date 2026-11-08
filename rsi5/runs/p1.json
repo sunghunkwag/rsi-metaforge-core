@@ -1,0 +1,37 @@
+{
+ "name": "p1",
+ "phase": 1,
+ "description": "OWNER_DIRECTIVE.md section 3.3: enumeration only, original vs restored vocabulary, every exposed partition. One deterministic run at `budget`; solve counts at every budget in `report_budgets` are read off the same run (a task solved at B is solved at every larger budget by the same program).",
+ "budget": 1000000,
+ "report_budgets": [
+  1000,
+  10000,
+  100000,
+  1000000
+ ],
+ "max_size": 20,
+ "step_budget": 2000,
+ "max_lambda_depth": 2,
+ "child_point_cap": 64,
+ "partitions": [
+  "fresh1",
+  "fresh2",
+  "near",
+  "far2",
+  "compose24",
+  "validation",
+  "far",
+  "train"
+ ],
+ "vocabularies": [
+  "original",
+  "restored"
+ ],
+ "probe_set_sha256": "0035a70ce09dc5084e86235753eed2b09628a40664f998b3c5c2c4867b0a14b1",
+ "wall_cap_seconds": null,
+ "replay": [
+  "fresh1",
+  "far2"
+ ],
+ "replay_note": "these partitions are run a second time and their digests must be byte-identical"
+}
