@@ -112,7 +112,9 @@ def train_support(prior, vm, budget=SUPPORT_BUDGET_PER_TASK):
         pairs = prior.input_pairs(vm, task, 317)
         winner = None
         matched = 0
+        attempts_executed = 0
         for _ in range(budget):
+            attempts_executed += 1
             tokens = sampler.sample(rng)
             hits, valid = prior.evaluate_proposal(vm, tokens, uniform, pairs)
             if valid and hits == len(pairs):
@@ -126,7 +128,9 @@ def train_support(prior, vm, budget=SUPPORT_BUDGET_PER_TASK):
         records[task] = {
             "verified_support_solution": list(winner) if winner else None,
             "matched": bool(winner),
-            "charged_candidate_budget": budget,
+            "candidate_budget_cap": budget,
+            "attempts_executed": attempts_executed,
+            "charged_support_probe_slots": attempts_executed * len(pairs),
             "matched_at_or_before_budget": matched > 0,
         }
     weights = uniform.clone()
@@ -139,6 +143,10 @@ def train_support(prior, vm, budget=SUPPORT_BUDGET_PER_TASK):
         "support_tasks": list(SUPPORT_TASKS),
         "candidate_budget_per_support_domain": budget,
         "max_charged_support_evaluations": budget * len(SUPPORT_TASKS),
+        "actual_support_candidate_evaluations": sum(
+            entry["attempts_executed"] for entry in records.values()),
+        "actual_support_charged_probe_slots": sum(
+            entry["charged_support_probe_slots"] for entry in records.values()),
         "weight_credit_from_verified_support_only": True,
         "learned_weights_nonunit": {
             vm.OP_NAMES[t]: weights.weights[t]
