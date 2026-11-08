@@ -1,0 +1,62 @@
+{
+  "status": "synthetic_development_only",
+  "date_utc": "2026-11-08",
+  "pre_registration_commit": "b40784d5a2e203ad2998c05a7021e6a9eeecfb3f",
+  "executed_source_commit": "92fc88e06dd3d3b2ba51feb4047635579939fcb7",
+  "ci_run": "https://github.com/sunghunkwag/rsi-metaforge-core/actions/runs/42439748881",
+  "python_version": "3.11",
+  "tests_passed": 30,
+  "tests_failed": 0,
+  "raw_artifact": "grammar-collision-synthetic",
+  "raw_json_sha256": "fadd3b80a5ad99dc811bcd1e1cc46a4c2c965060081033824455120427c15cb3",
+  "triggers": [
+    -1,
+    0,
+    1,
+    2
+  ],
+  "seeds": [
+    11,
+    22,
+    33
+  ],
+  "case_count": 12,
+  "public_examples_per_task": 10,
+  "probe_inputs_per_task": 10,
+  "independent_synthetic_checks_per_task": 12,
+  "max_ast_size": 12,
+  "step_budget": 2000,
+  "cpu_cap_seconds_per_arm_task": 2,
+  "summary": {
+    "signature": {
+      "accepted_correct": 0,
+      "cpu_seconds": 0.009163,
+      "false_suppressions": 12,
+      "logical_evaluations": 24,
+      "probe_interpreter_calls": 240,
+      "verifier_queries": 12
+    },
+    "exact": {
+      "accepted_correct": 12,
+      "cpu_seconds": 0.009342,
+      "false_suppressions": 0,
+      "logical_evaluations": 24,
+      "probe_interpreter_calls": 120,
+      "verifier_queries": 24
+    },
+    "none": {
+      "accepted_correct": 12,
+      "cpu_seconds": 0.009228,
+      "false_suppressions": 0,
+      "logical_evaluations": 24,
+      "probe_interpreter_calls": 120,
+      "verifier_queries": 24
+    }
+  },
+  "limitations": [
+    "Manually constructed grammar-reachable ASTs; not enumerator-reached within normal search budget",
+    "Synthetic oracle deliberately covers trigger range; not sealed holdout",
+    "Equal CPU ceilings but unequal actual CPU consumed",
+    "No measured natural collision rate or TRAIN/transfer/forgetting improvement"
+  ]
+}
