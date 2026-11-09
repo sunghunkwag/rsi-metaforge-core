@@ -228,7 +228,7 @@ def main():
           "and [report](research/RESULTS_COST_METERING_20261109.md). "
           f"Preregistered instrumentation gates: {result['preregistered_success']}. "
           f"Identical-work CPU false rejections: {result['paired_summary']['same_work']['rejected']}/40. "
-          "No RSI claim.\\n\\n")
+          "No RSI claim.\n\n")
     assert anchor in content
     assert "2026-11-09 research calibration" not in content
     readme.write_text(content.replace(anchor,note+anchor,1),encoding="utf-8")
