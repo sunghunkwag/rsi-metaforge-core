@@ -19,9 +19,11 @@ Paired strict parity rejections (out of 40): same-work **0**;
 extra-training-call **40**;
 extra-generator-CPU **40**.
 The predeclared negative-control gates: **True**.
-The same-work false rejections show that a per-seed 10% CPU gate is noisy
-even for identical work; report both per-seed and aggregate CPU, never infer
-CPU parity from matching proposal/VM counts. This is not evidence of learning.
+Same-work had **0/40** false rejections on the GitHub Actions runner (95% Wilson
+interval for the underlying rejection probability: **[0, 0.087622]**).
+CPU timing can nevertheless vary with machine and scheduling; report both
+per-seed and aggregate CPU, never infer CPU parity from matching VM counts.
+This is not evidence of learning.
 
 All arms have an identical nominal candidate budget. The extra-training
 negative control has 120 additional **actually counted** support VM calls.
