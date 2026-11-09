@@ -7,3 +7,4 @@
 {"vocabulary": "original", "partition": "far", "tasks": 12, "solved": 8, "solved_at": {"1000": 2, "10000": 3, "100000": 7, "1000000": 8}, "wall_seconds": 33.7, "digest": "2d6e97a0016f1876", "file": "rsi5/results_p1/original_far.json"}
 {"vocabulary": "original", "partition": "train", "tasks": 36, "solved": 21, "solved_at": {"1000": 8, "10000": 13, "100000": 18, "1000000": 21}, "wall_seconds": 142.0, "digest": "9a8359e4422f235f", "file": "rsi5/results_p1/original_train.json"}
 {"vocabulary": "restored", "partition": "fresh1", "tasks": 33, "solved": 10, "solved_at": {"1000": 1, "10000": 4, "100000": 5, "1000000": 10}, "wall_seconds": 213.4, "digest": "fd51abe16b6a785d", "file": "rsi5/results_p1/restored_fresh1.json"}
+{"vocabulary": "restored", "partition": "fresh2", "tasks": 100, "solved": 28, "solved_at": {"1000": 12, "10000": 15, "100000": 21, "1000000": 28}, "wall_seconds": 587.3, "digest": "29283bdb923b6314", "file": "rsi5/results_p1/restored_fresh2.json"}
