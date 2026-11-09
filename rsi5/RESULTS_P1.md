@@ -22,7 +22,7 @@ the generalisation audit is `python -m rsi5.audit_p1`.
 | P1-3 ≥ 2 of the five corpus-lacking FRESH-1 routines solved (restored, 10⁵) | **1** (`replace-index-k-with-n`, k = 1, as `cons 2 (tail xs)`); 2 at 10⁶ (`identify-is-prime` at 203,860) | miss at 10⁵, hit at 10⁶ |
 | P1-2 original FRESH-1 at 10⁵ ≤ 10 | 6 of 33 | hit |
 | P1-4 RESERVE-FAR2 ≥ 10 of 21 (restored, 10⁵) | **15 of 21** (18 at 10⁶) | hit |
-| P1-5 throughput ≥ 10⁴ candidates/s/core | THROUGHPUT_PLACEHOLDER | THROUGHPUT_SCORE |
+| P1-5 throughput ≥ 10⁴ candidates/s/core | 32,439 candidates/s on one core (`results_p1/throughput.json`) | hit |
 
 **The §3.3 gate.** P1-1 and P1-3 both miss at the registered budget 10⁵. The directive
 says: stop and report. This file is the report; §4 is not built. At 10⁶, P1-3 passes
@@ -86,9 +86,18 @@ counted whether or not it was then pruned (pruned shares ran 60–75%). The firs
 match is re-checked with the reference interpreter and handed once to the frozen
 verifier ([`verifier.py`](verifier.py)), which checks every public and hidden example.
 
-**Determinism.** REPLAY_PLACEHOLDER
+**Determinism.** FRESH-1 and RESERVE-FAR2 were run a second time with both vocabularies
+after the main run ([`results_p1/replay/`](results_p1/replay/)); all four digests (SHA-256
+over every record field except wall-clock) are identical to the main run's:
+`e0c447248af39613` (FRESH-1 original), `fd51abe16b6a785d` (FRESH-1 restored),
+`bdd3737767cb1a38` (FAR2 original), `d5ee7213169b6a6a` (FAR2 restored). The driver's
+determinism test also shows the digest is independent of the worker count.
 
-**Throughput.** THROUGHPUT_DETAIL_PLACEHOLDER
+**Throughput.** 32,439 candidates/s on one core (40,000 candidates of the restored
+vocabulary on `rsi2/benchmark.py`'s example set, `list(range(n))` for n < 12, in 1.23 s;
+Python 3.13.18, x86_64, measured on a quiet machine after the run; `tests/test_throughput.py`
+asserts ≥ 10⁴). Across the run the per-task rates were 20,000–50,000/s: 3.5 × 10⁸
+candidates in about 57 minutes of four-worker wall-clock, against RSI-2's 10–83/s.
 
 ## Results
 
@@ -250,7 +259,7 @@ the budget ran out.
 | P1-3 | ≥ 2 of the 5 corpus-lacking FRESH-1 routines (restored, 10⁵) | PASS (low) | 1 (`replace-index-k-with-n`); 2 at 10⁶ | **miss** (hit at 10⁶) |
 | P1-2 | original FRESH-1 at 10⁵ ≤ 10 | PASS (moderate) | 6 of 33 | hit |
 | P1-4 | RESERVE-FAR2 ≥ 10 of 21 (restored, 10⁵) | PASS (moderate) | 15 of 21 | hit |
-| P1-5 | throughput ≥ 10⁴ candidates/s/core | PASS (low) | THROUGHPUT_PLACEHOLDER | THROUGHPUT_SCORE |
+| P1-5 | throughput ≥ 10⁴ candidates/s/core | PASS (low) | 32,439/s | hit |
 | S1 | restored FRESH-1 at 10⁶: 10 (range 7–14) | — | 10 | hit |
 | S2 | original FRESH-1 at 10⁶ ≤ 8 | PASS (moderate) | 10 (7 generalising) | **miss** |
 | S3 | E ≥ 1 at 10⁶ on FRESH-1 with `identify-is-prime` among the escapes | PASS (moderate) | E = 1, `identify-is-prime` | hit |
@@ -258,8 +267,7 @@ the budget ran out.
 | S5 | zero public matches rejected (FAIL expected, 1–5 rejections) | FAIL | 31 rejections over 16 files | **miss** (far more than predicted) |
 | S6 | COMPOSE-24 at 10⁶ ≤ 4 with either vocabulary | PASS (moderate) | original 6, restored 2 | **miss** |
 
-Two of the directive's four scoreable predictions miss, and three of my six secondary
-ones. The misses have one shape: I under-estimated how much a 10⁶ enumeration finds with
+Two of the directive's five predictions miss, and three of my six secondary ones. The misses have one shape: I under-estimated how much a 10⁶ enumeration finds with
 the *original* vocabulary (S2, S6, P1-1's premise) and how often what it finds is a
 coincidence (S5). P1-1 was wrong by a factor of three at 10⁵ and would still be wrong at
 10⁶ (10, not 15).

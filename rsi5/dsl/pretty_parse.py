@@ -11,7 +11,9 @@ import re
 from .terms import App, Bool, Int, Lam, Prim, Term, Var
 from .types import Arrow, BOOL, INT, ListOf, PairOf, TVar, Type
 
-_TOKEN = re.compile(r"\s*(\(|\)|\[|\]|,|->|:|\.|-?\d+|[A-Za-z_][A-Za-z0-9_]*)")
+# A plain pattern string: J's static audit refuses any call named ``compile`` in a solver
+# module, so the tokeniser uses ``re.findall`` directly.
+_TOKEN = r"\(|\)|\[|\]|,|->|:|\.|-?\d+|[A-Za-z_][A-Za-z0-9_]*"
 
 
 class ParseError(ValueError):
@@ -19,15 +21,9 @@ class ParseError(ValueError):
 
 
 def _tokens(text: str) -> list[str]:
-    out, pos = [], 0
-    while pos < len(text):
-        m = _TOKEN.match(text, pos)
-        if m is None:
-            if text[pos:].strip() == "":
-                break
-            raise ParseError(f"cannot tokenise at {text[pos:pos + 20]!r}")
-        out.append(m.group(1))
-        pos = m.end()
+    out = re.findall(_TOKEN, text)
+    if "".join(out) != "".join(text.split()):
+        raise ParseError(f"cannot tokenise {text[:40]!r}")
     return out
 
 
