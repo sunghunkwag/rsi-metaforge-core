@@ -9,3 +9,4 @@
 {"vocabulary": "restored", "partition": "fresh1", "tasks": 33, "solved": 10, "solved_at": {"1000": 1, "10000": 4, "100000": 5, "1000000": 10}, "wall_seconds": 213.4, "digest": "fd51abe16b6a785d", "file": "rsi5/results_p1/restored_fresh1.json"}
 {"vocabulary": "restored", "partition": "fresh2", "tasks": 100, "solved": 28, "solved_at": {"1000": 12, "10000": 15, "100000": 21, "1000000": 28}, "wall_seconds": 587.3, "digest": "29283bdb923b6314", "file": "rsi5/results_p1/restored_fresh2.json"}
 {"vocabulary": "restored", "partition": "near", "tasks": 100, "solved": 72, "solved_at": {"1000": 21, "10000": 40, "100000": 51, "1000000": 72}, "wall_seconds": 361.8, "digest": "d315011fbb3ce868", "file": "rsi5/results_p1/restored_near.json"}
+{"vocabulary": "restored", "partition": "far2", "tasks": 21, "solved": 18, "solved_at": {"1000": 4, "10000": 7, "100000": 15, "1000000": 18}, "wall_seconds": 49.3, "digest": "d5ee7213169b6a6a", "file": "rsi5/results_p1/restored_far2.json"}
