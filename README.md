@@ -35,6 +35,8 @@ flowchart LR
 
 ---
 
+**2026-11-09 research calibration (not an RSI result):** 40-seed instrumented compute-parity preflight, synthetic fixtures only. See [preregistration](research/PREREG_COST_METERING_20261109.md), [full raw results](research/results/cost_metering_raw_20261109.json), and [report](research/RESULTS_COST_METERING_20261109.md). Preregistered instrumentation gates: True. Identical-work CPU false rejections: 0/40. No RSI claim.
+
 ## Results at a glance
 
 A staged research program (Phases 0–J) generalized these gated rules to the top-level searcher — and then to the instruction set itself — measuring every result on **frozen instruments** fixed *before* the runs. Each arm was reproduced twice, byte-for-byte.
