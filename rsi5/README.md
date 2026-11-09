@@ -22,7 +22,7 @@ Phases 2–3 (§4–§7) are not built.
 | The judge J | [`judge/`](judge/) | Byte-for-byte copy of `rsi4/judge/` at `c48c820` with its pools, seed and manifest; `data/stage_train.json` beside it. Never edited; not used in Phase 1 (see ARCHITECTURE.md for the conflict its unchanged evaluator creates for Phase 2). |
 | Sealing | [`guard.py`](guard.py), [`tests/test_sealing.py`](tests/test_sealing.py) | Audit hook against opening, listing or importing J; the static audit from J over every solver module. |
 | Partitions | [`partitions.py`](partitions.py) | The exposed partitions through the read-only `rsi2`/`rsi3` loaders; TEST is never opened. |
-| Phase 1 run | [`phase1.py`](phase1.py), [`runs/p1.json`](runs/p1.json), [`results_p1/`](results_p1/), [`report_p1.py`](report_p1.py) | Enumeration only, both vocabularies, every exposed partition, B = 10⁶ with the 10³–10⁵ counts read off the same deterministic run. |
+| Phase 1 run | [`phase1.py`](phase1.py), [`runs/p1.json`](runs/p1.json), [`results_p1/`](results_p1/), [`report_p1.py`](report_p1.py), [`audit_p1.py`](audit_p1.py) | Enumeration only, both vocabularies, every exposed partition, B = 10⁶ with the 10³–10⁵ counts read off the same deterministic run; a report-only generalisation audit of the verified programs. |
 
 ## Run it
 
@@ -32,6 +32,7 @@ export PYTHONPATH=$PWD OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
 python -m unittest discover -s rsi5/tests -t .          # unit, anti-cheat and throughput tests
 python -m rsi5.phase1 --output NEW_DIR --partition fresh1 --vocabulary restored --workers 4
 python -m rsi5.report_p1 --results NEW_DIR
+python -m rsi5.audit_p1 --results NEW_DIR           # report-only generalisation audit
 ```
 
 The registered run is `python -m rsi5.phase1 --plan rsi5/runs/p1.json --output rsi5/results_p1`.

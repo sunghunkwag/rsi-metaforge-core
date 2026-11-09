@@ -103,6 +103,9 @@ in place. J is not used in Phase 1. Two facts about the unchanged copy matter fo
 [`phase1.py`](phase1.py) runs the plan [`runs/p1.json`](runs/p1.json): both vocabularies, the
 exposed partitions, B = 10⁶ per task, 4 worker processes, one record per task, the
 verdict from the verifier. [`report_p1.py`](report_p1.py) computes the tables;
+[`audit_p1.py`](audit_p1.py) re-executes every verified program (parsed back from its
+readable form by [`dsl/pretty_parse.py`](dsl/pretty_parse.py)) on fresh random inputs
+against a reference oracle, report-only, to count coincidental solutions;
 [`RESULTS_P1.md`](RESULTS_P1.md) reads them. [`.github/workflows/rsi5-runs.yml`](../.github/workflows/rsi5-runs.yml)
 runs the same driver one (vocabulary, partition) per job on Actions for branches named
 `rsi5/run-*`.
