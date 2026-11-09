@@ -1,0 +1,35 @@
+name: Research cost-metering calibration
+on:
+  push:
+    branches:
+      - research/cost-metering-preflight-20261109
+    paths:
+      - research/cost_metering_20261109.py
+      - .github/workflows/research-cost-metering.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  calibration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Seven accounting assertions (no audit data)
+        run: python research/cost_metering_20261109.py --selftest
+      - name: One preregistered synthetic calibration, 40 paired seeds
+        run: python research/cost_metering_20261109.py --output research/results/cost_metering_raw_20261109.json
+      - name: Commit complete raw JSON, report and README on research branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add research/results/cost_metering_raw_20261109.json research/RESULTS_COST_METERING_20261109.md README.md
+          git commit -m "research: preserve complete preregistered metering raw results"
+          git push origin HEAD:research/cost-metering-preflight-20261109
