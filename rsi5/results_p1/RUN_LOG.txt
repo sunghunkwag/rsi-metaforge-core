@@ -13,3 +13,4 @@
 {"vocabulary": "restored", "partition": "compose24", "tasks": 24, "solved": 2, "solved_at": {"1000": 0, "10000": 0, "100000": 1, "1000000": 2}, "wall_seconds": 215.4, "digest": "a157ef489c901f63", "file": "rsi5/results_p1/restored_compose24.json"}
 {"vocabulary": "restored", "partition": "validation", "tasks": 12, "solved": 8, "solved_at": {"1000": 0, "10000": 3, "100000": 3, "1000000": 8}, "wall_seconds": 54.8, "digest": "e30149429096b49b", "file": "rsi5/results_p1/restored_validation.json"}
 {"vocabulary": "restored", "partition": "far", "tasks": 12, "solved": 8, "solved_at": {"1000": 2, "10000": 3, "100000": 4, "1000000": 8}, "wall_seconds": 53.0, "digest": "b3c7f836705b63b3", "file": "rsi5/results_p1/restored_far.json"}
+{"vocabulary": "restored", "partition": "train", "tasks": 36, "solved": 23, "solved_at": {"1000": 9, "10000": 17, "100000": 19, "1000000": 23}, "wall_seconds": 144.5, "digest": "90f3b2689b6c8164", "file": "rsi5/results_p1/restored_train.json"}
