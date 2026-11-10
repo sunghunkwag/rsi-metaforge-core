@@ -1,0 +1,63 @@
+run  1 gen0                   learn 121 held-out  27 dream   0/  0 {'train': 19, 'near': 61, 'validation': 7, 'far': 5, 'far2': 10, 'fresh1': 19, 'fresh2': 24, 'compose24': 3} lib 0 keep {} E 0 | 23 s
+     40 new dream tasks (bank 40); the current state solves 23 of the bank
+     propose s1_1: (lambda x0: int. (lambda x1: int. (lambda x2: list[int]. ((map (lambda x3: int. ((mod ((sub x3) x0)) x1))) x2))))  score 24 tasks 8 depth 1
+     propose s1_2: (lambda x0: int. (lambda x1: list[int]. ((filter (lambda x2: int. (is_empty (range ((mod x2) x0))))) x1)))  score 17 tasks 5 depth 1
+     propose s1_3: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. ((eq x2) x0))) x1)))  score 15 tasks 7 depth 1
+run  3 compress@1             learn 116 held-out  30 dream  27/ 40 {'train': 18, 'near': 58, 'validation': 7, 'far': 6, 'far2': 8, 'fresh1': 19, 'fresh2': 27, 'compose24': 3} lib 3 keep {} E 0 | 28 s
+run  4 apoptosis@1            learn 121 held-out  28 dream  28/ 40 {'train': 19, 'near': 61, 'validation': 7, 'far': 5, 'far2': 10, 'fresh1': 19, 'fresh2': 24, 'compose24': 4} lib 0 keep {'elem': 17, 'list': 17} E 0 | 29 s
+     accepted apoptosis: learn 121 -> 121, dream 23 -> 28, held-out 27 -> 28
+     20 new dream tasks (bank 60); the current state solves 40 of the bank
+     propose s3_1: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. ((mod ((sub x2) -1)) x0))) x1)))  score 27 tasks 7 depth 1
+     propose s3_2: (lambda x0: int. ((mod x0) 5))  score 20 tasks 17 depth 1
+     propose s3_3: ((mul 2) 5)  score 15 tasks 8 depth 1
+run  6 compress@4             learn 123 held-out  29 dream  43/ 60 {'train': 19, 'near': 61, 'validation': 7, 'far': 6, 'far2': 10, 'fresh1': 20, 'fresh2': 25, 'compose24': 4} lib 3 keep {'elem': 20, 'list': 20} E 0 | 35 s
+     accepted compress: learn 121 -> 123, dream 40 -> 43, held-out 28 -> 29
+     20 new dream tasks (bank 80); the current state solves 58 of the bank
+     propose s4_1: (lambda x0: int. (lambda x1: int. (lambda x2: list[int]. ((map (lambda x3: int. (((if ((eq x3) -1)) x0) ((mul x3) x1)))) ((cons -1) x2)))))  score 23 tasks 4 depth 1
+     propose s4_2: (lambda x0: bool. (((if x0) 1) 0))  score 14 tasks 9 depth 1
+     propose s4_3: (lambda x0: int. (is_empty (range x0)))  score 12 tasks 15 depth 1
+run  8 compress@6             learn 123 held-out  31 dream  57/ 80 {'train': 19, 'near': 61, 'validation': 7, 'far': 6, 'far2': 10, 'fresh1': 20, 'fresh2': 27, 'compose24': 4} lib 6 keep {'elem': 23, 'list': 23} E 0 | 44 s
+run  9 apoptosis@6            learn  79 held-out  11 dream  21/ 80 {'train': 16, 'near': 40, 'validation': 6, 'far': 1, 'far2': 6, 'fresh1': 10, 'fresh2': 7, 'compose24': 4} lib 3 keep {'elem': 8, 'list': 8} E 0 | 35 s
+run 10 unused@6               learn 123 held-out  30 dream  57/ 80 {'train': 19, 'near': 61, 'validation': 7, 'far': 6, 'far2': 10, 'fresh1': 20, 'fresh2': 26, 'compose24': 4} lib 3 keep {'elem': 18, 'list': 19} E 0 | 26 s
+run 11 regrow@6               learn 115 held-out  24 dream  49/ 80 {'train': 18, 'near': 58, 'validation': 7, 'far': 5, 'far2': 8, 'fresh1': 19, 'fresh2': 21, 'compose24': 3} lib 3 keep {} E 0 | 22 s
+     rollback 1: no move accepted after compress@run6; banned it and returned to run 4
+     propose s8_1: (lambda x0: int. (lambda x1: int. ((mod ((sub x0) -1)) x1)))  score 19 tasks 12 depth 1
+     propose s8_2: (lambda x0: int. (lambda x1: int. (is_empty (range ((mod x0) x1)))))  score 15 tasks 10 depth 1
+     propose s8_3: (lambda x0: int. ((mul x0) 5))  score 12 tasks 12 depth 1
+run 12 compress@4             learn 123 held-out  31 dream  51/ 80 {'train': 19, 'near': 61, 'validation': 7, 'far': 6, 'far2': 10, 'fresh1': 20, 'fresh2': 27, 'compose24': 4} lib 3 keep {'elem': 20, 'list': 20} E 0 | 30 s
+     accepted compress: learn 121 -> 123, dream 40 -> 51, held-out 28 -> 31
+     20 new dream tasks (bank 100); the current state solves 61 of the bank
+     propose s9_1: (lambda x0: list[int]. ((cons -1) x0))  score 19 tasks 21 depth 1
+     propose s9_2: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. (((if ((eq x2) -1)) x0) (s8_3 ((add x2) x2))))) (s9_1 x1))))  score 17 tasks 3 depth 2
+     propose s9_3: (lambda x0: int. (lambda x1: int. (lambda x2: list[int]. ((map (lambda x3: int. (((if ((eq x3) x0)) x1) 0))) x2))))  score 16 tasks 5 depth 1
+run 14 compress@12            learn 123 held-out  32 dream  61/100 {'train': 19, 'near': 61, 'validation': 7, 'far': 6, 'far2': 10, 'fresh1': 20, 'fresh2': 28, 'compose24': 4} lib 6 keep {'elem': 23, 'list': 23} E 0 | 46 s
+run 15 apoptosis@12           learn  49 held-out   4 dream  13/100 {'train': 13, 'near': 24, 'validation': 1, 'far': 1, 'far2': 6, 'fresh1': 4, 'fresh2': 4, 'compose24': 0} lib 3 keep {'elem': 8, 'list': 8} E 0 | 52 s
+run 16 regrow@12              learn 115 held-out  27 dream  48/100 {'train': 18, 'near': 58, 'validation': 7, 'far': 5, 'far2': 8, 'fresh1': 19, 'fresh2': 24, 'compose24': 3} lib 3 keep {} E 0 | 21 s
+     rollback 2: no move accepted after compress@run12; banned it and returned to run 4
+     propose s12_1: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. ((mod x2) x0))) x1)))  score 12 tasks 6 depth 1
+     propose s12_2: (lambda x0: int. (lambda x1: list[int]. ((filter (lambda x2: int. ((gt ((mod x2) x0)) 0))) x1)))  score 12 tasks 4 depth 1
+     propose s12_3: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. ((mod ((sub x2) x0)) 4))) x1)))  score 12 tasks 4 depth 1
+run 17 compress@4             learn 127 held-out  38 dream  72/100 {'train': 20, 'near': 64, 'validation': 7, 'far': 6, 'far2': 10, 'fresh1': 20, 'fresh2': 29, 'compose24': 9} lib 3 keep {'elem': 20, 'list': 20} E 0 | 41 s
+     accepted compress: learn 121 -> 127, dream 40 -> 72, held-out 28 -> 38
+     propose s13_1: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. (((if ((eq x2) -1)) x0) ((mul x2) ((mul 2) 5))))) ((cons -1) x1))))  score 21 tasks 3 depth 1
+     propose s13_2: (lambda x0: bool. (lambda x1: int. (((if x0) x1) 0)))  score 12 tasks 16 depth 1
+     propose s13_3: (lambda x0: int. ((mul 2) x0))  score 12 tasks 15 depth 1
+run 18 compress@17            learn 127 held-out  37 dream  69/100 {'train': 20, 'near': 64, 'validation': 7, 'far': 6, 'far2': 10, 'fresh1': 20, 'fresh2': 28, 'compose24': 9} lib 6 keep {'elem': 23, 'list': 23} E 0 | 36 s
+run 19 apoptosis@17           learn  18 held-out   3 dream   5/100 {'train': 3, 'near': 14, 'validation': 0, 'far': 0, 'far2': 1, 'fresh1': 0, 'fresh2': 3, 'compose24': 0} lib 3 keep {'elem': 8, 'list': 8} E 0 | 1 s
+run 20 unused@17              learn 127 held-out  38 dream  73/100 {'train': 20, 'near': 64, 'validation': 7, 'far': 6, 'far2': 10, 'fresh1': 20, 'fresh2': 29, 'compose24': 9} lib 3 keep {'elem': 17, 'list': 20} E 0 | 41 s
+     accepted unused: learn 127 -> 127, dream 72 -> 73, held-out 38 -> 38
+     propose s16_1: (lambda x0: int. (lambda x1: int. (lambda x2: int. (((if ((eq x0) -1)) x1) x2))))  score 16 tasks 11 depth 1
+     propose s16_2: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. ((add x2) x0))) x1)))  score 12 tasks 6 depth 1
+     propose s16_3: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. ((mod ((sub x2) x0)) 5))) x1)))  score 12 tasks 4 depth 1
+run 21 compress@20            learn 126 held-out  37 dream  70/100 {'train': 20, 'near': 64, 'validation': 7, 'far': 6, 'far2': 10, 'fresh1': 19, 'fresh2': 28, 'compose24': 9} lib 6 keep {'elem': 20, 'list': 23} E 0 | 34 s
+run 22 apoptosis@20           learn  18 held-out   3 dream   5/100 {'train': 3, 'near': 14, 'validation': 0, 'far': 0, 'far2': 1, 'fresh1': 0, 'fresh2': 3, 'compose24': 0} lib 3 keep {'elem': 7, 'list': 8} E 0 | 1 s
+run 23 regrow@20              learn 119 held-out  34 dream  55/100 {'train': 19, 'near': 61, 'validation': 7, 'far': 5, 'far2': 8, 'fresh1': 19, 'fresh2': 27, 'compose24': 7} lib 3 keep {} E 0 | 32 s
+     rollback 3: no move accepted after unused@run20; banned it and returned to run 17
+     propose s19_1: (lambda x0: int. (lambda x1: int. (lambda x2: int. (((if ((eq x0) -1)) x1) ((mul x0) x2)))))  score 16 tasks 6 depth 1
+     propose s19_2: (lambda x0: int. (lambda x1: int. (lambda x2: list[int]. ((map (lambda x3: int. (((if ((eq x3) x0)) x1) x3))) x2))))  score 11 tasks 4 depth 1
+     propose s19_3: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. x0)) x1)))  score 10 tasks 14 depth 1
+run 24 compress@17            learn 127 held-out  37 dream  63/100 {'train': 20, 'near': 64, 'validation': 7, 'far': 6, 'far2': 10, 'fresh1': 20, 'fresh2': 28, 'compose24': 9} lib 6 keep {'elem': 23, 'list': 23} E 0 | 45 s
+no move accepted: stop
+
+best state (run 20): learn 121 -> 127, held-out 27 -> 38, dream 23 -> 73; runs 24, rollbacks 3, symbols learned 3, equal budget per real task 251479
+exit 0

@@ -9,6 +9,7 @@ task's public and hidden examples and computes something else.
     python audit_all.py expert   <expert report.json>
     python audit_all.py gen0     <hybrid report.json>    every variant
     python audit_all.py frontier <frontier report.json>
+    python audit_all.py ablate   <expert_ablate output.json>
     python audit_all.py state    <state_run output.json>
     python audit_all.py registered <budget>              the registered engine's files
 
@@ -148,6 +149,16 @@ def frontier_audit(auditor, report, listing) -> None:
             _listing(auditor, row["programs"])
 
 
+def ablate_audit(auditor, report, listing) -> None:
+    for row in report["rows"]:
+        counts = auditor.counts(row["programs"])
+        cells = " ".join(f"{p} {counts[p][1]}/{counts[p][0]}" for p in report["partitions"])
+        print(f"{row['label']:14s} budget {row['budget']:>7} {report.get('components', '')} sound "
+              f"{sum(counts[p][1] for p in report['partitions'])} verified {sum(counts[p][0] for p in report['partitions'])} | {cells}")
+        if listing:
+            _listing(auditor, row["programs"])
+
+
 def registered_audit(auditor, budget: int, listing) -> None:
     programs = {}
     for partition in ALL:
@@ -175,4 +186,4 @@ if __name__ == "__main__":
                 _listing(auditor, report["programs"])
         else:
             {"loop": loop_audit, "expert": expert_audit, "gen0": gen0_audit,
-             "frontier": frontier_audit}[kind](auditor, report, listing)
+             "frontier": frontier_audit, "ablate": ablate_audit}[kind](auditor, report, listing)

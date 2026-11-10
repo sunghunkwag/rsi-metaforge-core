@@ -1,0 +1,1351 @@
+{
+ "report": "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/shift2/expertB.json",
+ "budget": 10000,
+ "partitions": [
+  "train",
+  "near",
+  "validation",
+  "far",
+  "far2",
+  "fresh1",
+  "fresh2",
+  "compose24"
+ ],
+ "components": "SCfR",
+ "rows": [
+  {
+   "label": "all+R",
+   "dropped": [],
+   "budget": 10000,
+   "counts": {
+    "train": 25,
+    "near": 75,
+    "validation": 8,
+    "far": 6,
+    "far2": 13,
+    "fresh1": 20,
+    "fresh2": 30,
+    "compose24": 8
+   },
+   "learn": 147,
+   "held_out": 38,
+   "programs": {
+    "train/keep-mod-k with k=2": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (is_empty (range ((mod x1) 2))))) x0))",
+     "filter+search",
+     1182
+    ],
+    "train/prepend-k with k=4": [
+     "(lambda x0: list[int]. ((cons 4) x0))",
+     "search",
+     205
+    ],
+    "train/index-k with k=3": [
+     "(lambda x0: list[int]. ((index 2) x0))",
+     "search",
+     127
+    ],
+    "train/index-head": [
+     "(lambda x0: list[int]. ((index (head x0)) x0))",
+     "search",
+     968
+    ],
+    "train/caesar-cipher-k-modulo-n with k=1 and n=2": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub 1) x1))) x0))",
+     "map+search",
+     282
+    ],
+    "train/prepend-k with k=5": [
+     "(lambda x0: list[int]. ((cons 5) x0))",
+     "search",
+     225
+    ],
+    "train/modulo-k with k=3": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mod x1) 3))) x0))",
+     "map+search",
+     115
+    ],
+    "train/replace-all-with-index-k with k=5": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((index 4) x0))) x0))",
+     "search",
+     6835
+    ],
+    "train/caesar-cipher-k-modulo-n with k=5 and n=5": [
+     "(lambda x0: list[int]. x0)",
+     "search",
+     1
+    ],
+    "train/slice-k-n with k=5 and n=4": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((index x1) (tail (tail (tail (tail x0))))))) (range 4)))",
+     "search",
+     2192
+    ],
+    "train/prepend-index-k with k=5": [
+     "(lambda x0: list[int]. ((cons ((index 4) x0)) x0))",
+     "search",
+     6847
+    ],
+    "train/caesar-cipher-k-modulo-n with k=2 and n=2": [
+     "(lambda x0: list[int]. x0)",
+     "search",
+     1
+    ],
+    "train/slice-k-n with k=5 and n=1": [
+     "(lambda x0: list[int]. (tail (tail (tail ((map (lambda x1: int. ((index x1) (tail x0)))) (range 4))))))",
+     "search",
+     2456
+    ],
+    "train/modulo-k with k=2": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mod x1) 2))) x0))",
+     "map+search",
+     103
+    ],
+    "train/slice-k-n with k=1 and n=4": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((index x1) x0))) (range 4)))",
+     "search",
+     18
+    ],
+    "train/slice-k-n with k=5 and n=2": [
+     "(lambda x0: list[int]. (tail ((map (lambda x1: int. ((index x1) (tail (tail (tail x0)))))) (range 3))))",
+     "search",
+     2115
+    ],
+    "train/index-k with k=5": [
+     "(lambda x0: list[int]. ((index 4) x0))",
+     "search",
+     153
+    ],
+    "train/bool-identify-k with k=1": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (is_prime ((mul x1) 5)))) x0))",
+     "map+search",
+     98
+    ],
+    "train/is-mod-k with k=5": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. ((gt ((mod x1) 5)) 0))) x0)))",
+     "search",
+     1519
+    ],
+    "train/prepend-index-k with k=2": [
+     "(lambda x0: list[int]. ((cons ((index 1) x0)) x0))",
+     "search",
+     6097
+    ],
+    "train/caesar-cipher-k-modulo-n with k=0 and n=3": [
+     "(lambda x0: list[int]. x0)",
+     "search",
+     1
+    ],
+    "train/slice-k-n with k=2 and n=4": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((index x1) (tail x0)))) (range 4)))",
+     "search",
+     136
+    ],
+    "train/prepend-k with k=0": [
+     "(lambda x0: list[int]. ((cons 0) x0))",
+     "search",
+     114
+    ],
+    "train/replace-all-with-index-k with k=1": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (head x0))) x0))",
+     "search",
+     988
+    ],
+    "train/slice-k-n with k=4 and n=4": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((index x1) (tail (tail (tail x0)))))) (range 4)))",
+     "search",
+     88
+    ],
+    "near/add-k with k=0": [
+     "(lambda x0: list[int]. x0)",
+     "search",
+     1
+    ],
+    "near/add-k with k=1": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) x0))",
+     "map+search",
+     110
+    ],
+    "near/add-k with k=2": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((add x1) 2))) x0))",
+     "map+search",
+     136
+    ],
+    "near/add-k with k=3": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((add x1) 3))) x0))",
+     "map+search",
+     156
+    ],
+    "near/add-k with k=4": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((add x1) 4))) x0))",
+     "map+search",
+     160
+    ],
+    "near/bool-identify-geq-k with k=1": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (not (is_empty (range x1))))) x0))",
+     "map+search",
+     92
+    ],
+    "near/bool-identify-geq-k with k=2": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((gt x1) 1))) x0))",
+     "map+search",
+     106
+    ],
+    "near/bool-identify-geq-k with k=4": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((gt x1) 3))) x0))",
+     "map+search",
+     125
+    ],
+    "near/bool-identify-geq-k with k=5": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((gt x1) 4))) x0))",
+     "map+search",
+     142
+    ],
+    "near/bool-identify-is-mod-k with k=1": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. true)) x0))",
+     "map+search",
+     11
+    ],
+    "near/bool-identify-is-mod-k with k=5": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (is_empty (range ((mod x1) 5))))) x0))",
+     "map+search",
+     103
+    ],
+    "near/bool-identify-k with k=0": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (is_empty (range x1)))) x0))",
+     "map+search",
+     15
+    ],
+    "near/bool-identify-k with k=2": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((eq x1) 2))) x0))",
+     "map+search",
+     114
+    ],
+    "near/bool-identify-k with k=3": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((eq x1) 3))) x0))",
+     "map+search",
+     131
+    ],
+    "near/bool-identify-k with k=4": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((eq x1) 4))) x0))",
+     "map+search",
+     132
+    ],
+    "near/bool-identify-k with k=5": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((eq x1) 5))) x0))",
+     "map+search",
+     149
+    ],
+    "near/caesar-cipher-k-modulo-n with k=0 and n=4": [
+     "(lambda x0: list[int]. x0)",
+     "search",
+     1
+    ],
+    "near/caesar-cipher-k-modulo-n with k=0 and n=5": [
+     "(lambda x0: list[int]. x0)",
+     "search",
+     1
+    ],
+    "near/caesar-cipher-k-modulo-n with k=1 and n=5": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mod ((sub x1) -1)) 5))) x0))",
+     "map+search",
+     1149
+    ],
+    "near/caesar-cipher-k-modulo-n with k=2 and n=4": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime x1)) ((mod x1) 2)) ((add x1) 2)))) x0))",
+     "map+fused",
+     5001
+    ],
+    "near/caesar-cipher-k-modulo-n with k=3 and n=3": [
+     "(lambda x0: list[int]. x0)",
+     "search",
+     1
+    ],
+    "near/caesar-cipher-k-modulo-n with k=3 and n=4": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_empty (range x1))) 3) ((add x1) -1)))) x0))",
+     "map+fused",
+     5001
+    ],
+    "near/caesar-cipher-k-modulo-n with k=3 and n=5": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mod ((sub x1) 2)) 5))) x0))",
+     "map+search",
+     1353
+    ],
+    "near/caesar-cipher-k-modulo-n with k=4 and n=2": [
+     "(lambda x0: list[int]. x0)",
+     "search",
+     1
+    ],
+    "near/caesar-cipher-k-modulo-n with k=4 and n=3": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime x1)) 0) ((sub x1) -1)))) x0))",
+     "map+fused",
+     5001
+    ],
+    "near/caesar-cipher-k-modulo-n with k=4 and n=4": [
+     "(lambda x0: list[int]. x0)",
+     "search",
+     1
+    ],
+    "near/caesar-cipher-k-modulo-n with k=4 and n=5": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mod ((add x1) -1)) 5))) x0))",
+     "map+search",
+     1166
+    ],
+    "near/caesar-cipher-k-modulo-n with k=5 and n=2": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub 1) x1))) x0))",
+     "map+search",
+     282
+    ],
+    "near/caesar-cipher-k-modulo-n with k=5 and n=3": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_empty (range x1))) 2) ((add x1) -1)))) x0))",
+     "map+fused",
+     5001
+    ],
+    "near/caesar-cipher-k-modulo-n with k=5 and n=4": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((gt x1) 2)) 0) ((sub x1) -1)))) x0))",
+     "map+fused",
+     5001
+    ],
+    "near/index-k with k=1": [
+     "(lambda x0: list[int]. (head x0))",
+     "search",
+     17
+    ],
+    "near/index-k with k=2": [
+     "(lambda x0: list[int]. ((index 1) x0))",
+     "search",
+     114
+    ],
+    "near/index-k with k=4": [
+     "(lambda x0: list[int]. (head (tail (tail (tail x0)))))",
+     "search",
+     87
+    ],
+    "near/is-mod-k with k=1": [
+     "(lambda x0: list[int]. true)",
+     "search",
+     11
+    ],
+    "near/is-mod-k with k=2": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "search",
+     1333
+    ],
+    "near/is-mod-k with k=3": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. ((gt ((mod x1) 3)) 0))) x0)))",
+     "search",
+     1424
+    ],
+    "near/is-mod-k with k=4": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "search",
+     1333
+    ],
+    "near/keep-mod-k with k=1": [
+     "(lambda x0: list[int]. x0)",
+     "search",
+     1
+    ],
+    "near/keep-mod-k with k=3": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (is_empty (range ((mod x1) 3))))) x0))",
+     "filter+search",
+     1474
+    ],
+    "near/keep-mod-k with k=4": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (is_empty (range ((mod x1) 4))))) x0))",
+     "filter+search",
+     1350
+    ],
+    "near/keep-mod-k with k=5": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (is_empty (range ((mod x1) 5))))) x0))",
+     "filter+search",
+     103
+    ],
+    "near/modulo-k with k=1": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. 0)) x0))",
+     "map+search",
+     3
+    ],
+    "near/modulo-k with k=4": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mod x1) 4))) x0))",
+     "map+search",
+     127
+    ],
+    "near/modulo-k with k=5": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mod x1) 5))) x0))",
+     "map+search",
+     17
+    ],
+    "near/mult-k with k=0": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. 0)) x0))",
+     "map+search",
+     3
+    ],
+    "near/mult-k with k=1": [
+     "(lambda x0: list[int]. x0)",
+     "search",
+     1
+    ],
+    "near/mult-k with k=2": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((add x1) x1))) x0))",
+     "map+search",
+     108
+    ],
+    "near/mult-k with k=3": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mul x1) 3))) x0))",
+     "map+search",
+     152
+    ],
+    "near/mult-k with k=5": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mul x1) 5))) x0))",
+     "map+search",
+     19
+    ],
+    "near/pow-k with k=1": [
+     "(lambda x0: list[int]. x0)",
+     "search",
+     1
+    ],
+    "near/pow-k with k=2": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mul x1) x1))) x0))",
+     "map+search",
+     116
+    ],
+    "near/prepend-index-k with k=1": [
+     "(lambda x0: list[int]. ((cons (head x0)) x0))",
+     "search",
+     995
+    ],
+    "near/prepend-index-k with k=4": [
+     "(lambda x0: list[int]. ((cons (head (tail (tail (tail x0))))) x0))",
+     "search",
+     5490
+    ],
+    "near/prepend-k with k=1": [
+     "(lambda x0: list[int]. ((cons 1) x0))",
+     "search",
+     138
+    ],
+    "near/prepend-k with k=3": [
+     "(lambda x0: list[int]. ((cons 3) x0))",
+     "search",
+     185
+    ],
+    "near/repeat-k with k=1": [
+     "(lambda x0: list[int]. x0)",
+     "search",
+     1
+    ],
+    "near/replace-all-with-index-k with k=2": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((index 1) x0))) x0))",
+     "search",
+     6091
+    ],
+    "near/replace-all-with-index-k with k=3": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((index 2) x0))) x0))",
+     "search",
+     6444
+    ],
+    "near/replace-all-with-index-k with k=4": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (head (tail (tail (tail x0)))))) x0))",
+     "search",
+     5477
+    ],
+    "near/slice-k-n with k=1 and n=1": [
+     "(lambda x0: list[int]. ((cons (head x0)) nil))",
+     "search",
+     98
+    ],
+    "near/slice-k-n with k=1 and n=2": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((index x1) x0))) (range 2)))",
+     "search",
+     117
+    ],
+    "near/slice-k-n with k=1 and n=3": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((index x1) x0))) (range 3)))",
+     "search",
+     17
+    ],
+    "near/slice-k-n with k=1 and n=5": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((index x1) x0))) (range 5)))",
+     "search",
+     153
+    ],
+    "near/slice-k-n with k=2 and n=1": [
+     "(lambda x0: list[int]. ((cons ((index 1) x0)) nil))",
+     "search",
+     2276
+    ],
+    "near/slice-k-n with k=2 and n=2": [
+     "(lambda x0: list[int]. (tail ((map (lambda x1: int. ((index x1) x0))) (range 3))))",
+     "search",
+     116
+    ],
+    "near/slice-k-n with k=2 and n=3": [
+     "(lambda x0: list[int]. (tail ((map (lambda x1: int. ((index x1) x0))) (range 4))))",
+     "search",
+     128
+    ],
+    "near/slice-k-n with k=2 and n=5": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((index x1) (tail x0)))) (range 5)))",
+     "search",
+     2636
+    ],
+    "near/slice-k-n with k=3 and n=1": [
+     "(lambda x0: list[int]. (tail (tail ((map (lambda x1: int. ((index x1) x0))) (range 3)))))",
+     "search",
+     2306
+    ],
+    "near/slice-k-n with k=3 and n=4": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((index x1) (tail (tail x0))))) (range 4)))",
+     "search",
+     2497
+    ],
+    "near/slice-k-n with k=3 and n=5": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((index x1) (tail (tail x0))))) (range 5)))",
+     "search",
+     9994
+    ],
+    "near/slice-k-n with k=4 and n=1": [
+     "(lambda x0: list[int]. (tail (tail (tail ((map (lambda x1: int. ((index x1) x0))) (range 4))))))",
+     "search",
+     119
+    ],
+    "near/slice-k-n with k=4 and n=2": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((index x1) (tail (tail (tail x0)))))) (range 2)))",
+     "search",
+     2096
+    ],
+    "near/slice-k-n with k=4 and n=3": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((index x1) (tail (tail (tail x0)))))) (range 3)))",
+     "search",
+     87
+    ],
+    "near/slice-k-n with k=4 and n=5": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((index x1) (tail (tail (tail x0)))))) (range 5)))",
+     "search",
+     2162
+    ],
+    "near/slice-k-n with k=5 and n=3": [
+     "(lambda x0: list[int]. (tail ((map (lambda x1: int. ((index x1) (tail (tail (tail x0)))))) (range 4))))",
+     "search",
+     2137
+    ],
+    "validation/slice-k-n with k=3 and n=3": [
+     "(lambda x0: list[int]. (tail ((map (lambda x1: int. ((index x1) (tail x0)))) (range 4))))",
+     "search",
+     2439
+    ],
+    "validation/add-k with k=5": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((add x1) 5))) x0))",
+     "map+search",
+     180
+    ],
+    "validation/bool-identify-is-mod-k with k=2": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (is_empty (range ((mod x1) 2))))) x0))",
+     "map+search",
+     1182
+    ],
+    "validation/caesar-cipher-k-modulo-n with k=2 and n=5": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mod ((add x1) 2)) 5))) x0))",
+     "map+search",
+     1370
+    ],
+    "validation/caesar-cipher-k-modulo-n with k=1 and n=3": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime x1)) 0) ((sub x1) -1)))) x0))",
+     "map+fused",
+     5001
+    ],
+    "validation/caesar-cipher-k-modulo-n with k=3 and n=2": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub 1) x1))) x0))",
+     "map+search",
+     282
+    ],
+    "validation/prepend-index-k with k=3": [
+     "(lambda x0: list[int]. ((cons ((index 2) x0)) x0))",
+     "search",
+     6446
+    ],
+    "validation/caesar-cipher-k-modulo-n with k=1 and n=4": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((gt x1) 2)) 0) ((sub x1) -1)))) x0))",
+     "map+fused",
+     5001
+    ],
+    "far/empty": [
+     "(lambda x0: list[int]. (is_empty x0))",
+     "search",
+     16
+    ],
+    "far/evens": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (is_empty (range ((mod x1) 2))))) x0))",
+     "filter+search",
+     1182
+    ],
+    "far/head": [
+     "(lambda x0: list[int]. (head x0))",
+     "search",
+     17
+    ],
+    "far/is-odds": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. (is_empty (range ((mod x1) 2))))) x0)))",
+     "search",
+     1320
+    ],
+    "far/last": [
+     "(lambda x0: list[int]. ((index (length (tail x0))) x0))",
+     "search",
+     4884
+    ],
+    "far/odds": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (((if (is_empty (range ((mod x1) 2)))) false) true))) x0))",
+     "filter+fused",
+     5001
+    ],
+    "far2/count-k with k=0": [
+     "(lambda x0: list[int]. (length ((filter (lambda x1: int. (is_empty (range ((mod x1) ((mul 4) 5)))))) x0)))",
+     "search",
+     5817
+    ],
+    "far2/drop-k with k=0": [
+     "(lambda x0: list[int]. x0)",
+     "search",
+     1
+    ],
+    "far2/drop-k with k=1": [
+     "(lambda x0: list[int]. (tail x0))",
+     "search",
+     20
+    ],
+    "far2/drop-k with k=3": [
+     "(lambda x0: list[int]. (tail (tail (tail x0))))",
+     "search",
+     15
+    ],
+    "far2/drop-k with k=4": [
+     "(lambda x0: list[int]. (tail (tail (tail (tail x0)))))",
+     "search",
+     92
+    ],
+    "far2/drop-k with k=5": [
+     "(lambda x0: list[int]. (tail (tail (tail (tail (tail x0))))))",
+     "search",
+     2168
+    ],
+    "far2/remove-mod-k with k=2": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (((if (is_empty (range ((mod x1) 2)))) false) true))) x0))",
+     "filter+fused",
+     5001
+    ],
+    "far2/remove-mod-k with k=3": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (((if (is_empty (range ((mod x1) 3)))) false) true))) x0))",
+     "filter+fused",
+     5001
+    ],
+    "far2/remove-mod-k with k=5": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (not (is_empty (range ((mod x1) 5)))))) x0))",
+     "filter+search",
+     1209
+    ],
+    "far2/take-k with k=1": [
+     "(lambda x0: list[int]. ((cons (head x0)) nil))",
+     "search",
+     98
+    ],
+    "far2/take-k with k=2": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((index x1) x0))) (range 2)))",
+     "search",
+     117
+    ],
+    "far2/take-k with k=3": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((index x1) x0))) (range 3)))",
+     "search",
+     17
+    ],
+    "far2/take-k with k=4": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((index x1) x0))) (range 4)))",
+     "search",
+     18
+    ],
+    "fresh1/((add-k (dyn . 0) (static . -2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) 2))) x0))",
+     "map+search",
+     118
+    ],
+    "fresh1/((add-k (dyn . 0) (static . 10)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((add x1) ((mul 2) 5)))) x0))",
+     "map+search",
+     212
+    ],
+    "fresh1/((identify-geq-k (dyn . 0) (static . 3)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((gt x1) 1)) 1) 0))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh1/((identify-geq-k (dyn . 0) (static . 7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((ge x1) ((add 2) 5))) 1) 0))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh1/((identify-is-mod-k (dyn . 0) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_empty (range ((mod x1) 2)))) 1) 0))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh1/((identify-is-mod-k (dyn . 0) (static . 3)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_empty (range ((mod x1) 3)))) 1) 0))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh1/((identify-is-mod-k (dyn . 0) (static . 7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_square ((add x1) 2))) 1) 0))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh1/((identify-is-prime (dyn . 0)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime x1)) 1) 0))) x0))",
+     "map+search",
+     1249
+    ],
+    "fresh1/((identify-k (dyn . 0) (static . -2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_empty (range x1))) 1) 0))) x0))",
+     "map+search",
+     1096
+    ],
+    "fresh1/((identify-k (dyn . 0) (static . 1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime ((mul x1) 5))) x1) 0))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh1/((identify-k (dyn . 0) (static . 10)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) ((mul 2) 5))) 1) 0))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh1/((identify-k (dyn . 0) (static . 3)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 3)) 1) 0))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh1/((mult-k (dyn . 0) (static . -2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mul x1) ((add -1) -1)))) x0))",
+     "map+search",
+     188
+    ],
+    "fresh1/((mult-k (dyn . 0) (static . 10)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mul x1) ((mul 2) 5)))) x0))",
+     "map+search",
+     208
+    ],
+    "fresh1/((prepend-k (dyn . 0) (static . -2)))": [
+     "(lambda x0: list[int]. ((cons ((add -1) -1)) x0))",
+     "search",
+     245
+    ],
+    "fresh1/((prepend-k (dyn . 0) (static . 10)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) ((mul 2) 5)) x1))) ((cons -1) x0)))",
+     "re+map+fused",
+     4017
+    ],
+    "fresh1/((replace-all-k-with-n (dyn . 0) (static . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime ((mul x1) 5))) 2) x1))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh1/((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 2)) ((mul 2) 5)) x1))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh1/((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 3)) ((add -1) -1)) x1))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh1/((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((cons 2) (tail x0)))",
+     "search",
+     2804
+    ],
+    "fresh2/((add-k (dyn . 0) (static . 10)) (positions (dyn . 1)))": [
+     "(lambda x0: list[int]. (range (length x0)))",
+     "search",
+     115
+    ],
+    "fresh2/((append-k (dyn . 0) (static . -2)) (head (dyn . 1)))": [
+     "(lambda x0: list[int]. (head x0))",
+     "search",
+     17
+    ],
+    "fresh2/((dedup (dyn . 0)) (is-primes (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. (is_empty (range ((mod x1) 2))))) x0)))",
+     "search",
+     1320
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 2)) (is-odds (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_prime (length x0)))",
+     "search",
+     105
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . -5)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (not (is_empty (range ((mod x1) 5)))))) (tail (tail x0))))",
+     "re+filter+search",
+     2723
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 5)) (len (dyn . 1)))": [
+     "(lambda x0: list[int]. ((sub (length x0)) 5))",
+     "search",
+     1271
+    ],
+    "fresh2/((identify-geq-k (dyn . 0) (static . 3)) (empty (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty x0))",
+     "search",
+     16
+    ],
+    "fresh2/((identify-geq-k (dyn . 0) (static . 7)) (modulo-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((gt x1) 5)) 1) 0))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh2/((identify-is-mod-k (dyn . 0) (static . 3)) (sum (dyn . 1)))": [
+     "(lambda x0: list[int]. (length ((filter (lambda x1: int. (is_empty (range ((mod x1) 3))))) x0)))",
+     "search",
+     1501
+    ],
+    "fresh2/((identify-is-mod-k (dyn . 0) (static . 7)) (pow-base-k (dyn . 1) (static . 7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_empty (range ((mod x1) ((add 2) 5))))) ((add 2) 5)) 1))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh2/((identify-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . -7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. 1)) x0))",
+     "map+search",
+     4
+    ],
+    "fresh2/((identify-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) ((mul 2) 5))) 0) 1))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh2/((identify-k (dyn . 0) (static . 10)) (len (dyn . 1)))": [
+     "(lambda x0: list[int]. (length x0))",
+     "search",
+     18
+    ],
+    "fresh2/((keep-mod-k (dyn . 0) (static . 2)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_empty (range ((mod x1) 4)))) 1) 0))) ((filter (lambda x1: int. (is_empty (range ((mod x1) 2))))) x0)))",
+     "re+map+fused",
+     4043
+    ],
+    "fresh2/((keep-mod-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (((if (is_empty (range ((mod x1) 5)))) false) (is_empty (range ((mod x1) 2)))))) x0))",
+     "filter+fused",
+     5001
+    ],
+    "fresh2/((keep-mod-k (dyn . 0) (static . 5)) (is-odds (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. (is_empty (range ((mod x1) ((mul 2) 5)))))) x0)))",
+     "search",
+     5104
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 2)) (identify-is-prime (dyn . 1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. 0)) x0))",
+     "map+search",
+     3
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. 0)) x0))",
+     "map+search",
+     3
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (modulo-k (dyn . 1) (static . 6)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mod x1) 3))) x0))",
+     "map+search",
+     115
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime ((mod x1) 3))) 2) ((mul ((mod x1) 3)) 5)))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh2/((mult-k (dyn . 0) (static . 10)) (is-odds (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty x0))",
+     "search",
+     16
+    ],
+    "fresh2/((mult-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mul x1) 3))) ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "re+map+search",
+     1215
+    ],
+    "fresh2/((pow-base-k (dyn . 0) (static . 4)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_empty (range x1))) x1) 1))) x0))",
+     "map+search",
+     4993
+    ],
+    "fresh2/((pow-base-k (dyn . 0) (static . 4)) (is-evens (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. (is_empty (range ((mod x1) ((mul 3) 5)))))) x0)))",
+     "search",
+     5302
+    ],
+    "fresh2/((prepend-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "search",
+     1333
+    ],
+    "fresh2/((remove-mod-k (dyn . 0) (static . 2)) (mult-k (dyn . 1) (static . 10)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mul x1) ((mul 2) 5)))) ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "re+map+search",
+     1272
+    ],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (positions (dyn . 1)))": [
+     "(lambda x0: list[int]. (range (length x0)))",
+     "search",
+     115
+    ],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((gt x1) 3)) 1) 0))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (is-odds (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty x0))",
+     "search",
+     16
+    ],
+    "fresh2/((slice-k-n (dyn . 0) (static . 3) (static . 3)) (is-odds (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_square ((sub (head x0)) 4)))",
+     "search",
+     5732
+    ],
+    "compose24/fresh20261031::trim-and-increment::p1": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) (tail x0)))",
+     "re+map+search",
+     1193
+    ],
+    "compose24/fresh20261031::trim-and-increment::p2": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) (tail (tail x0))))",
+     "re+map+search",
+     1198
+    ],
+    "compose24/fresh20261031::trim-and-increment::p3": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) (tail (tail (tail x0)))))",
+     "re+map+search",
+     1196
+    ],
+    "compose24/fresh20261031::trim-and-increment::p4": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) (tail (tail (tail (tail x0))))))",
+     "re+map+search",
+     1190
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p1": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "re+map+search",
+     1198
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p2": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) ((filter (lambda x1: int. ((gt ((mod x1) 3)) 0))) x0)))",
+     "re+map+search",
+     1206
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p3": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) ((filter (lambda x1: int. ((gt ((mod x1) 4)) 0))) x0)))",
+     "re+map+search",
+     1190
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p4": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) ((filter (lambda x1: int. ((gt ((mod x1) 5)) 0))) x0)))",
+     "re+map+search",
+     1192
+    ]
+   },
+   "used": {
+    "train/keep-mod-k with k=2": [
+     "c5_3"
+    ],
+    "train/prepend-k with k=4": [],
+    "train/index-k with k=3": [],
+    "train/index-head": [],
+    "train/caesar-cipher-k-modulo-n with k=1 and n=2": [],
+    "train/prepend-k with k=5": [],
+    "train/modulo-k with k=3": [],
+    "train/replace-all-with-index-k with k=5": [
+     "c3_3"
+    ],
+    "train/caesar-cipher-k-modulo-n with k=5 and n=5": [],
+    "train/slice-k-n with k=5 and n=4": [
+     "c2_1",
+     "c4_3"
+    ],
+    "train/prepend-index-k with k=5": [],
+    "train/caesar-cipher-k-modulo-n with k=2 and n=2": [],
+    "train/slice-k-n with k=5 and n=1": [
+     "c2_1",
+     "c4_3"
+    ],
+    "train/modulo-k with k=2": [],
+    "train/slice-k-n with k=1 and n=4": [
+     "c4_3"
+    ],
+    "train/slice-k-n with k=5 and n=2": [
+     "c2_1",
+     "c4_2"
+    ],
+    "train/index-k with k=5": [],
+    "train/bool-identify-k with k=1": [
+     "c3_2"
+    ],
+    "train/is-mod-k with k=5": [
+     "c2_2"
+    ],
+    "train/prepend-index-k with k=2": [],
+    "train/caesar-cipher-k-modulo-n with k=0 and n=3": [],
+    "train/slice-k-n with k=2 and n=4": [
+     "c4_3"
+    ],
+    "train/prepend-k with k=0": [],
+    "train/replace-all-with-index-k with k=1": [
+     "c3_3"
+    ],
+    "train/slice-k-n with k=4 and n=4": [
+     "c2_1",
+     "c4_3"
+    ],
+    "near/add-k with k=0": [],
+    "near/add-k with k=1": [],
+    "near/add-k with k=2": [],
+    "near/add-k with k=3": [],
+    "near/add-k with k=4": [],
+    "near/bool-identify-geq-k with k=1": [
+     "c5_3"
+    ],
+    "near/bool-identify-geq-k with k=2": [],
+    "near/bool-identify-geq-k with k=4": [],
+    "near/bool-identify-geq-k with k=5": [],
+    "near/bool-identify-is-mod-k with k=1": [],
+    "near/bool-identify-is-mod-k with k=5": [
+     "c5_2",
+     "c5_3"
+    ],
+    "near/bool-identify-k with k=0": [
+     "c5_3"
+    ],
+    "near/bool-identify-k with k=2": [],
+    "near/bool-identify-k with k=3": [],
+    "near/bool-identify-k with k=4": [],
+    "near/bool-identify-k with k=5": [],
+    "near/caesar-cipher-k-modulo-n with k=0 and n=4": [],
+    "near/caesar-cipher-k-modulo-n with k=0 and n=5": [],
+    "near/caesar-cipher-k-modulo-n with k=1 and n=5": [
+     "c5_2"
+    ],
+    "near/caesar-cipher-k-modulo-n with k=2 and n=4": [],
+    "near/caesar-cipher-k-modulo-n with k=3 and n=3": [],
+    "near/caesar-cipher-k-modulo-n with k=3 and n=4": [
+     "c5_3"
+    ],
+    "near/caesar-cipher-k-modulo-n with k=3 and n=5": [
+     "c5_2"
+    ],
+    "near/caesar-cipher-k-modulo-n with k=4 and n=2": [],
+    "near/caesar-cipher-k-modulo-n with k=4 and n=3": [],
+    "near/caesar-cipher-k-modulo-n with k=4 and n=4": [],
+    "near/caesar-cipher-k-modulo-n with k=4 and n=5": [
+     "c5_2"
+    ],
+    "near/caesar-cipher-k-modulo-n with k=5 and n=2": [],
+    "near/caesar-cipher-k-modulo-n with k=5 and n=3": [
+     "c5_3"
+    ],
+    "near/caesar-cipher-k-modulo-n with k=5 and n=4": [],
+    "near/index-k with k=1": [],
+    "near/index-k with k=2": [],
+    "near/index-k with k=4": [
+     "c2_1"
+    ],
+    "near/is-mod-k with k=1": [],
+    "near/is-mod-k with k=2": [
+     "c2_2"
+    ],
+    "near/is-mod-k with k=3": [
+     "c2_2"
+    ],
+    "near/is-mod-k with k=4": [
+     "c2_2"
+    ],
+    "near/keep-mod-k with k=1": [],
+    "near/keep-mod-k with k=3": [
+     "c5_3"
+    ],
+    "near/keep-mod-k with k=4": [
+     "c5_3"
+    ],
+    "near/keep-mod-k with k=5": [
+     "c5_2",
+     "c5_3"
+    ],
+    "near/modulo-k with k=1": [],
+    "near/modulo-k with k=4": [],
+    "near/modulo-k with k=5": [
+     "c5_2"
+    ],
+    "near/mult-k with k=0": [],
+    "near/mult-k with k=1": [],
+    "near/mult-k with k=2": [],
+    "near/mult-k with k=3": [],
+    "near/mult-k with k=5": [
+     "c3_2"
+    ],
+    "near/pow-k with k=1": [],
+    "near/pow-k with k=2": [],
+    "near/prepend-index-k with k=1": [],
+    "near/prepend-index-k with k=4": [
+     "c2_1"
+    ],
+    "near/prepend-k with k=1": [],
+    "near/prepend-k with k=3": [],
+    "near/repeat-k with k=1": [],
+    "near/replace-all-with-index-k with k=2": [
+     "c3_3"
+    ],
+    "near/replace-all-with-index-k with k=3": [
+     "c3_3"
+    ],
+    "near/replace-all-with-index-k with k=4": [
+     "c2_1",
+     "c3_3"
+    ],
+    "near/slice-k-n with k=1 and n=1": [
+     "c4_1"
+    ],
+    "near/slice-k-n with k=1 and n=2": [
+     "c1_2"
+    ],
+    "near/slice-k-n with k=1 and n=3": [
+     "c4_2"
+    ],
+    "near/slice-k-n with k=1 and n=5": [
+     "c1_2"
+    ],
+    "near/slice-k-n with k=2 and n=1": [
+     "c4_1"
+    ],
+    "near/slice-k-n with k=2 and n=2": [
+     "c4_2"
+    ],
+    "near/slice-k-n with k=2 and n=3": [
+     "c4_3"
+    ],
+    "near/slice-k-n with k=2 and n=5": [
+     "c1_2"
+    ],
+    "near/slice-k-n with k=3 and n=1": [
+     "c4_2"
+    ],
+    "near/slice-k-n with k=3 and n=4": [
+     "c4_3"
+    ],
+    "near/slice-k-n with k=3 and n=5": [
+     "c1_2"
+    ],
+    "near/slice-k-n with k=4 and n=1": [
+     "c2_1",
+     "c4_3"
+    ],
+    "near/slice-k-n with k=4 and n=2": [
+     "c1_2",
+     "c2_1"
+    ],
+    "near/slice-k-n with k=4 and n=3": [
+     "c2_1",
+     "c4_2"
+    ],
+    "near/slice-k-n with k=4 and n=5": [
+     "c1_2",
+     "c2_1"
+    ],
+    "near/slice-k-n with k=5 and n=3": [
+     "c2_1",
+     "c4_3"
+    ],
+    "validation/slice-k-n with k=3 and n=3": [
+     "c4_3"
+    ],
+    "validation/add-k with k=5": [],
+    "validation/bool-identify-is-mod-k with k=2": [
+     "c5_3"
+    ],
+    "validation/caesar-cipher-k-modulo-n with k=2 and n=5": [
+     "c5_2"
+    ],
+    "validation/caesar-cipher-k-modulo-n with k=1 and n=3": [],
+    "validation/caesar-cipher-k-modulo-n with k=3 and n=2": [],
+    "validation/prepend-index-k with k=3": [],
+    "validation/caesar-cipher-k-modulo-n with k=1 and n=4": [],
+    "far/empty": [],
+    "far/evens": [
+     "c5_3"
+    ],
+    "far/head": [],
+    "far/is-odds": [
+     "c1_3"
+    ],
+    "far/last": [],
+    "far/odds": [
+     "c5_3"
+    ],
+    "far2/count-k with k=0": [
+     "c1_3",
+     "c3_2"
+    ],
+    "far2/drop-k with k=0": [],
+    "far2/drop-k with k=1": [],
+    "far2/drop-k with k=3": [
+     "c2_1"
+    ],
+    "far2/drop-k with k=4": [
+     "c2_1"
+    ],
+    "far2/drop-k with k=5": [
+     "c2_1"
+    ],
+    "far2/remove-mod-k with k=2": [
+     "c5_3"
+    ],
+    "far2/remove-mod-k with k=3": [
+     "c5_3"
+    ],
+    "far2/remove-mod-k with k=5": [
+     "c5_2",
+     "c5_3"
+    ],
+    "far2/take-k with k=1": [
+     "c4_1"
+    ],
+    "far2/take-k with k=2": [
+     "c1_2"
+    ],
+    "far2/take-k with k=3": [
+     "c4_2"
+    ],
+    "far2/take-k with k=4": [
+     "c4_3"
+    ],
+    "fresh1/((add-k (dyn . 0) (static . -2)))": [],
+    "fresh1/((add-k (dyn . 0) (static . 10)))": [],
+    "fresh1/((identify-geq-k (dyn . 0) (static . 3)))": [],
+    "fresh1/((identify-geq-k (dyn . 0) (static . 7)))": [],
+    "fresh1/((identify-is-mod-k (dyn . 0) (static . 2)))": [
+     "c5_3"
+    ],
+    "fresh1/((identify-is-mod-k (dyn . 0) (static . 3)))": [
+     "c5_3"
+    ],
+    "fresh1/((identify-is-mod-k (dyn . 0) (static . 7)))": [],
+    "fresh1/((identify-is-prime (dyn . 0)))": [
+     "c3_1"
+    ],
+    "fresh1/((identify-k (dyn . 0) (static . -2)))": [
+     "c3_1",
+     "c5_3"
+    ],
+    "fresh1/((identify-k (dyn . 0) (static . 1)))": [
+     "c3_2"
+    ],
+    "fresh1/((identify-k (dyn . 0) (static . 10)))": [],
+    "fresh1/((identify-k (dyn . 0) (static . 3)))": [],
+    "fresh1/((mult-k (dyn . 0) (static . -2)))": [],
+    "fresh1/((mult-k (dyn . 0) (static . 10)))": [],
+    "fresh1/((prepend-k (dyn . 0) (static . -2)))": [],
+    "fresh1/((prepend-k (dyn . 0) (static . 10)))": [
+     "c3_2"
+    ],
+    "fresh1/((replace-all-k-with-n (dyn . 0) (static . 1) (static . 2)))": [
+     "c3_2"
+    ],
+    "fresh1/((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)))": [],
+    "fresh1/((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)))": [],
+    "fresh1/((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)))": [],
+    "fresh2/((add-k (dyn . 0) (static . 10)) (positions (dyn . 1)))": [],
+    "fresh2/((append-k (dyn . 0) (static . -2)) (head (dyn . 1)))": [],
+    "fresh2/((dedup (dyn . 0)) (is-primes (dyn . 1)))": [
+     "c1_3"
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 2)) (is-odds (dyn . 1)))": [],
+    "fresh2/((drop-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . -5)))": [
+     "c5_2",
+     "c5_3"
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 5)) (len (dyn . 1)))": [],
+    "fresh2/((identify-geq-k (dyn . 0) (static . 3)) (empty (dyn . 1)))": [],
+    "fresh2/((identify-geq-k (dyn . 0) (static . 7)) (modulo-k (dyn . 1) (static . 4)))": [],
+    "fresh2/((identify-is-mod-k (dyn . 0) (static . 3)) (sum (dyn . 1)))": [
+     "c1_3"
+    ],
+    "fresh2/((identify-is-mod-k (dyn . 0) (static . 7)) (pow-base-k (dyn . 1) (static . 7)))": [
+     "c5_3"
+    ],
+    "fresh2/((identify-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . -7)))": [],
+    "fresh2/((identify-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 5)))": [],
+    "fresh2/((identify-k (dyn . 0) (static . 10)) (len (dyn . 1)))": [],
+    "fresh2/((keep-mod-k (dyn . 0) (static . 2)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "c1_3",
+     "c5_3"
+    ],
+    "fresh2/((keep-mod-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . 5)))": [
+     "c5_2",
+     "c5_3"
+    ],
+    "fresh2/((keep-mod-k (dyn . 0) (static . 5)) (is-odds (dyn . 1)))": [
+     "c1_3",
+     "c3_2"
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 2)) (identify-is-prime (dyn . 1)))": [],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))": [],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (modulo-k (dyn . 1) (static . 6)))": [],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))": [
+     "c3_2"
+    ],
+    "fresh2/((mult-k (dyn . 0) (static . 10)) (is-odds (dyn . 1)))": [],
+    "fresh2/((mult-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "c2_2"
+    ],
+    "fresh2/((pow-base-k (dyn . 0) (static . 4)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "c5_3"
+    ],
+    "fresh2/((pow-base-k (dyn . 0) (static . 4)) (is-evens (dyn . 1)))": [
+     "c1_3",
+     "c3_2"
+    ],
+    "fresh2/((prepend-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))": [
+     "c2_2"
+    ],
+    "fresh2/((remove-mod-k (dyn . 0) (static . 2)) (mult-k (dyn . 1) (static . 10)))": [
+     "c2_2"
+    ],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (positions (dyn . 1)))": [],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (identify-geq-k (dyn . 1) (static . 4)))": [],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (is-odds (dyn . 1)))": [],
+    "fresh2/((slice-k-n (dyn . 0) (static . 3) (static . 3)) (is-odds (dyn . 1)))": [],
+    "compose24/fresh20261031::trim-and-increment::p1": [],
+    "compose24/fresh20261031::trim-and-increment::p2": [],
+    "compose24/fresh20261031::trim-and-increment::p3": [
+     "c2_1"
+    ],
+    "compose24/fresh20261031::trim-and-increment::p4": [
+     "c2_1"
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p1": [
+     "c2_2"
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p2": [
+     "c2_2"
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p3": [
+     "c2_2"
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p4": [
+     "c2_2"
+    ]
+   },
+   "seconds": 77
+  }
+ ]
+}

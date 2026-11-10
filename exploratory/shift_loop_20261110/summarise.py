@@ -55,7 +55,7 @@ def loop_summary(report) -> None:
     first, best = by_run[report["first"]], by_run[report["best_run"]]
     accepted = [t for t in report["timeline"] if t.get("accepted")]
     print(f"runs {report['runs']}, rollbacks {report['rollbacks']}, acceptances {len(accepted)}, "
-          f"equal budget per real task {report['equal_budget_per_real_task']}")
+          f"equal budget per real task {report.get('equal_budget_per_real_task', report['runs'] * report['budget'])}")
     print("| Run | Move | Learning | Held-out | Dream | Symbols | Kept symbols (element, list) |")
     print("| --- | --- | --- | --- | --- | --- | --- |")
     for t in [first] + accepted:
