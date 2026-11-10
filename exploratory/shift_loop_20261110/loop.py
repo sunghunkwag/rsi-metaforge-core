@@ -6,14 +6,19 @@ task at the per-task budget, and it is accepted only if verified learning-set so
   apoptosis  A (idea 1): cut 60% of each space's symbols, least used first
   unused     A': cut only the symbols no verified learning program uses
   entropy    E (idea 2): turn on seeded mutation of near misses
+  regrow     restore the full vocabulary and keep the learned symbols
 A rejected move goes on the ban list. When no move is accepted the loop rolls back one accepted
 step, bans it and branches again (T, idea 3). Fusion (idea 4) is part of the fixed machinery.
+
+With --dreams the driver also composes its verified programs into dream tasks (dream.py): 40
+at generation 0 and 20 more after each accepted move, at most 100. Dream solves count in the
+acceptance signal and verified dream programs join the compression corpus and usage counts.
 
 Every decision reads the learning partitions only. Held-out partitions are run each time for
 the record and never consulted.
 
     python loop.py <budget> <components> <out.json> <config A|B> [workers] [--moves m1,m2,..]
-                   [--max-runs N] [--no-rollback]
+                   [--max-runs N] [--no-rollback] [--dreams]
 """
 from __future__ import annotations
 
@@ -26,6 +31,7 @@ import hybrid
 from hybrid import ALL, Harness, spec_of, summary
 
 import compress
+import dream
 from rsi5.dsl.evaluator import evaluate
 from rsi5.dsl.terms import Lam, term_from_dict, term_to_dict
 from rsi5.dsl.types import INT, arrows
@@ -86,23 +92,34 @@ class State:
     def __init__(self, library, keep, entropy, parent=None, move=None, signature=None):
         self.library, self.keep, self.entropy = library, keep, entropy
         self.parent, self.move, self.signature = parent, move, signature
-        self.learn = self.held_out = 0
+        self.learn = self.held_out = self.dream = 0
+        self.dream_programs = {}
         self.counts = {}
         self.usage = {"elem": {}, "list": {}}
         self.programs = {}
         self.record = {}
 
 
-def run_loop(harness, budget, components, learn, moves=MOVES, max_runs=24, rollback=True, log=print):
+DREAM_FIRST, DREAM_MORE, DREAM_CAP = 40, 20, 100
+
+
+def run_loop(harness, budget, components, learn, moves=MOVES, max_runs=24, rollback=True, log=print,
+             dreams=False):
     held = tuple(p for p in ALL if p not in learn)
     timeline, tabu_keys, tabu_moves = [], set(), set()
     rollbacks = 0
+    bank, signatures, executions = [], set(), [0]        # dream tasks; their signatures; task runs
+
+    def signal(state):
+        return state.learn + state.dream
 
     def measure(state, label):
         abstractions, constants = serialise(state.library)
         switches = components + ("E" if state.entropy else "")
         started = time.perf_counter()
-        result = harness.run(spec_of(label, budget, switches, abstractions, constants, keep=state.keep))
+        result = harness.run(spec_of(label, budget, switches, abstractions, constants, keep=state.keep),
+                             dreams=[(task, check) for task, check, _ in bank])
+        executions[0] += sum(len(rows) for rows in result.values())
         state.counts = summary(result)
         state.learn = sum(state.counts[p] for p in learn)
         state.held_out = sum(state.counts[p] for p in held)
@@ -125,10 +142,22 @@ def run_loop(harness, budget, components, learn, moves=MOVES, max_runs=24, rollb
                     for symbol in symbols_of(term, state.library):
                         if symbol in state.library:
                             held_usage[symbol] = held_usage.get(symbol, 0) + 1
+        state.dream_programs = {}
+        for row in result.get("dream", ()):
+            if row["solved"]:
+                term = term_from_dict(row["term"])
+                state.dream_programs[row["name"]] = term
+                elem, whole = split_spaces(term, row["route"])
+                for space, part in (("elem", elem), ("list", whole)):
+                    if part is not None:
+                        for symbol in symbols_of(part, state.library):
+                            usage[space][symbol] = usage[space].get(symbol, 0) + 1
+        state.dream = len(state.dream_programs)
         state.usage, state.programs = usage, programs
         state.record = {
             "run": harness.runs, "label": label, "move": state.move, "counts": state.counts,
             "learn": state.learn, "held_out": state.held_out, "library": list(state.library),
+            "dream": state.dream, "dream_tasks": len(bank),
             "keep_sizes": {s: (len(k) if k is not None else None) for s, k in (state.keep or {}).items()},
             "entropy": state.entropy, "routes": routes,
             "abstraction_use_learn": {n: usage["elem"].get(n, 0) + usage["list"].get(n, 0) for n in state.library},
@@ -140,10 +169,33 @@ def run_loop(harness, budget, components, learn, moves=MOVES, max_runs=24, rollb
                          for p, rows in result.items() for r in rows if r["solved"]},
             "seconds": round(time.perf_counter() - started)}
         timeline.append(state.record)
-        log(f"run {harness.runs:2d} {label:22s} learn {state.learn:3d} held-out {state.held_out:3d} {state.counts} "
+        log(f"run {harness.runs:2d} {label:22s} learn {state.learn:3d} held-out {state.held_out:3d} "
+            f"dream {state.dream:3d}/{len(bank):3d} {state.counts} "
             f"lib {len(state.library)} keep {state.record['keep_sizes']} E {int(state.entropy)} | {state.record['seconds']} s",
             )
         return state
+
+    def grow_bank(state, count):
+        """Compose new dream tasks from the state's verified programs and score the state on them."""
+        if not dreams or len(bank) >= DREAM_CAP:
+            return
+        source = dict(state.programs)
+        source.update(state.dream_programs)
+        new = dream.make(source, min(count, DREAM_CAP - len(bank)), signatures, len(timeline))
+        if not new:
+            return
+        bank.extend(new)
+        abstractions, constants = serialise(state.library)
+        switches = components + ("E" if state.entropy else "")
+        result = harness.run(spec_of(f"dreams@{state.record['run']}", budget, switches, abstractions, constants,
+                                     keep=state.keep), partition_names=[], dreams=[(t, c) for t, c, _ in new])
+        executions[0] += len(new)
+        for row in result["dream"]:
+            if row["solved"]:
+                state.dream_programs[row["name"]] = term_from_dict(row["term"])
+        state.dream = len(state.dream_programs)
+        state.record["dream"], state.record["dream_tasks"] = state.dream, len(bank)
+        log(f"     {len(new)} new dream tasks (bank {len(bank)}); the current state solves {state.dream} of the bank")
 
     def symbols(state, space):
         if state.keep and state.keep.get(space) is not None:
@@ -168,8 +220,15 @@ def run_loop(harness, budget, components, learn, moves=MOVES, max_runs=24, rollb
         return keep
 
     def candidate(state, move):
+        if move == "regrow":
+            signature = ("regrow", tuple(sorted(state.library)))
+            if state.keep is None or signature in tabu_moves:
+                return None
+            return State(dict(state.library), None, state.entropy, state, move, signature)
         if move == "compress":
-            proposals = compress.propose(state.programs, state.library, tabu=frozenset(tabu_keys),
+            corpus = dict(state.programs)
+            corpus.update(state.dream_programs)
+            proposals = compress.propose(corpus, state.library, tabu=frozenset(tabu_keys),
                                          max_new=PER_GENERATION, name_prefix=f"s{len(timeline)}_")
             if not proposals:
                 return None
@@ -197,6 +256,7 @@ def run_loop(harness, budget, components, learn, moves=MOVES, max_runs=24, rollb
         raise ValueError(move)
 
     current = measure(State({}, None, False), "gen0")
+    grow_bank(current, DREAM_FIRST)
     best = current
     while harness.runs < max_runs:
         accepted = False
@@ -210,15 +270,17 @@ def run_loop(harness, budget, components, learn, moves=MOVES, max_runs=24, rollb
                 for a in new.proposals:
                     log(f"     propose {a.name}: {a.definition}  score {a.score} tasks {len(a.tasks)} depth {a.depth}")
             measure(new, f"{move}@{current.record['run']}")
-            new.record["accepted"] = new.learn > current.learn
+            new.record["accepted"] = signal(new) > signal(current)
             if move == "compress":
                 new.record["proposed"] = [{"name": a.name, "definition": str(a.definition), "score": a.score,
                                            "tasks": len(a.tasks), "depth": a.depth, "params": [str(p) for p in a.params],
                                            "result": str(a.result)} for a in new.proposals]
-            if new.learn > current.learn:
-                log(f"     accepted {move}: learn {current.learn} -> {new.learn}, held-out {current.held_out} -> {new.held_out}")
+            if signal(new) > signal(current):
+                log(f"     accepted {move}: learn {current.learn} -> {new.learn}, dream {current.dream} -> {new.dream}, "
+                    f"held-out {current.held_out} -> {new.held_out}")
                 current = new
-                if current.learn > best.learn:
+                grow_bank(current, DREAM_MORE)
+                if signal(current) > signal(best) or (dreams and current.learn >= best.learn):
                     best = current
                 accepted = True
                 break
@@ -241,6 +303,8 @@ def run_loop(harness, budget, components, learn, moves=MOVES, max_runs=24, rollb
         current = current.parent
     report = {"budget": budget, "components": components, "learn": list(learn), "held_out": list(held),
               "moves": list(moves), "timeline": timeline, "rollbacks": rollbacks, "runs": harness.runs,
+              "dreams": dreams, "dream_tasks": [task.name for task, _, _ in bank], "task_executions": executions[0],
+              "equal_budget_per_real_task": round(executions[0] * budget / 338),
               "best_run": best.record["run"], "first": timeline[0]["run"],
               "library": {n: {"definition": str(a.definition), "witness": str(a.witness), "depth": a.depth,
                               "params": [str(p) for p in a.params], "result": str(a.result)}
@@ -259,7 +323,7 @@ if __name__ == "__main__":
     max_runs = int(sys.argv[sys.argv.index("--max-runs") + 1]) if "--max-runs" in sys.argv else 24
     harness = Harness(workers, ALL)
     report, best = run_loop(harness, budget, components, learn, moves=moves, max_runs=max_runs,
-                            rollback="--no-rollback" not in sys.argv)
+                            rollback="--no-rollback" not in sys.argv, dreams="--dreams" in sys.argv)
     if "--random-control" in sys.argv:                 # idea 1 taken literally: a random 60% cut of generation 0
         start = State({}, None, False)
         start.usage = {"elem": {}, "list": {}}
@@ -274,6 +338,7 @@ if __name__ == "__main__":
     json.dump(report, open(out_path, "w"), indent=1)
     first, last = report["timeline"][0], best.record
     print(f"\nbest state (run {last['run']}): learn {first['learn']} -> {last['learn']}, "
-          f"held-out {first['held_out']} -> {last['held_out']}; runs {report['runs']}, rollbacks {report['rollbacks']}, "
-          f"symbols learned {len(report['library'])}")
+          f"held-out {first['held_out']} -> {last['held_out']}, dream {first.get('dream', 0)} -> {last.get('dream', 0)}; "
+          f"runs {report['runs']}, rollbacks {report['rollbacks']}, symbols learned {len(report['library'])}, "
+          f"equal budget per real task {report['equal_budget_per_real_task']}")
     harness.close()

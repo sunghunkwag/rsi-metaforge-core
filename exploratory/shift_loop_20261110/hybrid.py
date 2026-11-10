@@ -13,6 +13,12 @@ The rsi5 engine is used unchanged. Around it:
      a kept subset of symbols.
   E  entropy: seeded random mutation of near-miss programs (a subterm replaced by another pool
      program of its type) after search and fusion fail, on a tenth of the budget.
+  R  representation search: when S does not apply or fails, a tenth of the budget enumerates
+     list programs A over the input; each A under which the outputs are the element-wise image
+     of A(xs), or A(xs) filtered by a predicate on the value, is a re-representation; the first
+     two get an int -> element sub-search, lifted as map f (A xs) or filter p (A xs).
+Dream tasks (dream.py) are extra tasks with known answers that the driver composes from its
+own verified programs; they travel to the workers like any public task.
 
 Process layout as in rsi5.phase1: the guard is installed, the workers are forked before any
 partition is loaded, they seal the loader packages and receive public examples only; the
@@ -308,6 +314,40 @@ def _fast_match(body, examples) -> bool:
     return True
 
 
+# ---- R: re-representations of the input found among the engine's own list programs ----------------
+def preimages(engine, examples, output_type, limit=2):
+    """(kind, pool program A, table, element type) for list programs A of the top context under
+    which the task is element-wise (map) or a value filter. The bare input is left to S.
+    Returns (candidates, number of programs tested)."""
+    n = len(examples)
+    expected = [output for _, output in examples]
+    found, seen, tested = [], set(), 0
+    for expr in engine.top.pools.get(LIST_INT, ()):
+        if expr.kind == "var":
+            continue
+        values = expr.outputs[:n]
+        if any(v is ERR for v in values):
+            continue
+        tested += 1
+        pseudo = [((values[i],), expected[i]) for i in range(n)]
+        table = element_table(pseudo)
+        kind, element = "map", output_type.args[0]
+        if table is not None and all(x == y and type(x) is type(y) for x, y in table.items()):
+            continue                                   # A itself would be the answer; the engine checks that
+        if table is None and output_type == LIST_INT:
+            table, kind, element = filter_table(pseudo), "filter", BOOL
+        if table is None or len(table) < 3:
+            continue
+        signature = (kind, tuple(sorted(table.items())))
+        if signature in seen:
+            continue
+        seen.add(signature)
+        found.append((kind, expr, table, element))
+        if len(found) >= limit:
+            break
+    return found, tested
+
+
 # ---- one task, in a worker ------------------------------------------------------------------------
 _STATE = {"spec": None, "vocabulary": None, "spaces": None, "probes": None, "table": None}
 
@@ -451,6 +491,35 @@ def solve(job) -> dict:
                 spent += used
                 break
             spent += used
+    if record["term"] is None and switches.get("R") and len(input_types) == 1 \
+            and input_types[0] == LIST_INT and output_type.tag == "list":
+        scan = min(budget // 10, max(0, budget - spent) // 4)
+        engine = bu.Engine(spaces["list"], max_size=MAX_SIZE, step_budget=STEPS, max_lambda_depth=LAMBDA_DEPTH)
+        scanned = engine.search(examples, request, probes.inputs_for(input_types, _STATE["probes"]), scan)
+        if scanned.term is not None:
+            record.update(term=term_to_dict(scanned.term), route="search",
+                          to_solution=spent + scanned.candidates_to_solution)
+            spent += scanned.candidates_to_solution
+        else:
+            spent += scanned.candidates
+            candidates, tested = preimages(engine, examples, output_type)
+            spent += tested
+            share = max(0, budget - spent) // 3
+            for kind, expr, table, element in candidates:
+                sub_examples = [((x,), y) for x, y in sorted(table.items())]
+                vocabulary = spaces["elem"]
+                if switches.get("C"):
+                    vocabulary = _with_constants(vocabulary, abduce_constants(table=table))
+                term, used, route, _ = _search(vocabulary, sub_examples, Arrow(INT, element), share,
+                                               switches.get("F") or switches.get("f"), entropy)
+                if term is not None:
+                    lifted = Lam(LIST_INT, apply(Prim(kind), term, expr.term))
+                    if _matches(lifted, examples):
+                        record.update(term=term_to_dict(lifted), route=f"re+{kind}+{route}",
+                                      to_solution=spent + used)
+                        spent += used
+                        break
+                spent += used
     if record["term"] is None:
         vocabulary = spaces["list"]
         if switches.get("C"):
@@ -483,15 +552,25 @@ class Harness:
     def close(self):
         self.pool.terminate()
 
-    def run(self, spec, partition_names=None) -> dict:
+    def run(self, spec, partition_names=None, dreams=()) -> dict:
         """One generation: every task of the named partitions at spec['budget']; verdicts from the
-        frozen verifier (one query per task per run)."""
+        frozen verifier (one query per task per run). ``dreams`` are (public task, check examples)
+        pairs made by the driver; their verdict is the check examples, and they come back under
+        the key 'dream'."""
         self.runs += 1
         spec = dict(spec, id=f"{spec.get('label', 'run')}#{self.runs}")
-        names = list(partition_names or self.tasks)
+        names = list(partition_names if partition_names is not None else self.tasks)
         jobs = [(task, spec) for name in names for task in self.public[name]]
+        jobs += [(task, spec) for task, _ in dreams]
         records = self.pool.map(solve, jobs, chunksize=1)
         out, cursor = {}, 0
+        if dreams:
+            rows = records[len(records) - len(dreams):]
+            for row, (_, check) in zip(rows, dreams):
+                term = term_from_dict(row["term"]) if row["term"] is not None else None
+                row["solved"] = term is not None and _matches(term, check)
+                row["program"] = str(term) if term is not None else None
+            out["dream"] = rows
         for name in names:
             rows = records[cursor:cursor + len(self.public[name])]
             cursor += len(rows)
@@ -504,7 +583,7 @@ class Harness:
 
 
 def summary(result: dict) -> dict:
-    return {name: sum(r["solved"] for r in rows) for name, rows in result.items()}
+    return {name: sum(r["solved"] for r in rows) for name, rows in result.items() if name != "dream"}
 
 
 def registered(vocabulary: str, budget: int, partition_names) -> dict:
