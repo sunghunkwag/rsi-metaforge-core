@@ -7,6 +7,7 @@ from collections import Counter, defaultdict
 import hashlib
 import json
 import math
+import os
 from pathlib import Path
 import random
 import re
@@ -342,7 +343,12 @@ def main():
     tasks = manifest["task_ids"]
     raw = [seed_run(seed, tasks) for seed in range(SEEDS)]
     summary = summarize(raw)
+    tested_sha = os.environ.get("GITHUB_SHA", "local-engineering")
+    run_id = os.environ.get("GITHUB_RUN_ID", "not-in-actions")
+    ci_url = f"https://github.com/sunghunkwag/rsi-metaforge-core/actions/runs/{run_id}"
+    pr_url = "https://github.com/sunghunkwag/rsi-metaforge-core/pull/60"
     payload = {"provenance": {
+        "tested_source_sha": tested_sha, "ci_url": ci_url, "draft_pr": pr_url,
         "manifest_commit": "9a1159519b3adf5126160b3069396c4ecd34beec",
         "prereg_commit": "a6cf494c0edb6ae4765b9e1afbf585cadd51c60f",
         "source_blob": manifest["source_blob_sha"],
@@ -357,7 +363,9 @@ def main():
     dest.parent.mkdir(parents=True, exist_ok=True)
     if dest.exists(): raise RuntimeError("spent preflight: results already exist")
     dest.write_text(json.dumps(payload, separators=(",", ":"), sort_keys=True) + "\n")
-    (ROOT / "research/RESULTS_DOMAIN_POLICY_DEV_20261110.md").write_text(report(summary))
+    (ROOT / "research/RESULTS_DOMAIN_POLICY_DEV_20261110.md").write_text(
+        report(summary) + f"\nTested source SHA: `{tested_sha}`. "
+        f"[One-shot CI]({ci_url}); [Draft PR #60]({pr_url}).\n")
     readme = ROOT / "README.md"
     marker = "\n## Research note: domain-policy development preflight (2026-11-10)\n"
     if marker in readme.read_text(): raise RuntimeError("spent preflight: README already updated")
@@ -372,7 +380,8 @@ def main():
         "[report](research/RESULTS_DOMAIN_POLICY_DEV_20261110.md), "
         "[complete raw JSON](research/results/domain_policy_dev_raw_20261110.json), "
         "[preregistration](research/PREREG_DOMAIN_POLICY_DEV_20261110.md). "
-        "Draft PR and CI links are in the PR description. "
+        f"Tested source SHA `{tested_sha}`; [one-shot CI]({ci_url}); "
+        f"[Draft PR #60]({pr_url}). "
         "No independent multi-generation learning-to-learn claim.\n")
     print(json.dumps({"completed": True, "summary": summary,
                       "raw_bytes": dest.stat().st_size}))
