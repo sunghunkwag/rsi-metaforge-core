@@ -11,8 +11,16 @@ push only its own branch; `.github/workflows/rsi5-runs.yml` runs the same plan o
 Actions from a branch named `rsi5/run-*`. Raw files: [`results_p1/`](results_p1/)
 (`<vocabulary>_<partition>.json`, one record per task with the program, the candidate
 count at which it was found and the verifier's verdict; the `replay/` directory holds the
-second run of FRESH-1 and RESERVE-FAR2). Tables are `python -m rsi5.report_p1` output;
+second run of FRESH-1 and RESERVE-FAR2, `replay_python311/` and `replay_sealed/` the later
+replays described under Determinism). Tables are `python -m rsi5.report_p1` output;
 the generalisation audit is `python -m rsi5.audit_p1`.
+
+**After the run** the pull request was reviewed adversarially: 35 findings, every one
+reproduced. No registered number changes. The sealing, the run driver, the report tool,
+two tests and the documents were corrected. The engine was left as it ran: its defects
+lose programs the language has, they cannot turn a wrong program into a solve, and
+repairing them changes the enumeration, so they are pinned by tests and wait for a new
+registration. The list is in "Adversarial review" below.
 
 **Headline, misses first.**
 
@@ -21,7 +29,7 @@ the generalisation audit is `python -m rsi5.audit_p1`.
 | P1-1 restored FRESH-1 at 10⁵ ≥ 15 of 33 | **5 of 33** | miss |
 | P1-3 ≥ 2 of the five corpus-lacking FRESH-1 routines solved (restored, 10⁵) | **1** (`replace-index-k-with-n`, k = 1, as `cons 2 (tail xs)`); 2 at 10⁶ (`identify-is-prime` at 203,860) | miss at 10⁵, hit at 10⁶ |
 | P1-2 original FRESH-1 at 10⁵ ≤ 10 | 6 of 33 | hit |
-| P1-4 RESERVE-FAR2 ≥ 10 of 21 (restored, 10⁵) | **15 of 21** (18 at 10⁶) | hit |
+| P1-4 RESERVE-FAR2 ≥ 10 of 21 at 10⁵ (the registered wording names no vocabulary: both scored) | original 11, restored **15** of 21 (14 and 18 at 10⁶) | hit with either |
 | P1-5 throughput ≥ 10⁴ candidates/s/core | 32,439 candidates/s on one core (`results_p1/throughput.json`) | hit |
 
 **The §3.3 gate.** P1-1 and P1-3 both miss at the registered budget 10⁵. The directive
@@ -90,8 +98,12 @@ verifier ([`verifier.py`](verifier.py)), which checks every public and hidden ex
 after the main run ([`results_p1/replay/`](results_p1/replay/)); all four digests (SHA-256
 over every record field except wall-clock) are identical to the main run's:
 `e0c447248af39613` (FRESH-1 original), `fd51abe16b6a785d` (FRESH-1 restored),
-`bdd3737767cb1a38` (FAR2 original), `d5ee7213169b6a6a` (FAR2 restored). The driver's
-determinism test also shows the digest is independent of the worker count.
+`bdd3737767cb1a38` (FAR2 original), `d5ee7213169b6a6a` (FAR2 restored). The same two
+RESERVE-FAR2 digests come out of Python 3.11
+([`results_p1/replay_python311/`](results_p1/replay_python311/); the main run used 3.13,
+Actions uses 3.11) and out of the driver as corrected after the review
+([`results_p1/replay_sealed/`](results_p1/replay_sealed/)), so on this partition the
+digest does not depend on the interpreter version or on which process holds the tasks.
 
 **Throughput.** 32,439 candidates/s on one core (40,000 candidates of the restored
 vocabulary on `rsi2/benchmark.py`'s example set, `list(range(n))` for n < 12, in 1.23 s;
@@ -258,7 +270,7 @@ the budget ran out.
 | P1-1 | restored FRESH-1 at 10⁵ ≥ 15 | PASS (moderate) | 5 of 33 | **miss** |
 | P1-3 | ≥ 2 of the 5 corpus-lacking FRESH-1 routines (restored, 10⁵) | PASS (low) | 1 (`replace-index-k-with-n`); 2 at 10⁶ | **miss** (hit at 10⁶) |
 | P1-2 | original FRESH-1 at 10⁵ ≤ 10 | PASS (moderate) | 6 of 33 | hit |
-| P1-4 | RESERVE-FAR2 ≥ 10 of 21 (restored, 10⁵) | PASS (moderate) | 15 of 21 | hit |
+| P1-4 | RESERVE-FAR2 ≥ 10 of 21 at 10⁵ (no vocabulary named: both scored) | PASS (moderate) | original 11, restored 15 of 21 | hit |
 | P1-5 | throughput ≥ 10⁴ candidates/s/core | PASS (low) | 32,439/s | hit |
 | S1 | restored FRESH-1 at 10⁶: 10 (range 7–14) | — | 10 | hit |
 | S2 | original FRESH-1 at 10⁶ ≤ 8 | PASS (moderate) | 10 (7 generalising) | **miss** |
@@ -302,6 +314,66 @@ coincidence (S5). P1-1 was wrong by a factor of three at 10⁵ and would still b
   pools, nothing on TEST. No statement about Phase 2's tiers. The run was on one machine,
   not on Actions; the digests make it reproducible there.
 
+## Adversarial review
+
+Seven reviewers, one per area (evaluator, closures, normal forms, engine, sealing, driver,
+documents), read the pull request to break it. They returned 35 findings, 26 distinct.
+Each was then reproduced by a script or a test, or confirmed in the code, before it was
+accepted; all 35 hold. Two rules decided what to do with a finding: a correction must not
+change a registered number, and the engine that produced the numbers is not edited after
+the fact. `PREDICTIONS_P1.md` and the result files are untouched.
+
+### Corrected (no registered number changes)
+
+| Finding | Correction | Shown by |
+| --- | --- | --- |
+| The guard let a sealed file be reached through a directory descriptor (`dir_fd`), an inherited descriptor, a hard link, a rename, the working directory or a child program. | [`guard.py`](guard.py) rewritten: every such route is refused, as are the start methods that launch a fresh interpreter and an unaudited file reader. | [`tests/test_guard.py`](tests/test_guard.py): 81 constructed attacks on a decoy tree are refused; one residual is pinned |
+| The run driver built the tasks and the verifier before it forked its workers, so every worker held every hidden example in memory. | The workers are forked first, hold no task and no loader, seal the loader packages for themselves and receive public examples only. A worker forked late refuses to search. | `test_workers_are_forked_before_any_task_is_loaded`, `test_worker_forked_after_the_tasks_refuses_to_search` |
+| The check that no solver module imports J missed `from . import judge` and `from .. import judge`; J's copied audit flags no rsi5 import. | Relative imports are resolved before the check. A solver module may import only a short list of modules. | `test_judge_import_check_catches_every_form`, `test_import_list_refuses_the_unaudited_routes` |
+| The admitted-primitive loader used a dynamic importer, which J's audit refuses. | Static imports (fixed before this section was written). | `test_judge_audit_findings_are_the_declared_ones` |
+| "TEST is never loaded" was true of TEST's file only: the RESERVE loaders parse DreamCoder's source file, which holds TEST's twelve records, and discard them by name. | The sentence now says exactly that. The guard seals TEST's file; no solver module names its loader. | `test_task_file_directory_exposes_only_the_listed_files`, `test_no_solver_module_names_the_sealed_partition` |
+| The report scored P1-3 as a miss when its result file was absent, and scored P1-4 on the restored vocabulary although the registered wording names none. | An absent file is "(not run)". P1-4 is scored with both vocabularies: original 11, restored 15 of 21, a hit with either. | `python -m rsi5.report_p1` |
+| The plan's child-context point cap and the relation between report budgets and the run budget were not checked. | The driver refuses a plan whose cap differs from the engine's constant or whose report budget exceeds the run budget. | [`phase1.py`](phase1.py) `load_plan` |
+| The closure agreement test could not see a closure that fails where the interpreter succeeds. | The test fails on that case outside one known class, which it pins: 191 cases on its corpus, all in terms with a partial application, which the engine never builds. | `test_closures_agree_with_reference` |
+| `NORMAL_FORMS.md` called every rule an equivalence; `ARCHITECTURE.md` said lambda depth 2 and contexts created on demand; the README said every primitive terminates under the step budget. | Each document now states what the code does. | the documents |
+| The package layout differs from the directive's §11 sketch. | `ARCHITECTURE.md` lists the differences; `test_vocabulary_matches_VOCABULARY_md` exists under that name. | [ARCHITECTURE.md](ARCHITECTURE.md) |
+
+The corrected driver was then run on RESERVE-FAR2 with both vocabularies. Both digests
+equal the registered ones, `bdd3737767cb1a38` and `d5ee7213169b6a6a`, and every record
+field outside wall-clock is equal
+([`results_p1/replay_sealed/`](results_p1/replay_sealed/); the identity table is in
+`python -m rsi5.report_p1`). A replay of the whole plan by the corrected driver had not
+finished when this was written; until its sixteen digests are recorded here, the claim
+is the two above.
+
+### Deferred to a new registration (engine findings)
+
+Every program the engine returns is re-checked by the reference interpreter and judged by
+the frozen verifier, so none of these can produce a false solve. Each loses programs or
+misdescribes the search. Each is pinned in
+[`tests/test_review_findings.py`](tests/test_review_findings.py).
+
+| Finding | What the engine does | Effect on the registered run |
+| --- | --- | --- |
+| `and`, `or` | Strict and reordered as commutative; the interpreter evaluates left to right and skips the right side. `and (not (is_empty xs)) (eq (head xs) 1)` is `false` on `[]` in the interpreter and a failure in the engine. | A guard written with `and` or `or` is lost; the same behaviour through `if` is one symbol longer. Size of the loss not measured. |
+| `add`, `sub` | No 4096-bit limit in the fast paths. | A match of that kind would be a rejected re-check: none in 676 records. |
+| Step charge | The closures charge per element and per recursive call; the interpreter charges per node. A closure can finish where the interpreter runs out of steps. | Same: no rejected re-check. |
+| List cap | 1024 in the closures (registered), 4096 in the interpreter. | Programs with a longer intermediate list are lost. Not measured. |
+| `fix1` seed | Evaluated before it is needed. | `fix1` is in no verified program. Not measured. |
+| Partial application | Given arguments evaluated eagerly. | None: the engine builds no partial application. |
+| Vectorised `is_prime` | No step charged; refuses integers above 64 bits. A prime near 10⁹ is answered where the interpreter runs out of steps. | No rejected re-check. |
+| `neg k` | Refused for every literal, though −2 (both vocabularies) and −3, −4, −5 (restored) are not literals. | Every program that needs one is a symbol longer: `prepend-k (k=-2)` is `cons (add -1 -1) xs`. |
+| `fix1` without recursion | Refused, though it is the language's only let-binding. | `fix1` is in no verified program. Not measured. |
+| Two inputs of different types | The match is wrapped with its binders reversed and rejected. | None: all 338 tasks have one input. |
+| Lambda nesting | The limit counts binders: a `fold` step or a `fix1` body holds no lambda, a `map` body may hold a `fold`. | Programs with a lambda inside a `fold` step are not enumerated. Not measured. |
+| Child contexts | Created when a level's shapes are listed. | The `contexts` field counts empty contexts. No effect on a solve. |
+| Re-check order | A program enters the pool before its re-check, so a rejected match keeps its behaviour class. | None: no rejected re-check. |
+| `exhausted` | Set after one size level that adds no program. | None: the flag is set in no record, and every search without a public match spent its whole budget. |
+
+"Not measured" means the registered files cannot show it: a program lost to pruning
+leaves no trace. The measurement is the repaired engine run beside this one under a new
+registration, which is the Owner's call together with the §3.3 gate.
+
 ## Limitations (Target Property + Criterion)
 
 1. **Reach.** Target: the engine completes symbol size 12 in the top context within the
@@ -312,27 +384,30 @@ coincidence (S5). P1-1 was wrong by a factor of three at 10⁵ and would still b
 2. **Verifier discrimination.** Target: a verified program generalises to the family's
    semantics. Criterion: 0 coincidental acceptances in the audit. Measured: 4 of 60
    audited solves (all FRESH-1; 0 of 40 on FAR2 and COMPOSE-24).
-3. **Engine semantics against the reference interpreter** (found by the adversarial
-   review of this PR; none can produce a false positive because every returned program is
-   re-checked by the interpreter, each loses completeness or contradicts a docstring).
-   Target: the compiled closures and vectorised operations agree with the interpreter on
-   every term that terminates under the step budget. Criterion: zero disagreements on a
-   fuzz of 10⁴ enumerated terms × inputs beyond budget-boundary cases. Known gaps:
-   `and`/`or` are treated as commutative and evaluated strictly in the vectorised path
-   while the interpreter short-circuits them (so `and (not (is_empty xs)) (eq (head xs) 1)`
-   is ERR on `[]` in the engine and `false` in the interpreter); `add`/`sub` lack the
-   4096-bit guard; the closures charge steps per element and per recursive call only, so a
-   term can run under the fast budget and exhaust the interpreter's (the pool then keeps a
-   program the recheck rejects); `LIST_CAP` 1024 against the interpreter's 4096; `fix1`'s
-   seed and `_curry`'s given arguments are strict; the vectorised `is_prime` is uncharged.
-   Fixes change the engine's output and are deferred to a follow-up commit with a new
-   registration, so that the numbers here stay those of the code that produced them.
-4. **J.** Target: G3 evaluates C1 ∪ {f} on J's stage pools. Criterion: J accepts a program
+3. **Engine semantics against the reference interpreter.** Target: the engine enumerates
+   every normal-form program of the language up to the completed size, keyed by the
+   interpreter's behaviour. Criterion: the fast paths agree with the interpreter on every
+   enumerated term and input, failures and budget included, and every pinned test in
+   `tests/test_review_findings.py` is deleted because its finding is repaired. Measured:
+   fourteen findings open ("Adversarial review"); zero rejected re-checks in 676 records;
+   the completeness loss is not measured.
+4. **Sealing.** Target: no code running in a solver process can read J's files, TEST's
+   file or a hidden example. Criterion: a solver given arbitrary Python fails to read a
+   secret planted in J's directory, because J and the verifier run in another process
+   under an identity whose files the solver's identity cannot read. Measured: an audit
+   hook in the same process, a tripwire. It refuses the 81 routes constructed in
+   `tests/test_guard.py`, and the import list keeps the unaudited routes out of the
+   solver's source. Arbitrary Python still gets through: `ctypes` or a native module,
+   `_posixsubprocess.fork_exec`, a descriptor, hard link or bind mount that predates the
+   hook, a thread that changes what a name refers to between the hook's check and the
+   system call, code that rebinds the guard's names, and what root can do. The driver
+   process holds the hidden examples by design; a search worker holds none.
+5. **J.** Target: G3 evaluates C1 ∪ {f} on J's stage pools. Criterion: J accepts a program
    that uses a restored primitive. Measured: J as copied verifies with `rsi2.search.verify`
    and runs rsi3 runtimes; it cannot ([ARCHITECTURE.md](ARCHITECTURE.md) §J). Owner decision
    needed before Phase 2.
-5. **Actions.** Target: the registered run executes on GitHub Actions. Criterion: a
+6. **Actions.** Target: the registered run executes on GitHub Actions. Criterion: a
    `rsi5/run-*` branch run with byte-identical digests. Not done from this session; the
    workflow is committed and the local digests are the reference.
-6. **Scale.** 338 tasks, 10⁶ candidates per task, one vocabulary pair, one machine. No
+7. **Scale.** 338 tasks, 10⁶ candidates per task, one vocabulary pair, one machine. No
    claim about superintelligence, the singularity or consciousness.

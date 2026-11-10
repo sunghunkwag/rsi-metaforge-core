@@ -114,13 +114,19 @@ def score_predictions(found: dict, throughput: dict | None) -> list:
                  None if o1 is None else ("hit" if o1 <= 10 else "**miss**")))
     lacking = corpus_lacking(found, b5)
     solved_routines = sum(1 for routine in CORPUS_LACKING if lacking.get((routine, "restored"), 0) > 0)
+    ran = ("restored", "fresh1") in found            # an absent result file is "(not run)", not a miss
     rows.append(("P1-3", ">= 2 of the 5 corpus-lacking FRESH-1 routines solved (restored, 10^5)", "PASS (low)",
                  f"{solved_routines} routine(s): " + ", ".join(
-                     f"{r} {lacking.get((r, 'restored'), 0)}" for r in CORPUS_LACKING),
-                 "hit" if solved_routines >= 2 else "**miss**"))
-    f2 = n("restored", "far2", b5)
-    rows.append(("P1-4", "RESERVE-FAR2 >= 10 of 21 (restored, 10^5)", "PASS (moderate)", f"{f2} of 21",
-                 None if f2 is None else ("hit" if f2 >= 10 else "**miss**")))
+                     f"{r} {lacking.get((r, 'restored'), 0)}" for r in CORPUS_LACKING) if ran else None,
+                 ("hit" if solved_routines >= 2 else "**miss**") if ran else None))
+    # The registered wording of P1-4 names no vocabulary, so both are scored.
+    far2 = {v: n(v, "far2", b5) for v in ("original", "restored")}
+    far2 = {v: count for v, count in far2.items() if count is not None}
+    verdicts = {count >= 10 for count in far2.values()}
+    rows.append(("P1-4", "RESERVE-FAR2 >= 10 of 21 at 10^5 (no vocabulary named: both scored)", "PASS (moderate)",
+                 "; ".join(f"{v} {count} of 21" for v, count in far2.items()) or None,
+                 None if not far2 else ("hit" if verdicts == {True} else "**miss**" if verdicts == {False}
+                                        else "hit with one vocabulary, **miss** with the other")))
     if throughput:
         rate = throughput["candidates_per_second"]
         rows.append(("P1-5", "throughput >= 10^4 candidates/s/core", "PASS (low)", f"{rate:,.0f}/s",
@@ -180,11 +186,14 @@ def compute_table(found: dict) -> str:
     return "\n".join(lines)
 
 
-def replay_table(results: Path) -> str:
-    """Digest identity between the run and its replay (plan field ``replay``)."""
-    replay = Path(results) / "replay"
+def replay_table(results: Path, directory: str = "replay") -> str:
+    """Digest identity between the run and a replay of it. ``replay`` holds the second run of
+    the plan's ``replay`` partitions; ``replay_python311`` a run on Python 3.11 (the registered
+    run used 3.13); ``replay_sealed`` runs by the driver as it stands after the review
+    (workers forked before any task is loaded)."""
+    replay = Path(results) / directory
     if not replay.exists():
-        return "(no replay directory)"
+        return f"(no {directory} directory)"
     lines = ["| Partition | Vocabulary | Run digest | Replay digest | Identical |",
              "| --- | --- | --- | --- | --- |"]
     for path in sorted(replay.glob("*_*.json")):
@@ -225,6 +234,10 @@ def main(argv=None):
     print(compute_table(found))
     print("\n## Replay\n")
     print(replay_table(args.results))
+    print("\n## Replay on Python 3.11\n")
+    print(replay_table(args.results, "replay_python311"))
+    print("\n## Replay through the driver as it stands after the review\n")
+    print(replay_table(args.results, "replay_sealed"))
 
 
 if __name__ == "__main__":
