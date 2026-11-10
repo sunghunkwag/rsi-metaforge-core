@@ -17,7 +17,9 @@ the generalisation audit is `python -m rsi5.audit_p1`.
 
 **After the run** the pull request was reviewed adversarially: 35 findings, every one
 reproduced. No registered number changes. The sealing, the run driver, the report tool,
-two tests and the documents were corrected. The engine was left as it ran: its defects
+two tests and the documents were corrected. A second review, of those corrections, found
+fourteen more defects in them, two of them ways through the rewritten guard; these were
+corrected as well. The engine was left as it ran: its defects
 lose programs the language has, they cannot turn a wrong program into a solve, and
 repairing them changes the enumeration, so they are pinned by tests and wait for a new
 registration. The list is in "Adversarial review" below.
@@ -101,9 +103,12 @@ over every record field except wall-clock) are identical to the main run's:
 `bdd3737767cb1a38` (FAR2 original), `d5ee7213169b6a6a` (FAR2 restored). The same two
 RESERVE-FAR2 digests come out of Python 3.11
 ([`results_p1/replay_python311/`](results_p1/replay_python311/); the main run used 3.13,
-Actions uses 3.11) and out of the driver as corrected after the review
-([`results_p1/replay_sealed/`](results_p1/replay_sealed/)), so on this partition the
-digest does not depend on the interpreter version or on which process holds the tasks.
+Actions uses 3.11). They also come out of the driver as corrected after the two reviews,
+together with the two VALIDATION digests, `319f7917b847c6a4` (original) and
+`e30149429096b49b` (restored) ([`results_p1/replay_sealed/`](results_p1/replay_sealed/)).
+So the digest does not depend on the interpreter version on RESERVE-FAR2, or on which
+process holds the tasks on RESERVE-FAR2 and VALIDATION. The other partitions were not
+replayed by the final driver.
 
 **Throughput.** 32,439 candidates/s on one core (40,000 candidates of the restored
 vocabulary on `rsi2/benchmark.py`'s example set, `list(range(n))` for n < 12, in 1.23 s;
@@ -327,7 +332,7 @@ the fact. `PREDICTIONS_P1.md` and the result files are untouched.
 
 | Finding | Correction | Shown by |
 | --- | --- | --- |
-| The guard let a sealed file be reached through a directory descriptor (`dir_fd`), an inherited descriptor, a hard link, a rename, the working directory or a child program. | [`guard.py`](guard.py) rewritten: every such route is refused, as are the start methods that launch a fresh interpreter and an unaudited file reader. | [`tests/test_guard.py`](tests/test_guard.py): 81 constructed attacks on a decoy tree are refused; one residual is pinned |
+| The guard let a sealed file be reached through a directory descriptor (`dir_fd`), an inherited descriptor, a hard link, a rename, the working directory or a child program. | [`guard.py`](guard.py) rewritten: every such route is refused, as are the start methods that launch a fresh interpreter and an unaudited file reader. | [`tests/test_guard.py`](tests/test_guard.py): 105 constructed attacks on a decoy tree are refused; one residual is pinned |
 | The run driver built the tasks and the verifier before it forked its workers, so every worker held every hidden example in memory. | The workers are forked first, hold no task and no loader, seal the loader packages for themselves and receive public examples only. A worker forked late refuses to search. | `test_workers_are_forked_before_any_task_is_loaded`, `test_worker_forked_after_the_tasks_refuses_to_search` |
 | The check that no solver module imports J missed `from . import judge` and `from .. import judge`; J's copied audit flags no rsi5 import. | Relative imports are resolved before the check. A solver module may import only a short list of modules. | `test_judge_import_check_catches_every_form`, `test_import_list_refuses_the_unaudited_routes` |
 | The admitted-primitive loader used a dynamic importer, which J's audit refuses. | Static imports (fixed before this section was written). | `test_judge_audit_findings_are_the_declared_ones` |
@@ -338,13 +343,38 @@ the fact. `PREDICTIONS_P1.md` and the result files are untouched.
 | `NORMAL_FORMS.md` called every rule an equivalence; `ARCHITECTURE.md` said lambda depth 2 and contexts created on demand; the README said every primitive terminates under the step budget. | Each document now states what the code does. | the documents |
 | The package layout differs from the directive's §11 sketch. | `ARCHITECTURE.md` lists the differences; `test_vocabulary_matches_VOCABULARY_md` exists under that name. | [ARCHITECTURE.md](ARCHITECTURE.md) |
 
-The corrected driver was then run on RESERVE-FAR2 with both vocabularies. Both digests
-equal the registered ones, `bdd3737767cb1a38` and `d5ee7213169b6a6a`, and every record
-field outside wall-clock is equal
-([`results_p1/replay_sealed/`](results_p1/replay_sealed/); the identity table is in
-`python -m rsi5.report_p1`). A replay of the whole plan by the corrected driver had not
-finished when this was written; until its sixteen digests are recorded here, the claim
-is the two above.
+The corrected driver was then run on RESERVE-FAR2 and VALIDATION with both vocabularies.
+All four digests equal the registered ones and every record field outside wall-clock is
+equal ([`results_p1/replay_sealed/`](results_p1/replay_sealed/); the identity table is in
+`python -m rsi5.report_p1`). These files were produced by the driver as it stands after the
+second review below. A replay of the whole plan had not finished when this was written;
+until its sixteen digests are recorded here, the claim is these four.
+
+### Second review, of the corrections themselves
+
+The corrections were then attacked in turn, on a copy of the tree that holds neither J's
+directory nor an unexposed task file. Four reviewers finished (guard, driver, tests,
+documents); the reviewer of the normal-forms argument and all four skeptics who were to
+re-test the findings were cut off by a usage limit, so the fourteen findings were re-tested
+by the author instead. Every one reproduced. The reviewer of the guard built no undeclared
+route through it; the reviewer of the driver found three by other means.
+
+| Finding | Correction | Shown by |
+| --- | --- | --- |
+| The guard failed open on a name it could not read: a `bytearray` or `memoryview` path (accepted by Python 3.11, the Actions version) and an `__index__` object standing for a descriptor were not resolved, so a sealed file was opened and a sealed directory listed. | The hook reads the characters the system call will see from any bytes-like, path-like or `str`-subclass object, resolves `__index__` descriptors, and refuses a name it cannot read. | `test_every_path_into_a_sealed_directory_is_refused` (49 attacks) |
+| From a working directory removed after the hook was installed, `os.getcwd()` fails while the kernel still follows `..`; a relative path into a sealed directory was allowed. | The directory is read from `/proc/self/cwd`; with no working directory known, a relative name is refused. | `test_deleted_working_directory_still_resolves` |
+| "A worker forked late fails the run" was false for the case that produces one: a worker that dies leaves `multiprocessing.Pool` waiting for ever. | The pool is a `concurrent.futures` executor, which never replaces a worker and raises when one dies. | `test_dead_worker_fails_the_run` |
+| The test that no hidden example travels to a worker could not fail: its byte pattern never occurs inside another pickle. | It compares values, for every task of every partition, and a second test feeds it views that do leak. | `test_public_view_is_plain_data_without_hidden_examples`, `test_hidden_example_check_catches_a_leaking_view` |
+| No test ran the driver: with both `guard.install()` calls removed from `phase1.py` the suite stayed green. | One test runs `phase1.main` with a probe around the worker's function and checks the hook in the driver and in every worker, the content of each job, and the written verdicts against an independent verifier and the registered file. `load_plan`'s refusals have their own tests. | `test_run_driver_itself`, [`tests/test_plan.py`](tests/test_plan.py) |
+| The import list tested the first component of a name, so `from multiprocessing import util, sharedctypes` passed, and the documents said the list closed the unaudited process starts. | `multiprocessing` and `concurrent` are held to exact names; no solver module spells the identifiers of the unaudited routes. The documents now say what this cannot close. | `test_import_list_refuses_the_unaudited_routes`, `test_no_solver_module_spells_an_unaudited_route` |
+| The closure agreement test excused any failure in a term with a partial application anywhere, and did not assert its pinned count. | The count is asserted (191), and a second test admits no excuse on the corpus that matters: 2,386 programs from the engine's own pools, both vocabularies. | `test_closures_agree_on_the_programs_the_engine_builds` |
+| The static scans passed on an empty file list; several spellings of the sealed names were not seen. | A test names the modules the scans must cover; constants built with `%`, `join`, `format` and bytes are folded. | `test_static_scans_cover_the_solver_modules` |
+| Renames and links relative to a directory descriptor, a link into a sealed directory, bytes paths, a seal given through a symbolic link and `pty.spawn` were claimed and held by no attack. | Attacks added for each. | `tests/guard_attacks.py` |
+| The guard test opened the package's own `list_tasks2.json` for writing: had the guard regressed, the test would have truncated it. | The write is aimed at a decoy of that name; the real file is decided from its name alone. | `test_guard_blocks_pool_access` |
+| The documents said an `and`/`or` guard is always lost. Only the vectorised path is strict; the closures skip the right side, so a guard inside a lambda body works when the canonical order puts it first. | `NORMAL_FORMS.md`, `ARCHITECTURE.md` and the table below say so. | `test_vectorised_and_or_are_strict` |
+
+Not re-reviewed: the normal-forms argument ("a replacement is defined at least as often")
+had no reviewer; these corrections of the corrections have had none either.
 
 ### Deferred to a new registration (engine findings)
 
@@ -355,7 +385,7 @@ misdescribes the search. Each is pinned in
 
 | Finding | What the engine does | Effect on the registered run |
 | --- | --- | --- |
-| `and`, `or` | Strict and reordered as commutative; the interpreter evaluates left to right and skips the right side. `and (not (is_empty xs)) (eq (head xs) 1)` is `false` on `[]` in the interpreter and a failure in the engine. | A guard written with `and` or `or` is lost; the same behaviour through `if` is one symbol longer. Size of the loss not measured. |
+| `and`, `or` | Strict in the vectorised path and reordered as commutative; the interpreter and the closures evaluate left to right and skip the right side. `and (not (is_empty xs)) (eq (head xs) 1)` is `false` on `[]` in the interpreter and a failure in the vectorised path. | A guard at the top of a program is lost; the same behaviour through `if` is one symbol longer. A guard inside a lambda body works when the canonical order puts it first. Size of the loss not measured. |
 | `add`, `sub` | No 4096-bit limit in the fast paths. | A match of that kind would be a rejected re-check: none in 676 records. |
 | Step charge | The closures charge per element and per recursive call; the interpreter charges per node. A closure can finish where the interpreter runs out of steps. | Same: no rejected re-check. |
 | List cap | 1024 in the closures (registered), 4096 in the interpreter. | Programs with a longer intermediate list are lost. Not measured. |
@@ -395,10 +425,12 @@ registration, which is the Owner's call together with the §3.3 gate.
    file or a hidden example. Criterion: a solver given arbitrary Python fails to read a
    secret planted in J's directory, because J and the verifier run in another process
    under an identity whose files the solver's identity cannot read. Measured: an audit
-   hook in the same process, a tripwire. It refuses the 81 routes constructed in
-   `tests/test_guard.py`, and the import list keeps the unaudited routes out of the
-   solver's source. Arbitrary Python still gets through: `ctypes` or a native module,
-   `_posixsubprocess.fork_exec`, a descriptor, hard link or bind mount that predates the
+   hook in the same process, a tripwire. It refuses the 105 routes constructed in
+   `tests/test_guard.py`, and static checks keep `ctypes`, native modules and
+   `_posixsubprocess` out of the solver's source. Two reviews each found routes through
+   the hook that the one before had missed; a third would likely find more. Arbitrary
+   Python still gets through: `ctypes` or a native module, `_posixsubprocess.fork_exec`,
+   `multiprocessing.util.spawnv_passfds`, a descriptor, hard link or bind mount that predates the
    hook, a thread that changes what a name refers to between the hook's check and the
    system call, code that rebinds the guard's names, and what root can do. The driver
    process holds the hidden examples by design; a search worker holds none.

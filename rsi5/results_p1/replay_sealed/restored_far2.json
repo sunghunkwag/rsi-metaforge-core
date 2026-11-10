@@ -60,7 +60,7 @@
    "request_type": "list[int] -> int",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 4.334
+   "wall_seconds": 2.908
   },
   {
    "candidates": 35590,
@@ -79,7 +79,7 @@
    "request_type": "list[int] -> int",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 1.577
+   "wall_seconds": 3.419
   },
   {
    "candidates": 37120,
@@ -98,7 +98,7 @@
    "request_type": "list[int] -> int",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 1.687
+   "wall_seconds": 3.323
   },
   {
    "candidates": 37475,
@@ -117,7 +117,7 @@
    "request_type": "list[int] -> int",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 1.659
+   "wall_seconds": 9.388
   },
   {
    "candidates": 37886,
@@ -136,7 +136,7 @@
    "request_type": "list[int] -> int",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 1.426
+   "wall_seconds": 3.303
   },
   {
    "candidates": 1,
@@ -155,7 +155,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 0.01
+   "wall_seconds": 0.015
   },
   {
    "candidates": 15,
@@ -174,7 +174,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 0.016
+   "wall_seconds": 0.024
   },
   {
    "candidates": 519,
@@ -193,7 +193,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 0.019
+   "wall_seconds": 0.033
   },
   {
    "candidates": 1159,
@@ -212,7 +212,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 0.062
+   "wall_seconds": 0.099
   },
   {
    "candidates": 7565,
@@ -231,7 +231,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 0.373
+   "wall_seconds": 0.817
   },
   {
    "candidates": 7384,
@@ -250,7 +250,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 0.232
+   "wall_seconds": 0.525
   },
   {
    "candidates": 1000000,
@@ -269,7 +269,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": false,
    "spurious": 0,
-   "wall_seconds": 37.626
+   "wall_seconds": 80.471
   },
   {
    "candidates": 1000000,
@@ -288,7 +288,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": false,
    "spurious": 0,
-   "wall_seconds": 37.313
+   "wall_seconds": 82.079
   },
   {
    "candidates": 1000000,
@@ -307,7 +307,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": false,
    "spurious": 0,
-   "wall_seconds": 37.031
+   "wall_seconds": 87.472
   },
   {
    "candidates": 196822,
@@ -326,7 +326,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 14.942
+   "wall_seconds": 30.679
   },
   {
    "candidates": 197721,
@@ -345,7 +345,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 13.424
+   "wall_seconds": 36.607
   },
   {
    "candidates": 199593,
@@ -364,7 +364,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 14.203
+   "wall_seconds": 24.222
   },
   {
    "candidates": 516,
@@ -383,7 +383,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 0.016
+   "wall_seconds": 0.055
   },
   {
    "candidates": 32768,
@@ -402,7 +402,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 1.791
+   "wall_seconds": 11.46
   },
   {
    "candidates": 32784,
@@ -421,7 +421,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 2.165
+   "wall_seconds": 4.01
   },
   {
    "candidates": 32813,
@@ -440,7 +440,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 1.913
+   "wall_seconds": 3.817
   }
  ],
  "schema": 1,
@@ -454,6 +454,6 @@
  "tasks": 21,
  "verifier_queries": 21,
  "vocabulary": "restored",
- "wall_seconds": 46.9,
+ "wall_seconds": 101.0,
  "workers": 4
 }

@@ -189,8 +189,8 @@ def compute_table(found: dict) -> str:
 def replay_table(results: Path, directory: str = "replay") -> str:
     """Digest identity between the run and a replay of it. ``replay`` holds the second run of
     the plan's ``replay`` partitions; ``replay_python311`` a run on Python 3.11 (the registered
-    run used 3.13); ``replay_sealed`` runs by the driver as it stands after the review
-    (workers forked before any task is loaded)."""
+    run used 3.13); ``replay_sealed`` runs by the driver as it stands after the two reviews
+    (workers forked before any task is loaded, executor pool, fail-closed guard)."""
     replay = Path(results) / directory
     if not replay.exists():
         return f"(no {directory} directory)"
@@ -236,7 +236,7 @@ def main(argv=None):
     print(replay_table(args.results))
     print("\n## Replay on Python 3.11\n")
     print(replay_table(args.results, "replay_python311"))
-    print("\n## Replay through the driver as it stands after the review\n")
+    print("\n## Replay through the driver as it stands after the two reviews\n")
     print(replay_table(args.results, "replay_sealed"))
 
 

@@ -60,7 +60,7 @@
    "request_type": "list[int] -> int",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 0.155
+   "wall_seconds": 0.412
   },
   {
    "candidates": 7731,
@@ -79,7 +79,7 @@
    "request_type": "list[int] -> int",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 0.233
+   "wall_seconds": 0.353
   },
   {
    "candidates": 137637,
@@ -98,7 +98,7 @@
    "request_type": "list[int] -> int",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 3.035
+   "wall_seconds": 7.374
   },
   {
    "candidates": 135507,
@@ -117,7 +117,7 @@
    "request_type": "list[int] -> int",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 2.979
+   "wall_seconds": 6.727
   },
   {
    "candidates": 1000000,
@@ -136,7 +136,7 @@
    "request_type": "list[int] -> int",
    "solved": false,
    "spurious": 0,
-   "wall_seconds": 22.707
+   "wall_seconds": 51.087
   },
   {
    "candidates": 1,
@@ -174,7 +174,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 0.006
+   "wall_seconds": 0.015
   },
   {
    "candidates": 160,
@@ -193,7 +193,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 0.011
+   "wall_seconds": 0.021
   },
   {
    "candidates": 384,
@@ -212,7 +212,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 0.026
+   "wall_seconds": 0.056
   },
   {
    "candidates": 1747,
@@ -231,7 +231,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 0.058
+   "wall_seconds": 0.149
   },
   {
    "candidates": 1642,
@@ -250,7 +250,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 0.055
+   "wall_seconds": 0.122
   },
   {
    "candidates": 1000000,
@@ -269,7 +269,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": false,
    "spurious": 0,
-   "wall_seconds": 33.68
+   "wall_seconds": 73.187
   },
   {
    "candidates": 1000000,
@@ -288,7 +288,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": false,
    "spurious": 0,
-   "wall_seconds": 34.166
+   "wall_seconds": 77.778
   },
   {
    "candidates": 1000000,
@@ -307,7 +307,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": false,
    "spurious": 0,
-   "wall_seconds": 34.877
+   "wall_seconds": 78.478
   },
   {
    "candidates": 28837,
@@ -326,7 +326,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 0.577
+   "wall_seconds": 7.692
   },
   {
    "candidates": 531338,
@@ -345,7 +345,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 17.817
+   "wall_seconds": 36.36
   },
   {
    "candidates": 1000000,
@@ -364,7 +364,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": false,
    "spurious": 0,
-   "wall_seconds": 38.141
+   "wall_seconds": 69.461
   },
   {
    "candidates": 157,
@@ -383,7 +383,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 0.006
+   "wall_seconds": 0.01
   },
   {
    "candidates": 27346,
@@ -402,7 +402,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 0.513
+   "wall_seconds": 1.091
   },
   {
    "candidates": 1000000,
@@ -421,7 +421,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": false,
    "spurious": 0,
-   "wall_seconds": 37.574
+   "wall_seconds": 64.424
   },
   {
    "candidates": 1000000,
@@ -440,7 +440,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": false,
    "spurious": 0,
-   "wall_seconds": 35.892
+   "wall_seconds": 60.038
   }
  ],
  "schema": 1,
@@ -454,6 +454,6 @@
  "tasks": 21,
  "verifier_queries": 21,
  "vocabulary": "original",
- "wall_seconds": 75.3,
+ "wall_seconds": 150.1,
  "workers": 4
 }

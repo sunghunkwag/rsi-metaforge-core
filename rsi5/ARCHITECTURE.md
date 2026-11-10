@@ -75,10 +75,11 @@ task (public examples)        frozen probe set (data/probe_set.json)
   before it is returned, so the closures can never produce a false positive.
 - **The fast paths are not the reference semantics.** Observational equivalence keys
   programs by what the vectorised operations and the closures compute, and these differ
-  from the interpreter: `and` and `or` are strict where the interpreter skips the right
-  side; `add` and `sub` have no 4096-bit limit; the closures charge fewer steps, cap lists
-  at 1024 elements against 4096, and evaluate `fix1`'s seed before it is needed; the
-  vectorised `is_prime` charges no step and refuses integers above 64 bits. A program
+  from the interpreter: the vectorised `and` and `or` are strict where the interpreter
+  and the closures skip the right side; `add` and `sub` have no 4096-bit limit in either
+  fast path; the closures charge fewer steps, cap lists at 1024 elements against 4096, and
+  evaluate `fix1`'s seed before it is needed; the vectorised `is_prime` charges no step
+  and refuses integers above 64 bits. A program
   that the interpreter accepts can therefore carry a failure in its key and miss its
   match, or be pruned as a duplicate of a program the re-check rejects. The loss is in
   completeness only. No record of the registered run has a rejected re-check.
@@ -111,11 +112,14 @@ task (public examples)        frozen probe set (data/probe_set.json)
   does not stop. [`tests/test_guard.py`](tests/test_guard.py) constructs each route on a
   decoy tree.
 - **The static half** ([`tests/test_sealing.py`](tests/test_sealing.py)). A solver module
-  imports only this package's solver modules, eighteen standard-library modules, and in
-  `partitions.py` and `audit_p1.py` the read-only loaders. That closes, in the source,
-  the routes no audit event covers: `ctypes`, native modules, unaudited process starts.
-  No solver module imports J in any form, relative forms included, and none names
-  RSI-2's sealed loader or its file.
+  imports only this package's solver modules, twenty standard-library modules, and in
+  `partitions.py` and `audit_p1.py` the read-only loaders. That keeps `ctypes`, native
+  modules and `_posixsubprocess` out of the solver's source. It cannot close the unaudited
+  process start `multiprocessing.util.spawnv_passfds`: the worker pool needs
+  `multiprocessing`, so that package is held to one imported name and one attribute, and
+  no solver module spells the identifiers of the unaudited routes; an alias or `getattr`
+  gets around both. No solver module imports J in any form, relative forms included, and
+  none names RSI-2's sealed loader or its file.
 - [`partitions.py`](partitions.py): the exposed partitions through `rsi2`/`rsi3` loaders,
   imported inside `load()` so that a process which loads nothing holds no loader.
   Everything it loads is exposed and report-only; nothing gates or selects on it. The
@@ -127,7 +131,9 @@ task (public examples)        frozen probe set (data/probe_set.json)
   loader module, seals the `rsi2` and `rsi3` packages for itself (one of their modules
   generates a partition's hidden examples in code) and receives `PublicTask` values: a
   name, a request type and the public examples. The driver holds the tasks and the
-  verifier and never searches. A worker forked after a task was loaded refuses to search.
+  verifier and never searches. The pool never replaces a worker: one that dies breaks the
+  pool and the run fails at once. A worker forked after a task was loaded refuses to
+  search.
   The driver that produced the registered files built the tasks and the verifier before
   it forked, so its workers held every hidden example in memory; the engine was passed
   the public examples only, and the layout now keeps the rest out of the worker. The

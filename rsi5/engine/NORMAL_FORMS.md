@@ -83,10 +83,13 @@ to a new registration ([`RESULTS_P1.md`](../RESULTS_P1.md), "Adversarial review"
 - **`and`, `or` are not commutative in the reference interpreter.** With
   `p = eq (head xs) 0` and `q = eq (length xs) 1`, `and p q` fails on `[]` and `and q p`
   is `false`. The canonical order can keep the failing one. The vectorised `and` and `or`
-  are also strict (a failure on either side fails the result), so in the engine a guard
-  written with `and` or `or` never protects its right side: a guarded conjunction is
-  reachable only as `if g e false`, one symbol longer. Both registered vocabularies have
-  `if`.
+  are also strict (a failure on either side fails the result), and the vectorised path
+  decides every observational-equivalence key and every top-level match. So a guard at the
+  top of a program never protects its right side, and the guarded conjunction is reachable
+  there only as `if g e false`, one symbol longer (both registered vocabularies have `if`).
+  Inside the body of a lambda the value finally used comes from the compiled closure,
+  which skips the right side as the interpreter does: a guard written there with `and` or
+  `or` does work, provided the canonical order puts the guard first.
 - **`neg k` has no literal replacement for `k` = 2 (both vocabularies) or 3, 4, 5
   (restored).** The values −2 to −5 are built from three symbols (`add -1 -1`, `mul -1 2`,
   `sub 0 2`) where `neg k` would be two, so every program that needs one is one symbol
