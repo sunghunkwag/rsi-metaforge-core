@@ -243,6 +243,33 @@ are not all re-implemented). The FRESH partitions have eight public and one or t
 examples; the corpus partitions ten public and more hidden, and show no coincidence in
 the audited one.
 
+**Extended audit, added after the reviews (report-only, outside the registered audit).**
+A review of the exploratory study on this branch showed that verified FRESH-2 solves of
+scalar-output tasks are often wrong programs. The audit was therefore extended to every
+exposed partition
+([`exploratory/shift_loop_20261110/oracles.py`](../exploratory/shift_loop_20261110/oracles.py),
+`audit_all.py`): a reference function is written from each task's name and used only if it
+reproduces every example of the task, public and hidden (338 of 338 tasks have one); a
+program is then run on 200 fresh inputs inside the task's own input range, spread over the
+reference's outputs so that a boolean task gets both answers. On the 60 programs both
+audits cover the verdicts are identical. Sound of verified, registered run:
+
+| Vocabulary | Budget | TRAIN | NEAR | VALIDATION | FAR | FAR2 | FRESH-1 | FRESH-2 | COMPOSE-24 | All |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| original | 10⁵ | 18/18 | 49/49 | 4/4 | 7/7 | 11/11 | 5/6 | 15/21 | 2/2 | 111/118 |
+| original | 10⁶ | 20/21 | 62/63 | 7/7 | 8/8 | 14/14 | 7/10 | 18/28 | 6/6 | 142/157 |
+| restored | 10⁵ | 19/19 | 51/51 | 3/3 | 4/4 | 15/15 | 5/5 | 14/21 | 1/1 | 112/119 |
+| restored | 10⁶ | 23/23 | 70/72 | 8/8 | 8/8 | 18/18 | 9/10 | 18/28 | 2/2 | 156/169 |
+
+So ten of the 28 verified FRESH-2 solves at 10⁶ are coincidental with either vocabulary
+(all ten with the original vocabulary and nine with the restored have a boolean or integer
+output; every FRESH-2 task has one or two hidden examples), and the corpus partitions are not free
+of coincidence: `has-k (k=5)` in RESERVE-NEAR is verified as a fold that looks at the last
+element only, `is-mod-k (k=2)` as a prime test. No registered verdict, prediction or gate
+changes: P1-1 to P1-4 are scored on verified counts as registered, and the five restored
+FRESH-1 solves at 10⁵ are all sound. The FRESH-2 column of the headline table should be
+read as 18, not 28.
+
 ### Compute
 
 | Partition | Vocabulary | Candidates evaluated | Wall s (4 workers) | Mean completed size (top) | Mean pool size | Digest |
@@ -413,7 +440,9 @@ registration, which is the Owner's call together with the §3.3 gate.
    context's int- and pair-typed programs dominate its pools.
 2. **Verifier discrimination.** Target: a verified program generalises to the family's
    semantics. Criterion: 0 coincidental acceptances in the audit. Measured: 4 of 60
-   audited solves (all FRESH-1; 0 of 40 on FAR2 and COMPOSE-24).
+   audited solves (all FRESH-1; 0 of 40 on FAR2 and COMPOSE-24). The extended audit over
+   every partition finds 15 of 157 (original) and 13 of 169 (restored) at 10⁶, ten of them
+   on FRESH-2 with either vocabulary.
 3. **Engine semantics against the reference interpreter.** Target: the engine enumerates
    every normal-form program of the language up to the completed size, keyed by the
    interpreter's behaviour. Criterion: the fast paths agree with the interpreter on every
