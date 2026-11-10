@@ -195,3 +195,7 @@ The Phases 0–I record — frozen instruments, registered predictions, per-phas
 ---
 
 <sub>Maintained as a research artifact. Results, terminology, and implementation are experimental, bounded, and subject to revision.</sub>
+
+## Research note: domain-policy development preflight (2026-11-10)
+
+Synthetic TRAIN-only engineering study, NOT independent RSI evidence. 40 paired seed trajectories, three checkpoints, 32 synthetic shifted inputs; final persistent 43/240, frozen 43/240; preregistered_success=false. [report](research/RESULTS_DOMAIN_POLICY_DEV_20261110.md), [complete raw JSON](research/results/domain_policy_dev_raw_20261110.json), [preregistration](research/PREREG_DOMAIN_POLICY_DEV_20261110.md). Tested source SHA `a328ce8303058ae781779b4862ac407dec5d3231`; [one-shot CI](https://github.com/sunghunkwag/rsi-metaforge-core/actions/runs/42745552138); [Draft PR #60](https://github.com/sunghunkwag/rsi-metaforge-core/pull/60). No independent multi-generation learning-to-learn claim.
