@@ -612,7 +612,18 @@ class Harness:
         self.tasks = {name: partitions.load(name) for name in partition_names}
         self.verifiers = {name: FrozenVerifier(tasks, step_budget=STEPS) for name, tasks in self.tasks.items()}
         self.public = {name: [partitions.public_view(t) for t in tasks] for name, tasks in self.tasks.items()}
+        self.default = tuple(self.tasks)                 # a partition added later runs only when named
         self.runs = 0
+
+    def add_partition(self, name: str, tasks, public) -> None:
+        """Tasks made by the driver after the workers were forked (they need ``name``, ``examples``
+        and ``hidden``) with their public views. They are run only when ``run`` names the partition."""
+        from rsi5.verifier import FrozenVerifier
+        if name in self.tasks:
+            raise ValueError(f"partition {name!r} exists")
+        self.tasks[name] = list(tasks)
+        self.verifiers[name] = FrozenVerifier(self.tasks[name], step_budget=STEPS)
+        self.public[name] = list(public)
 
     def close(self):
         self.pool.shutdown(wait=False, cancel_futures=True)
@@ -624,7 +635,7 @@ class Harness:
         the key 'dream'."""
         self.runs += 1
         spec = dict(spec, id=f"{spec.get('label', 'run')}#{self.runs}")
-        names = list(partition_names if partition_names is not None else self.tasks)
+        names = list(partition_names if partition_names is not None else self.default)
         jobs = [(task, spec) for name in names for task in self.public[name]]
         jobs += [(task, spec) for task, _ in dreams]
         records = list(self.pool.map(solve, jobs, chunksize=1))

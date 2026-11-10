@@ -17,7 +17,7 @@ partitions rises. Held-out partitions are recorded and never consulted.
 
 Compounding would show as the harvest itself growing from cycle to cycle.
 
-    python expert.py <config A|B> <out.json> [workers] [--max-cycles N] [--no-screen]
+    python expert.py <config A|B> <out.json> [workers] [--max-cycles N] [--no-screen] [--components SCfR]
 """
 from __future__ import annotations
 
@@ -42,7 +42,7 @@ def family_score(solved, family_of, sizes) -> float:
     return sum(hits[family] / size for family, size in sizes.items())
 
 
-def run(harness, learn, max_cycles=MAX_CYCLES, screen=True, log=print):
+def run(harness, learn, max_cycles=MAX_CYCLES, screen=True, log=print, components=COMPONENTS):
     held = tuple(p for p in ALL if p not in learn)
     family_of = {f"{p}/{task.name}": partitions.family(task.name) for p in learn for task in harness.public[p]}
     sizes = collections.Counter(family_of.values())
@@ -52,7 +52,7 @@ def run(harness, learn, max_cycles=MAX_CYCLES, screen=True, log=print):
     def measure(lib, label, budget, names):
         abstractions, constants = serialise(lib)
         started = time.perf_counter()
-        result = harness.run(spec_of(label, budget, COMPONENTS, abstractions, constants), partition_names=list(names))
+        result = harness.run(spec_of(label, budget, components, abstractions, constants), partition_names=list(names))
         programs = {f"{p}/{row['name']}": term_from_dict(row["term"])
                     for p in learn if p in result for row in result[p] if row["solved"]}
         counts = summary(result)
@@ -136,7 +136,8 @@ def run(harness, learn, max_cycles=MAX_CYCLES, screen=True, log=print):
     harvests.append(final)
     learn_tasks = sum(len(harness.public[p]) for p in learn)
     cumulative = (executions["student"] * 338 * STUDENT + executions["teacher"] * learn_tasks * TEACHER) / 338
-    return {"learn": list(learn), "held_out": list(held), "screen": screen, "timeline": timeline,
+    return {"learn": list(learn), "held_out": list(held), "screen": screen, "components": components,
+            "timeline": timeline,
             "student_first": timeline[0]["run"], "student_last": current["run"],
             "harvest_learn": [h["learn"] for h in harvests],
             "harvest_families": [h["families_with_a_solve"] for h in harvests],
@@ -155,7 +156,8 @@ if __name__ == "__main__":
     if "--tiny" in sys.argv:                      # smoke test only
         STUDENT, TEACHER = 300, 1500
     harness = Harness(workers, ALL)
-    report = run(harness, learn, max_cycles=max_cycles, screen="--no-screen" not in sys.argv)
+    components = sys.argv[sys.argv.index("--components") + 1] if "--components" in sys.argv else COMPONENTS
+    report = run(harness, learn, max_cycles=max_cycles, screen="--no-screen" not in sys.argv, components=components)
     json.dump(report, open(out_path, "w"), indent=1)
     by_run = {t["run"]: t for t in report["timeline"]}
     first, last = by_run[report["student_first"]], by_run[report["student_last"]]
