@@ -227,3 +227,18 @@ held-out) against all: a later gain then rests on symbols built on earlier symbo
 | G1 | no-depth-2 loses at most 3 verified solves in total: the depth-2 symbols are shorthand, not new reach | PASS (moderate) |
 | G2 | no-cycle-1 loses at least 10 learning solves: the first cycle carries most of the gain | PASS (moderate) |
 | G3 | at 10^5 the 15 symbols solve at least 3 more held-out tasks than generation 0 at 10^5 (28) | PASS (low) |
+
+## Addendum 5b: the expert vocabulary with representation search (one more run)
+
+Added after the first ablation run of Addendum 5 had returned (all: 147 and 26, as recorded)
+and while the other two were running; before any run of the combination below.
+
+Expert iteration ran without R. Its final vocabulary holds `c2_2 = filter (lambda x. gt (mod
+x k) 0)`, the symbol that representation search used as a pre-image in the second loop. One
+run: the 15 symbols with machinery S + C + f + R at 10^4 on every task, and the same with no
+symbol dropped at 10^5 on the held-out partitions.
+
+| ID | Prediction | Expected |
+| --- | --- | --- |
+| G4 | With R the expert vocabulary solves at least 6 COMPOSE-24 tasks at 10^4 (0 without R) | PASS (moderate) |
+| G5 | With R it solves at least as many held-out tasks at 10^4 as the second loop's best state (38 verified) | PASS (low) |

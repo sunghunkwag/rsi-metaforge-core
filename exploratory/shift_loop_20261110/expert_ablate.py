@@ -1,7 +1,8 @@
 """Re-run the final vocabulary of an expert-iteration report with symbols dropped (exploratory,
 report-only, post hoc).
 
-    python expert_ablate.py <expert report.json> <out.json> <budget> <label>=<a,b,..|none> ... [--held-only]
+    python expert_ablate.py <expert report.json> <out.json> <budget> <label>=<a,b,..|none> ...
+                            [--held-only] [--components SCfR]
 
 Each ``label=names`` is one run of every task (or of the held-out partitions only) with the
 report's final library minus the named symbols. A symbol defined on a dropped symbol keeps
@@ -23,7 +24,7 @@ TYPES = {"int": INT, "bool": BOOL, "list[int]": ListOf(INT), "list[bool]": ListO
 COMPONENTS = "SCf"
 
 
-def spec_without(report, budget, label, drop):
+def spec_without(report, budget, label, drop, components=COMPONENTS):
     abstractions, constants = [], []
     for name, a in report["library"].items():
         if name in drop:
@@ -36,7 +37,7 @@ def spec_without(report, budget, label, drop):
             continue
         type_ = arrows(*[TYPES[p] for p in a["params"]], TYPES[a["result"]])
         abstractions.append((name, type_.to_dict(), term_to_dict(witness)))
-    return spec_of(label, budget, COMPONENTS, abstractions, constants)
+    return spec_of(label, budget, components, abstractions, constants)
 
 
 if __name__ == "__main__":
@@ -46,15 +47,16 @@ if __name__ == "__main__":
     learn = report["learn"]
     held = [p for p in ALL if p not in learn]
     names = held if "--held-only" in sys.argv else list(ALL)
+    components = sys.argv[sys.argv.index("--components") + 1] if "--components" in sys.argv else COMPONENTS
     harness = Harness(4, ALL)
-    out = {"report": sys.argv[1], "budget": budget, "partitions": names, "rows": []}
+    out = {"report": sys.argv[1], "budget": budget, "partitions": names, "components": components, "rows": []}
     for label, dropped in variants:
         drop = set() if dropped == "none" else set(dropped.split(","))
         unknown = drop - set(report["library"])
         if unknown:
             raise SystemExit(f"not in the library: {sorted(unknown)}")
         started = time.perf_counter()
-        result = harness.run(spec_without(report, budget, label, drop), partition_names=names)
+        result = harness.run(spec_without(report, budget, label, drop, components), partition_names=names)
         counts = summary(result)
         row = {"label": label, "dropped": sorted(drop), "budget": budget, "counts": counts,
                "learn": sum(counts[p] for p in learn if p in counts),
