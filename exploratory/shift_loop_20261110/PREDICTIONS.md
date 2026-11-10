@@ -242,3 +242,30 @@ symbol dropped at 10^5 on the held-out partitions.
 | --- | --- | --- |
 | G4 | With R the expert vocabulary solves at least 6 COMPOSE-24 tasks at 10^4 (0 without R) | PASS (moderate) |
 | G5 | With R it solves at least as many held-out tasks at 10^4 as the second loop's best state (38 verified) | PASS (low) |
+
+# Addendum 6: the control at the full cumulative budget for the combined state
+
+Written after the runs of Addenda 4, 5 and 5b had been read: the expert vocabulary with
+representation search solves 55 held-out tasks at 10^5 (FRESH-2 45, COMPOSE-24 10; 44 sound),
+generation 0 with R solves 45 at 10^5, 46 at 181,775 and 50 at 251,479 (35, not audited, and
+37 sound). Before any run at the budget below.
+
+R3 as registered compares the loop's state at its own budget of 10^4 with generation 0 at the
+loop's cumulative budget. There it fails: 38 verified and 33 sound against 50 and 37 at
+251,479 already. This addendum asks the same question at a deployment budget of 10^5, and
+charges the trained state everything it cost: 533,195 candidates per task for expert
+iteration in configuration B, plus the 10^5 run on the 124 held-out tasks (36,686 per task
+over 338 tasks), 569,881 in all.
+
+One run: generation 0, machinery S + C + f + R, no learned symbol, at 569,881 candidates per
+task on the held-out partitions of configuration B.
+
+| ID | Prediction | Expected |
+| --- | --- | --- |
+| K1 | Generation 0 at 569,881 solves fewer sound held-out tasks than the combined state at 10^5 (44) | PASS (moderate) |
+| K2 | Generation 0 at 569,881 solves at most as many verified held-out tasks as the combined state at 10^5 (55) | PASS (low) |
+
+Reading fixed in advance: if K1 holds, the trained state at 10^5 beats untrained machinery
+that is given the whole training and deployment budget, on these 124 exposed tasks. That is
+R3 at a 10^5 deployment budget for one configuration, built by adding R to the expert
+vocabulary after the fact. It is not R3 as registered, and not a clean test.
