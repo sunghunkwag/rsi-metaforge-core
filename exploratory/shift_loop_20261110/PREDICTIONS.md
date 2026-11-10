@@ -75,3 +75,43 @@ passes the verifier with nonsense programs for boolean tasks) and before any gen
 | H13 | In neither configuration does the loop beat generation-0 machinery at equal cumulative budget on held-out (R3 fails) | PASS (moderate) |
 | H14 | Some accepted abstraction of generation >= 2 has depth 2, and it is used in at most 2 verified held-out solutions | PASS (low) |
 | V2 | Verdict for both configurations: improvement over generation 0 in at most two accepted steps, then saturation; R1 to R4 are not all met | moderate |
+
+# Addendum 2: three ideas added on top (written before any run with them)
+
+Written after loops A and B, the ablations of A's best state and the generation-0 ablation
+had been read, and before any run of the mechanisms below. The equal-cumulative-budget
+control at 2.4 x 10^5 had not finished.
+
+What the first loop showed: its moves rearrange a vocabulary and none creates a new kind of
+search; its acceptance signal (learning-set solves) overfits, and the cut that helped it
+find symbols hurts held-out when kept (learned symbols without the cut: 90 learning, 62
+held-out in configuration A).
+
+## What is added
+- R, representation search. The spec shift S fixes one re-representation of the input (the
+  list as its elements). With R, when S does not apply or fails, a tenth of the budget
+  enumerates list programs A over the input; every A under which the outputs are the
+  element-wise image of A(xs), or A(xs) filtered by a predicate on the value, is a candidate
+  re-representation; the first two get an `int -> element` sub-search and the solution is
+  lifted as `map f (A xs)` or `filter p (A xs)`. Learned symbols enlarge the set of A.
+- D, dream tasks. The driver composes pairs of its own verified learning programs into new
+  tasks with known answers (8 public and 8 check examples on seeded random lists): 40 at
+  generation 0, 20 more from newly solved programs after each accepted move, at most 100.
+  Dream solves count in the acceptance signal (verified learning solves + dream solves) and
+  verified dream programs join the compression corpus and the usage counts.
+- Regrow, a move that restores the full vocabulary while keeping the learned symbols.
+- Moves: compress, apoptosis, unused, regrow. Entropy is dropped (never accepted). Rollback as
+  before. Budget 10^4 per task per run, at most 24 runs, configurations A and B as before.
+- Control: generation-0 machinery with R, on the real tasks, at the loop's cumulative budget
+  (runs x 10^4 x (338 + dream tasks) / 338).
+
+## Predictions
+| ID | Prediction | Expected |
+| --- | --- | --- |
+| H16 | R at generation 0 raises held-out solves by at least 4 over S + C + f at 10^4 | PASS (low) |
+| H17 | With dream solves in the signal, the 60% cut is rejected at generation 0 in both configurations | PASS (moderate) |
+| H18 | The new loop makes at least 4 accepted steps in configuration B | PASS (moderate) |
+| H19 | In configuration B real held-out solves end at least 6 above its own generation 0 and above the first loop's best (26) | PASS (low) |
+| H20 | Dream solves rise at least three times as much as real solves (learning + held-out) over the loop: the internal signal inflates | PASS (moderate) |
+| H21 | Generation-0 machinery with R at the cumulative budget solves at least as many real held-out tasks as the loop (R3 fails again) | PASS (moderate) |
+| V3 | More accepted steps and a larger real held-out gain than the first loop, yet not recursive self-improvement by R1 to R4 | moderate |
