@@ -22,15 +22,25 @@ own verified programs; they travel to the workers like any public task.
 
 Process layout as in rsi5.phase1: the guard is installed, the workers are forked before any
 partition is loaded, they seal the loader packages and receive public examples only; the
-driver holds the tasks and the frozen verifier (one query per task per generation).
+driver holds the tasks and the frozen verifier (one query per task per run: a loop of n runs
+puts up to n programs per task to the same hidden examples). The pool is an executor that
+never replaces a worker; a worker forked after the loaders were imported refuses to search.
 Budget unit: one engine candidate (a constructed term evaluated on its points); a fused or
-lifted candidate checked by the reference interpreter also counts one.
+lifted candidate checked by the reference interpreter also counts one. Not counted: the
+bit-mask scan of fusion, the reference re-checks, and everything the driver does.
+
+The engine ends a search at the first size level that adds no new behaviour. With a cut
+vocabulary that happens at once (no size-2 program) although larger programs exist, so this
+harness keeps the search going until PATIENCE levels in a row are empty. The engine file is
+not changed; with the full vocabulary the rule never fires before the budget.
 """
 from __future__ import annotations
 
+from concurrent.futures import ProcessPoolExecutor
 import hashlib
 import json
 import multiprocessing
+import os
 import random
 import sys
 import time
@@ -81,21 +91,62 @@ def beta(witness, arguments):
     return visit(body, 0)
 
 
+# ---- an empty level is not the end of a cut vocabulary's programs ----------------------------------
+PATIENCE = 6                 # empty levels in a row before a search counts as exhausted
+_base_ensure = bu.Context.ensure
+
+
+def _ensure(self, size):
+    _base_ensure(self, size)
+    engine = self.engine
+    if self is engine.top:
+        if all(context.added_at_level == 0 for context in engine.contexts):
+            engine.empty_levels = getattr(engine, "empty_levels", 0) + 1
+            if engine.empty_levels < PATIENCE:
+                self.added_at_level = 1       # read by the engine's stop rule only
+        else:
+            engine.empty_levels = 0
+
+
+bu.Context.ensure = _ensure
+
 _base_term = bu.Expr.term.fget
 
 
+_ASKED = {"depth": 0, "last": None}      # the last program whose term the engine asked for
+
+
 def _term(self):
-    if self._term is None:
-        if self.kind == "prim" and self.head in ADMITTED:
-            self._term = beta(ADMITTED[self.head], [a.term for a in self.args])
-        elif self.kind == "const" and type(self.head) is int and self.head in CONST_WITNESS:
-            self._term = CONST_WITNESS[self.head]
-        else:
-            return _base_term(self)
-    return self._term
+    _ASKED["depth"] += 1
+    try:
+        if self._term is None:
+            if self.kind == "prim" and self.head in ADMITTED:
+                self._term = beta(ADMITTED[self.head], [a.term for a in self.args])
+            elif self.kind == "const" and type(self.head) is int and self.head in CONST_WITNESS:
+                self._term = CONST_WITNESS[self.head]
+            else:
+                return _base_term(self)
+        return self._term
+    finally:
+        _ASKED["depth"] -= 1
+        if _ASKED["depth"] == 0:
+            _ASKED["last"] = self
 
 
 bu.Expr.term = property(_term)
+
+
+def learned_in(*exprs) -> list:
+    """Names of the admitted abstractions these engine programs are built with: what the search
+    itself used, as opposed to what a finished term can be folded into afterwards."""
+    found, stack = set(), [e for e in exprs if e is not None]
+    while stack:
+        expr = stack.pop()
+        if expr.kind == "prim" and expr.head in ADMITTED:
+            found.add(expr.head)
+        if expr.args:
+            stack.extend(a for a in expr.args if isinstance(a, bu.Expr))
+    return sorted(found)
 
 
 def _vector_of(witness):
@@ -367,6 +418,11 @@ def _init_worker():
     guard.install()
     guard.seal_task_data()
     _STATE["probes"] = probes.load()
+    _STATE["late"] = guard.preloaded()
+
+
+def _ready(_) -> int:
+    return os.getpid()
 
 
 def _install(spec):
@@ -422,9 +478,10 @@ def _search(vocabulary, examples, request, budget, use_fusion, entropy=None):
     engine = bu.Engine(vocabulary, max_size=MAX_SIZE, step_budget=STEPS, max_lambda_depth=LAMBDA_DEPTH)
     inputs = probes.inputs_for(input_types, _STATE["probes"])
     reserve = budget // 10 if entropy is not None else 0
+    _ASKED["last"] = None
     result = engine.search(examples, request, inputs, budget - reserve)
     if result.term is not None:
-        return result.term, result.candidates_to_solution, "search", None
+        return result.term, result.candidates_to_solution, "search", {"used": learned_in(_ASKED["last"])}
     spent = result.candidates
     expected = [output for _, output in examples]
     if use_fusion and len(input_types) == 1:
@@ -433,19 +490,22 @@ def _search(vocabulary, examples, request, budget, use_fusion, entropy=None):
             spent += 1
             term = Lam(input_types[0], apply(Prim("if"), c.term, a.term, b.term))
             if _matches(term, examples):
-                return term, spent, "fused", (n_terms, n_preds)
+                return term, spent, "fused", {"used": learned_in(c, a, b), "pools": (n_terms, n_preds)}
     if entropy is not None and len(input_types) == 1:
         for body in mutants(engine, expected, output_type, entropy, reserve):
             spent += 1
             if _fast_match(body, examples):
                 term = Lam(input_types[0], body)
                 if _matches(term, examples):
-                    return term, spent, "mutated", None
+                    return term, spent, "mutated", {"used": None}
     return None, spent, None, None
 
 
 def solve(job) -> dict:
     task, spec = job
+    if _STATE.get("late"):
+        raise RuntimeError("this worker was forked after these modules were imported and may hold "
+                           f"hidden examples: {_STATE['late']}")
     _install(spec)
     switches = spec["components"]
     budget = spec["budget"]
@@ -453,7 +513,7 @@ def solve(job) -> dict:
     input_types, output_type = function_parts(request)
     examples = task.examples
     record = {"name": task.name, "term": None, "route": None, "candidates": 0, "to_solution": None,
-              "constants": []}
+              "constants": [], "used": None}
     started = time.perf_counter()
     spent = 0
     spaces = _STATE["spaces"]
@@ -481,13 +541,14 @@ def solve(job) -> dict:
             constants = abduce_constants(table=table)
             record["constants"] = constants
             vocabulary = _with_constants(vocabulary, constants)
-        term, used, route, _ = _search(vocabulary, sub_examples, Arrow(INT, element), budget // 2,
-                                       switches.get("F") or switches.get("f"), entropy)
+        term, used, route, how = _search(vocabulary, sub_examples, Arrow(INT, element), budget // 2,
+                                         switches.get("F") or switches.get("f"), entropy)
         spent += used if term is None else 0
         if term is not None:
             lifted = Lam(LIST_INT, apply(Prim(kind), term, Var(0)))
             if _matches(lifted, examples):
-                record.update(term=term_to_dict(lifted), route=f"{kind}+{route}", to_solution=spent + used)
+                record.update(term=term_to_dict(lifted), route=f"{kind}+{route}", to_solution=spent + used,
+                              used=how["used"])
                 spent += used
                 break
             spent += used
@@ -495,10 +556,11 @@ def solve(job) -> dict:
             and input_types[0] == LIST_INT and output_type.tag == "list":
         scan = min(budget // 10, max(0, budget - spent) // 4)
         engine = bu.Engine(spaces["list"], max_size=MAX_SIZE, step_budget=STEPS, max_lambda_depth=LAMBDA_DEPTH)
+        _ASKED["last"] = None
         scanned = engine.search(examples, request, probes.inputs_for(input_types, _STATE["probes"]), scan)
         if scanned.term is not None:
             record.update(term=term_to_dict(scanned.term), route="search",
-                          to_solution=spent + scanned.candidates_to_solution)
+                          to_solution=spent + scanned.candidates_to_solution, used=learned_in(_ASKED["last"]))
             spent += scanned.candidates_to_solution
         else:
             spent += scanned.candidates
@@ -510,13 +572,14 @@ def solve(job) -> dict:
                 vocabulary = spaces["elem"]
                 if switches.get("C"):
                     vocabulary = _with_constants(vocabulary, abduce_constants(table=table))
-                term, used, route, _ = _search(vocabulary, sub_examples, Arrow(INT, element), share,
-                                               switches.get("F") or switches.get("f"), entropy)
+                term, used, route, how = _search(vocabulary, sub_examples, Arrow(INT, element), share,
+                                                 switches.get("F") or switches.get("f"), entropy)
                 if term is not None:
                     lifted = Lam(LIST_INT, apply(Prim(kind), term, expr.term))
                     if _matches(lifted, examples):
+                        both = None if how["used"] is None else sorted(set(how["used"]) | set(learned_in(expr)))
                         record.update(term=term_to_dict(lifted), route=f"re+{kind}+{route}",
-                                      to_solution=spent + used)
+                                      to_solution=spent + used, used=both)
                         spent += used
                         break
                 spent += used
@@ -526,10 +589,10 @@ def solve(job) -> dict:
             constants = abduce_constants(examples=examples) if len(input_types) == 1 else []
             record["constants"] = record["constants"] or constants
             vocabulary = _with_constants(vocabulary, constants)
-        term, used, route, _ = _search(vocabulary, examples, request, max(0, budget - spent),
-                                       switches.get("F"), entropy)
+        term, used, route, how = _search(vocabulary, examples, request, max(0, budget - spent),
+                                         switches.get("F"), entropy)
         if term is not None:
-            record.update(term=term_to_dict(term), route=route, to_solution=spent + used)
+            record.update(term=term_to_dict(term), route=route, to_solution=spent + used, used=how["used"])
         spent += used
     record["candidates"] = spent
     record["seconds"] = round(time.perf_counter() - started, 2)
@@ -542,7 +605,9 @@ class Harness:
         guard.install()
         if guard.loader_modules():
             raise RuntimeError("fork the workers before any loader is imported")
-        self.pool = multiprocessing.get_context("fork").Pool(workers, initializer=_init_worker)
+        self.pool = ProcessPoolExecutor(workers, mp_context=multiprocessing.get_context("fork"),
+                                        initializer=_init_worker)
+        list(self.pool.map(_ready, range(workers)))          # the executor forks on first use
         from rsi5.verifier import FrozenVerifier
         self.tasks = {name: partitions.load(name) for name in partition_names}
         self.verifiers = {name: FrozenVerifier(tasks, step_budget=STEPS) for name, tasks in self.tasks.items()}
@@ -550,7 +615,7 @@ class Harness:
         self.runs = 0
 
     def close(self):
-        self.pool.terminate()
+        self.pool.shutdown(wait=False, cancel_futures=True)
 
     def run(self, spec, partition_names=None, dreams=()) -> dict:
         """One generation: every task of the named partitions at spec['budget']; verdicts from the
@@ -562,7 +627,7 @@ class Harness:
         names = list(partition_names if partition_names is not None else self.tasks)
         jobs = [(task, spec) for name in names for task in self.public[name]]
         jobs += [(task, spec) for task, _ in dreams]
-        records = self.pool.map(solve, jobs, chunksize=1)
+        records = list(self.pool.map(solve, jobs, chunksize=1))
         out, cursor = {}, 0
         if dreams:
             rows = records[len(records) - len(dreams):]
@@ -587,9 +652,14 @@ def summary(result: dict) -> dict:
 
 
 def registered(vocabulary: str, budget: int, partition_names) -> dict:
+    """Solved counts of the registered engine at ``budget``, read off its 10^6 run."""
     out = {}
     for name in partition_names:
-        records = json.load(open(f"rsi5/results_p1/{vocabulary}_{name}.json"))["records"]
+        data = json.load(open(f"rsi5/results_p1/{vocabulary}_{name}.json"))
+        if budget > data["plan"]["budget"]:
+            raise ValueError(f"the registered run stopped at {data['plan']['budget']} candidates per task; "
+                             f"nothing is known at {budget}")
+        records = data["records"]
         out[name] = sum(1 for r in records if r["solved"] and r["candidates_to_solution"] <= budget)
     return out
 

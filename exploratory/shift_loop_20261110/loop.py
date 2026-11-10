@@ -17,6 +17,10 @@ acceptance signal and verified dream programs join the compression corpus and us
 Every decision reads the learning partitions only. Held-out partitions are run each time for
 the record and never consulted.
 
+Known limits of the signal (measured in the README): a move is one more query of every learning
+task's hidden examples, so over a loop a task can be put to them with several programs; with
+one or two hidden examples a wrong program can pass. Ties in usage are cut in name order.
+
     python loop.py <budget> <components> <out.json> <config A|B> [workers] [--moves m1,m2,..]
                    [--max-runs N] [--no-rollback] [--dreams]
 """
@@ -55,13 +59,25 @@ def _nodes(term):
         yield from _nodes(child)
 
 
+def constant_of(abstraction):
+    """The integer a parameterless abstraction stands for, or None."""
+    if abstraction.params:
+        return None
+    value = evaluate(abstraction.witness, ())
+    if value.ok and type(value.value) is int and abs(value.value) <= hybrid.CONST_RANGE:
+        return value.value
+    return None
+
+
 def symbols_of(term, library) -> list:
-    """Symbols a program spends, after folding it with the library."""
+    """Symbols a program spends, after folding it with the library. A learned constant is named
+    ``int:<value>``, the name the cut knows it by."""
     compact = compress.rewrite(term, library) if library else term
     found = []
     for node in _nodes(compact):
         if node.tag == "prim":
-            found.append(node.value)
+            value = constant_of(library[node.value]) if node.value in library else None
+            found.append(node.value if value is None else f"int:{value}")
         elif node.tag == "int":
             found.append(f"int:{node.value}")
     return found
@@ -80,9 +96,9 @@ def serialise(library: dict):
     abstractions, constants = [], []
     for name, a in library.items():
         if not a.params:
-            value = evaluate(a.witness, ())
-            if value.ok and type(value.value) is int and abs(value.value) <= hybrid.CONST_RANGE:
-                constants.append(value.value)
+            value = constant_of(a)
+            if value is not None and value not in constants:       # two spellings of one value
+                constants.append(value)
             continue
         abstractions.append((name, arrows(*a.params, a.result).to_dict(), term_to_dict(a.witness)))
     return abstractions, constants
@@ -124,7 +140,7 @@ def run_loop(harness, budget, components, learn, moves=MOVES, max_runs=24, rollb
         state.learn = sum(state.counts[p] for p in learn)
         state.held_out = sum(state.counts[p] for p in held)
         usage = {"elem": {}, "list": {}}
-        programs, held_usage, routes = {}, {}, {}
+        programs, learn_usage, held_usage, routes = {}, {}, {}, {}
         for partition, rows in result.items():
             for row in rows:
                 if not row["solved"]:
@@ -138,10 +154,10 @@ def run_loop(harness, budget, components, learn, moves=MOVES, max_runs=24, rollb
                         if part is not None:
                             for symbol in symbols_of(part, state.library):
                                 usage[space][symbol] = usage[space].get(symbol, 0) + 1
-                else:
-                    for symbol in symbols_of(term, state.library):
-                        if symbol in state.library:
-                            held_usage[symbol] = held_usage.get(symbol, 0) + 1
+                if partition != "dream":                 # solutions the search built with the symbol
+                    counter = learn_usage if partition in learn else held_usage
+                    for symbol in row.get("used") or ():
+                        counter[symbol] = counter.get(symbol, 0) + 1
         state.dream_programs = {}
         for row in result.get("dream", ()):
             if row["solved"]:
@@ -160,13 +176,15 @@ def run_loop(harness, budget, components, learn, moves=MOVES, max_runs=24, rollb
             "dream": state.dream, "dream_tasks": len(bank),
             "keep_sizes": {s: (len(k) if k is not None else None) for s, k in (state.keep or {}).items()},
             "entropy": state.entropy, "routes": routes,
-            "abstraction_use_learn": {n: usage["elem"].get(n, 0) + usage["list"].get(n, 0) for n in state.library},
+            "abstraction_use_learn": {n: learn_usage.get(n, 0) for n in state.library},
             "abstraction_use_held_out": {n: held_usage.get(n, 0) for n in state.library},
             "rejected_by_verifier": sum(1 for rows in result.values() for r in rows
                                         if r["term"] is not None and not r["solved"]),
             "solved": sorted(f"{p}/{r['name']}" for p, rows in result.items() for r in rows if r["solved"]),
             "programs": {f"{p}/{r['name']}": [r["program"], r["route"], r["to_solution"]]
                          for p, rows in result.items() for r in rows if r["solved"]},
+            "rejected": {f"{p}/{r['name']}": [r["program"], r["route"]]          # public match, verifier said no
+                         for p, rows in result.items() for r in rows if r["term"] is not None and not r["solved"]},
             "seconds": round(time.perf_counter() - started)}
         timeline.append(state.record)
         log(f"run {harness.runs:2d} {label:22s} learn {state.learn:3d} held-out {state.held_out:3d} "
@@ -200,8 +218,11 @@ def run_loop(harness, budget, components, learn, moves=MOVES, max_runs=24, rollb
     def symbols(state, space):
         if state.keep and state.keep.get(space) is not None:
             return list(state.keep[space])
-        learned = [n for n, a in state.library.items() if a.params] + \
-                  [f"int:{evaluate(a.witness, ()).value}" for n, a in state.library.items() if not a.params]
+        learned = [n for n, a in state.library.items() if a.params]
+        for a in state.library.values():
+            value = constant_of(a)
+            if value is not None and f"int:{value}" not in learned and f"int:{value}" not in base_symbols():
+                learned.append(f"int:{value}")
         return base_symbols() + learned
 
     def cut(state, mode, rng=None):
@@ -237,7 +258,7 @@ def run_loop(harness, budget, components, learn, moves=MOVES, max_runs=24, rollb
             keep = None
             if state.keep:                              # new symbols are born in both spaces
                 keep = {space: sorted(set(kept) | {a.name for a in proposals if a.params}
-                                      | {f"int:{evaluate(a.witness, ()).value}" for a in proposals if not a.params})
+                                      | {f"int:{constant_of(a)}" for a in proposals if constant_of(a) is not None})
                         for space, kept in state.keep.items()}
             new = State(library, keep, state.entropy, state, move, tuple(compress.key(a) for a in proposals))
             new.proposals = proposals
@@ -258,11 +279,12 @@ def run_loop(harness, budget, components, learn, moves=MOVES, max_runs=24, rollb
     current = measure(State({}, None, False), "gen0")
     grow_bank(current, DREAM_FIRST)
     best = current
+    stop = "run cap"
     while harness.runs < max_runs:
         accepted = False
         for move in moves:
             if harness.runs >= max_runs:
-                break
+                break                                   # moves left untried: not a saturation
             new = candidate(current, move)
             if new is None:
                 continue
@@ -290,8 +312,12 @@ def run_loop(harness, budget, components, learn, moves=MOVES, max_runs=24, rollb
                 tabu_moves.add(new.signature)
         if accepted:
             continue
+        if harness.runs >= max_runs:
+            log(f"run cap reached at the state of run {current.record['run']} with moves untried: stop")
+            break
         if not rollback or rollbacks >= MAX_ROLLBACKS or current.parent is None:
             log("no move accepted: stop")
+            stop = "no move accepted"
             break
         rollbacks += 1
         if current.move == "compress":
@@ -303,6 +329,7 @@ def run_loop(harness, budget, components, learn, moves=MOVES, max_runs=24, rollb
         current = current.parent
     report = {"budget": budget, "components": components, "learn": list(learn), "held_out": list(held),
               "moves": list(moves), "timeline": timeline, "rollbacks": rollbacks, "runs": harness.runs,
+              "stopped_by": stop,
               "dreams": dreams, "dream_tasks": [task.name for task, _, _ in bank], "task_executions": executions[0],
               "equal_budget_per_real_task": round(executions[0] * budget / 338),
               "best_run": best.record["run"], "first": timeline[0]["run"],

@@ -8,6 +8,8 @@ loop:   the accepted chain to the best state, every acceptance, family concentra
         learning gains, and the generalisation audit of the first and the best state.
 expert: the student at each accepted cycle, the teacher's harvest, the screened symbols.
 gen0:   held-out counts of each variant under both configurations' definitions of held-out.
+
+Audit cells are sound/verified per partition (``audit_all.py``).
 """
 from __future__ import annotations
 
@@ -15,7 +17,7 @@ import collections
 import json
 import sys
 
-import audit_hybrid
+import audit_all
 from hybrid import ALL
 from loop import CONFIGS
 from rsi5 import partitions
@@ -37,9 +39,14 @@ def family_view(solved, learn) -> dict:
             "score": round(sum(hits[f] / n for f, n in sizes.items()), 2)}
 
 
+_AUDITOR = []
+
+
 def audit_line(programs) -> str:
-    result = audit_hybrid.audit(programs)
-    return ", ".join(f"{p} {v['generalise']}/{v['verified']}" for p, v in sorted(result.items()))
+    if not _AUDITOR:
+        _AUDITOR.append(audit_all.Auditor())
+    counts = _AUDITOR[0].counts(programs)
+    return " ".join(f"{p} {counts[p][1]}/{counts[p][0]}" for p in ALL)
 
 
 def loop_summary(report) -> None:

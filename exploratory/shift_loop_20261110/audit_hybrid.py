@@ -1,5 +1,8 @@
 """Generalisation audit of verified programs (report-only): each program on 200 seeded random
-inputs against the family oracle of rsi5.audit_p1 (FRESH-1, RESERVE-FAR2, COMPOSE-24 only)."""
+inputs against the family oracle of rsi5.audit_p1 (FRESH-1, RESERVE-FAR2, COMPOSE-24 only).
+
+Superseded by audit_all.py, which covers every exposed partition and tests boolean tasks on
+both answers. Kept because the first numbers of this study were produced with it."""
 import json, random, sys
 from rsi5 import audit_p1
 from rsi5.dsl.evaluator import evaluate

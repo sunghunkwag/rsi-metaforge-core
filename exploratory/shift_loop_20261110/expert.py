@@ -65,6 +65,8 @@ def run(harness, learn, max_cycles=MAX_CYCLES, screen=True, log=print):
                   "solved": sorted(f"{p}/{r['name']}" for p, rows in result.items() for r in rows if r["solved"]),
                   "programs": {f"{p}/{r['name']}": [r["program"], r["route"], r["to_solution"]]
                                for p, rows in result.items() for r in rows if r["solved"]},
+                  "rejected": {f"{p}/{r['name']}": [r["program"], r["route"]]     # public match, verifier said no
+                               for p, rows in result.items() for r in rows if r["term"] is not None and not r["solved"]},
                   "seconds": round(time.perf_counter() - started)}
         timeline.append(record)
         log(f"run {harness.runs:2d} {label:14s} budget {budget:>6} learn {record['learn']:3d} "
