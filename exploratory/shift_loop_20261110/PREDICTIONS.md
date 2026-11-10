@@ -197,3 +197,33 @@ ahead as the budget grows, or does it only find the same programs earlier?
 My reading, fixed in advance: a lead of at least 3 at all three budgets (F1 and F4) means the
 learned symbols moved the frontier of what is reached, not only the order in which programs
 are found. It would still be one step of learning, not a compounding one.
+
+# Addendum 5: ablations of the expert-iteration vocabulary (diagnostic, post hoc)
+
+Written after expert iteration had finished in both configurations and its logs had been
+read (configuration B: five cycles accepted, student at 10^4 learning 121 to 147 and
+held-out 20 to 26 verified, 15 symbols of which three are defined on cycle-1 symbols;
+teacher at 10^5: 134, 151, 155, 150, 150, 150, 150), and before any run of
+`expert_ablate.py`. The frontier runs of Addendum 4 were not complete.
+
+R2 asks whether a gain of a later generation depends on a symbol of an earlier one, and
+names ablation as the test. These runs are that test for the expert loop. They decide
+nothing else.
+
+## Runs (fixed now), configuration B's final vocabulary, machinery S + C + f
+- all: the 15 symbols at 10^4 on every task. It must reproduce 147 and 26.
+- no-depth-2: without `c4_2`, `c4_3`, `c5_1` (the symbols defined on `c1_1` and `c1_2`).
+- no-cycle-1: without `c1_1`, `c1_2`, `c1_3` and without the three symbols defined on them.
+- at-10^5: the 15 symbols at 10^5 on the held-out partitions (generation 0 without R at
+  10^5: 28 verified).
+
+## Reading fixed in advance
+R2 holds for this loop if no-depth-2 loses at least 2 verified solves (learning plus
+held-out) against all: a later gain then rests on symbols built on earlier symbols.
+
+## Predictions
+| ID | Prediction | Expected |
+| --- | --- | --- |
+| G1 | no-depth-2 loses at most 3 verified solves in total: the depth-2 symbols are shorthand, not new reach | PASS (moderate) |
+| G2 | no-cycle-1 loses at least 10 learning solves: the first cycle carries most of the gain | PASS (moderate) |
+| G3 | at 10^5 the 15 symbols solve at least 3 more held-out tasks than generation 0 at 10^5 (28) | PASS (low) |
