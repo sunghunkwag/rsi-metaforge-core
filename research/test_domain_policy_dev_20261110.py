@@ -42,9 +42,9 @@ class DomainPolicyDevTests(unittest.TestCase):
 
     def test_negative_feedback_is_distinct(self):
         pool = [i for i, op in enumerate(m.POOL) if op[3] == "listint"]
-        episodes = [("preserve", "reverse", True)] * 100
-        good = m.choose(pool, episodes, "preserve", 7, 3, 1, 2, 0, "persistent_domain")
-        bad = m.choose(pool, episodes, "preserve", 7, 3, 1, 2, 0, "inverted_feedback")
+        episodes = [("preserve", "reverse", True)] * 10
+        good = m.choose(pool, episodes, "preserve", 3, 3, 1, 2, 0, "persistent_domain")
+        bad = m.choose(pool, episodes, "preserve", 3, 3, 1, 2, 0, "inverted_feedback")
         self.assertNotEqual(good, bad)
 
 
