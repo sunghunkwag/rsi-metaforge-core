@@ -46,3 +46,9 @@ Hypotheses={'H1': False, 'H2': False, 'H3': False, 'H4': True, 'H5': True}
 Limitations: generated task-name oracles are NOT the external upstream examples; shifted inputs are synthetic; interpreter calls are toy Python functions, not RSI-2 VM calls; OS CPU timing is noisy. Neither the inspected local engineering run nor this repository replay is independent confirmatory evidence of multi-generation RSI or AGI. Spent tasks and original hidden holdouts were not opened.
 
 Tested source SHA: `a328ce8303058ae781779b4862ac407dec5d3231`. [One-shot CI](https://github.com/sunghunkwag/rsi-metaforge-core/actions/runs/42745552138); [Draft PR #60](https://github.com/sunghunkwag/rsi-metaforge-core/pull/60).
+
+## Post-run instrumentation review (interpretation only; no rerun)
+
+The raw `H5=true` flag is **not proof of full CPU parity**. Its numerator and denominator sum explicitly timed generator, toy-interpreter and oracle sections, but omit untimed Python bookkeeping and process overhead. The mandatory *total-process CPU* parity gate is therefore **unverified**. This cannot be repaired by retroactively relaxing the preregistered gate or rerunning the spent task set. All six arms had equal trajectory-total candidate and interpreter/oracle call counts, but the single-generation arm intentionally used different per-checkpoint support budgets. The measured ratios are informative only for the timed sections.
+
+At generation 3 the persistent arm had 28 spurious public-fit-only cases among 71 public-fit cases (39.44%); only 43/240 passed all synthetic shifted inputs. The inverted-feedback negative control reached 45/240, equal to the no-memory control, so the negative control is not a strong discriminator even though the preregistered H4 predicate evaluates true. The preregistered overall result remains **false**, and there is no adoption or independent RSI claim. This is a documentation-only review, with the original raw JSON and numerical gates preserved.
