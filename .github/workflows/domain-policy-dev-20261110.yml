@@ -1,0 +1,43 @@
+name: Research domain-policy development preflight (one-shot)
+on:
+  push:
+    branches:
+      - research/domain-policy-development-preflight-20261110
+    paths-ignore:
+      - README.md
+      - research/RESULTS_DOMAIN_POLICY_DEV_20261110.md
+      - research/results/domain_policy_dev_raw_20261110.json
+
+permissions:
+  contents: write
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Verify provenance and seven unit tests
+        run: python -m unittest research.test_domain_policy_dev_20261110 -v
+      - name: Execute exactly one bounded 40-seed development replay
+        run: python research/domain_policy_dev_20261110.py > research/domain_policy_console_20261110.json
+      - name: Preserve independent Actions backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: domain-policy-development-raw
+          path: |
+            research/results/domain_policy_dev_raw_20261110.json
+            research/RESULTS_DOMAIN_POLICY_DEV_20261110.md
+            research/domain_policy_console_20261110.json
+      - name: Archive complete raw data, report and numerical README in branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md research/RESULTS_DOMAIN_POLICY_DEV_20261110.md research/results/domain_policy_dev_raw_20261110.json research/domain_policy_console_20261110.json
+          git commit -m "research: archive one-shot domain-policy development results"
+          git push origin HEAD:research/domain-policy-development-preflight-20261110
