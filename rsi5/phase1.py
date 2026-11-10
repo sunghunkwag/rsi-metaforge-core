@@ -22,8 +22,11 @@ module is imported and before any task exists, so it inherits no hidden example;
 ``guard.seal_task_data()``, which refuses the loaders' import and seals their sources and
 data, and it is sent ``PublicTask`` values only. The driver process holds the tasks and
 the frozen verifier and never searches: with ``--workers 1`` the search still runs in one
-forked worker. A worker forked late (the pool replaces a worker that died) finds loader
-modules in its ``sys.modules`` and refuses every task, which fails the run.
+forked worker. The pool is a ``concurrent.futures`` executor: it never replaces a worker,
+and a worker that dies breaks the pool, so the run fails at once instead of waiting for a
+result that cannot come. A worker forked after a loader was imported (an executor that
+starts its workers lazily) finds loader modules in its ``sys.modules`` and refuses every
+task, which fails the run as well.
 
 No learning anywhere. Nothing here reads J's pools, TEST, or any hidden example outside
 the verifier.
@@ -31,6 +34,7 @@ the verifier.
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ProcessPoolExecutor
 import hashlib
 import json
 import multiprocessing
@@ -84,14 +88,23 @@ def _init_worker(plan: dict) -> None:
     _WORKER["late"] = guard.preloaded()
 
 
+def _ready(_) -> int:
+    return os.getpid()
+
+
 def worker_pool(plan: dict, workers: int):
     """Fork the search workers. Call it before the first ``partitions.load()``: a worker
-    forked later inherits the loader modules and every task the driver then holds."""
+    forked later inherits the loader modules and every task the driver then holds. The
+    executor forks on first use, so it is used here once; a dead worker raises
+    ``BrokenProcessPool`` in the driver."""
     loaded = guard.loader_modules()
     if loaded:
         raise RuntimeError(f"search workers must be forked before any loader is imported; found {loaded}")
-    context = multiprocessing.get_context("fork")
-    return context.Pool(max(1, workers), initializer=_init_worker, initargs=(plan,))
+    workers = max(1, workers)
+    pool = ProcessPoolExecutor(workers, mp_context=multiprocessing.get_context("fork"),
+                               initializer=_init_worker, initargs=(plan,))
+    list(pool.map(_ready, range(workers)))
+    return pool
 
 
 def run_task(job) -> dict:
@@ -132,7 +145,7 @@ def run_partition(plan: dict, vocabulary_name: str, partition: str, pool, worker
     verifier = FrozenVerifier(tasks, step_budget=plan["step_budget"])
     jobs = [(vocabulary_name, partitions.public_view(task)) for task in tasks]
     started = time.perf_counter()
-    records = pool.map(run_task, jobs, chunksize=1)
+    records = list(pool.map(run_task, jobs, chunksize=1))
     for record in records:
         record["family"] = partitions.family(record["name"])
         term = term_from_dict(record["program_dict"]) if record["program_dict"] is not None else None

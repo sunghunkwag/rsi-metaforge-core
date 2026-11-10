@@ -9,11 +9,13 @@ then ``seal_task_data()``.
 What the hook refuses (``PermissionError`` unless noted):
 
 * ``open``, ``os.listdir``, ``os.scandir`` and ``os.chdir`` of a sealed path, however it is
-  named: absolute, relative to the working directory, through a symbolic link, as an
-  integer descriptor, with no argument (the working directory), or relative to a directory
-  descriptor. The ``open`` event does not carry ``dir_fd``, so a relative ``open`` is
-  resolved against the working directory and against every directory the process holds
-  open; that is deliberately conservative.
+  named: absolute, relative to the working directory (a deleted one included), through a
+  symbolic link, as a descriptor (an integer or an ``__index__`` object), with no argument
+  (the working directory), or relative to a directory descriptor; as ``str``, ``bytes``,
+  any other bytes-like object or a path-like object. The ``open`` event does not carry
+  ``dir_fd``, so a relative ``open`` is resolved against the working directory and against
+  every directory the process holds open; that is deliberately conservative. A name the
+  hook cannot read, or a relative name when the working directory is unknown, is refused.
 * ``os.link`` out of or into a sealed path, and ``os.rename`` / ``os.replace`` of a sealed
   path, of anything inside one, or of a directory that contains one.
 * Starting another program (``subprocess``, ``os.system``, ``os.posix_spawn``,
@@ -47,8 +49,10 @@ and block devices; code that rebinds this module's names or removes a held name 
 that retargets a symbolic link or changes the working directory in between gets through, as
 does an object whose ``__fspath__`` answers differently on each call. Reported, not
 stopped: a module in ``UNGUARDED_MODULES`` imported before ``install()``, and a loader
-module imported before a worker was forked (``preloaded()``). The static import list in
-``tests/test_sealing.py`` keeps the first group out of the solver's source. Removal,
+module imported before a worker was forked (``preloaded()``). The static checks in
+``tests/test_sealing.py`` keep ``ctypes``, native modules and ``_posixsubprocess`` out of the
+solver's source; they cannot keep out ``multiprocessing.util.spawnv_passfds``, because the
+worker pool needs ``multiprocessing``: that route is held by name only. Removal,
 truncation and permission changes are integrity routes, outside this hook; J's manifest and
 ledger are the integrity instruments. The descriptor rules read ``/proc/self/fd`` and need
 Linux. Work that starts a program, such as ``platform.platform()``, must run before
@@ -56,6 +60,7 @@ Linux. Work that starts a program, such as ``platform.platform()``, must run bef
 """
 from __future__ import annotations
 
+import operator
 import os
 from pathlib import Path
 import sys
@@ -140,39 +145,79 @@ def _open_directories() -> list:
     return [target for target in targets if target is not None and os.path.isdir(target)]
 
 
-def _working_directory():
+class _Unresolved(Exception):
+    """The hook cannot tell what a name refers to; the caller refuses."""
+
+
+def _working_directory() -> str:
     try:
         return os.getcwd()
     except OSError:
+        pass
+    try:                                    # a deleted working directory still resolves ".."
+        target = os.readlink("/proc/self/cwd")
+    except OSError:
+        raise _Unresolved("the working directory is unknown")
+    deleted = " (deleted)"
+    return target[:-len(deleted)] if target.endswith(deleted) else target
+
+
+def _text(path) -> str:
+    """The characters the operating system will see, whatever object carries them: an exact
+    ``str`` copy of a ``str`` subclass, the bytes of any bytes-like object (``bytearray`` and
+    ``memoryview`` name files before Python 3.12), or what a path-like object returns."""
+    if isinstance(path, str):
+        return str.__str__(path)
+    if isinstance(path, os.PathLike):
+        return _text(os.fspath(path))
+    try:
+        return os.fsdecode(bytes(memoryview(path)))
+    except (TypeError, ValueError):
+        raise _Unresolved(f"a path of type {type(path).__name__}")
+
+
+def _descriptor(path):
+    """The integer a descriptor argument stands for (``int`` or any ``__index__`` object), else None."""
+    if path is None or isinstance(path, (str, bytes, bytearray, memoryview, os.PathLike)):
+        return None
+    try:
+        return operator.index(path)
+    except TypeError:
         return None
 
 
 def _resolutions(path, dir_fd=None, scan=False) -> list:
-    """Every real path ``path`` may name. ``None`` is the working directory; an integer is
-    a descriptor; a relative path is taken against ``dir_fd`` when one is given, else the
-    working directory, and with ``scan`` also against every open directory."""
+    """Every real path ``path`` may name. ``None`` is the working directory; an integer (or an
+    ``__index__`` object) is a descriptor; a relative path is taken against ``dir_fd`` when one
+    is given, else the working directory, and with ``scan`` also against every open directory.
+    Raises ``_Unresolved`` when the name cannot be read or the working directory is unknown."""
     try:
+        descriptor = _descriptor(path)
         if path is None:
             bases, text = [_working_directory()], ""
-        elif isinstance(path, int):
-            bases, text = [_descriptor_path(path)], ""
+        elif descriptor is not None:
+            bases, text = [_descriptor_path(descriptor)], ""
         else:
-            text = os.fsdecode(path)
+            text = _text(path)
             if os.path.isabs(text):
                 bases = [text]
             else:
-                given = isinstance(dir_fd, int) and dir_fd >= 0
-                bases = [_descriptor_path(dir_fd) if given else _working_directory()]
+                fd = _descriptor(dir_fd)
+                bases = [_descriptor_path(fd) if fd is not None and fd >= 0 else _working_directory()]
                 if scan:
                     bases.extend(_open_directories())
         return [os.path.realpath(os.path.join(base, text) if text else base)
                 for base in bases if base is not None]
     except (TypeError, ValueError, OSError):
-        return []
+        raise _Unresolved("a name the hook cannot resolve")
 
 
 def blocked_path(path, dir_fd=None, scan=False) -> bool:
-    return any(_is_blocked(real) for real in _resolutions(path, dir_fd, scan))
+    """True when ``path`` may name a sealed path, and when the hook cannot tell (fail closed)."""
+    try:
+        return any(_is_blocked(real) for real in _resolutions(path, dir_fd, scan))
+    except _Unresolved:
+        return True
 
 
 def _refuse(what, verb="read") -> None:
@@ -202,7 +247,11 @@ def _on_link(event, args) -> None:                  # (src, dst, src_dir_fd, dst
 
 def _on_rename(event, args) -> None:                # os.rename and os.replace, same shape as os.link
     source, target, source_fd, target_fd = _fourth(args)
-    if any(_is_blocked(real) or _contains_sealed(real) for real in _resolutions(source, source_fd)):
+    try:
+        moved = any(_is_blocked(real) or _contains_sealed(real) for real in _resolutions(source, source_fd))
+    except _Unresolved:
+        moved = True
+    if moved:
         _refuse(source, "move")
     if blocked_path(target, target_fd):
         _refuse(target, "move onto")

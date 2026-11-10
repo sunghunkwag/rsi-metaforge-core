@@ -1,8 +1,10 @@
 """The guard under attack (``rsi5/guard.py``) and the run driver's process layout.
 
-Every route into a sealed path that the Phase 1 review and its follow-up found is
-constructed here and must be refused: descriptors, ``dir_fd``, the working directory, links,
-renames, child programs, every import form, a worker that could load or inherits tasks.
+Every route into a sealed path that the two reviews of Phase 1 and their follow-ups found is
+constructed here and must be refused: descriptors, ``dir_fd``, the working directory (a
+deleted one too), links, renames, the same name carried by bytes-like, path-like and lying
+objects, child programs, every import form, a worker that could load or inherits tasks, a
+worker that dies. One scenario runs the real driver, ``phase1.main``.
 
 Each scenario runs ``guard_attacks.py`` in a fresh interpreter, because an audit hook cannot
 be removed. The attacks target a decoy tree built in a temporary directory: a package with a
@@ -81,9 +83,14 @@ class Paths(Attack):
         # Pinned, not closed: a descriptor opened before install() stays readable (os.read raises
         # no audit event). guard.py and RESULTS_P1.md list it among the routes not stopped.
         residual = {"residual_read_of_descriptor_opened_before_install": "allowed:b'decoy'"}
+        # bytearray and memoryview name files before Python 3.12; later the interpreter rejects them.
+        either = {"bytearray_path", "memoryview_path"}
         for name, result in out.items():
-            self.assertEqual(result, {**empty, **residual}.get(name, "PermissionError"), name)
-        self.assertEqual(len(out), 35)
+            if name in either:
+                self.assertIn(result, ("PermissionError", "other:TypeError"), name)
+            else:
+                self.assertEqual(result, {**empty, **residual}.get(name, "PermissionError"), name)
+        self.assertEqual(len(out), 49)
         # No attack moved, copied or linked anything; the one new entry is the symbolic link,
         # which the hook cannot refuse (creating it reads nothing) and refuses to follow.
         self.assertEqual(sorted(set(after) - set(before)), ["alias"])
@@ -94,6 +101,21 @@ class Paths(Attack):
         self.assertEqual(out, {"listdir_no_argument": "PermissionError", "scandir_no_argument": "PermissionError",
                                "listdir_dot": "PermissionError", "relative_open": "PermissionError",
                                "iterdir": "PermissionError", "glob": "allowed:[]"})
+
+    def test_deleted_working_directory_still_resolves(self):
+        """os.getcwd() fails in a removed directory while the kernel still follows "..": the hook
+        reads the directory from /proc and refuses the sealed path, not the harmless one."""
+        out, _, _ = self.attack("deleted_cwd")
+        self.assertEqual(out, {"getcwd": "other:FileNotFoundError", "relative_open": "PermissionError",
+                               "relative_os_open": "PermissionError", "relative_listdir": "PermissionError",
+                               "relative_scandir": "PermissionError", "benign_relative_open": "allowed:'readable\\n'"})
+
+    def test_seal_and_keep_list_given_through_symbolic_links(self):
+        out, _, _ = self.attack("symlinked_seal")
+        kept = "allowed:'{\"kept\": true}\\n'"
+        self.assertEqual(out, {"real_path": "PermissionError", "through_link": "PermissionError",
+                               "listdir_real": "PermissionError", "kept_real": kept, "kept_through_link": kept,
+                               "other_real": "PermissionError", "other_through_link": "PermissionError"})
 
     def test_keep_list_can_only_tighten(self):
         out, _, _ = self.attack("keep")
@@ -116,7 +138,7 @@ class Programs(Attack):
         out, _, _ = self.attack("spawn")
         self.assertEqual(out, {
             "subprocess": "PermissionError", "os_system": "PermissionError", "os_popen": "PermissionError",
-            "posix_spawn": "PermissionError",
+            "posix_spawn": "PermissionError", "pty_spawn": "PermissionError",
             # os.fork is allowed (the child inherits the hook); the exec is refused in the child:
             "spawnv": "allowed:127",              # os.spawnv's child exits 127 when its exec raises
             "fork_then_exec": "allowed:42",       # the child caught PermissionError and exited 42
@@ -175,19 +197,56 @@ class SealedSet(unittest.TestCase):
         self.assertFalse(guard.blocked_path("/proc/self/status"))
         self.assertFalse(guard.blocked_path(str(REPO / "mem")))
 
+    @staticmethod
+    def _carried(value):
+        """Every value nested anywhere in what is sent to a worker."""
+        yield value
+        if isinstance(value, dict):
+            for key, item in value.items():
+                yield from SealedSet._carried(key)
+                yield from SealedSet._carried(item)
+        elif isinstance(value, (list, tuple)):
+            for item in value:
+                yield from SealedSet._carried(item)
+
+    def _leaks(self, task, view) -> list:
+        sent = pickle.loads(pickle.dumps(("restored", view)))[1]
+        carried = [v for field in vars(sent).values() for v in self._carried(field)]
+        public_inputs = [inputs for inputs, _ in task.examples]
+        leaked = [example for example in task.hidden if example not in task.examples and example in carried]
+        leaked += [inputs for inputs, _ in task.hidden if inputs not in public_inputs and inputs in carried]
+        return leaked
+
     def test_public_view_is_plain_data_without_hidden_examples(self):
+        """Every task of every exposed partition: what travels to a worker is the name, the
+        request type as a dict and the public examples, and no hidden example or hidden input."""
+        tasks = 0
+        for name in partitions.PHASE1_ORDER:
+            for task in partitions.load(name):
+                tasks += 1
+                self.assertGreater(len(task.hidden), 0, task.name)
+                view = partitions.public_view(task)
+                self.assertIs(type(view), partitions.PublicTask)
+                self.assertEqual(vars(view), {"name": task.name, "examples": task.examples,
+                                              "request": partitions.request_type(task).to_dict()})
+                self.assertIs(type(view.name), str)
+                self.assertEqual(self._leaks(task, view), [], task.name)
+                sent = pickle.dumps(("restored", view))
+                for package in guard.LOADER_PACKAGES:                      # no loader class travels
+                    self.assertNotIn(package.encode() + b".", sent)
+        self.assertEqual(tasks, sum(PARTITION_SIZES.values()))
+
+    def test_hidden_example_check_catches_a_leaking_view(self):
+        """The attack: views that carry the hidden examples in each of their fields."""
         task = partitions.load("validation")[0]
-        self.assertGreater(len(task.hidden), 0)
-        view = partitions.public_view(task)
-        self.assertEqual(sorted(vars(view)), ["examples", "name", "request"])
-        self.assertEqual(view.examples, task.examples)
-        self.assertIsInstance(view.request, dict)
-        sent = pickle.dumps(("restored", view))
-        for package in guard.LOADER_PACKAGES:                              # no loader class travels
-            self.assertNotIn(package.encode() + b".", sent)
-        for example in task.hidden:
-            if example not in task.examples:
-                self.assertNotIn(pickle.dumps(example)[2:-1], sent)
+        honest = partitions.public_view(task)
+        leaking = [partitions.PublicTask(task.name, honest.request, task.examples + task.hidden),
+                   partitions.PublicTask(task.name, dict(honest.request, extra=list(task.hidden)), task.examples),
+                   partitions.PublicTask((task.name, task.hidden), honest.request, task.examples),
+                   partitions.PublicTask(task.name, honest.request, task.examples + (task.hidden[0],))]
+        for view in leaking:
+            self.assertNotEqual(self._leaks(task, view), [])
+        self.assertEqual(self._leaks(task, honest), [])
 
 
 class Workers(Attack):
@@ -220,6 +279,26 @@ class Workers(Attack):
             self.assertNotIn("solved", record)
             self.assertNotIn("family", record)
         self.assertEqual(out["pool_after_load"], "other:RuntimeError")     # a pool after the first load is refused
+
+    def test_dead_worker_fails_the_run(self):
+        """A worker killed in the middle of a run: the driver gets an error within seconds and
+        no result (the executor never replaces a worker)."""
+        out, _, _ = self.attack("dead_worker")
+        self.assertEqual(out, {"map": "other:BrokenProcessPool", "within_a_minute": True})
+
+    def test_run_driver_itself(self):
+        """phase1.main on RESERVE-FAR2 at a small budget, with a probe around the worker's
+        function: the driver installs the hook, every worker has it, a job is a PublicTask with
+        exactly the public content, a worker cannot load a partition, and the verdicts written
+        are those of an independent frozen verifier and agree with the registered file."""
+        out, _, _ = self.attack("driver")
+        self.assertEqual(out, {
+            "hook_before_main": False, "hook_after_main": True, "tasks": 21, "solved": 7,
+            "verdicts_are_the_verifiers": True, "workers_hooked": True,
+            "workers_refuse_programs": ["PermissionError"], "jobs": [["str", "PublicTask"]],
+            "fields": [["examples", "name", "request"]], "jobs_are_the_public_views": True,
+            "workers_hold_loaders": False, "workers_load": ["ImportError"],
+            "agrees_with_registered_file": True})
 
     def test_worker_forked_after_the_tasks_refuses_to_search(self):
         """The attack: a worker forked once the driver holds the tasks inherits them (the

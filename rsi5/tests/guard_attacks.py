@@ -3,11 +3,14 @@ cannot be removed, so every scenario needs its own process).
 
 Usage: ``python guard_attacks.py <mode> <decoy root>``. Prints one JSON object, attack ->
 outcome. Every attack targets a decoy tree built by the test. The ``loaders``,
-``early_workers`` and ``late_worker`` modes also load exposed partitions through the
-package's own loaders, as the run driver does; nothing here names J's directory.
+``early_workers``, ``late_worker``, ``dead_worker`` and ``driver`` modes also load exposed
+partitions through the package's own loaders, as the run driver does; nothing here names
+J's directory.
 """
+import contextlib
 import gc
 import glob
+import hashlib
 import importlib
 import importlib.util
 import io
@@ -18,8 +21,10 @@ import pathlib
 import pkgutil
 import runpy
 import shutil
+import signal
 import sys
 import tempfile
+import time
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, REPO)
@@ -45,6 +50,30 @@ def run(attacks) -> dict:
 
 def statement(source):
     return lambda: exec(source, {})
+
+
+class Index:
+    """An object that stands for a descriptor through ``__index__``."""
+    def __init__(self, descriptor):
+        self.descriptor = descriptor
+
+    def __index__(self):
+        return self.descriptor
+
+
+class Liar(str):
+    """A ``str`` whose methods describe another, harmless path; the system call sees the real one."""
+    def startswith(self, *args):
+        return False
+
+    def __str__(self):
+        return "harmless.txt"
+
+    def __add__(self, other):
+        return "harmless.txt"
+
+    def __radd__(self, other):
+        return "harmless.txt"
 
 
 def paths(root, sealed, secret) -> dict:
@@ -91,6 +120,23 @@ def paths(root, sealed, secret) -> dict:
         "copytree": lambda: shutil.copytree(sealed, join(root, "open", "tree")),
         "get_data": lambda: pkgutil.get_data("decoypkg", "sealed/secret.txt"),
         "blocked_name": lambda: open(join(root, "open", "list_tasks2.json")).read(),
+        # The same name carried by other objects.
+        "bytes_path": lambda: open(os.fsencode(secret)).read(),
+        "bytes_listdir": lambda: os.listdir(os.fsencode(sealed)),
+        "bytearray_path": lambda: os.read(os.open(bytearray(os.fsencode(secret)), os.O_RDONLY), 5),
+        "memoryview_path": lambda: os.read(os.open(memoryview(os.fsencode(secret)), os.O_RDONLY), 5),
+        "pathlike_os_open": lambda: os.open(pathlib.Path(secret), os.O_RDONLY),
+        "str_subclass": lambda: open(Liar(secret)).read(),
+        "index_listdir": lambda: os.listdir(Index(before_dir)),
+        "index_scandir": lambda: list(os.scandir(Index(before_dir))),
+        "index_dir_fd": lambda: os.open(inside, os.O_RDONLY, dir_fd=Index(above)),
+        # Links and renames relative to a directory descriptor, and a link into the sealed directory.
+        "link_into_sealed": lambda: os.link(join(root, "open", "readme.txt"), join(sealed, "planted_link.txt")),
+        "link_into_sealed_dir_fd": lambda: os.link("open/readme.txt", "decoypkg/sealed/planted2.txt",
+                                                   src_dir_fd=above, dst_dir_fd=above),
+        "rename_dir_fd": lambda: os.rename("decoypkg/sealed", "moved2", src_dir_fd=above, dst_dir_fd=above),
+        "replace_dir_fd": lambda: os.replace(inside, "open/taken2.txt", src_dir_fd=above, dst_dir_fd=above),
+        "rename_ancestor_dir_fd": lambda: os.rename("decoypkg", "renamed2", src_dir_fd=above, dst_dir_fd=above),
         "own_memory": lambda: open("/proc/self/mem", "rb").close(),
         "parent_memory": lambda: open(f"/proc/{os.getppid()}/mem", "rb").close(),
         # A documented residual, pinned so that no document can claim otherwise:
@@ -109,6 +155,45 @@ def working_directory(root, sealed, secret) -> dict:
         "relative_open": lambda: open("secret.txt").read(),
         "iterdir": lambda: list(pathlib.Path().iterdir()),
         "glob": lambda: glob.glob("*"),
+    })
+
+
+def deleted_cwd(root, sealed, secret) -> dict:
+    """The working directory is removed after the hook is installed: os.getcwd() fails, yet
+    the kernel still resolves ".." from it."""
+    gone = os.path.join(root, "gone")
+    os.mkdir(gone)
+    guard.seal(sealed)
+    guard.install()
+    os.chdir(gone)
+    os.rmdir(gone)
+    return run({
+        "getcwd": os.getcwd,
+        "relative_open": lambda: open("../decoypkg/sealed/secret.txt").read(),
+        "relative_os_open": lambda: os.open("../decoypkg/sealed/secret.txt", os.O_RDONLY),
+        "relative_listdir": lambda: os.listdir("../decoypkg/sealed"),
+        "relative_scandir": lambda: list(os.scandir("../decoypkg/sealed")),
+        "benign_relative_open": lambda: open("../open/readme.txt").read(),
+    })
+
+
+def symlinked_seal(root, sealed, secret) -> dict:
+    """The seal and a keep-list are given through symbolic names; the real paths are sealed."""
+    join = os.path.join
+    link, corpus_link = join(root, "link_to_sealed"), join(root, "corpus_link")
+    os.symlink(sealed, link)
+    os.symlink(join(root, "corpus"), corpus_link)
+    guard.seal(link)
+    guard.seal(corpus_link, keep=("kept.json",))
+    guard.install()
+    return run({
+        "real_path": lambda: open(secret).read(),
+        "through_link": lambda: open(join(link, "secret.txt")).read(),
+        "listdir_real": lambda: os.listdir(sealed),
+        "kept_real": lambda: open(join(root, "corpus", "kept.json")).read(),
+        "kept_through_link": lambda: open(join(corpus_link, "kept.json")).read(),
+        "other_real": lambda: open(join(root, "corpus", "other.json")).read(),
+        "other_through_link": lambda: open(join(corpus_link, "other.json")).read(),
     })
 
 
@@ -139,6 +224,7 @@ def spawn(root, sealed, secret) -> dict:
         "spawn_start_method": lambda: multiprocessing.get_context("spawn").Process(target=abs, args=(1,)).start(),
         "forkserver_start_method":
             lambda: multiprocessing.get_context("forkserver").Process(target=abs, args=(1,)).start(),
+        "pty_spawn": lambda: importlib.import_module("pty").spawn(["/bin/cat", secret]),
         "readline": lambda: importlib.import_module("readline"),
         "readline_statement": statement("import readline"),
     })
@@ -286,9 +372,9 @@ def early_workers(root, sealed, secret) -> dict:
     plan = _plan()
     with phase1.worker_pool(plan, 2) as pool:
         tasks = partitions.load("validation")       # from here on the driver holds hidden examples
-        states = pool.map(worker_state, range(4), chunksize=1)
+        states = list(pool.map(worker_state, range(4), chunksize=1))
         jobs = [("restored", partitions.public_view(task)) for task in tasks[:2]]
-        records = pool.map(phase1.run_task, jobs, chunksize=1)
+        records = list(pool.map(phase1.run_task, jobs, chunksize=1))
         second_pool = outcome(lambda: phase1.worker_pool(plan, 1))
     return {"driver_holds_loaders": bool(guard.loader_modules()), "states": states,
             "records": [sorted(record) for record in records],
@@ -311,9 +397,94 @@ def late_worker(root, sealed, secret) -> dict:
             "inherits_loader_objects": bool(state["loader_objects"]), "run_task": searched}
 
 
+def die_on_first(job):
+    """Runs inside a search worker: the worker that receives the marked job kills itself."""
+    if job[0] == "die":
+        os.kill(os.getpid(), signal.SIGKILL)
+    return phase1_run_task(job)
+
+
+def phase1_run_task(job):
+    from rsi5 import phase1
+    return phase1.run_task(job)
+
+
+def dead_worker(root, sealed, secret) -> dict:
+    """A search worker dies in the middle of a run: the driver must fail, at once."""
+    from rsi5 import partitions, phase1
+    guard.install()
+    plan = _plan()
+    started = time.perf_counter()
+    with phase1.worker_pool(plan, 2) as pool:
+        tasks = partitions.load("validation")
+        jobs = [("restored", partitions.public_view(task)) for task in tasks[:4]]
+        jobs.insert(1, ("die", jobs[0][1]))
+        failed = outcome(lambda: list(pool.map(die_on_first, jobs, chunksize=1)))
+    return {"map": failed, "within_a_minute": time.perf_counter() - started < 60}
+
+
+_ORIGINAL_RUN_TASK = None
+
+
+def probed_run_task(job):
+    """Runs inside a search worker of the real driver: the record plus what the worker saw."""
+    from rsi5 import partitions
+    record = _ORIGINAL_RUN_TASK(job)
+    view = job[1]
+    record["_probe"] = {
+        "hook_installed": guard._installed,
+        "hook_refuses_a_program": outcome(lambda: os.system("true")),
+        "job": [type(job[0]).__name__, type(view).__name__], "fields": sorted(vars(view)),
+        "content": hashlib.sha256(repr((view.name, view.request, view.examples)).encode()).hexdigest(),
+        "loader_modules": guard.loader_modules(),
+        "load": outcome(lambda: len(partitions.load("validation"))),
+    }
+    return record
+
+
+def driver(root, sealed, secret) -> dict:
+    """The run driver itself, phase1.main, on RESERVE-FAR2 at a small budget: what its workers
+    see, and whether the verdicts it writes are the frozen verifier's."""
+    global _ORIGINAL_RUN_TASK
+    from rsi5 import partitions, phase1
+    from rsi5.dsl.pretty_parse import parse
+    from rsi5.verifier import FrozenVerifier
+    _ORIGINAL_RUN_TASK = phase1.run_task
+    phase1.run_task = probed_run_task
+    output = os.path.join(root, "driver_out")
+    before = guard._installed
+    with contextlib.redirect_stdout(io.StringIO()):
+        phase1.main(["--output", output, "--partition", "far2", "--vocabulary", "original", "--workers", "2",
+                     "--budget", "2000"])
+    with open(os.path.join(output, "original_far2.json")) as handle:
+        result = json.load(handle)
+    tasks = partitions.load("far2")
+    verifier = FrozenVerifier(tasks, step_budget=2000)
+    records = result["records"]
+    agree = [bool(verifier.verify(r["name"], parse(r["program"]) if r["program"] else None).verdict) == r["solved"]
+             for r in records]
+    expected = [hashlib.sha256(repr((v.name, v.request, v.examples)).encode()).hexdigest()
+                for v in map(partitions.public_view, tasks)]
+    probes = [r["_probe"] for r in records]
+    with open(os.path.join(REPO, "rsi5", "results_p1", "original_far2.json")) as handle:
+        registered = {r["name"]: r for r in json.load(handle)["records"]}
+    same = all(r["solved"] == (registered[r["name"]]["solved"] and registered[r["name"]]["candidates_to_solution"] <= 2000)
+               and (not r["solved"] or r["program"] == registered[r["name"]]["program"]) for r in records)
+    return {"hook_before_main": before, "hook_after_main": guard._installed,
+            "tasks": len(records), "solved": sum(r["solved"] for r in records),
+            "verdicts_are_the_verifiers": all(agree),
+            "workers_hooked": all(p["hook_installed"] for p in probes),
+            "workers_refuse_programs": sorted({p["hook_refuses_a_program"] for p in probes}),
+            "jobs": sorted({tuple(p["job"]) for p in probes}), "fields": sorted({tuple(p["fields"]) for p in probes}),
+            "jobs_are_the_public_views": [p["content"] for p in probes] == expected,
+            "workers_hold_loaders": any(p["loader_modules"] for p in probes),
+            "workers_load": sorted({p["load"] for p in probes}),
+            "agrees_with_registered_file": same}
+
+
 MODES = {function.__name__: function for function in
-         (paths, working_directory, spawn, imports, preloaded, keep, benign, loaders, worker,
-          early_workers, late_worker)}
+         (paths, working_directory, deleted_cwd, symlinked_seal, spawn, imports, preloaded, keep, benign,
+          loaders, worker, early_workers, late_worker, dead_worker, driver)}
 
 if __name__ == "__main__":
     mode, root = sys.argv[1], sys.argv[2]

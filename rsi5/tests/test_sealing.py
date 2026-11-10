@@ -15,13 +15,22 @@ RSI5 = Path(__file__).resolve().parents[1]
 REPO = RSI5.parent
 JUDGE_SOURCE_COMMIT = "c48c820f14a61611ac4a7d864ad780729c1f277f"
 
-#: Everything a solver module may import besides this package's own solver modules. The
-#: routes no audit event covers (ctypes, native modules, unaudited process starts, Tcl) are
-#: closed here, statically: a module that would give one is not on the list.
+#: Everything a solver module may import besides this package's own solver modules. A module
+#: that gives a route no audit event covers (ctypes, a native module, an unaudited process
+#: start, Tcl) is not on the list. This narrows the source; it does not close those routes:
+#: the worker pool needs ``multiprocessing``, whose ``util.spawnv_passfds`` starts a program
+#: unaudited, so that package is held to the names in ``ONLY`` and to the attribute check
+#: below, both of which an alias or ``getattr`` defeats.
 STANDARD_LIBRARY = frozenset({
-    "__future__", "argparse", "collections", "dataclasses", "functools", "hashlib", "itertools",
-    "json", "math", "multiprocessing", "os", "pathlib", "platform", "random", "re", "sys", "time",
-    "typing"})
+    "__future__", "argparse", "collections", "concurrent", "dataclasses", "functools", "hashlib",
+    "itertools", "json", "math", "multiprocessing", "operator", "os", "pathlib", "platform", "random",
+    "re", "sys", "time", "typing"})
+#: For these packages only the exact dotted names listed may be imported.
+ONLY = {"multiprocessing": frozenset({"multiprocessing", "multiprocessing.get_context"}),
+        "concurrent": frozenset({"concurrent.futures", "concurrent.futures.ProcessPoolExecutor"})}
+#: Identifiers that reach an unaudited route through an allowed package; no solver module spells them.
+UNAUDITED_NAMES = frozenset({"spawnv_passfds", "fork_exec", "_posixsubprocess", "sharedctypes", "ctypes",
+                             "resource_tracker", "forkserver", "popen_spawn_posix", "popen_forkserver"})
 #: The read-only loaders of the exposed partitions, and the only modules that may import them.
 LOADERS = {"partitions.py": ("rsi2.corpus", "rsi3.compose24", "rsi3.fresh", "rsi3.reserve"),
            "audit_p1.py": ("rsi3.compose24",)}
@@ -59,20 +68,65 @@ def import_allowed(name: str, loaders: tuple = ()) -> bool:
         return False
     if within(name, "rsi5"):
         return not within(name, "rsi5.tests")           # J's audit exempts tests/: no way around it
-    return name.split(".")[0] in STANDARD_LIBRARY or any(within(name, loader) for loader in loaders)
+    top = name.split(".")[0]
+    if top in ONLY:
+        return name in ONLY[top]
+    return top in STANDARD_LIBRARY or any(within(name, loader) for loader in loaders)
+
+
+def unaudited_names(source: str) -> list:
+    """Identifiers of unaudited routes a source spells, and any attribute of ``multiprocessing``
+    other than ``get_context``."""
+    found = []
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.Name) and node.id in UNAUDITED_NAMES:
+            found.append(node.id)
+        elif isinstance(node, ast.Attribute):
+            if node.attr in UNAUDITED_NAMES:
+                found.append(node.attr)
+            if isinstance(node.value, ast.Name) and node.value.id == "multiprocessing" and node.attr != "get_context":
+                found.append(f"multiprocessing.{node.attr}")
+    return found
 
 
 def string_constants(source: str) -> list:
-    """Every string a source spells out: its constants, and constants joined with ``+``."""
+    """Every string a source spells out: its string and bytes constants, and constants joined
+    with ``+``, ``%``, ``str.join`` or ``str.format``. A name built from run-time values is
+    the guard's business, not this scan's."""
     def joined(node):
         if isinstance(node, ast.Constant) and isinstance(node.value, str):
             return node.value
+        if isinstance(node, ast.Constant) and isinstance(node.value, bytes):
+            return node.value.decode("latin-1")
         if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
             left, right = joined(node.left), joined(node.right)
             return None if left is None or right is None else left + right
+        if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Mod):
+            left = joined(node.left)
+            items = node.right.elts if isinstance(node.right, ast.Tuple) else [node.right]
+            values = [joined(item) for item in items]
+            if left is None or None in values:
+                return None
+            try:
+                return left % tuple(values)
+            except (TypeError, ValueError):
+                return None
         if isinstance(node, ast.JoinedStr):
             parts = [joined(value) for value in node.values]
             return None if None in parts else "".join(parts)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and not node.keywords:
+            base = joined(node.func.value)
+            if base is not None and node.func.attr == "join" and len(node.args) == 1 \
+                    and isinstance(node.args[0], (ast.List, ast.Tuple)):
+                parts = [joined(item) for item in node.args[0].elts]
+                return None if None in parts else base.join(parts)
+            if base is not None and node.func.attr == "format":
+                values = [joined(item) for item in node.args]
+                if None not in values:
+                    try:
+                        return base.format(*values)
+                    except (IndexError, KeyError, ValueError):
+                        return None
         return None
     return [text for text in map(joined, ast.walk(ast.parse(source))) if text is not None]
 
@@ -116,9 +170,12 @@ class JudgeCopy(unittest.TestCase):
 class Guard(unittest.TestCase):
     def test_guard_blocks_pool_access(self):
         script = r"""
-import json, os, sys
+import json, os, sys, tempfile
 sys.path.insert(0, %r)
 from rsi5 import guard
+decoy = os.path.join(tempfile.mkdtemp(), "list_tasks2.json")     # a file of the sealed name, to write at
+with open(decoy, "w") as handle:
+    handle.write("decoy")
 assert guard.install()
 out = {}
 judge = os.path.join(%r, "judge")
@@ -128,7 +185,7 @@ for label, action in [
     ("open_assembled", lambda: open(os.path.join(judge, "po" + "ols", "stage_eval_S1.json"))),
     ("listdir", lambda: os.listdir(os.path.join(judge, "pools"))),
     ("scandir", lambda: list(os.scandir(judge))),
-    ("source_file", lambda: open(os.path.join(%r, "list_tasks2.json"), "w")),
+    ("source_file", lambda: open(decoy, "w")),
     ("import", lambda: __import__("rsi5.judge.registry")),
     ("import_pools", lambda: __import__("rsi5.judge.pools")),
 ]:
@@ -137,6 +194,8 @@ for label, action in [
         out[label] = "allowed"
     except (PermissionError, ImportError) as exc:
         out[label] = type(exc).__name__
+out["source_file_rule"] = guard.blocked_path(os.path.join(%r, "list_tasks2.json"))   # the real one: decided from its name
+out["decoy_intact"] = os.path.getsize(decoy) == 5
 # ordinary files stay readable
 with open(os.path.join(%r, "probes.py")) as handle:
     out["probes_py"] = "allowed" if handle.read(1) else "empty"
@@ -151,6 +210,10 @@ print(json.dumps(out))
         self.assertEqual(out["import"], "ImportError")
         self.assertEqual(out["import_pools"], "ImportError")
         self.assertEqual(out["probes_py"], "allowed")
+        # The write attempt is aimed at a decoy of the sealed name: a regression must not be able
+        # to truncate the package's own file. The real file is decided from its name alone.
+        self.assertTrue(out["source_file_rule"])
+        self.assertTrue(out["decoy_intact"])
 
 
 class StaticAudit(unittest.TestCase):
@@ -165,6 +228,17 @@ class StaticAudit(unittest.TestCase):
 
     def _package(self, path) -> tuple:
         return ("rsi5",) + path.relative_to(RSI5).parts[:-1]
+
+    def test_static_scans_cover_the_solver_modules(self):
+        """The scans below pass on an empty list; this one says the list is not empty."""
+        scanned = {path.relative_to(RSI5).as_posix() for path in self._solver_modules()}
+        for expected in ("phase1.py", "partitions.py", "verifier.py", "guard.py", "probes.py", "report_p1.py",
+                         "audit_p1.py", "engine/bottomup.py", "engine/closures.py", "engine/normal_forms.py",
+                         "engine/throughput.py", "dsl/evaluator.py", "dsl/terms.py", "dsl/vocabulary.py",
+                         "dsl/admitted/__init__.py"):
+            self.assertIn(expected, scanned)
+        self.assertGreaterEqual(len(scanned), 22)
+        self.assertFalse(any(name.startswith(("judge/", "tests/")) for name in scanned))
 
     def test_no_solver_module_imports_judge(self):
         for path in self._solver_modules():
@@ -182,7 +256,9 @@ class StaticAudit(unittest.TestCase):
                    ("from .judge import registry", top), ("from .judge.pools import load", top),
                    ("from .. import judge", engine), ("from ..judge import registry", engine),
                    ("from ..judge.pools import load", engine),
-                   ("def f():\n    from . import judge\n    return judge", top)]
+                   ("def f():\n    from . import judge\n    return judge", top),
+                   ("import os, rsi5.judge", top), ("import rsi5.guard, rsi5.judge.pools as p", top),
+                   ("try:\n    from .judge import registry\nexcept ImportError:\n    registry = None", top)]
         for source, package in attacks:
             self.assertNotEqual(imports_judge(source, package), [], source)
         innocent = [("from . import guard as judge", top), ("from .dsl import terms", top),
@@ -209,17 +285,43 @@ class StaticAudit(unittest.TestCase):
                    "import runpy", "import pickle", "import numpy", "from . import judge",
                    "from .tests import guard_attacks", "import rsi5.tests.test_throughput",
                    "import rsi2.corpus", "from rsi3.compose24 import load_frozen_tasks",
-                   "from rsi2 import sealed_evaluation", "import rsi4.judge"]
+                   "from rsi2 import sealed_evaluation", "import rsi4.judge",
+                   "import os, ctypes", "import json, subprocess as s",
+                   # an allowed package's submodules that reach an unaudited route
+                   "from multiprocessing import util", "from multiprocessing import util, sharedctypes",
+                   "from multiprocessing.util import spawnv_passfds", "import multiprocessing.util",
+                   "import multiprocessing.forkserver", "from multiprocessing import resource_tracker",
+                   "from multiprocessing import Pool", "from concurrent.futures import process",
+                   "import concurrent.futures.process", "from concurrent import futures as f, thread"]
         for source in attacks:
             names = imported_names(source, top)
             self.assertFalse(all(import_allowed(name) for name in names), source)
         for source in ["import os", "import multiprocessing", "from pathlib import Path",
+                       "from multiprocessing import get_context", "from concurrent.futures import ProcessPoolExecutor",
                        "from . import guard, partitions, probes", "from .dsl.types import Type"]:
             self.assertTrue(all(import_allowed(name) for name in imported_names(source, top)), source)
         self.assertTrue(all(import_allowed(name, LOADERS["partitions.py"])
                             for name in imported_names("from rsi3.fresh import load_fresh", top)))
         self.assertFalse(all(import_allowed(name, LOADERS["partitions.py"])
                              for name in imported_names("from rsi2 import sealed_evaluation", top)))
+
+    def test_no_solver_module_spells_an_unaudited_route(self):
+        """`multiprocessing` must stay importable, so its unaudited process start is held by
+        name: no solver module spells the identifiers of the unaudited routes or reads an
+        attribute of `multiprocessing` other than `get_context`. An alias or `getattr` gets
+        around this; guard.py declares the route open."""
+        for path in self._solver_modules():
+            found = unaudited_names(path.read_text(encoding="utf-8"))
+            self.assertEqual(found, [], f"{path.relative_to(REPO)} spells {found}")
+        attacks = ["import multiprocessing\nmultiprocessing.util.spawnv_passfds('/bin/sh', [], [])",
+                   "import multiprocessing\nu = multiprocessing.util",
+                   "import multiprocessing\nmultiprocessing.sharedctypes.ctypes.CDLL(None)",
+                   "run = spawnv_passfds", "x = m.resource_tracker", "lib = ctypes.CDLL(None)",
+                   "_posixsubprocess.fork_exec()", "import multiprocessing\nmultiprocessing.Pool(2)"]
+        for source in attacks:
+            self.assertNotEqual(unaudited_names(source), [], source)
+        for source in ["import multiprocessing\nc = multiprocessing.get_context('fork')", "util = 1"]:
+            self.assertEqual(unaudited_names(source), [], source)
 
     def test_no_solver_module_names_the_sealed_partition(self):
         """RSI-2's sealed partition has one loader module, one loader function and one file;
@@ -231,7 +333,12 @@ class StaticAudit(unittest.TestCase):
         attacks = ["from rsi2.sealed_evaluation import load_test", "import rsi2.sealed_evaluation as s",
                    "from rsi2 import sealed_evaluation", "tasks = corpus.load_test()",
                    "open('rsi2/data/test.json')", "open('data/' + 'test' + '.json')",
-                   "name = 'test'\nopen(f'rsi2/data/test.json')", "x = getattr(m, 'load_' + 'test')"]
+                   "name = 'test'\nopen(f'rsi2/data/test.json')", "x = getattr(m, 'load_' + 'test')",
+                   "from rsi2.corpus import *\ntasks = load_test()", "import rsi2.corpus as load_test",
+                   "open(f'{directory}/test.json')", "open(b'rsi2/data/test.json')",
+                   "open('rsi2/data/%s.json' % 'test')", "open('rsi2/data/%s.%s' % ('test', 'json'))",
+                   "open('/'.join(['rsi2', 'data', 'test.json']))", "open('.'.join(('test', 'json')))",
+                   "open('rsi2/data/{}.json'.format('test'))"]
         for source in attacks:
             self.assertNotEqual(names_sealed_partition(source), [], source)
         for source in ["from rsi2.corpus import load_train, load_validation",

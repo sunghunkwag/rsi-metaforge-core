@@ -74,9 +74,41 @@ class ParityWithRsi2(unittest.TestCase):
             if count >= 1500:
                 break
         self.assertGreaterEqual(count, 1500)
-        # Pinned (RESULTS_P1.md, review finding on ``_curry``): 191 on this corpus today. When
-        # the closures stop evaluating given arguments eagerly this becomes 0; drop the pin then.
-        self.assertGreater(eager_failures, 0)
+        # Pinned (RESULTS_P1.md, review finding on ``_curry``): exactly 191 on this corpus. A
+        # closure defect in a term with a partial application moves the number; when the closures
+        # stop evaluating given arguments eagerly it becomes 0 and the pin is dropped.
+        self.assertEqual(eager_failures, 191)
+
+    def test_closures_agree_on_the_programs_the_engine_builds(self):
+        """The corpus that matters: every program in the top-context pools of a short search,
+        both vocabularies (eta-long, fully applied, as the engine compiles them). Here no excuse
+        applies: a closure that fails where the reference succeeds, a different value, or a
+        closure that succeeds where the reference fails for a reason other than its step budget
+        fails the test."""
+        from rsi5.dsl.vocabulary import ORIGINAL, RESTORED
+        from rsi5.engine.bottomup import Engine
+        inputs = [[], [0], [3, 1, 2], [5, -1, 7, 7, 2], [1, 1, 1, 1], [10, 2]]
+        examples = [((xs,), [-999]) for xs in inputs]                  # unreachable target
+        for vocabulary in (ORIGINAL, RESTORED):
+            engine = Engine(vocabulary)
+            engine.search(examples, Arrow(ListOf(INT), ListOf(INT)), [], budget=4000)
+            programs = [expr for pool in engine.top.pools.values() for expr in pool]
+            self.assertGreater(len(programs), 1000)
+            self.assertTrue(any(expr.kind == "prim" and expr.head in ("map", "filter", "fold") for expr in programs))
+            agreed = 0
+            for expr in programs:
+                term = Lam(ListOf(INT), expr.term)
+                fn = compile_term(expr.term)
+                for xs in inputs:
+                    reference = evaluate(term, (xs,), step_budget=2000)
+                    value, error = run_closure(fn, (xs,), 2000)
+                    if reference.ok:
+                        self.assertIsNone(error, f"the closure fails where the reference succeeds: {term} on {xs}")
+                        self.assertEqual((reference.value, type(reference.value)), (value, type(value)), str(term))
+                        agreed += 1
+                    elif error is None:
+                        self.assertIn("budget", reference.error, f"{term} on {xs}")
+            self.assertGreater(agreed, 5000)
 
 
 class RestoredPrimitivesAreTotal(unittest.TestCase):

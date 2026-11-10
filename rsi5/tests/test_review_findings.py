@@ -45,7 +45,12 @@ def literal(value):
 class Semantics(unittest.TestCase):
     """The fast paths against the reference interpreter."""
 
-    def test_and_or_short_circuit_in_the_reference_only(self):
+    def test_vectorised_and_or_are_strict(self):
+        """The vectorised `and` and `or` fail when either side fails; the reference interpreter
+        and the compiled closures skip the right side. Observational-equivalence keys and
+        top-level matches come from the vectorised path, so a guard at the top of a program is
+        lost; inside a lambda body the final value comes from the closure, and a guard written
+        there does protect its right side when the canonical order puts it first."""
         xs = Var(0)
         non_empty = apply(Prim("not"), apply(Prim("is_empty"), xs))
         head_is_one = apply(Prim("eq"), apply(Prim("head"), xs), Int(1))
@@ -53,6 +58,7 @@ class Semantics(unittest.TestCase):
         swapped = Lam(LIST, apply(Prim("and"), head_is_one, non_empty))
         self.assertEqual(evaluate(guarded, ([],)).value, False)       # the reference skips the right side
         self.assertFalse(evaluate(swapped, ([],)).ok)                 # so `and` does not commute
+        self.assertEqual(fast(guarded, []), (False, None))            # the closures skip it too
         self.assertIs(VECTOR["and"]([False], [ERR])[0], ERR)          # the vectorised `and` is strict
         self.assertIs(VECTOR["or"]([True], [ERR])[0], ERR)
         self.assertIn("and", COMMUTATIVE)                             # and the filter orders its arguments
