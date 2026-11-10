@@ -16,8 +16,17 @@ Outputs, per (vocabulary, partition): ``<output>/<vocabulary>_<partition>.json``
 record per task and a digest over every deterministic field (wall-clock excluded), so
 two runs of the same plan are checked byte for byte through their digests.
 
+Process layout. ``main()`` installs the guard (``rsi5/guard.py``) first, then forks the
+search workers, and only then loads a partition. A worker is forked before any loader
+module is imported and before any task exists, so it inherits no hidden example; it calls
+``guard.seal_task_data()``, which refuses the loaders' import and seals their sources and
+data, and it is sent ``PublicTask`` values only. The driver process holds the tasks and
+the frozen verifier and never searches: with ``--workers 1`` the search still runs in one
+forked worker. A worker forked late (the pool replaces a worker that died) finds loader
+modules in its ``sys.modules`` and refuses every task, which fails the run.
+
 No learning anywhere. Nothing here reads J's pools, TEST, or any hidden example outside
-the verifier; the guard (``rsi5/guard.py``) is installed first.
+the verifier.
 """
 from __future__ import annotations
 
@@ -32,10 +41,10 @@ import sys
 import time
 
 from . import guard, partitions, probes
-from .dsl.terms import term_to_dict
-from .dsl.types import function_parts
+from .dsl.terms import term_from_dict, term_to_dict
+from .dsl.types import Type, function_parts
 from .dsl.vocabulary import VOCABULARIES
-from .engine.bottomup import Engine
+from .engine.bottomup import CHILD_POINT_CAP, Engine
 from .verifier import FrozenVerifier, term_digest
 
 SCHEMA = 1
@@ -54,23 +63,45 @@ def load_plan(path: Path) -> dict:
         raise ValueError("the probe set differs from the one the plan registered")
     if not probes.check():
         raise ValueError("the committed probe set is not the generator's output")
+    if plan.get("child_point_cap", CHILD_POINT_CAP) != CHILD_POINT_CAP:
+        raise ValueError(f"the engine's child-context point cap is {CHILD_POINT_CAP}, a constant; "
+                         "the plan registers another value")
+    if max(int(b) for b in plan["report_budgets"]) > int(plan["budget"]):
+        raise ValueError("a report budget exceeds the run budget; its count would not be measured")
     return plan
 
 
-# ---- one task -----------------------------------------------------------------------------
+# ---- the search workers -------------------------------------------------------------------
 _WORKER = {}
 
 
-def _init_worker(plan: dict, vocabulary_name: str):
+def _init_worker(plan: dict) -> None:
+    """Runs once in each search worker, right after its fork."""
+    guard.install()                      # inherited from the driver; a no-op unless forked unguarded
+    guard.seal_task_data()
     _WORKER["plan"] = plan
-    _WORKER["vocabulary"] = VOCABULARIES[vocabulary_name]
     _WORKER["probes"] = probes.load()
+    _WORKER["late"] = guard.preloaded()
 
 
-def run_task(task) -> dict:
-    """Search one public-view task; return a JSON-ready record (no verdict yet)."""
-    plan, vocabulary = _WORKER["plan"], _WORKER["vocabulary"]
-    request = partitions.request_type(task)
+def worker_pool(plan: dict, workers: int):
+    """Fork the search workers. Call it before the first ``partitions.load()``: a worker
+    forked later inherits the loader modules and every task the driver then holds."""
+    loaded = guard.loader_modules()
+    if loaded:
+        raise RuntimeError(f"search workers must be forked before any loader is imported; found {loaded}")
+    context = multiprocessing.get_context("fork")
+    return context.Pool(max(1, workers), initializer=_init_worker, initargs=(plan,))
+
+
+def run_task(job) -> dict:
+    """In a worker: search one public task with one vocabulary; a JSON-ready record, no verdict."""
+    vocabulary_name, task = job
+    if _WORKER["late"]:
+        raise RuntimeError("this search worker was forked after these modules were imported and may "
+                           f"hold hidden examples: {_WORKER['late']}")
+    plan, vocabulary = _WORKER["plan"], VOCABULARIES[vocabulary_name]
+    request = Type.from_dict(task.request)
     inputs = probes.inputs_for(function_parts(request)[0], _WORKER["probes"])
     engine = Engine(vocabulary, max_size=plan["max_size"], step_budget=plan["step_budget"],
                     max_lambda_depth=plan.get("max_lambda_depth", 2))
@@ -78,7 +109,7 @@ def run_task(task) -> dict:
                            wall_cap=plan.get("wall_cap_seconds"))
     term = result.term
     return {
-        "name": task.name, "family": partitions.family(task.name), "request_type": str(request),
+        "name": task.name, "request_type": str(request),
         "public_match": term is not None,
         "program": str(term) if term is not None else None,
         "program_dict": term_to_dict(term) if term is not None else None,
@@ -91,29 +122,25 @@ def run_task(task) -> dict:
     }
 
 
-def run_partition(plan: dict, vocabulary_name: str, partition: str, workers: int,
+# ---- the driver ---------------------------------------------------------------------------
+def run_partition(plan: dict, vocabulary_name: str, partition: str, pool, workers: int,
                   limit: int | None = None) -> dict:
+    """In the driver: load the partition, send its public views to ``pool``, verify the answers."""
     tasks = partitions.load(partition)
     if limit is not None:
         tasks = tasks[:limit]
     verifier = FrozenVerifier(tasks, step_budget=plan["step_budget"])
-    public = [partitions.public_view(task) for task in tasks]
+    jobs = [(vocabulary_name, partitions.public_view(task)) for task in tasks]
     started = time.perf_counter()
-    if workers > 1:
-        context = multiprocessing.get_context("fork")
-        with context.Pool(workers, initializer=_init_worker, initargs=(plan, vocabulary_name)) as pool:
-            records = pool.map(run_task, public, chunksize=1)
-    else:
-        _init_worker(plan, vocabulary_name)
-        records = [run_task(task) for task in public]
+    records = pool.map(run_task, jobs, chunksize=1)
     for record in records:
-        from .dsl.terms import term_from_dict
+        record["family"] = partitions.family(record["name"])
         term = term_from_dict(record["program_dict"]) if record["program_dict"] is not None else None
         receipt = verifier.verify(record["name"], term, generation=0)
         record["solved"] = receipt.verdict
         record["receipt"] = receipt.receipt_id
         record.pop("program_dict")
-    budgets = sorted(int(b) for b in plan["report_budgets"])
+    budgets = sorted(int(b) for b in plan["report_budgets"] if int(b) <= int(plan["budget"]))
     solved_at = {str(b): sum(1 for r in records if r["solved"] and r["candidates_to_solution"] <= b)
                  for b in budgets}
     deterministic = [{k: v for k, v in r.items() if k != "wall_seconds"} for r in records]
@@ -138,6 +165,9 @@ def write(result: dict, output: Path) -> Path:
 
 def main(argv=None):
     guard.install()
+    early = guard.preloaded()
+    if early:
+        raise SystemExit(f"imported before the guard was installed, so outside its import rule: {early}")
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--plan", type=Path, default=Path(__file__).resolve().parent / "runs" / "p1.json")
     parser.add_argument("--output", type=Path, required=True)
@@ -149,7 +179,7 @@ def main(argv=None):
     parser.add_argument("--throughput", action="store_true", help="measure and record throughput")
     args = parser.parse_args(argv)
     if args.throughput:
-        from .tests.test_throughput import measure
+        from .engine.throughput import measure
         figures = measure()
         figures["python"] = platform.python_version()
         figures["machine"] = platform.machine()
@@ -160,14 +190,16 @@ def main(argv=None):
     plan = load_plan(args.plan)
     if args.budget is not None:
         plan = dict(plan, budget=args.budget, development_override=True)
-    for vocabulary in args.vocabulary or plan["vocabularies"]:
-        for partition in args.partition or plan["partitions"]:
-            result = run_partition(plan, vocabulary, partition, args.workers, args.limit)
-            path = write(result, args.output)
-            print(json.dumps({"vocabulary": vocabulary, "partition": partition, "tasks": result["tasks"],
-                              "solved": result["solved"], "solved_at": result["solved_at"],
-                              "wall_seconds": result["wall_seconds"], "digest": result["digest"][:16],
-                              "file": str(path)}), flush=True)
+    workers = max(1, args.workers)
+    with worker_pool(plan, workers) as pool:            # forked here, before any partition is loaded
+        for vocabulary in args.vocabulary or plan["vocabularies"]:
+            for partition in args.partition or plan["partitions"]:
+                result = run_partition(plan, vocabulary, partition, pool, workers, args.limit)
+                path = write(result, args.output)
+                print(json.dumps({"vocabulary": vocabulary, "partition": partition, "tasks": result["tasks"],
+                                  "solved": result["solved"], "solved_at": result["solved_at"],
+                                  "wall_seconds": result["wall_seconds"], "digest": result["digest"][:16],
+                                  "file": str(path)}), flush=True)
 
 
 if __name__ == "__main__":

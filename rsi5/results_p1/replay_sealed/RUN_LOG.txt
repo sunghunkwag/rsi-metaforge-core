@@ -1,0 +1,2 @@
+{"vocabulary": "original", "partition": "far2", "tasks": 21, "solved": 14, "solved_at": {"1000": 5, "10000": 9, "100000": 11, "1000000": 14}, "wall_seconds": 75.3, "digest": "bdd3737767cb1a38", "file": "rsi5/results_p1/replay_sealed/original_far2.json"}
+{"vocabulary": "restored", "partition": "far2", "tasks": 21, "solved": 18, "solved_at": {"1000": 4, "10000": 7, "100000": 15, "1000000": 18}, "wall_seconds": 46.9, "digest": "d5ee7213169b6a6a", "file": "rsi5/results_p1/replay_sealed/restored_far2.json"}

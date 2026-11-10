@@ -2,21 +2,39 @@
 
 Every partition here is *exposed*: its results were read by earlier studies
 (``rsi3/*RESULTS.md``), so nothing may be tuned on it and nothing here gates, selects
-or decides. TEST is never loaded. J's pools are J's (``rsi5/judge``), never loaded here.
-Hidden examples travel inside ``rsi2.corpus.Task`` objects and are read only by the
-frozen verifier (``rsi5/verifier.py``); the engine receives ``public_view`` tasks.
+or decides. J's pools are J's (``rsi5/judge``), never loaded here.
+
+TEST is never loaded and RSI-2's TEST file is never opened; ``rsi5/guard.py`` seals it.
+Precisely: the three RESERVE partitions are built by ``rsi3/reserve.py``, which parses
+DreamCoder's source file (it holds every source record, the 12 TEST tasks' among them) and
+the split manifest (it lists TEST's names) and keeps only names outside the 60 selected
+tasks. No TEST record is normalised, turned into a task or counted.
+
+Hidden examples travel inside ``rsi2.corpus.Task`` objects and are read only by the frozen
+verifier (``rsi5/verifier.py``). A search worker receives ``PublicTask`` values: a name, a
+request type in dict form and the public examples, with no object of a loader package inside.
+
+The loaders are imported inside ``load()`` and ``family()``, never at module import. A
+process that loads no partition, such as a search worker forked before the first
+``load()``, therefore holds no loader module, and ``guard.seal_task_data()`` can refuse
+their import there.
 """
 from __future__ import annotations
 
-from rsi2.corpus import Task, load_train, load_validation
-from rsi3.compose24 import load_frozen_tasks
-from rsi3.fresh import load_fresh
-from rsi3.reserve import load_reserve
+from dataclasses import dataclass
 
 from .dsl.types import Type
 
 
-def request_type(task: Task) -> Type:
+@dataclass(frozen=True)
+class PublicTask:
+    """What a search worker receives: plain data, no hidden example."""
+    name: str
+    request: dict        # the request type as ``Type.to_dict()`` gives it
+    examples: tuple      # the public examples: ((inputs, output), ...)
+
+
+def request_type(task) -> Type:
     """The task's request type in RSI-5's type language (rsi2 and rsi5 share the dict form)."""
     return Type.from_dict(task.request_type.to_dict())
 
@@ -34,25 +52,31 @@ PARTITIONS = {
 PHASE1_ORDER = ("fresh1", "fresh2", "near", "far2", "compose24", "validation", "far", "train")
 
 
-def load(partition: str) -> list[Task]:
+def load(partition: str) -> list:
+    """The partition's ``rsi2.corpus.Task`` objects, hidden examples included: driver side only."""
     if partition in ("fresh1", "fresh2"):
+        from rsi3.fresh import load_fresh
         loaded = load_fresh(partition)
     elif partition in ("near", "far", "far2"):
+        from rsi3.reserve import load_reserve
         loaded = load_reserve(partition)
     elif partition == "compose24":
+        from rsi3.compose24 import load_frozen_tasks
         loaded = load_frozen_tasks()
     elif partition == "validation":
+        from rsi2.corpus import load_validation
         loaded = load_validation()
     elif partition == "train":
+        from rsi2.corpus import load_train
         loaded = load_train()
     else:
         raise KeyError(f"unknown partition {partition!r}")
     return loaded
 
 
-def public_view(task: Task) -> Task:
-    """A copy with no hidden examples: what the engine receives."""
-    return Task(task.name, task.request_type, task.examples, ())
+def public_view(task) -> PublicTask:
+    """The task without its hidden examples, as plain data: what a search worker receives."""
+    return PublicTask(task.name, request_type(task).to_dict(), task.examples)
 
 
 def family(name: str) -> str:
