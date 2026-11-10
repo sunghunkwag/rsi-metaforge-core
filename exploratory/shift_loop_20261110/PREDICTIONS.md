@@ -162,3 +162,38 @@ family-normalised score moves from 22.47 to 24.05.
 | E5 | The two-family screen rejects the `slice-k-n` symbols that carried the first loop in configuration A, and the raw learning count at 10^4 ends below the first loop's 97 | PASS (moderate) |
 | E6 | Generation-0 machinery at the cumulative budget solves at least as many held-out tasks as the student at 10^4 in both configurations | PASS (moderate) |
 | V4 | The harvest stops growing within 3 cycles: distillation amortises search, it does not compound | moderate |
+
+# Addendum 4: deployment frontier of the second loop's best state (diagnostic)
+
+Written after the second loop had finished in configuration B and its log had been read
+(generation 0: learning 121, held-out 27; best state, run 20: learning 127, held-out 38,
+three learned symbols, one of them `filter (lambda x. gt (mod x k) 0)`, and a cut vocabulary
+of 17 and 20 symbols), while the second loop in configuration A, the control at the loop's
+cumulative budget and the expert-iteration runs were still running, and before any run of
+`frontier.py`. Also known: in the first loop the best state of configuration B at 10^5 solved
+35 held-out tasks against 28 for generation-0 machinery without R at 10^5.
+
+R3 compares the loop after training with generation 0 at the loop's cumulative budget. That
+comparison is fixed and stays as registered. This diagnostic asks a different question and
+decides nothing: at an equal budget per task at deployment, does the learned vocabulary stay
+ahead as the budget grows, or does it only find the same programs earlier?
+
+## Set-up (fixed now)
+- Held-out partitions of configuration B only (FRESH-2 and COMPOSE-24, 124 tasks).
+- Three vocabularies, machinery S + C + f + R in all: generation 0 (no learned symbol, full
+  vocabulary); the best state of the second loop (its three symbols and its kept sets); the
+  three symbols with the full vocabulary.
+- Budgets per task: 10^5 and 251,479 (the second loop's cumulative budget per real task).
+  10^4 is already measured: 27, 38, and 34 for the symbols with the full vocabulary.
+
+## Predictions
+| ID | Prediction | Expected |
+| --- | --- | --- |
+| F1 | At 10^5 the best state solves at least 3 more held-out tasks than generation 0 at 10^5 | PASS (moderate) |
+| F2 | At 10^5 the symbols with the full vocabulary solve at least as many held-out tasks as the best state with its cut | PASS (low) |
+| F3 | The best state's lead over generation 0 is smaller at 251,479 than at 10^4 (11): budget closes part of the gap | PASS (moderate) |
+| F4 | At 251,479 one of the two learned vocabularies is still at least 3 held-out tasks ahead of generation 0 | PASS (low) |
+
+My reading, fixed in advance: a lead of at least 3 at all three budgets (F1 and F4) means the
+learned symbols moved the frontier of what is reached, not only the order in which programs
+are found. It would still be one step of learning, not a compounding one.
