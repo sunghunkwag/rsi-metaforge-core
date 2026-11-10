@@ -48,6 +48,7 @@ def run(harness, learn, max_cycles=MAX_CYCLES, screen=True, log=print, component
     sizes = collections.Counter(family_of.values())
     library, tabu, corpus, timeline, screened_out = {}, set(), {}, [], []
     executions = {"student": 0, "teacher": 0}
+    propose_seconds = []                       # compression in the driver: used by the loop, in no budget
 
     def measure(lib, label, budget, names):
         abstractions, constants = serialise(lib)
@@ -111,7 +112,9 @@ def run(harness, learn, max_cycles=MAX_CYCLES, screen=True, log=print, component
         absorb(taught)
         accepted = False
         for attempt in range(1, RETRIES + 1):
+            started = time.perf_counter()
             proposals = propose(library, cycle)
+            propose_seconds.append(round(time.perf_counter() - started, 1))
             if not proposals:
                 break
             candidate = dict(library)
@@ -143,6 +146,8 @@ def run(harness, learn, max_cycles=MAX_CYCLES, screen=True, log=print, component
             "harvest_families": [h["families_with_a_solve"] for h in harvests],
             "harvest_family_score": [h["family_score"] for h in harvests],
             "families": len(sizes), "screened_out": screened_out, "executions": executions,
+            "propose_seconds": propose_seconds,
+            "verdicts_read": executions["student"] * 338 + executions["teacher"] * learn_tasks,
             "equal_budget_per_real_task": round(cumulative),
             "library": {n: {"definition": str(a.definition), "witness": str(a.witness), "depth": a.depth,
                             "params": [str(p) for p in a.params], "result": str(a.result)} for n, a in library.items()}}

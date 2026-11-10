@@ -272,24 +272,34 @@ vocabulary after the fact. It is not R3 as registered, and not a clean test.
 
 # Addendum 7: registered replication of the one positive result
 
-DRAFT, not in force: this line is removed by the commit that registers the protocol.
-
 Approved by the Owner on 2026-11-10 ("expert iteration with representation search from
 generation 0, predictions and control fixed before the run"). Written after every result
-above had been read. Nothing below was run at a real budget before this text was committed.
+above had been read. A draft (commit 20b6fb1) was attacked by four independent reviewers
+before anything ran at a real budget: confounds and leakage, fairness of the control,
+statistics and claims, implementation. They returned 19 findings. This text is the draft as
+changed by them; what each changed is listed at the end. Nothing below has been run at a real
+budget, and no solver has run on the registered evaluation set at any budget.
 
 ## The claim under test
 
 A vocabulary learned by expert iteration lets the same machinery solve more held-out
-composition tasks at 10^5 candidates per task than generation 0 solves when it is given the
-whole training and deployment budget.
+composition tasks at 10^5 candidates per task than generation 0 solves under a budget
+ceiling equal to the whole training and deployment budget.
 
-The one measurement behind it so far (Addendum 6): 44 sound held-out solves against 37, for a
-state built by switching R on after the loop had run without it, on the 124 tasks the
-combination was chosen on. Eleven tasks only the trained state solves, four only generation
-0: a one-sided sign test gives p = 0.059. Against everything generation 0 solves at any of
-the five budgets it was run at (39 sound), nine against four: p = 0.13. That is not evidence
-yet.
+The one measurement behind it (Addendum 6): 44 sound held-out solves against 37, for a state
+built by switching R on after the loop had run without it, on the 124 tasks the combination
+was chosen on. What the reviewers found in it, each point checked again by the author:
+
+- Eleven tasks only the trained state solves, four only generation 0: a one-sided sign test
+  gives p = 0.059. Against everything generation 0 solves at any of the five budgets it was
+  run at (39 sound), nine against four: p = 0.13.
+- The lead is one routine family. In the 30 FRESH-2 tasks with a divisibility routine in a
+  stage it is eight against one. In the other 70 it is three against three. COMPOSE-24 has no
+  task that only one arm solves.
+- On five of the eleven, generation 0 had not run out of budget: it had stopped at a wrong
+  first match (a verified program that is not sound) after 4% to 50% of its ceiling.
+
+That is not evidence yet, and where it points is narrow.
 
 ## Mechanism (frozen)
 
@@ -301,91 +311,173 @@ person:
    score on the learning partitions, one retry, at most 6 cycles), with one change: the
    machinery is S + C + f + R for student and teacher. Configuration B. The harness as fixed
    after the review.
-2. The final vocabulary and generation 0 (same machinery, no learned symbol) at 10^4 and at
+2. Generation 0 (same machinery, no learned symbol) and the final vocabulary at 10^4 and at
    10^5 on the evaluation sets.
-3. Generation 0 at the cumulative budgets. T = student runs x 338 x 10^4 + teacher runs x 214
-   x 10^5 (budget ceilings; every run of the loop is charged, rejected vocabularies included).
-   For an evaluation set of N tasks, D = N x 10^5.
-   - C2 = (T + D) / N: the whole training and deployment budget is spent on the evaluated
-     tasks alone. The harshest reading of equal total cost. Run on both sets.
+3. Generation 0 at the cumulative budget ceilings. T = student runs x 338 x 10^4 + teacher
+   runs x 214 x 10^5: every run of the loop is charged at its ceiling, rejected vocabularies
+   included. For an evaluation set of N tasks, D = N x 10^5.
+   - C2 = (T + D) / N: the whole training and deployment budget on the evaluated tasks alone.
+     Run on both sets.
    - C1 = (T + D) / 338: every task of the study gets the same share, the accounting of R3
-     and of Addendum 6. Run on held-out B. (On FRESH-3, N = 300 makes C1 and C2 nearly equal,
-     so only C2 is run there.)
-   - "Any budget": the union of everything generation 0 solves on the set at any budget run
-     (10^4, 10^5, C1, C2). More generous to the control than any single run, because a wrong
-     first match at one budget loses a task that another budget solves.
+     and of Addendum 6. Under it the control spends 37% of what the trained state is charged.
+     Run on held-out B, for comparison with Addendum 6.
+   - On FRESH-3 one more rung, mid = sqrt(10^5 x C2).
+   - "Any budget": the union of everything generation 0 solves on a set at every budget run
+     there (FRESH-3: 10^4, 10^5, mid, C2; held-out B: 10^4, 10^5, C1, C2). A larger budget
+     changes the share each route gets, so generation 0 can lose at C2 a task it solves with
+     less. The union gives the control more than equal cost and is the control of the
+     primary comparison.
+4. Secondary arm: the earlier combination itself (the 15 symbols of `results/expertB.json`
+   with R) at 10^5 on FRESH-3.
 
-If the process dies, it is restarted with `--from-loop` on the saved loop report (the loop is
-deterministic) and the report says so.
+Cost is counted in constructed candidates, at ceilings. Not counted for the trained arm:
+compression in the driver, and the verifier's verdicts on the learning tasks in every run of
+the loop, which generation 0 never receives. The report gives both (seconds, and the number
+of verdicts).
+
+The registered FRESH-3 set is checked by its digest before the loop starts. The runs at the
+largest budgets come first, so a failure for lack of memory (a test on four learning tasks
+at 1.7 million candidates showed 3.2 GB per worker) happens before any FRESH-3 outcome
+exists. If the process dies it is restarted with `--from-loop` on the saved loop report,
+with fewer workers if memory was the cause; results do not depend on the number of workers.
+The report says if that happened.
 
 ## Evaluation sets
 
-- **FRESH-3** (primary): 300 new two-stage tasks made by `fresh3.py`. Rule: stage-1 instances
-  are the first stages of FRESH-2 tasks and the FRESH-1 routines, stage-2 instances the second
-  stages of FRESH-2 tasks; each routine is read the one way that reproduces every FRESH task
-  it occurs in; candidates are all ordered pairs that are not a FRESH-2 task, in the order of
-  one seeded shuffle; a candidate is skipped if fewer than 16 of the 866 public FRESH input
-  lists are in its domain, if its 8 public outputs are all equal, if it is the identity, or
-  if it computes on its 16 inputs what some exposed task's reference computes (so no task
-  repeats a function the loop learns on) or what an earlier FRESH-3 task computes; 8 public
-  and 8 hidden examples. 469 candidates gave the 300 tasks; digest `333e350613873b88`. No
-  loop step runs FRESH-3 and no decision of this study has read an outcome on it at a real
-  budget.
+- **FRESH-3** (primary): 300 new two-stage tasks made by `fresh3.py`.
+  - Stage-1 instances are the first stages of FRESH-2 tasks and the FRESH-1 routines;
+    stage-2 instances are the second stages of FRESH-2 tasks. Each routine is read the one
+    way that reproduces every FRESH task it occurs in.
+  - Candidates are all ordered pairs whose pair of routine names is not the pair of a FRESH-2
+    task (3,710 pairs), in the order of one seeded shuffle.
+  - Inputs are public example inputs of FRESH-1 and FRESH-2, drawn with the frequency they
+    have there, 16 distinct lists per task among those the pipeline is defined on: 8 public,
+    8 hidden. If the 8 public outputs are all equal although the pipeline is not constant,
+    the last public example is exchanged for one with another output.
+  - A candidate is skipped if fewer than 16 inputs are usable, if it is constant, if it is
+    the identity on its examples, or if it computes on its 16 inputs what some exposed
+    task's reference or an earlier FRESH-3 task computes.
+  - Quotas by output type in FRESH-2's proportions: 213 list, 33 integer, 54 boolean.
+  - 3,113 candidates gave the 300 tasks. Digest
+    `4da13e671411da8c20a341e10d528eee26e1edad78045f8de32b4fb4473ae120`.
 - **Held-out B** (secondary): FRESH-2 and COMPOSE-24, 124 tasks. The combination was chosen on
-  these, so this half replicates the procedure, not the result on new tasks.
+  these, so this half replicates the procedure, not the result on new tasks. It is not a
+  sample: p-values on it, and pooled with it, are descriptive.
 
-What FRESH-3 is not. It uses the same routines as FRESH-2, so it tests new pairs and
-parameters, not new routines. Its generator was written by the author after the results above
-were known. Its mix is 283 list, 8 integer and 9 boolean outputs against 71, 11 and 18 of 100
-in FRESH-2, because the equal-public-outputs test rejects mostly reductions. A smoke test of
-`replicate.py` at toy budgets (300 to 9,948 candidates per task) ran on the first 100 tasks
-before this text was written and its counts were seen: generation 0 solved 2, 13 and 18 of
-them. The other 200 tasks have been run by nothing.
+What FRESH-3 is and is not.
+
+- New pairings of (routine, parameter) instances already used in FRESH-1 and FRESH-2. No
+  routine is new and no parameter value is new.
+- 104 of its 300 tasks have a divisibility routine in a stage (30 of 100 in FRESH-2). This
+  family is fixed now, by names only: `modulo-k`, `is-mod-k`, `keep-mod-k`, `remove-mod-k`,
+  `identify-is-mod-k`, `is-evens`, `is-odds`.
+- Its inputs differ from FRESH-2's: an empty public input in 96 of 300 tasks (52 of 100), a
+  negative public value in 41 (4), median longest public input 9 (7). It has 8 hidden
+  examples per task where FRESH-2 has 1 or 2.
+- Its generator was written by the author after the results above were known.
+- What has run on it: nothing. An earlier draft set (another seed and rule, digest
+  `333e3506...`) was run at toy budgets by the author (its first 100 tasks; generation 0
+  solved 2, 13 and 18 of them at 300, 1,500 and 9,948 candidates) and by the review (all
+  300, at up to 4,316 candidates; the author has not read those counts). That set is
+  discarded. Smoke tests of the present code use a separate seed.
 
 ## Outcome measure
 
 Sound solves: the verified program agrees with the reference on 200 fresh inputs in the
 task's own input range (`audit_all.py`; for FRESH-3 the reference is the generating
-function). Verified counts are reported beside them. A task whose first public match the
-verifier rejects is lost for that run in both arms, whatever the budget.
+function, and inputs whose reference output lies beyond the generator's caps are skipped).
+Verified counts are reported beside them.
+
+A run stops at its first public match. If that program is wrong the task is lost for that
+run in both arms and the rest of the budget is not spent: a budget is a ceiling. For every
+task only one arm solves soundly, the report states what the other arm did on it: (a) no
+public match within its budget, (b) a public match the verifier rejected, (c) a verified
+program that is not sound. For generation 0 this is read at C2.
 
 ## Primary outcome and how it is read (fixed now)
 
-Primary comparison: on FRESH-3, the trained state at 10^5 against generation 0 at C2, sound
-solves, exact one-sided sign test on the tasks only one arm solves, alpha 0.05.
+Primary comparison: on FRESH-3, the trained state at 10^5 against generation 0 at any
+budget, sound solves, exact one-sided sign test on the tasks only one arm solves, alpha
+0.05. The 300 tasks are a seeded draw from the 3,710 candidate pairs, so the test is valid
+for that population of pairs, for the one vocabulary this run produces.
 
 | Outcome | Reading |
 | --- | --- |
+| A registered run is missing, or the set is not the registered one | No class. The report says what is missing. |
 | The loop accepts no symbol | Not replicated: the trained state is generation 0. |
-| Trained has no more sound solves than the control | Not replicated. The earlier lead is read as specific to the tasks it was chosen on. |
+| Trained has no more sound solves than the control | Not replicated on FRESH-3. If the trained state leads generation 0 at any budget on held-out B, the earlier lead is read as specific to the tasks it was chosen on. If it does not, the loop with R from generation 0 did not rebuild the combined state and the run says nothing about the earlier lead. |
 | More, with p >= 0.05 | Not established. The size of the lead is reported; no claim. |
-| More, with p < 0.05, but no lead over C1 on held-out B | Replicated on FRESH-3 only. |
-| More, with p < 0.05, and a lead over C1 on held-out B | Replicated. |
-| As the last row, and also p < 0.05 against "any budget" on FRESH-3 | Replicated strongly. |
+| More, with p < 0.05 | Replicated on FRESH-3 against everything generation 0 solves at any budget run, with the four endings below. |
 
-"More" means strictly more. Secondary, reported without deciding anything: the same test on
-held-out B and pooled; at equal budgets (10^4 and 10^5); the sign test over routine clusters
-of FRESH-3 (tasks sharing a first-stage routine, and tasks sharing a second-stage routine,
-count once each by the sign of their net), because tasks that share a routine are not
-independent; the counts by output type.
+Endings of a "replicated" outcome, each decided mechanically:
 
-What a positive outcome would license: on new pairs of the routines the loop trained on, at
-10^5 candidates per task, the learned vocabulary solves more than the same machinery without
-it does with the entire budget. What it would not: anything about new routines, about J's
-sealed pools, about the loop's own budget of 10^4, or recursive self-improvement by R1 to R4
-(R3 as registered compares at 10^4).
+1. Family: the same comparison on the 196 tasks without a divisibility stage. "For the
+   divisibility family only" if the trained state has no more sound solves than the control
+   there; "outside the divisibility family not separated from chance" if it has more with
+   p >= 0.05; "beyond the divisibility family" if p < 0.05 there.
+2. Budget: "with reach beyond the budget" if the trained-only tasks of kind (a) outnumber
+   the control-only tasks of kind (a); otherwise "as a different first match, not reach
+   beyond the budget". The words "with the entire budget" are used for kind (a) only.
+3. Output type: "for list outputs only" if the control has more sound solves on the 87
+   integer and boolean tasks.
+4. Held-out B: "and on held-out B" if the trained state has more sound solves there than
+   generation 0 at any budget; otherwise "not on held-out B".
+
+"More" means strictly more. The class is decided on sound counts; the same rule on verified
+counts is printed beside it and a difference is stated.
+
+Secondary, reported without deciding anything: every comparison against the single runs
+(equal budgets, mid, C1, C2), on held-out B and pooled (C2 on both sets; any budget on both
+sets); the primary test without each routine in turn, with the largest of those p-values
+and its routine; the trained-only tasks by the learned symbols their programs use; the sign
+test over routine clusters (first-stage routine, second-stage routine, the divisibility
+family as one cluster), where the larger p-value is the one quoted; a stricter reading of
+sound on FRESH-3 (agreement with the generating function on every usable input of the
+pool); the earlier combination on FRESH-3. If the task-level test passes and the larger
+cluster p-value is 0.05 or more, the report says that the lead holds over pairs and not
+over routines, names the routines with a positive net, and claims nothing for the others.
+
+What a positive outcome would license: for the one vocabulary this run produced, on the
+pairs `fresh3.py` draws from, at 10^5 candidates per task, the trained state has more sound
+solves than generation 0 has at any budget run, cost counted in constructed candidates,
+with the four endings as they fall. What it would not: new routines or parameters; the loop
+as a procedure (one run, one vocabulary); cost in time; J's sealed pools; the loop's own
+budget of 10^4; recursive self-improvement by R1 to R4 (R3 as registered compares at 10^4).
 
 ## Predictions
 
 | ID | Prediction | Expected |
 | --- | --- | --- |
-| Q1 | At least 3 cycles accept a symbol and the final student solves at least 138 learning tasks at 10^4 (121 at generation 0) | PASS (moderate) |
+| Q1 | At least 3 cycles accept a symbol and the final student has at least 138 verified learning solves at 10^4 (121 at generation 0) | PASS (moderate) |
 | Q2 | Held-out B at 10^4: the final student has at least 28 sound solves (generation 0: 22; the combination: 33) | PASS (moderate) |
 | Q3 | Held-out B at 10^5: the trained state has at least 40 sound solves (generation 0: 35; the combination: 44) | PASS (low) |
 | Q4 | Held-out B: trained at 10^5 has more sound solves than generation 0 at C1 | PASS (moderate) |
-| Q5 | Held-out B: trained at 10^5 has at least as many sound solves as generation 0 at C2 | PASS (low) |
-| Q6 | FRESH-3 at equal budgets: the trained state leads generation 0 by at least 6 sound solves at 10^4 and at 10^5 | PASS (low) |
-| Q7 | FRESH-3, primary: trained at 10^5 has more sound solves than generation 0 at C2 | PASS (low) |
-| Q8 | FRESH-3, primary: the sign test gives p < 0.05 | FAIL (low) |
-| Q9 | FRESH-3: the lead over generation 0 at C2 is smaller than the lead at an equal 10^5 | PASS (moderate) |
-| V5 | Outcome class: "not established" (a lead on FRESH-3 that the test does not separate from chance) | low |
+| Q5 | Held-out B: trained at 10^5 has more sound solves than generation 0 at any budget | PASS (low) |
+| Q6 | FRESH-3 at equal budgets: the trained state leads generation 0 by at least 6 sound solves at 10^4 and at 10^5 | PASS (moderate) |
+| Q7 | FRESH-3, primary: trained at 10^5 has more sound solves than generation 0 at any budget | PASS (moderate) |
+| Q8 | FRESH-3, primary: the sign test gives p < 0.05 (scored only if Q7 passes) | PASS (low) |
+| Q9 | FRESH-3 without the divisibility family: trained has more sound solves than the control | FAIL (moderate) |
+| Q10 | FRESH-3: the trained-only tasks on which generation 0 found no public match outnumber the control-only tasks of that kind | PASS (low) |
+
+Expected outcome class, not counted as a prediction: replicated on FRESH-3, for the
+divisibility family only.
+
+## What the review changed
+
+- Task mix: quotas by output type (the draft set had 283 list, 8 integer, 9 boolean tasks,
+  which favoured the trained arm: S and R act on list outputs only); inputs drawn with their
+  FRESH frequency; a constant draw repaired instead of rejected.
+- Independence: pairs that repeat a FRESH-2 routine pair are excluded (50 of the draft's
+  300 did); the registered set comes from a new seed and has been run by nothing.
+- Control: the union over budgets is the primary control, with one more rung on FRESH-3;
+  held-out B is compared with the union too, not with C1 alone.
+- Readings: the family ending, the budget ending, the output-type ending; a failure on
+  FRESH-3 is not attributed to the tasks unless held-out B replicates; "no class" cases;
+  the class on verified counts beside the class on sound counts.
+- Statistics: the cluster tests decide nothing (they measure neither validity nor breadth
+  well; a power simulation by the reviewer showed a family-only effect passing both in 74%
+  of draws); leave-one-routine-out and the family ending carry breadth instead.
+- Wording: no new parameters; one run, one vocabulary; candidates, not time; what the
+  trained arm uses outside its budget.
+- Code: the digest is checked before the run; the largest runs come first; smoke tests
+  cannot touch the registered set; every prediction is scored by the script.
