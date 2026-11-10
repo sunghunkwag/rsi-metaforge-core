@@ -8,12 +8,24 @@ from rsi2.enumeration import enumerate_programs
 from rsi2.types import INT as R_INT, ListOf as R_ListOf, Arrow as R_Arrow
 from rsi5.dsl.evaluator import evaluate
 from rsi5.dsl.terms import App, Bool, Int, Lam, Prim, Term, Var, apply, term_from_dict
-from rsi5.dsl.types import Arrow, BOOL, INT, ListOf, PairOf, infer
-from rsi5.engine.closures import compile_term, run_closure
+from rsi5.dsl.types import Arrow, BOOL, INT, ListOf, PRIMITIVE_TYPES, PairOf, infer
+from rsi5.engine.closures import ARITY, _spine, compile_term, run_closure
 
 
 def convert(rsi2_term):
     return term_from_dict(rsi2_term.to_dict())
+
+
+def has_partial_application(term) -> bool:
+    """True when some primitive in ``term`` is applied to fewer arguments than its arity."""
+    head, arguments = _spine(term)
+    if head.tag == "prim" and head.value in PRIMITIVE_TYPES and head.value != "nil" \
+            and len(arguments) < ARITY[head.value]:
+        return True
+    if term.tag == "app":
+        return any(has_partial_application(argument) for argument in arguments) \
+            or (head.tag != "prim" and has_partial_application(head))
+    return any(has_partial_application(child) for child in term.children)
 
 
 class ParityWithRsi2(unittest.TestCase):
@@ -34,11 +46,17 @@ class ParityWithRsi2(unittest.TestCase):
         self.assertGreaterEqual(count, 1500)
 
     def test_closures_agree_with_reference(self):
+        """Where both finish, they agree. The closure may finish where the reference runs out
+        of steps (it charges fewer). A closure that fails where the reference succeeds is a
+        defect; on this corpus it happens only in terms with a partial application
+        (``map (add 1) xs``), whose given arguments the closures evaluate eagerly. The engine
+        builds eta-long terms only, so it never compiles one."""
         inputs = [[], [0], [3, 1, 2], [5, -1, 7, 7, 2], [1, 1, 1, 1], [10, 2]]
-        count = 0
+        count = eager_failures = 0
         for candidate in enumerate_programs(R_Arrow(R_ListOf(R_INT), R_ListOf(R_INT)), max_size=9):
             term = convert(candidate.term)
             fn = compile_term(term)
+            partial = has_partial_application(term)
             for xs in inputs:
                 reference = evaluate(term, (xs,), step_budget=2000)
                 value, error = run_closure(fn, ())
@@ -46,12 +64,19 @@ class ParityWithRsi2(unittest.TestCase):
                     value, error = run_closure(lambda env, b, v=value, x=xs: v(x, b), ())
                 if reference.ok and error is None:
                     self.assertEqual(reference.value, value, str(term))
-                elif reference.ok != (error is None):
+                elif reference.ok:
+                    self.assertTrue(partial, f"the closure fails where the reference succeeds: {term} on {xs}")
+                    eager_failures += 1
+                elif error is None:
                     # The closures charge steps coarsely; only budget-bound cases may differ.
-                    self.assertIn("budget", reference.error or "budget", str(term))
+                    self.assertIn("budget", reference.error, str(term))
             count += 1
             if count >= 1500:
                 break
+        self.assertGreaterEqual(count, 1500)
+        # Pinned (RESULTS_P1.md, review finding on ``_curry``): 191 on this corpus today. When
+        # the closures stop evaluating given arguments eagerly this becomes 0; drop the pin then.
+        self.assertGreater(eager_failures, 0)
 
 
 class RestoredPrimitivesAreTotal(unittest.TestCase):

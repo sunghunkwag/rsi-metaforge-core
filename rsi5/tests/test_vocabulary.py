@@ -36,6 +36,14 @@ class VocabularyMatchesDocument(unittest.TestCase):
                     found[name] = cells[1].strip("`")
         return found
 
+    def test_vocabulary_matches_VOCABULARY_md(self):
+        """The test OWNER_DIRECTIVE.md section 11 names: both sections of the document against
+        the two vocabularies (the two tests below, one per section)."""
+        self.test_original_section_matches_vocabulary()
+        self.test_restored_section_matches_vocabulary()
+        listed = set(self._symbols(_rows("## ORIGINAL"))) | set(self._symbols(_rows("## RESTORED")))
+        self.assertEqual(listed - {"__ints__", "__bools__"}, set(PRIMITIVE_TYPES))
+
     def test_original_section_matches_vocabulary(self):
         found = self._symbols(_rows("## ORIGINAL"))
         ints = found.pop("__ints__")
