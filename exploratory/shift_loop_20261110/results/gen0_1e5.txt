@@ -1,0 +1,4 @@
+registered restored at 100000 {'train': 19, 'near': 51, 'validation': 3, 'far': 4, 'far2': 15, 'fresh1': 5, 'fresh2': 21, 'compose24': 1} total 119
+SCF   {'train': 22, 'near': 67, 'validation': 7, 'far': 6, 'far2': 18, 'fresh1': 20, 'fresh2': 32, 'compose24': 1} total 173 | held-out 84 | learn 89 | routes {'filter+search': 10, 'search': 70, 'fused': 10, 'map+search': 77, 'map+fused': 6} | rejected 24 | 279 s
+Sf    {'train': 20, 'near': 64, 'validation': 7, 'far': 6, 'far2': 18, 'fresh1': 19, 'fresh2': 27, 'compose24': 1} total 162 | held-out 78 | learn 84 | routes {'filter+search': 10, 'search': 70, 'map+search': 74, 'map+fused': 8} | rejected 17 | 283 s
+exit 0
