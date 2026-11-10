@@ -115,3 +115,50 @@ held-out in configuration A).
 | H20 | Dream solves rise at least three times as much as real solves (learning + held-out) over the loop: the internal signal inflates | PASS (moderate) |
 | H21 | Generation-0 machinery with R at the cumulative budget solves at least as many real held-out tasks as the loop (R3 fails again) | PASS (moderate) |
 | V3 | More accepted steps and a larger real held-out gain than the first loop, yet not recursive self-improvement by R1 to R4 | moderate |
+
+# Addendum 3: expert iteration with three principles taken from Terminal-RSI
+
+Written after the public repository of Terminal-RSI (arXiv:2610.22192, jyyang26/Terminal-RSI,
+read at commit 8f1e700) had been read, after the controls of the first loop had finished, and
+before any run of the mechanism below. The second loop (representation search, dream tasks,
+regrow) was running and had not been read.
+
+Nothing of that repository's code is used: it trains a 27B transformer with PPO, which this
+repository forbids. Three of its design principles are transferred to the symbolic loop.
+
+| Their mechanism | Their definition | What it becomes here |
+| --- | --- | --- |
+| Family Dense Reward | a per-family divisor, so a full solve is worth about 1 in every family | the acceptance signal is the sum over learning families of the fraction of the family verified |
+| Success-Prioritized Reward | R = S + P / (P + D): every failure below 1, every success at least 1 | only verified solves score; no partial credit enters the signal |
+| Recursive Self-Rewrite | successes of a complementary, stronger harness, screened for leakage and freshly verified, become supervision | programs harvested by the same machinery at ten times the budget are compressed into symbols, and a symbol is kept only if tasks of at least two families support it |
+
+What their own notes showed and this study then measured on the first loop: an aggregate
+score is mostly a task-mix metric. In configuration A all 17 learning gains are one family
+(`slice-k-n`: 12 of 16 in NEAR, 5 of 6 in TRAIN); families with a solve stay 26 of 42; the
+family-normalised score moves from 22.47 to 24.05.
+
+## The loop (fixed now)
+- Cycle k: (1) harvest: the current vocabulary at 10^5 candidates per task on the learning
+  partitions; verified programs join the corpus, one per task, the shortest kept. (2) distil:
+  compression proposes symbols; one supported by fewer than two families is banned and the
+  next is tried; up to 3 per cycle. (3) gate: the candidate vocabulary is run at 10^4 on every
+  task and accepted only if the family-normalised verified score on the learning partitions
+  rises; if rejected, its symbols are banned and the cycle retries once. (4) record the student
+  at 10^4 on held-out, never consulted.
+- At most 6 cycles; stop when a cycle accepts nothing. No vocabulary cut, no mutation, no
+  dreams, machinery S + C + f as in the first loop. Configurations A and B.
+- Compounding would show as the harvest itself growing: the teacher at 10^5 with the cycle-k
+  vocabulary verifying more learning tasks, in more families, than at cycle 0.
+- Controls: generation-0 machinery at 10^4 (deployment at equal budget) and at the loop's
+  cumulative budget per real task.
+
+## Predictions
+| ID | Prediction | Expected |
+| --- | --- | --- |
+| E1 | The harvest grows: the teacher's verified learning tasks at 10^5 end at least 4 above cycle 0 in configuration A (84 at cycle 0) | PASS (low) |
+| E2 | Families with a verified learning solve at 10^4 rise by at least 3 in configuration A (the first loop: 0) | PASS (low) |
+| E3 | The student at 10^4 does not fall below generation 0 on held-out in either configuration, and ends at least 3 above in one | PASS (low) |
+| E4 | At least 3 cycles accept a symbol in configuration B | PASS (low) |
+| E5 | The two-family screen rejects the `slice-k-n` symbols that carried the first loop in configuration A, and the raw learning count at 10^4 ends below the first loop's 97 | PASS (moderate) |
+| E6 | Generation-0 machinery at the cumulative budget solves at least as many held-out tasks as the student at 10^4 in both configurations | PASS (moderate) |
+| V4 | The harvest stops growing within 3 cycles: distillation amortises search, it does not compound | moderate |
