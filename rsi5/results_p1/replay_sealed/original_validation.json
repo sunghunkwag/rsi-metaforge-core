@@ -60,7 +60,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": false,
    "spurious": 0,
-   "wall_seconds": 75.052
+   "wall_seconds": 127.809
   },
   {
    "candidates": 551525,
@@ -79,7 +79,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 44.689
+   "wall_seconds": 80.427
   },
   {
    "candidates": 1000000,
@@ -98,7 +98,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": false,
    "spurious": 0,
-   "wall_seconds": 77.192
+   "wall_seconds": 119.698
   },
   {
    "candidates": 26934,
@@ -117,7 +117,7 @@
    "request_type": "list[int] -> bool",
    "solved": false,
    "spurious": 0,
-   "wall_seconds": 1.061
+   "wall_seconds": 1.777
   },
   {
    "candidates": 26992,
@@ -136,7 +136,7 @@
    "request_type": "list[int] -> list[bool]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 1.154
+   "wall_seconds": 1.912
   },
   {
    "candidates": 1000000,
@@ -155,7 +155,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": false,
    "spurious": 0,
-   "wall_seconds": 78.611
+   "wall_seconds": 125.457
   },
   {
    "candidates": 1000000,
@@ -174,7 +174,7 @@
    "request_type": "list[int] -> int",
    "solved": false,
    "spurious": 0,
-   "wall_seconds": 53.228
+   "wall_seconds": 84.602
   },
   {
    "candidates": 553032,
@@ -193,7 +193,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 32.575
+   "wall_seconds": 52.712
   },
   {
    "candidates": 1884,
@@ -212,7 +212,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 0.111
+   "wall_seconds": 0.162
   },
   {
    "candidates": 1867,
@@ -231,7 +231,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 0.095
+   "wall_seconds": 0.169
   },
   {
    "candidates": 556066,
@@ -250,7 +250,7 @@
    "request_type": "list[int] -> list[int]",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 31.25
+   "wall_seconds": 49.072
   },
   {
    "candidates": 28007,
@@ -269,7 +269,7 @@
    "request_type": "list[int] -> int",
    "solved": true,
    "spurious": 0,
-   "wall_seconds": 1.029
+   "wall_seconds": 2.138
   }
  ],
  "schema": 1,
@@ -283,6 +283,6 @@
  "tasks": 12,
  "verifier_queries": 12,
  "vocabulary": "original",
- "wall_seconds": 108.7,
+ "wall_seconds": 177.2,
  "workers": 4
 }

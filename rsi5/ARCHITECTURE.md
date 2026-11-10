@@ -138,8 +138,8 @@ task (public examples)        frozen probe set (data/probe_set.json)
   it forked, so its workers held every hidden example in memory; the engine was passed
   the public examples only, and the layout now keeps the rest out of the worker. The
   driver as it stands reproduces the registered digests
-  ([`results_p1/replay_sealed/`](results_p1/replay_sealed/); `RESULTS_P1.md` says for
-  which partitions).
+  ([`results_p1/replay_sealed/`](results_p1/replay_sealed/): all sixteen files of the
+  plan).
 
 ## J, the judge: copied, unchanged, and a conflict to report
 

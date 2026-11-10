@@ -103,12 +103,11 @@ over every record field except wall-clock) are identical to the main run's:
 `bdd3737767cb1a38` (FAR2 original), `d5ee7213169b6a6a` (FAR2 restored). The same two
 RESERVE-FAR2 digests come out of Python 3.11
 ([`results_p1/replay_python311/`](results_p1/replay_python311/); the main run used 3.13,
-Actions uses 3.11). They also come out of the driver as corrected after the two reviews,
-together with the two VALIDATION digests, `319f7917b847c6a4` (original) and
-`e30149429096b49b` (restored) ([`results_p1/replay_sealed/`](results_p1/replay_sealed/)).
-So the digest does not depend on the interpreter version on RESERVE-FAR2, or on which
-process holds the tasks on RESERVE-FAR2 and VALIDATION. The other partitions were not
-replayed by the final driver.
+Actions uses 3.11). The driver as corrected after the two reviews was then run on the
+whole plan: all sixteen digests equal the registered ones and every record is equal
+outside wall-clock ([`results_p1/replay_sealed/`](results_p1/replay_sealed/)). So the
+digest does not depend on the interpreter version on RESERVE-FAR2, or on which process
+holds the tasks on any partition.
 
 **Throughput.** 32,439 candidates/s on one core (40,000 candidates of the restored
 vocabulary on `rsi2/benchmark.py`'s example set, `list(range(n))` for n < 12, in 1.23 s;
@@ -370,12 +369,11 @@ the fact. `PREDICTIONS_P1.md` and the result files are untouched.
 | `NORMAL_FORMS.md` called every rule an equivalence; `ARCHITECTURE.md` said lambda depth 2 and contexts created on demand; the README said every primitive terminates under the step budget. | Each document now states what the code does. | the documents |
 | The package layout differs from the directive's §11 sketch. | `ARCHITECTURE.md` lists the differences; `test_vocabulary_matches_VOCABULARY_md` exists under that name. | [ARCHITECTURE.md](ARCHITECTURE.md) |
 
-The corrected driver was then run on RESERVE-FAR2 and VALIDATION with both vocabularies.
-All four digests equal the registered ones and every record field outside wall-clock is
-equal ([`results_p1/replay_sealed/`](results_p1/replay_sealed/); the identity table is in
-`python -m rsi5.report_p1`). These files were produced by the driver as it stands after the
-second review below. A replay of the whole plan had not finished when this was written;
-until its sixteen digests are recorded here, the claim is these four.
+The corrected driver was then run on the whole plan: eight partitions, both vocabularies,
+10⁶ candidates per task. All sixteen digests equal the registered ones and every record
+field outside wall-clock is equal ([`results_p1/replay_sealed/`](results_p1/replay_sealed/);
+the identity table is in `python -m rsi5.report_p1`). These files were produced by the
+driver as it stands after the second review below.
 
 ### Second review, of the corrections themselves
 
