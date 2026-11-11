@@ -25,8 +25,9 @@ One cycle:
   3. trials. Each trial takes the proposal with the largest description-length gain over the
      real programs and the corpus sample, adds it to the vocabulary and runs the student on the
      learning tasks and the gate sample. First phase: proposals that no target's program uses
-     are put off. Second phase: the proposals put off, in the same order, until REJECTS trials in
-     a row fail. At most MAX_TRIALS trials per cycle. A rejected symbol is never proposed again;
+     are put off; the phase ends when none is left or REJECTS trials in a row fail. Second
+     phase: every remaining proposal in order of gain, until REJECTS trials in a row fail. At
+     most MAX_TRIALS trials per cycle. A rejected symbol is never proposed again;
   4. the student on the held-out partitions, recorded and never read.
 The loop stops after a cycle that accepts nothing, or after MAX_CYCLES.
 
@@ -299,7 +300,8 @@ def run(harness, learn, *, max_cycles=None, components=COMPONENTS, log=print, ch
             new, programs, new_score = measure(candidate, f"student{cycle}.{in_cycle}", STUDENT, learn, dreams=gate)
             new["proposed"] = {"name": symbol.name, "definition": str(symbol.definition), "gain": symbol.score,
                                "tasks": len(symbol.tasks), "real_tasks": sum(1 for t in symbol.tasks if t in family_of),
-                               "targets": support, "depth": symbol.depth, "phase": phase}
+                               "support": sorted(t for t in symbol.tasks if t in family_of),   # learning tasks it folds
+                               "targets": support, "depth": symbol.depth, "phase": phase, "cycle": cycle}
             new["accepted"] = new_score > score or (new_score == score and new["dream"][0] > dream_now)
             tried.append({"trial": trials, "run": new["run"], "phase": phase, "symbol": symbol.name,
                           "accepted": new["accepted"]})
@@ -318,8 +320,10 @@ def run(harness, learn, *, max_cycles=None, components=COMPONENTS, log=print, ch
                     f"{dream_now} -> {new['dream'][0]}")
                 tabu.add(compress.key(symbol))
                 rejects += 1
-                if phase == 2 and rejects >= REJECTS:
-                    break
+                if rejects >= REJECTS:
+                    if phase == 2:
+                        break
+                    phase, rejects = 2, 0
         report = None
         if accepted:
             report, _, _ = measure(library, f"report{cycle}", STUDENT, held)      # recorded, never read

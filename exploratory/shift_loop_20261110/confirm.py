@@ -10,8 +10,9 @@ One process, no step between its parts that a person decides:
      of the Addendum 7 loop (``results/replication.json``); and generation 0, no learned symbol.
         T_new, T_old   the training ceilings of the two loops (every run they made, at its ceiling)
         on FRESH-4 (N tasks):   C2 = (T + N x deployment budget) / N   for each loop, and
-                                STRICT = 524,267, the whole-budget rung of Addendum 7
-        on held-out B:          413,254 and 1,126,452, the rungs of Addendum 7, and
+                                TOP = 1,126,452, the largest budget of Addendum 7
+        on held-out B:          every budget generation 0 has been run at there (181,775; 251,479;
+                                413,254; 569,881; 1,126,452) and
                                 C1new = (T_new + 124 x deployment budget) / 338 when it fits in memory
      Generation 0 runs at the student budget, the deployment budget and every rung; *new* and
      *old* at the student and the deployment budget;
@@ -45,6 +46,7 @@ from expert_ablate import spec_without
 from hybrid import ALL, Harness, summary
 from loop import CONFIGS
 from replicate import clustered, kinds_of, paired
+from rsi5 import partitions
 from rsi5.dsl.evaluator import evaluate
 from rsi5.dsl.pretty_parse import parse
 
@@ -54,9 +56,10 @@ TASKS = 338                      # the exposed tasks
 STEPS = 2000
 ALPHA = 0.05
 MIN_EVIDENCE = 20                # fresh in-domain inputs a sound verdict on a generated task needs
-REGISTERED_DIGEST = "d54c6593098b4540"          # the first 16 hex digits; Addendum 8 gives all 64
-STRICT = 524_267                 # generation 0's whole-budget rung on FRESH-3 in Addendum 7
-HELD_RUNGS = {"C1old": 413_254, "C2old": 1_126_452}
+REGISTERED_DIGEST = "6159d55f97e57301"          # the first 16 hex digits; Addendum 8 gives all 64
+TOP = 1_126_452                  # the largest budget generation 0 was run at in Addendum 7
+HELD_RUNGS = {"r181775": 181_775, "r251479": 251_479, "r413254": 413_254, "r569881": 569_881, "top": TOP}
+#                                  every budget above 10^5 generation 0 has been run at on held-out B
 MEMORY_LIMIT = 1_700_000         # candidates per task that four workers can hold on this machine
 EARLIER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results", "replication.json")
 EARLIER_FAMILY = "slice-k-n"     # with the divisibility family: the routines the old symbols encode
@@ -126,24 +129,28 @@ def outcome_class(flags: dict) -> str:
     """The registered reading (Addendum 8), from values computed by ``main``."""
     if flags["missing"]:
         return "no class: " + flags["missing"]
+    scope = flags["scope"] + ": "
     if not flags["accepted"]:
-        return "not confirmed: the loop accepted no symbol, so the new state is generation 0"
+        return scope + "not confirmed: the loop accepted no symbol, so the new state is generation 0"
     if not flags["lead"]:
-        return "not confirmed: no lead on FRESH-4 over what generation 0 solves at any budget run"
+        return scope + "not confirmed: no lead on FRESH-4 over what generation 0 solves at any budget run"
     if not flags["significant"]:
-        return "not established: a lead on FRESH-4 that the sign test does not separate from chance"
+        return scope + "not established: a lead on FRESH-4 that the sign test does not separate from chance"
     endings = [{"none": "only where a routine of the earlier symbols is present",
                 "not separated": "outside the routines of the earlier symbols not separated from chance",
                 "significant": "also outside the routines of the earlier symbols"}[flags["outside_earlier"]],
-               {"none": "no more than the earlier loop",
-                "not separated": "not separated from the earlier loop",
-                "significant": "and more than the earlier loop"}[flags["over_old"]],
+               {"none": "no more than the earlier loop's vocabulary at the same deployment budget",
+                "not separated": "not separated from the earlier loop's vocabulary at the same deployment budget",
+                "significant": "and more than the earlier loop's vocabulary at the same deployment budget"}[flags["over_old"]],
                "with reach beyond the budget" if flags["budget_bound_lead"]
                else "as a different first match, not reach beyond the budget",
-               {"none": "not on the tasks no dream of the loop computed",
-                "not separated": "on the tasks no dream of the loop computed not separated from chance",
-                "significant": "also on the tasks no dream of the loop computed"}[flags["undreamt"]]]
-    return "confirmed on FRESH-4 against everything generation 0 solves at any budget run; " + "; ".join(endings)
+               {"none": "not where no dream computed the task or composed its pair of routines",
+                "not separated": "where no dream computed the task or composed its pair of routines not separated from chance",
+                "significant": "also where no dream computed the task or composed its pair of routines"}[flags["undreamt"]],
+               {"none": "only where both stages are its own learning tasks",
+                "not separated": "where a stage is not one of its learning tasks not separated from chance",
+                "significant": "also where a stage is not one of its learning tasks"}[flags["beyond_learning_tasks"]]]
+    return scope + "confirmed on FRESH-4 against everything generation 0 solves at any budget run; " + "; ".join(endings)
 
 
 def graded(comparison: dict) -> str:
@@ -153,11 +160,11 @@ def graded(comparison: dict) -> str:
 
 
 def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
-    global DEPLOY, STRICT, HELD_RUNGS, MIN_EVIDENCE
+    global DEPLOY, TOP, HELD_RUNGS, MIN_EVIDENCE
     if tiny:
         deepen.STUDENT, deepen.TEACHER, deepen.CAP, deepen.MAX_CYCLES = 300, 1500, 5000, 2
         deepen.DREAMS_GATE, deepen.DREAMS_CORPUS, deepen.DREAMS_TARGETS, deepen.MAX_TRIALS = 20, 40, 20, 5
-        DEPLOY, STRICT, HELD_RUNGS = 1500, 2500, {"C1old": 2000, "C2old": 3000}
+        DEPLOY, TOP, HELD_RUNGS = 1500, 3000, {"r2000": 2000, "top": 3000}
     learn = CONFIGS["B"]
     held = [p for p in ALL if p not in learn]
     harness = Harness(workers, ALL)
@@ -211,10 +218,13 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
     sets = {"heldB": held, "fresh4": ["fresh4"], "fresh3": ["fresh3"]}
     sizes = {name: sum(len(harness.public[p]) for p in parts) for name, parts in sets.items()}
     c2 = lambda which: round((training[which] + sizes["fresh4"] * DEPLOY) / sizes["fresh4"])
-    budgets = {"fresh4": {"C2old": c2("old"), "C2new": c2("new"), "strict": STRICT}, "heldB": dict(HELD_RUNGS)}
+    budgets = {"fresh4": {"C2old": c2("old"), "C2new": c2("new"), "top": TOP}, "heldB": dict(HELD_RUNGS)}
+    if budgets["fresh4"]["C2new"] > MEMORY_LIMIT:
+        raise SystemExit(f"C2new = {budgets['fresh4']['C2new']} does not fit in memory: the registered control cannot be run")
     c1new = round((training["new"] + sizes["heldB"] * DEPLOY) / TASKS)
     if c1new <= MEMORY_LIMIT:
         budgets["heldB"]["C1new"] = c1new
+    out["c2new_if_training_were_charged_to_300_tasks"] = round((training["new"] + 300 * DEPLOY) / 300)
     out["training_candidates"], out["set_sizes"], out["control_budgets"] = training, sizes, budgets
     out["c1new_on_held_out_b"] = {"budget": c1new, "run": c1new <= MEMORY_LIMIT}
     print(f"training ceilings {training}; control budgets {budgets}", flush=True)
@@ -264,20 +274,50 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
                 continue                             # FRESH-3: generation 0 and the old state are in the earlier report
             measure(f"{state}@deploy:{name}", state, DEPLOY, parts)
             measure(f"{state}@student:{name}", state, student, parts)
-    # criterion R2, outside the loop: what the later teachers found that generation 0 does not find
-    # at the same budget on the same tasks, and what the final student loses without the first cycle
+    # ---- criterion R2, after the loop and outside it ------------------------------------------------
+    # Discovery: a later teacher solves a learning task soundly with a program that uses a learned
+    # symbol, and generation 0 at the same budget on the same task finds no public match.
     by_run = {t["run"]: t for t in report["timeline"]}
+    sound = Sound({"fresh4": fourth, "fresh3": third})
+    discovery, through = {}, set()
     for cycle in report["cycles"][1:]:
-        measure(f"gen0@teacher{cycle['cycle']}:learn", "gen0", cycle["teacher_share"], list(learn),
-                only=set(cycle["unsolved"]))
+        label = f"gen0@teacher{cycle['cycle']}:learn"
+        measure(label, "gen0", cycle["teacher_share"], list(learn), only=set(cycle["unsolved"]))
+        teacher, plain = by_run[cycle["teacher_run"]], rows[label]
+        with_symbols = {key for key, value in teacher["programs"].items()
+                        if teacher["used"].get(key) and sound.verdict(key, value[0])[0]
+                        and not plain["records"][key]["matched"]}
+        other_way = {key for key, value in plain["programs"].items()
+                     if sound.verdict(key, value[0])[0] and key not in teacher["programs"]
+                     and key not in teacher["rejected"]}
+        if len(with_symbols) > len(other_way):          # the symbols helped that teacher more than they cost
+            through |= with_symbols
+        discovery[str(cycle["cycle"])] = {
+            "budget": cycle["teacher_share"], "tasks": len(cycle["unsolved"]),
+            "teacher_sound_with_a_symbol_where_generation_0_has_no_match": sorted(with_symbols),
+            "generation_0_sound_where_the_teacher_has_no_match": sorted(other_way)}
+    # Recursive symbols: accepted after the first cycle and distilled from such a program; with them
+    # go the symbols defined through them.
+    trials = {t["proposed"]["name"]: t["proposed"] for t in report["timeline"] if t.get("accepted")}
+    seeds = {name for name, info in trials.items() if info["cycle"] >= 2 and set(info["support"]) & through}
+    recursive = descendants(report["library"], seeds) if seeds else set()
     first_cycle = set(report["cycles"][0]["library"]) if report["cycles"] else set()
-    dropped = descendants(report["library"], first_cycle) if first_cycle else set()
-    ablated = {name: entry for name, entry in report["library"].items() if name not in dropped}
-    if dropped:
-        measure("new-without-cycle1@student", ("without-cycle1", ablated), student, list(learn) + held)
+    lineage = descendants(report["library"], first_cycle) if first_cycle else set()
+    ablations = {"without-recursive": recursive, "without-cycle1-lineage": lineage, "without-cycle1-only": first_cycle}
+    for label, names in ablations.items():
+        if names:
+            kept = {name: entry for name, entry in report["library"].items() if name not in names}
+            measure(f"new-{label}@student", (label, kept), student, list(learn) + held)
+            measure(f"new-{label}@student:fresh4", (label, kept), student, ["fresh4"])
+    # The vocabulary after each accepting cycle on FRESH-4 at the student budget (the last one is
+    # the row new@student:fresh4): criterion R1 there.
+    stages = [cycle for cycle in report["cycles"] if cycle["accepted"]]
+    for cycle in stages[:-1]:
+        measure(f"cycle{cycle['cycle']}@student:fresh4",
+                (f"cycle{cycle['cycle']}", {name: report["library"][name] for name in cycle["library"]}),
+                student, ["fresh4"])
 
     # ---- 4. audit and tests ------------------------------------------------------------------------
-    sound = Sound({"fresh4": fourth, "fresh3": third})
     for label, row in rows.items():
         verdicts = {key: sound.verdict(key, value[0]) for key, value in row["programs"].items()}
         row["sound"] = sorted(key for key, (ok, _) in verdicts.items() if ok)
@@ -313,8 +353,10 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
                 arms[name][f"{state}@student"], arms[name]["controls"]["any"])
         for at in ("deploy", "student"):
             comparisons[f"{name}: new@{at} vs old@{at}"] = paired(arms[name][f"new@{at}"], arms[name][f"old@{at}"])
-    old_own = set().union(*(arms["fresh4"]["controls"][c] for c in ("student", "equal", "C2old")))
-    comparisons["fresh4: old@deploy vs gen0 up to its own C2"] = paired(arms["fresh4"]["old@deploy"], old_own)
+    old_own = set().union(arms["fresh4"]["controls"]["student"], arms["fresh4"]["controls"]["equal"],
+                          *(arms["fresh4"]["controls"][rung] for rung, budget in budgets["fresh4"].items()
+                            if budget <= budgets["fresh4"]["C2old"]))
+    comparisons["fresh4: old@deploy vs gen0 up to C2old"] = paired(arms["fresh4"]["old@deploy"], old_own)
     # FRESH-3, a development set: the new state against the earlier report's rows (descriptive)
     earlier_any = set().union(*(set(row["sound"]) for label, row in earlier["rows"].items()
                                 if label.startswith("gen0@") and "fresh3" in row["partitions"]))
@@ -327,16 +369,25 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
             {key for key in earlier["rows"]["trained@deploy"]["sound"] if key.startswith("fresh3/")})
     out["comparisons"] = comparisons
 
-    # the primary comparison and its breakdowns
-    treated, control = arms["fresh4"]["new@deploy"], arms["fresh4"]["controls"]["any"]
+    # the primary comparison and its breakdowns: list outputs, the scope of the claim
     task_of = {f"fresh4/{task.name}": task for task in fourth}
+    scope = {key for key, task in task_of.items() if task.kind == "list"}
+    treated, control = arms["fresh4"]["new@deploy"] & scope, arms["fresh4"]["controls"]["any"] & scope
+    old_arm = arms["fresh4"]["old@deploy"] & scope
+    out["primary"] = dict(paired(treated, control), tasks=len(scope))
+    out["new_vs_old"] = dict(paired(treated, old_arm), tasks=len(scope))
+    out["old_vs_any"] = dict(paired(old_arm, control), tasks=len(scope))
+    out["other_outputs"] = dict(paired(arms["fresh4"]["new@deploy"] - scope, arms["fresh4"]["controls"]["any"] - scope),
+                                tasks=len(task_of) - len(scope))
     top_rung = max(budgets["fresh4"], key=lambda r: budgets["fresh4"][r])
-    out["kinds"] = {"fresh4: new@deploy vs gen0@any": kinds_of(treated, control, rows["new@deploy:fresh4"],
-                                                                rows[f"gen0@{top_rung}:fresh4"])}
+    out["kinds"] = {"fresh4, list outputs: new@deploy vs gen0@any": kinds_of(
+        treated, control, rows["new@deploy:fresh4"], rows[f"gen0@{top_rung}:fresh4"])}
     earlier_routine = lambda task: task.modulo or EARLIER_FAMILY in (task.stages[0][0], task.stages[1][0])
-    dream_terms = {text for cycle in report["cycles"] for group in cycle["dream_programs"].values()
-                   for text, _, _ in group}
-    parsed = [parse(text) for text in sorted(dream_terms)]
+    # what the loop dreamt: the programs themselves, and the pairs of routine families they compose
+    dreams = [entry for cycle in report["cycles"] for group in cycle["dream_programs"].values() for entry in group]
+    parsed = [parse(text) for text in sorted({text for text, _, _ in dreams})]
+    family_of_key = lambda key: partitions.family(key.split("/", 1)[1])
+    dream_pairs = {(family_of_key(f), family_of_key(g)) for _, f, g in dreams}
 
     def dreamt(task) -> bool:
         examples = list(task.examples) + list(task.hidden)
@@ -349,112 +400,194 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
                 return True
         return False
 
-    dreamt_keys = {key for key, task in task_of.items() if dreamt(task)}
-    out["dreamt"] = {"dream_programs": len(parsed), "fresh4_tasks_a_dream_computes": len(dreamt_keys)}
+    dreamt_exact = {key for key, task in task_of.items() if dreamt(task)}
+    dreamt_pair = {key for key, task in task_of.items() if (task.stages[0][0], task.stages[1][0]) in dream_pairs}
+    dreamt_keys = dreamt_exact | dreamt_pair
+    solved_families = {family_of_key(key) for t in report["timeline"] for key in t["programs"]
+                       if key.split("/", 1)[0] in learn}
+    outside_dreams = {key for key, task in task_of.items()
+                      if any(routine not in solved_families for routine, _ in task.stages)}
+    origin = fresh4.provenance(fourth) if not tiny else {task.name: {"stages": 1, "first": True, "unmet": []}
+                                                         for task in fourth}
+    origin = {f"fresh4/{name}": value for name, value in origin.items()}
+    out["dreamt"] = {"dream_programs": len(parsed), "pairs_of_routine_families_dreamt": len(dream_pairs),
+                     "fresh4_tasks_a_dream_computes": len(dreamt_exact),
+                     "fresh4_tasks_whose_routine_pair_was_dreamt": len(dreamt_pair),
+                     "fresh4_tasks_with_a_routine_the_loop_never_solved_alone": len(outside_dreams)}
+    out["provenance"] = {"both stage instances are learning tasks": sum(1 for v in origin.values() if v["stages"] == 2),
+                         "one": sum(1 for v in origin.values() if v["stages"] == 1),
+                         "none": sum(1 for v in origin.values() if v["stages"] == 0),
+                         "with a routine no learning task has": sum(1 for v in origin.values() if v["unmet"])}
 
     def stratum(test, t=treated, c=control):
-        chosen = {key for key, task in task_of.items() if test(key, task)}
-        return dict(paired(t & chosen, c & chosen), tasks=len(chosen))
+        chosen = {key for key in scope if test(key, task_of[key])}
+        return dict(paired(t & chosen, c & chosen), tasks=len(chosen), reading=graded(paired(t & chosen, c & chosen)))
 
-    out["strata"] = {
-        "with a routine of the earlier symbols (slice-k-n or the divisibility family)": stratum(lambda k, t: earlier_routine(t)),
-        "without one": stratum(lambda k, t: not earlier_routine(t)),
-        "list outputs": stratum(lambda k, t: t.kind == "list"),
-        "integer and boolean outputs": stratum(lambda k, t: t.kind != "list"),
-        "a dream of the loop computes the task": stratum(lambda k, t: k in dreamt_keys),
-        "no dream computes it": stratum(lambda k, t: k not in dreamt_keys)}
-    out["strata_new_vs_old"] = {
-        "without a routine of the earlier symbols": stratum(lambda k, t: not earlier_routine(t), treated,
-                                                           arms["fresh4"]["old@deploy"]),
-        "no dream computes it": stratum(lambda k, t: k not in dreamt_keys, treated, arms["fresh4"]["old@deploy"])}
+    tests = {
+        "with a routine of the earlier symbols (slice-k-n or the divisibility family)": lambda k, t: earlier_routine(t),
+        "without one": lambda k, t: not earlier_routine(t),
+        "a dream computes the task or composes its pair of routines": lambda k, t: k in dreamt_keys,
+        "no dream does": lambda k, t: k not in dreamt_keys,
+        "a routine the loop never solved alone": lambda k, t: k in outside_dreams,
+        "both stage instances are learning tasks": lambda k, t: origin[k]["stages"] == 2,
+        "one stage instance is a learning task": lambda k, t: origin[k]["stages"] == 1,
+        "no stage instance is a learning task": lambda k, t: origin[k]["stages"] == 0,
+        "not both stage instances are learning tasks": lambda k, t: origin[k]["stages"] < 2,
+        "a routine no learning task has": lambda k, t: bool(origin[k]["unmet"])}
+    out["strata"] = {name: stratum(test) for name, test in tests.items()}
+    out["strata_new_vs_old"] = {name: stratum(test, treated, old_arm) for name, test in tests.items()}
+    rate = lambda keys, kind: (sum(1 for key in keys if task_of[key].kind == kind)
+                               / max(1, sum(1 for task in fourth if task.kind == kind)))
+    mix = {"list": 0.71, "int": 0.11, "bool": 0.18}                # FRESH-2's output types
+    out["lead_standardised_to_the_mix_of_fresh2_per_100_tasks"] = round(100 * sum(
+        share * (rate(arms["fresh4"]["new@deploy"], kind) - rate(arms["fresh4"]["controls"]["any"], kind))
+        for kind, share in mix.items()), 1)
     family = lambda routine: "divisibility family" if routine in fresh3.MODULO else routine
+    scoped = {key: task for key, task in task_of.items() if key in scope}
     out["clusters"] = {
-        "by first-stage routine": clustered(treated, control, {key: family(task.stages[0][0]) for key, task in task_of.items()}),
-        "by second-stage routine": clustered(treated, control, {key: family(task.stages[1][0]) for key, task in task_of.items()})}
+        "by first-stage routine": clustered(treated, control, {key: family(task.stages[0][0]) for key, task in scoped.items()}),
+        "by second-stage routine": clustered(treated, control, {key: family(task.stages[1][0]) for key, task in scoped.items()})}
     routines = sorted({stage[0] for task in fourth for stage in task.stages})
     without = {}
     for routine in routines:
-        kept = {key for key, task in task_of.items() if routine not in (task.stages[0][0], task.stages[1][0])}
+        kept = {key for key, task in scoped.items() if routine not in (task.stages[0][0], task.stages[1][0])}
         without[routine] = dict(paired(treated & kept, control & kept), tasks=len(kept))
     worst = max(without, key=lambda routine: (without[routine]["p_one_sided"], routine))
     out["leave_one_routine_out"] = {"largest_p": without[worst]["p_one_sided"], "routine": worst, "all": without}
+    # how many routines carry the lead: drop the routines with the largest net lead, one after another
+    net = {}
+    for key in treated ^ control:
+        for routine in {task_of[key].stages[0][0], task_of[key].stages[1][0]}:
+            net[routine] = net.get(routine, 0) + (1 if key in treated else -1)
+    order, kept, dropped_routines, carried = sorted(net, key=lambda r: (-net[r], r)), set(scope), [], None
+    if graded(paired(treated, control)) != "significant":
+        order, carried = [], {"routines_removed_before_the_lead_is_no_longer_separated": "none: there is no separated lead"}
+    for routine in order:
+        kept = {key for key in kept if routine not in (task_of[key].stages[0][0], task_of[key].stages[1][0])}
+        dropped_routines.append(routine)
+        if graded(paired(treated & kept, control & kept)) != "significant":
+            carried = {"routines_removed_before_the_lead_is_no_longer_separated": list(dropped_routines),
+                       "tasks_left": len(kept), "then": paired(treated & kept, control & kept)}
+            break
+    out["lead_carried_by"] = carried or {"routines_removed_before_the_lead_is_no_longer_separated": "never: every routine removed"}
     by_routine = {}
-    for key, task in task_of.items():
+    for key, task in scoped.items():
         for routine in {task.stages[0][0], task.stages[1][0]}:
             entry = by_routine.setdefault(routine, {"tasks": 0, "new": 0, "old": 0, "gen0_any": 0})
             entry["tasks"] += 1
             entry["new"] += key in treated
-            entry["old"] += key in arms["fresh4"]["old@deploy"]
+            entry["old"] += key in old_arm
             entry["gen0_any"] += key in control
     out["by_routine"] = dict(sorted(by_routine.items()))
-    symbols, depth = {}, {name: entry["depth"] for name, entry in report["library"].items()}
-    deep_use = 0
+    accepted, last_score = {}, None
+    for t in report["timeline"]:                      # which symbols came in on the dream tie-break
+        if t["label"].startswith("student") and "proposed" in t:
+            if t.get("accepted"):
+                accepted[t["proposed"]["name"]] = {"real_tasks": t["proposed"]["real_tasks"], "depth": t["proposed"]["depth"],
+                                                   "cycle": t["proposed"]["cycle"],
+                                                   "on_the_tie_break": t["family_score_exact"] == last_score}
+                last_score = t["family_score_exact"]
+        elif t["label"] == "student0":
+            last_score = t["family_score_exact"]
+    out["accepted_symbols_detail"] = accepted
+    symbols, deep_use, dream_only_use = {}, 0, 0
     for key in sorted(treated - control):
         used = rows["new@deploy:fresh4"]["used"].get(key) or ["(no learned symbol)"]
-        deep_use += any(depth.get(symbol, 1) >= 2 for symbol in used)
+        deep_use += any(accepted.get(symbol, {}).get("depth", 1) >= 2 for symbol in used)
+        dream_only_use += any(accepted.get(symbol, {}).get("real_tasks", 1) == 0 for symbol in used)
         for symbol in used:
             symbols[symbol] = symbols.get(symbol, 0) + 1
     out["new_only_by_symbol"] = dict(sorted(symbols.items(), key=lambda item: -item[1]))
     out["new_only_with_a_symbol_built_on_a_symbol"] = deep_use
+    out["new_only_with_a_symbol_no_learning_program_uses"] = dream_only_use
     strict = {label: {key for key in rows[label]["sound"]
-                      if key.startswith("fresh4/") and sound.on_pool(key, rows[label]["programs"][key][0])}
+                      if key in scope and sound.on_pool(key, rows[label]["programs"][key][0])}
               for label in rows if rows[label]["partitions"] == ["fresh4"]}
     out["fresh4_sound_and_on_whole_pool"] = paired(strict["new@deploy:fresh4"], set().union(
         *(keys for label, keys in strict.items() if label.startswith("gen0@"))))
     out["thin_evidence"] = {label: len(row["thin_evidence"]) for label, row in rows.items() if row["thin_evidence"]}
 
-    # ---- the four criteria, on held-out B and the learning set (descriptive) ---------------------------
-    reports = [t for t in report["timeline"] if t["label"].startswith("report")]
-    trajectory = [{"label": t["label"], "verified": t["held_out"],
-                   "sound": sum(1 for key, value in t["programs"].items() if sound.verdict(key, value[0])[0])}
-                  for t in reports]
+    # ---- the four criteria ------------------------------------------------------------------------
+    # R1: sound solves at the student budget rise in two generations running.
+    # R2: a task gained after the first cycle whose program uses a recursive symbol and which is
+    #     lost when the recursive symbols are taken out of the final vocabulary.
+    # R3: the final vocabulary at the student budget has more sound solves than generation 0 at any
+    #     budget run. R4: no step is decided by a person.
     rises = lambda values: any(a < b < c for a, b, c in zip(values, values[1:], values[2:]))
-    needed = {}
-    for cycle in report["cycles"][1:]:
-        label = f"gen0@teacher{cycle['cycle']}:learn"
-        with_symbols = set(by_run[cycle["teacher_run"]]["solved"])
-        needed[str(cycle["cycle"])] = {"teacher_solved": len(with_symbols),
-                                       "not_by_generation_0_at_that_budget": len(with_symbols - set(rows[label]["programs"]))}
-    lost = None
-    if dropped:
-        final = set(by_run[report["student_last"]]["solved"])
-        after_first = set(by_run[report["cycles"][0]["student_run"]]["solved"])
-        start = set(by_run[report["student_first"]]["solved"])
-        without_first = {key for key in rows["new-without-cycle1@student"]["programs"] if key.split("/", 1)[0] in learn}
-        lost = {"dropped_symbols": sorted(dropped), "final_learning_solves": len(final),
-                "lost_without_them": len(final - without_first),
-                "of_those_first_solved_after_cycle_1": len((final - without_first) - after_first - start)}
+
+    def second(gains, used, ablated_label) -> dict:
+        """R2 on one set: ``gains`` are the sound solves of the final vocabulary that neither
+        generation 0 nor the first cycle's vocabulary has; ``used`` maps a task to the learned
+        symbols its program was built with."""
+        uses = {key for key in gains if set(used.get(key) or ()) & recursive}
+        lost = uses - solved(ablated_label) if recursive else set()
+        return {"gains_after_cycle_1": len(gains), "of_those_built_with_a_recursive_symbol": len(uses),
+                "of_those_lost_without_the_recursive_symbols": len(lost), "holds": len(lost) > 0}
+
+    lost_final = {}
+    for label, names in ablations.items():
+        if names:
+            lost_final[label] = {"symbols_removed": sorted(names),
+                                 "fresh4_sound_solves_lost": len(solved("new@student:fresh4") - solved(f"new-{label}@student:fresh4")),
+                                 "fresh4_sound_solves_gained": len(solved(f"new-{label}@student:fresh4") - solved("new@student:fresh4"))}
+    out["recursion"] = {"discovery_by_cycle": discovery, "recursive_symbols": sorted(seeds),
+                        "with_the_symbols_defined_through_them": sorted(recursive), "ablations": lost_final}
+
+    # on FRESH-4, which the loop never saw and development never used
+    chain = [("generation 0", solved("gen0@student:fresh4"))]
+    chain += [(f"cycle {cycle['cycle']}", solved(f"cycle{cycle['cycle']}@student:fresh4")) for cycle in stages[:-1]]
+    if stages:
+        chain.append((f"cycle {stages[-1]['cycle']}", solved("new@student:fresh4")))
+    gains4 = chain[-1][1] - chain[1][1] - chain[0][1] if len(chain) > 2 else set()
+    second4 = second(gains4, rows["new@student:fresh4"]["used"], "new-without-recursive@student:fresh4")
+    third4 = paired(arms["fresh4"]["new@student"], arms["fresh4"]["controls"]["any"])
+    first4 = rises([len(keys) for _, keys in chain])
+    out["criteria_on_fresh4"] = {
+        "R1_sound_by_generation": [[name, len(keys)] for name, keys in chain], "R1": first4,
+        "R2_detail": second4, "R2": second4["holds"],
+        "R3_new_student_vs_gen0_any": third4, "R3": third4["trained"] > third4["control"],
+        "R3_separated": third4["trained"] > third4["control"] and third4["p_one_sided"] < ALPHA,
+        "R4": True,
+        "all_four": bool(first4 and second4["holds"] and third4["trained"] > third4["control"])}
+
+    # on held-out B, a development set: descriptive
+    reports = [t for t in report["timeline"] if t["label"].startswith("report")]
+    by_cycle = [{key for key, value in t["programs"].items() if sound.verdict(key, value[0])[0]} for t in reports]
+    trajectory = [{"label": t["label"], "verified": t["held_out"], "sound": len(keys)} for t, keys in zip(reports, by_cycle)]
+    held_new = {key for key in solved("new@student:heldB")}
+    gains_b = held_new - by_cycle[1] - by_cycle[0] if len(by_cycle) > 2 else set()
+    second_b = second(gains_b, rows["new@student:heldB"]["used"], "new-without-recursive@student")
     held_any = arms["heldB"]["controls"]["any"]
+    third_b = paired(arms["heldB"]["new@student"], held_any)
     out["criteria"] = {
         "R1_held_out_B_by_cycle": trajectory,
         "R1": {"verified": rises([t["verified"] for t in trajectory]), "sound": rises([t["sound"] for t in trajectory])},
-        "R2_later_teacher_solves_that_need_symbols": needed,
-        "R2_without_first_cycle": lost,
-        "R2": any(v["not_by_generation_0_at_that_budget"] > 0 for v in needed.values())
-        and bool(lost and lost["of_those_first_solved_after_cycle_1"] > 0),
-        "R3_new_student_vs_gen0_any_on_held_out_B": paired(arms["heldB"]["new@student"], held_any),
-        "R3": len(arms["heldB"]["new@student"]) > len(held_any),
-        "R3_covers_the_cumulative_budget": c1new <= max(budgets["heldB"].values()),
+        "R2_detail": second_b, "R2": second_b["holds"],
+        "R3_new_student_vs_gen0_any_on_held_out_B": third_b,
+        "R3": third_b["trained"] > third_b["control"] if c1new <= MEMORY_LIMIT
+        else "not scored: the cumulative budget does not fit in memory and was not run",
         "R4": True}
 
     # ---- the outcome class, on sound counts and, beside it, on verified counts -----------------------
     def flags_for(measure_):
         a = arms_for(measure_)
-        t, c, o = a["fresh4"]["new@deploy"], a["fresh4"]["controls"]["any"], a["fresh4"]["old@deploy"]
+        t, c = a["fresh4"]["new@deploy"] & scope, a["fresh4"]["controls"]["any"] & scope
+        o = a["fresh4"]["old@deploy"] & scope
         primary = paired(t, c)
-        outside = {key for key, task in task_of.items() if not earlier_routine(task)}
-        undreamt = set(task_of) - dreamt_keys
+        within = lambda keys: graded(paired(t & keys, c & keys))
         kinds = kinds_of(t, c, rows["new@deploy:fresh4"], rows[f"gen0@{top_rung}:fresh4"])["budget_bound"]
         expected = {f"gen0@{rung}:fresh4" for rung in budgets["fresh4"]} | {
             f"{state}@{at}:fresh4" for state in ("gen0", "new", "old") for at in ("deploy", "student")}
         return {"missing": "" if expected <= set(rows) else f"runs missing: {sorted(expected - set(rows))}",
+                "scope": f"for list outputs ({len(scope)} of {len(task_of)} tasks)",
                 "accepted": bool(report["library"]),
                 "lead": primary["trained"] > primary["control"],
                 "significant": primary["p_one_sided"] < ALPHA,
-                "outside_earlier": graded(paired(t & outside, c & outside)),
+                "outside_earlier": within({key for key in scope if not earlier_routine(task_of[key])}),
                 "over_old": graded(paired(t, o)),
                 "budget_bound_lead": kinds["trained_only"] > kinds["control_only"],
-                "undreamt": graded(paired(t & undreamt, c & undreamt))}
+                "undreamt": within(scope - dreamt_keys),
+                "beyond_learning_tasks": within({key for key in scope if origin[key]["stages"] < 2})}
 
     out["accepted_symbols"] = len(report["library"])
     out["flags"] = flags_for("sound")
@@ -469,18 +602,29 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
     for label, c in comparisons.items():
         print(f"{label:62s} sound {c['trained']} against {c['control']}; only first {c['trained_only']}, "
               f"only second {c['control_only']}; one-sided p {c['p_one_sided']}")
+    print("PRIMARY (list outputs):", json.dumps(out["primary"]), "| other outputs:", json.dumps(out["other_outputs"]))
+    print("new against old (list outputs):", json.dumps(out["new_vs_old"]), "| old against generation 0 at any budget:",
+          json.dumps(out["old_vs_any"]))
     for label, k in out["kinds"].items():
         print(f"{label:44s} only new {k['trained_only']}; only control {k['control_only']}; budget-bound {k['budget_bound']}")
-    print("strata:", json.dumps(out["strata"]))
-    print("strata, new against old:", json.dumps(out["strata_new_vs_old"]))
+    print("provenance:", json.dumps(out["provenance"]))
+    for name, value in out["strata"].items():
+        print(f"  stratum {name}: {json.dumps(value)}")
+    for name, value in out["strata_new_vs_old"].items():
+        print(f"  new against old, {name}: {json.dumps(value)}")
+    print("lead carried by:", json.dumps(out["lead_carried_by"]), "| standardised to the mix of FRESH-2, per 100 tasks:",
+          out["lead_standardised_to_the_mix_of_fresh2_per_100_tasks"])
     print("clusters:", json.dumps(out["clusters"]))
     print("leave one routine out: largest p", out["leave_one_routine_out"]["largest_p"], "without", worst)
     print("by routine:", json.dumps(out["by_routine"]))
     print("new-only tasks by learned symbol:", json.dumps(out["new_only_by_symbol"]),
-          "| with a symbol built on a symbol:", deep_use)
+          "| with a symbol built on a symbol:", deep_use, "| with a symbol no learning program uses:", dream_only_use)
+    print("accepted symbols:", json.dumps(out["accepted_symbols_detail"]))
     print("dreamt:", json.dumps(out["dreamt"]), "| thin evidence:", json.dumps(out["thin_evidence"]))
     print("FRESH-4, sound and right on the whole input pool:", json.dumps(out["fresh4_sound_and_on_whole_pool"]))
-    print("criteria:", json.dumps(out["criteria"]))
+    print("recursion:", json.dumps(out["recursion"]))
+    print("criteria on held-out B (a development set):", json.dumps(out["criteria"]))
+    print("criteria on FRESH-4:", json.dumps(out["criteria_on_fresh4"]))
     print("loop: verdicts read", report.get("verdicts_read"), "| seconds in compression and dreaming",
           round(sum(report.get("driver_seconds", [])), 1), "| training ceiling", report["training_ceiling"],
           "spent", report["training_spent"])
@@ -494,33 +638,29 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
 def predictions(out, report, comparisons, trajectory) -> dict:
     """The predictions of Addendum 8, scored mechanically (the thresholds are the registered ones)."""
     verdict = lambda ok: "PASS" if ok else "FAIL"
-    by_run = {t["run"]: t for t in report["timeline"]}
-    last = by_run[report["student_last"]]
-    primary = comparisons["fresh4: new@deploy vs gen0@any"]
-    over_old = comparisons["fresh4: new@deploy vs old@deploy"]
-    old_any = comparisons["fresh4: old@deploy vs gen0@any"]
-    student_any = comparisons["fresh4: new@student vs gen0@any"]
-    outside = out["strata"]["without one"]
-    undreamt = out["strata"]["no dream computes it"]
-    criteria = out["criteria"]
-    accepted_cycles = sum(1 for cycle in report["cycles"] if cycle["accepted"])
+    separated = lambda c: c["trained"] > c["control"] and c["p_one_sided"] < ALPHA
+    primary, strata, fourth = out["primary"], out["strata"], out["criteria_on_fresh4"]
+    budget_bound = out["kinds"]["fresh4, list outputs: new@deploy vs gen0@any"]["budget_bound"]
+    unmet = strata["a routine no learning task has"]
     return {
-        "P1": verdict(accepted_cycles >= THRESHOLDS["P1_cycles"] and last["learn"] >= THRESHOLDS["P1_learn"]),
-        "P2": verdict(trajectory[-1]["sound"] >= THRESHOLDS["P2_held_sound"]),
-        "P3": verdict(criteria["R2"]),
-        "P4": verdict(primary["trained"] > primary["control"]),
-        "P5": verdict(primary["p_one_sided"] < ALPHA) if primary["trained"] > primary["control"]
-        else "not scored (P4 failed)",
-        "P6": verdict(over_old["trained"] > over_old["control"] and over_old["p_one_sided"] < ALPHA),
-        "P7": verdict(outside["trained"] > outside["control"] and outside["p_one_sided"] < ALPHA),
-        "P8": verdict(student_any["trained"] > student_any["control"]),
-        "P9": verdict(old_any["trained"] > old_any["control"] and old_any["p_one_sided"] < ALPHA),
-        "P10": verdict(undreamt["trained"] > undreamt["control"] and undreamt["p_one_sided"] < ALPHA),
-        "P11": verdict(criteria["R3"]),
-        "P12": verdict(primary["trained"] >= THRESHOLDS["P12_new_sound"])}
+        "D1": verdict(primary["trained"] > primary["control"]),
+        "D2": verdict(primary["p_one_sided"] < ALPHA) if primary["trained"] > primary["control"]
+        else "not scored (D1 failed)",
+        "D3": verdict(primary["trained"] - primary["control"] >= THRESHOLDS["D3_lead"]),
+        "D4": verdict(separated(strata["without one"])),
+        "D5": verdict(separated(out["new_vs_old"])),
+        "D6": verdict(separated(out["old_vs_any"])),
+        "D7": verdict(separated(strata["no dream does"])),
+        "D8": verdict(separated(strata["not both stage instances are learning tasks"])),
+        "D9": verdict(budget_bound["trained_only"] > budget_bound["control_only"]),
+        "D10": verdict(unmet["trained"] > unmet["control"]),
+        "D11": verdict(fourth["R1"]),
+        "D12": verdict(fourth["R2"]),
+        "D13": verdict(fourth["R3"]),
+        "D14": verdict(fourth["all_four"])}
 
 
-THRESHOLDS = {"P1_cycles": 3, "P1_learn": 150, "P2_held_sound": 38, "P12_new_sound": 300}
+THRESHOLDS = {"D3_lead": 80}        # provisional until the registration is in force
 
 
 if __name__ == "__main__":
