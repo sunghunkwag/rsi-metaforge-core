@@ -1197,6 +1197,17 @@ evidence, `writeup_check_addendum8.json` the check of the corrected write-up,
 review's findings with their evidence. Files named `dev_after8_*` are development
 measurements made after the run of Addendum 8 and are not evidence.
 
+`review_two_tier_dev.json` is an independent review of that development code (the two-tier
+loop, the stricter measure, the generator with new parameter values and the plan for a
+further registration). It confirmed 14 of 16 findings. The ones that matter: the library gate
+of the two-tier loop is passed by storing the teacher's verified program of one learning task
+per symbol, so its "gain" is recall of that task; a third of the new generator's tasks still
+contain a stage that is a stored symbol; the two halves of the generator share 36 stage
+instances; and the planned primary comparison had almost no power at the development rates.
+No registration was made from this code. The list-domain line stops here: the Owner's
+directive of 2026-11-11 (`rsi6/OWNER_DIRECTIVE.md`) rules it out as a primary experimental
+domain.
+
 The first loop, the second loop, expert iteration and their generation-0 files were
 produced before the review's fixes (the expert reports already record rejected matches;
 the loop reports hold only their count); the frontier, the ablations, the 569,881 control
