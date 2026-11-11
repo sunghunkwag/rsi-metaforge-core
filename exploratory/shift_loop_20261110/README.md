@@ -296,8 +296,10 @@ and the three rows it had finished came out identical.
 **FRESH-3**: 300 new two-stage tasks drawn by a seeded rule from the stage instances of
 FRESH-1 and FRESH-2 (`fresh3.py`): new pairings, no new routine, no new parameter value,
 no pair of routine names that FRESH-2 has, no function an exposed task computes, FRESH-2's
-mix of output types, 8 public and 8 hidden examples. No solver had run on it before the
-registered run.
+mix of output types, 8 public and 8 hidden examples. No solver had run on its examples
+before the registered run. Nine of its 300 generating functions are also in the 60-task
+smoke set (another seed, other inputs), which smoke tests run at toy budgets; two of the
+nine are among the 18 tasks only the trained state solves.
 
 The loop, configuration B:
 
@@ -337,7 +339,8 @@ Beside it, as registered, deciding nothing:
 - Equal budget per task: 58 against 45 at 10^4 (23 against 10, p = 0.018) and 71 against
   54 at 10^5 (24 against 7, p = 0.0017).
 - Against the single run with the whole budget on these tasks (524,267): 71 against 61
-  (21 against 11, p = 0.055).
+  (21 against 11, p = 0.055). Against the run at 228,969: 71 against 55 (25 against 9,
+  p = 0.005).
 - Tasks where the other arm ran out of budget without a public match: 13 only trained
   against 5 only control (p = 0.048). Of the other trained-only tasks, on 4 the control
   stopped at a first match the verifier rejected and on 1 at a verified program that is
@@ -349,16 +352,29 @@ Beside it, as registered, deciding nothing:
   (+8), the divisibility family (+7) and `drop-k` (+1); seven routines have a net of 1 or 2
   for the control. Without the 29 tasks that contain `slice-k-n` it is 62 against 63. The
   trained-only solutions use the take symbol (8), drop-2 (7), remove-multiples (5),
-  bool-to-int (5) and keep-multiples (5).
+  bool-to-int (5), keep-multiples (5) and a constant-map symbol (3).
+- The sign test over routine clusters, of which the registration quotes the larger
+  p-value: 0.95 over first-stage routines (3 clusters for the trained state, 7 for the
+  control); 0.14 over second-stage routines (6 against 2).
 - Output type: 62 against 55 on list outputs, 9 against 9 on integer and boolean outputs.
-- Stricter soundness (agreement on the whole input pool): 61 against 53 (p = 0.11).
-- Held-out B: 44 against 38 at any budget (10 against 4, p = 0.09), 44 against 37 at C1
-  and at C2. The loop with R rebuilt the earlier combination's count. These 124 tasks are
-  the ones the idea was found on: descriptive.
+- Agreement on the whole input pool, the registered secondary reading: 61 against 53
+  (p = 0.11). It is another test, not a stricter one: two of the trained state's programs
+  and one of the control's pass it and fail the audit. Sound by the audit and on the whole
+  pool: 59 against 52 (19 against 12, p = 0.14).
+- Held-out B: 44 against 38 at any budget of the registered union (10 against 4,
+  p = 0.09), 44 against 37 at C1 and at C2. An earlier run of generation 0 at 181,775
+  solves one more task soundly: over the seven budgets generation 0 has been run at it is
+  44 against 39 (9 against 4, p = 0.13). The loop with R rebuilt the earlier combination's
+  count. These 124 tasks are the ones the idea was found on: descriptive.
+- Pooled with held-out B, descriptive as registered: 115 against 102 at any budget (28
+  against 15, p = 0.033); 115 against 98 at C2 (32 against 15, p = 0.009).
 - The earlier combination on FRESH-3: 75 against 64 (20 against 9, p = 0.03). One of
-  several secondary comparisons, uncorrected.
-- Outside its budget the loop read 3,098 verifier verdicts on learning tasks and spent 4
-  seconds in compression. The evaluation runs spent 56% to 75% of their budget ceilings.
+  several secondary comparisons, uncorrected, and not against that state's whole budget:
+  its loop has a training ceiling of 180,220,000 candidates, which is 700,733 per task on
+  these 300, and generation 0 was run to 524,267 (75% of that).
+- Outside its budget the loop read 2,354 verifier verdicts on learning tasks and spent 4
+  seconds in compression (3,098 verdicts were issued; the 744 on held-out tasks are
+  recorded and not read). The evaluation runs spent 56% to 75% of their budget ceilings.
 
 Reading. On new pairings of routines it has met, the learned vocabulary is worth much at a
 fixed budget per task. Against the same machinery with the whole budget the lead is seven
@@ -459,13 +475,14 @@ meets R1 on verified counts while its held-out solves end five below where they 
 R3 as registered fails for every loop, and it is what the Phase 1 result already pointed
 at: on a fixed set of tasks, budget is a strong baseline. At a deployment budget of 10^5
 the picture is closer. On the 124 held-out tasks the trained state has 44 sound solves
-and generation 0 has 38 at any budget up to 1.1 million candidates per task. On 300 new
+and generation 0 has 38 over the four budgets of the registered union, 39 over the seven
+budgets it has been run at, up to 1.1 million candidates per task. On 300 new
 tasks it has 71 against 64. Neither difference is separated from chance by the registered
 test, and both are confined to tasks that contain a routine the learned symbols encode.
 
 ## Reviews
 
-Three independent reviews touched this study. The first, of the loop harness, is below.
+Four independent reviews touched this study. The first, of the loop harness, is below.
 The second attacked the draft of the replication's registration before it ran: four
 reviewers, 19 findings, every one acted on (`results/design_review_addendum7.json`;
 Addendum 7 lists what each changed). The third was to verify this document and its tools
@@ -478,6 +495,21 @@ seven are corrected here: what the frontier shows at task level, the count of cr
 met, the wording of the 569,881 control, eight later solves (not nine), the tie-break
 count, which reports record rejected matches, and two controls run at another loop's
 budget.
+
+The fourth was to verify the replication and, again, the four parts the third had not
+reached. Only the reviewer of the replication finished; the other four and the skeptic who
+was to re-test that reviewer's findings were cut off by the same limit. The reviewer
+recomputed 207 numbers of the replication from `results/replication.json` with their own
+soundness verdicts (the loop table, the budgets, the evaluation table, the primary
+comparison, every secondary line, Q1 to Q10, the outcome class on both counts) and found
+none wrong. They confirmed that the run followed the registration, that the restart
+reproduced the finished rows, that the registered set and its digest are reproducible and
+that every stored verdict can be re-derived. They found six statements to correct. The
+author re-tested all six, and they are corrected above: what the earlier combination's
+control covers, the held-out B union against every budget generation 0 has been run at,
+the pool reading of soundness, the number of verdicts read, three registered secondary
+lines that were missing (the 228,969 run, the cluster p-values, the pooled comparisons),
+and what "no solver had run on it" covers.
 
 ### The harness review
 
@@ -586,10 +618,10 @@ Each is written as a target property and the criterion that would show it.
    write it. Criterion: a reviewed finding list per file. Measured: `hybrid.py` and
    `loop.py` reviewed; `compress.py` (written by a sub-agent) is covered by round-trip
    tests on real programs and by the review's 24,000 inlining checks, not by its own
-   review; `replicate.py` and `fresh3.py` were reviewed as a draft before the run;
-   `dream.py`, `expert.py`, `oracles.py`, `audit_all.py`, the ablation and frontier tools
-   and the fixes made after the first review have had none (the review that was to cover
-   them was cut off).
+   review; `replicate.py` and `fresh3.py` were reviewed as a draft before the run and
+   their results recounted after it; `dream.py`, `expert.py`, `oracles.py`,
+   `audit_all.py`, the ablation and frontier tools and the fixes made after the first
+   review have had none (the two reviews that were to cover them were cut off).
 
 ## Files and how to run
 
