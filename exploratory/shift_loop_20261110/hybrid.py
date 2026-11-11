@@ -628,15 +628,18 @@ class Harness:
     def close(self):
         self.pool.shutdown(wait=False, cancel_futures=True)
 
-    def run(self, spec, partition_names=None, dreams=()) -> dict:
+    def run(self, spec, partition_names=None, dreams=(), only=None) -> dict:
         """One generation: every task of the named partitions at spec['budget']; verdicts from the
         frozen verifier (one query per task per run). ``dreams`` are (public task, check examples)
         pairs made by the driver; their verdict is the check examples, and they come back under
-        the key 'dream'."""
+        the key 'dream'. ``only`` (a set of 'partition/task name' keys) restricts the run to those
+        tasks of the named partitions; the others are not run and have no row."""
         self.runs += 1
         spec = dict(spec, id=f"{spec.get('label', 'run')}#{self.runs}")
         names = list(partition_names if partition_names is not None else self.default)
-        jobs = [(task, spec) for name in names for task in self.public[name]]
+        chosen = {name: [task for task in self.public[name] if only is None or f"{name}/{task.name}" in only]
+                  for name in names}
+        jobs = [(task, spec) for name in names for task in chosen[name]]
         jobs += [(task, spec) for task, _ in dreams]
         records = list(self.pool.map(solve, jobs, chunksize=1))
         out, cursor = {}, 0
@@ -648,7 +651,7 @@ class Harness:
                 row["program"] = str(term) if term is not None else None
             out["dream"] = rows
         for name in names:
-            rows = records[cursor:cursor + len(self.public[name])]
+            rows = records[cursor:cursor + len(chosen[name])]
             cursor += len(rows)
             for row in rows:
                 term = term_from_dict(row["term"]) if row["term"] is not None else None
