@@ -1,0 +1,35 @@
+FRESH-3: 300 tasks, digest 4da13e671411da8c
+run  1 student0       budget  10000 learn 121 families 32/53 score  26.58 held-out 27 {'train': 19, 'near': 61, 'validation': 7, 'far': 5, 'far2': 10, 'fresh1': 19, 'fresh2': 24, 'compose24': 3} lib 0 | 28 s
+run  2 teacher0       budget 100000 learn 134 families 34/53 score  29.51 held-out None {'train': 20, 'near': 64, 'validation': 7, 'far': 6, 'far2': 18, 'fresh1': 19} lib 0 | 111 s
+     symbol c1_1: (lambda x0: int. (lambda x1: int. (lambda x2: list[int]. ((map (lambda x3: int. ((mod ((sub x3) x0)) x1))) x2))))  score 24 tasks 8 families 2
+     symbol c1_2: (lambda x0: list[int]. (lambda x1: int. ((map (lambda x2: int. ((index x2) x0))) (range x1))))  score 21 tasks 7 families 2
+     symbol c1_3: (lambda x0: int. (lambda x1: list[int]. ((filter (lambda x2: int. (is_empty (range ((mod x2) x0))))) x1)))  score 17 tasks 5 families 2
+run  3 student1.1     budget  10000 learn 130 families 32/53 score  27.56 held-out 30 {'train': 20, 'near': 66, 'validation': 8, 'far': 6, 'far2': 11, 'fresh1': 19, 'fresh2': 27, 'compose24': 3} lib 3 | 23 s
+     accepted: score 26.584 -> 27.562, learn 121 -> 130, held-out 27 -> 30
+run  4 teacher1       budget 100000 learn 151 families 35/53 score  30.66 held-out None {'train': 25, 'near': 75, 'validation': 8, 'far': 6, 'far2': 18, 'fresh1': 19} lib 3 | 133 s
+     symbol c2_1: (lambda x0: list[int]. (tail (tail x0)))  score 16 tasks 14 families 3
+     symbol c2_2: (lambda x0: bool. (((if x0) 1) 0))  score 10 tasks 7 families 4
+     symbol c2_3: ((mul 2) 5)  score 9 tasks 6 families 6
+run  5 student2.1     budget  10000 learn 140 families 34/53 score  28.46 held-out 33 {'train': 23, 'near': 71, 'validation': 8, 'far': 6, 'far2': 13, 'fresh1': 19, 'fresh2': 29, 'compose24': 4} lib 6 | 31 s
+     accepted: score 27.562 -> 28.46, learn 130 -> 140, held-out 30 -> 33
+run  6 teacher2       budget 100000 learn 153 families 36/53 score  31.91 held-out None {'train': 25, 'near': 75, 'validation': 8, 'far': 7, 'far2': 18, 'fresh1': 20} lib 6 | 184 s
+     symbol c3_1: (lambda x0: int. (lambda x1: list[int]. ((filter (lambda x2: int. ((gt ((mod x2) x0)) 0))) x1)))  score 7 tasks 3 families 2
+     symbol c3_2: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. x0)) x1)))  score 3 tasks 7 families 3
+     symbol c3_3: (lambda x0: list[int]. (lambda x1: list[int]. ((cons (head x0)) x1)))  score 3 tasks 7 families 5
+run  7 student3.1     budget  10000 learn 147 families 34/53 score  29.86 held-out 38 {'train': 25, 'near': 76, 'validation': 8, 'far': 6, 'far2': 13, 'fresh1': 19, 'fresh2': 30, 'compose24': 8} lib 9 | 23 s
+     accepted: score 28.46 -> 29.86, learn 140 -> 147, held-out 33 -> 38
+run  8 teacher3       budget 100000 learn 152 families 36/53 score  31.71 held-out None {'train': 25, 'near': 76, 'validation': 8, 'far': 7, 'far2': 16, 'fresh1': 20} lib 9 | 146 s
+     symbol c4_1: (lambda x0: int. ((add x0) -1))  score 3 tasks 6 families 4
+     symbol c4_2: (lambda x0: list[int]. ((c1_2 x0) 3))  score 3 tasks 6 families 2
+     symbol c4_3: (lambda x0: list[int]. ((c1_2 x0) 4))  score 3 tasks 6 families 2
+run  9 student4.1     budget  10000 learn 147 families 34/53 score  29.86 held-out 39 {'train': 25, 'near': 76, 'validation': 8, 'far': 6, 'far2': 13, 'fresh1': 19, 'fresh2': 31, 'compose24': 8} lib 12 | 28 s
+     symbol c4_1: (lambda x0: list[int]. (c2_1 (tail x0)))  score 3 tasks 6 families 2
+     symbol c4_2: ((add -1) -1)  score 3 tasks 3 families 3
+     symbol c4_3: (lambda x0: int. (lambda x1: list[int]. (((c1_1 -1) x0) x1)))  score 2 tasks 6 families 2
+run 10 student4.2     budget  10000 learn 147 families 34/53 score  29.86 held-out 38 {'train': 25, 'near': 76, 'validation': 8, 'far': 6, 'far2': 13, 'fresh1': 19, 'fresh2': 30, 'compose24': 8} lib 12 | 31 s
+cycle 4: nothing accepted: stop
+run 11 teacher_final  budget 100000 learn 152 families 36/53 score  31.71 held-out None {'train': 25, 'near': 76, 'validation': 8, 'far': 7, 'far2': 16, 'fresh1': 20} lib 9 | 99 s
+training ceiling 127280000 candidates; control budgets {'heldB': {'C2': 1126452, 'C1': 413254}, 'fresh3': {'mid': 228969, 'C2': 524267}}
+gen0@C2:heldB            budget  1126452 {'fresh2': 40, 'compose24': 10} | spent 78595897 of 139680048 | 1048 s
+gen0@C1:heldB            budget   413254 {'fresh2': 40, 'compose24': 10} | spent 29792264 of 51243496 | 489 s
+trained@deploy           budget   100000 {'fresh2': 45, 'compose24': 10, 'fresh3': 86} | spent 23638250 of 42400000 | 319 s
