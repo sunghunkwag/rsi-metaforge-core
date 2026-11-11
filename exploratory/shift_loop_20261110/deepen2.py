@@ -22,8 +22,15 @@ order (compared on a tiny run when this file was written).
 
 The loop stops after a cycle that neither accepts nor removes a symbol, or after MAX_CYCLES.
 
-    python deepen2.py <config A|B> <out.json> [workers] [--scope all|list] [--prune]
-                      [--max-cycles N] [--tiny]
+    python deepen2.py <config A|B> <out.json> [workers] [--scope all|list|typed] [--prune]
+                      [--components SCfR|SCfRP] [--max-cycles N] [--tiny]
+
+``--scope typed`` is ``list`` with one exception: a learned symbol whose type has no list in it
+is an element function and stays visible in the element space. ``--components SCfRP`` switches
+on P of the harness: before its scan, representation search enumerates programs made of learned
+symbols, the input and constants only, takes a program that fits, and tries the re-representations
+it finds before those of the scan. A vocabulary with no learned symbol has nothing to enumerate
+there, so P leaves generation 0 as it is.
 """
 from __future__ import annotations
 
@@ -42,25 +49,31 @@ from rsi5.dsl.terms import term_from_dict
 from rsi5.dsl.vocabulary import VOCABULARIES
 
 PRUNES = 8                    # removal trials per cycle, at most
-SCOPES = ("all", "list")
+SCOPES = ("all", "list", "typed")
 
 
-def keep_for(scope: str, constants=(), vocabulary: str = "restored"):
+def keep_for(scope: str, constants=(), vocabulary: str = "restored", abstractions=()):
     """The per-space restriction of the harness for a scope: None (everything everywhere), or
-    the element space cut to the base primitives and the integer constants."""
+    the element space cut to the base primitives and the integer constants (``list``), or to
+    those and the learned symbols whose type has no list in it (``typed``): a symbol over
+    integers and booleans is an element function and is visible where element functions are
+    searched; a symbol over lists is not."""
     if scope == "all":
         return None
-    if scope != "list":
+    if scope not in SCOPES:
         raise ValueError(f"unknown scope {scope!r}")
     base = VOCABULARIES[vocabulary]
     integers = list(base.integer_constants) + [c for c in constants if c not in base.integer_constants]
-    return {"elem": list(base.primitives) + [f"int:{c}" for c in integers], "list": None}
+    elementwise = [name for name, type_dict, _ in abstractions if '"list"' not in json.dumps(type_dict)] \
+        if scope == "typed" else []
+    return {"elem": list(base.primitives) + [f"int:{c}" for c in integers] + elementwise, "list": None}
 
 
 def spec_for(library: dict, label: str, budget: int, components: str = COMPONENTS, scope: str = "all") -> dict:
     """The harness spec of a library of ``compress`` abstractions under a scope."""
     abstractions, constants = serialise(library)
-    return spec_of(label, budget, components, abstractions, constants, keep=keep_for(scope, constants))
+    return spec_of(label, budget, components, abstractions, constants,
+                   keep=keep_for(scope, constants, abstractions=abstractions))
 
 
 def run(harness, learn, *, scope="all", prune=False, max_cycles=None, components=COMPONENTS, log=print,
@@ -269,11 +282,13 @@ if __name__ == "__main__":
     workers = int(sys.argv[3]) if len(sys.argv) > 3 and not sys.argv[3].startswith("--") else 4
     cycles_arg = int(sys.argv[sys.argv.index("--max-cycles") + 1]) if "--max-cycles" in sys.argv else None
     scope_arg = sys.argv[sys.argv.index("--scope") + 1] if "--scope" in sys.argv else "all"
+    components_arg = sys.argv[sys.argv.index("--components") + 1] if "--components" in sys.argv else COMPONENTS
     if "--tiny" in sys.argv:                      # smoke test only
         deepen.STUDENT, deepen.TEACHER, deepen.CAP = 300, 1500, 5000
         deepen.DREAMS_GATE, deepen.DREAMS_CORPUS, deepen.DREAMS_TARGETS, deepen.MAX_TRIALS = 20, 40, 20, 6
     harness = Harness(workers, ALL)
     report = run(harness, learn, scope=scope_arg, prune="--prune" in sys.argv, max_cycles=cycles_arg,
+                 components=components_arg,
                  checkpoint=lambda partial: json.dump(partial, open(out_path, "w"), indent=1))
     json.dump(report, open(out_path, "w"), indent=1)
     by_run = {t["run"]: t for t in report["timeline"]}

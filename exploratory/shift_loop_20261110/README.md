@@ -12,35 +12,46 @@ sealed pools. [`PREDICTIONS.md`](PREDICTIONS.md) was written before each run it 
 
 ## Answer
 
-For the first three loops: no, by the four criteria fixed in advance. For the fourth, the
-deepening loop: yes by the count rule the criteria were registered with, over two
-generations, and two of the four hold by margins that a sign test does not separate from
-chance. Then the loop stops.
+No. No loop of this study meets the four criteria fixed in advance in a way that survives
+checking. The fourth loop, the deepening loop, came closest. A registered run printed all
+four as met on 800 new tasks. An independent verification then showed that the third
+rests on one task whose verdict is wrong, and that the gain is confined to routines the
+loop had memorised.
 
 The deepening loop (Addendum 8):
 
-- It was tested by a registered run on 800 new tasks (FRESH-4), with the outcome classes
-  and the predictions fixed first. The outcome class is "confirmed", for list outputs. At
-  10^5 candidates per task its vocabulary has 171 sound solves on the 756 list-output
-  tasks. Everything generation 0 solves at any of five budgets up to 1,126,452 is 116.
-  Seventy-five tasks against 20, p = 6 x 10^-9.
-- The four criteria on the same 800 tasks at 10^4: sound solves by generation are 61, 121,
-  126; 14 tasks are solved only through a symbol that was built on an earlier symbol; the
-  final vocabulary has 126 against 125 for generation 0 at any budget; no step is decided
-  by a person. All four hold by count. The second generation's gain is 14 tasks won and 9
-  lost, and the margin over generation 0 is one task. Neither is separated from chance.
-- The loop built on itself once. `reverse` became a symbol in the first cycle. With it the
-  second cycle's teacher solved the `append-k` tasks, which generation 0 does not solve at
-  the same budget. That solution became a symbol, and the symbol solves 13 new tasks.
+- What holds. The registered outcome class is "confirmed", for list outputs. At 10^5
+  candidates per task the learned vocabulary has 171 sound solves on the 756 list-output
+  tasks of FRESH-4. Everything generation 0 solves at any of five budgets up to 1,126,452
+  is 116. Seventy-five tasks against 20, p = 6 x 10^-9. The comparison holds on verified
+  counts, on the whole input pool and on wider inputs.
+- Where the lead is. In 68 of the 75 tasks only the learned vocabulary solves, one of the
+  two stages is itself a learned symbol (`reverse`, `append-k` and four more). On the 506
+  list tasks with no such stage it has 67 against 75. The loop turned routines of its
+  learning set into symbols, and a task that contains one is half solved before the search
+  starts. Nothing shows a gain beyond that.
+- The four criteria at 10^4. Sound solves by generation are 61, 121, 126 (R1). Fourteen
+  tasks are solved only through a symbol built on an earlier symbol (R2). No step is
+  decided by a person (R4). R3 does not stand: the script counts 126 against 125 for
+  generation 0 at any budget, and one of the 126 is a program that runs out of evaluation
+  steps on inputs inside the task's range, which the audit's sample missed. Corrected it
+  is 125 against 125. On verified counts it is 135 against 135, and counting only programs
+  right on the whole input pool it is 105 against 112.
+- The second generation. `reverse` became a symbol in the first cycle. With it the second
+  cycle's teacher solved the `append-k` tasks, which generation 0 does not solve at the
+  same budget. That solution became a symbol, and the symbol is in 13 of the 14 tasks the
+  second generation gains. It also loses 9. Most of the gains are programs that are right
+  only inside the range of the examples; on the whole-pool reading the second generation
+  has one solve fewer than the first.
 - It is not separated from the earlier loop's vocabulary at the same deployment budget
-  (171 against 158, p = 0.094). It shows nothing where its dreams had not composed the
-  pair of routines (56 against 51) and nothing on routines it never solved alone (4
-  against 4). Most of its lead sits in tasks with `reverse` or `append-k`.
-- The third cycle accepted no symbol. This is bounded improvement on new pairings of
-  routines the loop trained on. It is not open-ended self-improvement.
-- Four of its 14 predictions missed. Two were too optimistic (a lead over the earlier
-  vocabulary, a lead where no dream reached). Two were too pessimistic (R3 and "all four
-  criteria" were expected to fail).
+  (171 against 158, p = 0.094), and where a stage is one of the earlier symbols' routines
+  the earlier vocabulary is ahead (93 against 76).
+- The third cycle accepted no symbol. This is one generation of large gain on memorised
+  routines and a second of small, fragile gain. It is not open-ended self-improvement.
+- Four of its 14 predictions missed by the registered scoring. Two expected a lead that
+  did not separate (over the earlier vocabulary; where no dream reached). Two expected R3
+  and "all four criteria" to fail; the script prints them as met, and the verification
+  does not uphold that.
 
 The earlier loops. Three were built and run in two configurations each. The one positive
 comparison was put to a registered replication on 300 new tasks, and its outcome class is
@@ -568,11 +579,38 @@ by the registered rule:
 
 On verified counts the class is the same and ending 2 differs: 186 against 166 (54
 against 34, p = 0.021), which reads "and more than the earlier loop's vocabulary". The
-class is decided on sound counts.
+class is decided on sound counts. Counting only programs that are also right on the whole
+input pool, the earlier vocabulary is ahead: 143 against 150 (32 against 39).
+
+Ending 4 as the script computed it has a defect, found by the verification. The script's
+test of "a dream computes the task" compares types at the top level only, so three dream
+programs that return lists of booleans were counted as computing tasks of 0s and 1s. With
+element types compared a dream computes 42 tasks, not 45, and the stratum has 546 tasks:
+58 against 51 (14 against 7, p = 0.095). The grade is the same, "not separated".
 
 More than re-pairing of trained instances: not shown. The registration names two strata
 for it and both are silent. Where no stage instance is a learning task it is 6 against 7
 (62 tasks). Where a stage is a routine no learning task has it is 2 against 3 (135 tasks).
+
+**Where the lead is.** This stratum was found by the verification after the run, so it is
+post hoc; `addendum8_checks.py` recomputes it. Six kinds of stage are the same function as
+a symbol of the final library: `reverse`, `append-k`, `take-k` with k = 3, `remove-mod-k`,
+`keep-mod-k` with k = 2, and `replace-all-k-with-n` with n = -2.
+
+| List tasks | Tasks | New at 10^5 against generation 0 at any budget | New against old at 10^5 |
+| --- | --- | --- | --- |
+| a stage equals a learned symbol | 250 | 104 against 41 (68 against 5) | 104 against 64 (47 against 7) |
+| no stage does | 506 | 67 against 75 (7 against 15) | 67 against 94 (1 against 28) |
+
+Sixty-eight of the 75 tasks that only the new vocabulary solves have such a stage, and 65
+of them are solved with that very symbol. Where no stage equals a symbol the new
+vocabulary is not ahead of generation 0: 67 against 75 at any budget, 67 against 66 at an
+equal budget of 10^5. Endings 1 and 5 read as breadth, and both are carried by these
+tasks: 41 of ending 1's 42 new-only tasks and 22 of ending 5's 29 have a symbol stage.
+Without them ending 1's stratum is 42 against 51 (1 against 10) and ending 5's is 57
+against 58 (7 against 8). The plain reading: the loop turned routines of its learning set
+into symbols, and a task that contains one of them is half solved before the search
+starts. Nothing in the data shows a gain beyond that.
 
 Beside the class, as registered, deciding nothing:
 
@@ -588,11 +626,14 @@ Beside the class, as registered, deciding nothing:
 - What nobody solves. No arm solves a task with `dedup`, `intersperse-k`, `repeat-k`,
   `rotate-k`, `sort` or `uniq` (349 of the 756 list tasks). On the 387 list tasks with a
   routine the loop never solved alone it is 4 against 4.
-- Against *old* by stratum. With a routine of the earlier symbols: 76 against 93 (9
-  against 26). Without one: 95 against 65 (39 against 9, p = 8 x 10^-6). The two vocabularies
-  solve different tasks: the old one keeps `slice-k-n` (21 against 8) and `keep-mod-k` (36
-  against 26), the new one has `reverse` and `append-k`. Together they solve 206 of the
-  756 soundly; no merged vocabulary was run.
+- Against *old* by stratum. With a routine of the earlier symbols the earlier vocabulary
+  is ahead: 76 against 93 (9 against 26, two-sided p = 0.006). Without one the new
+  vocabulary is: 95 against 65 (39 against 9). The two solve different tasks: the old one
+  keeps `slice-k-n` (21 against 8) and `keep-mod-k` (36 against 26), the new one has
+  `reverse` and `append-k`. The new loop proposed the old one's symbols for those routines
+  (keep the multiples of k, boolean to integer) and its gate rejected them: each lowered
+  the student's score at 10^4. Together the two vocabularies solve 206 of the 756
+  soundly; no merged vocabulary was run.
 - *Old* at 10^5 against generation 0 at any budget: 158 against 116 (51 against 9). This
   set is 94% list outputs where FRESH-3 was 71%, so it does not change the class of
   Addendum 7.
@@ -605,77 +646,125 @@ Beside the class, as registered, deciding nothing:
   is not sound on 1.
 - The 44 tasks with an integer or boolean output: 14 against 9 (8 against 3, p = 0.11).
   Standardised to FRESH-2's mix of output types the lead is 4.4 sound solves per 100 tasks.
-- Sound by the audit and right on the whole input pool: 143 against 104 (59 against 20,
-  p = 6 x 10^-6). No program was left out for thin evidence.
+- Other measures of a solve. Sound by the audit and right on the whole input pool: 143
+  against 104 (59 against 20, p = 6 x 10^-6). On wider inputs than the audit draws
+  (longer lists, negative values), by a reviewer's own test: 138 against 100 (57 against
+  19). The primary comparison holds under every measure tried. No program was left out
+  for thin evidence. One program of the new vocabulary is stored as not sound although it
+  computes the task: it needs more than the evaluator's 2,000 steps on one input of the
+  audit. Counted as sound it gives 172 against 116.
 - The symbols in the 75 new-only solutions: reverse 26, append 21, prefix 15,
   remove-multiples 13, keep-evens 9, sum 8, keep-equal 6, product 5, remove-second 2,
   drop-three 1. Twenty-one use a symbol defined through another symbol.
-- Dreams: the run made 1,115 dream programs over 676 pairs of routine families. A dream
-  computes 45 FRESH-4 tasks and composes the pair of routine names of 220.
+- Dreams: the run made 1,115 dream programs over 676 pairs of routine families. They
+  compose the pair of routine names of 220 FRESH-4 tasks.
 - Held-out B and FRESH-3, development sets: 52/63 and 104/119 at 10^5, as in development.
 - Outside the budget the loop read 8,311 verifier verdicts on learning tasks and spent
   476 seconds in compression and dream making. The evaluation runs on FRESH-4 spent 75%
   to 91% of their ceilings. Cost in time is not claimed: at 10^5 the new vocabulary took
   1,192 seconds on FRESH-4 and generation 0 took 857.
 
-**The four criteria on FRESH-4**, all 800 tasks, sound solves at 10^4. The loop never
-reads FRESH-4.
+**The four criteria on FRESH-4**, all 800 tasks at 10^4. The loop never reads FRESH-4.
+The registered script scores the criteria on sound counts and prints all four as met. The
+verification re-scored them under the other two measures of a solve this study uses, and
+examined the one task that decides R3.
 
-| Criterion | Measured | Holds by the registered count rule |
-| --- | --- | --- |
-| R1: sound solves rise in two generations running | 61, 121, 126 (verified 68, 131, 135) | yes. The second step is 14 tasks gained and 9 lost (p = 0.20) |
-| R2: a gain that rests on a symbol distilled from a later teacher's discovery, lost under both ablations | 14 tasks | yes |
-| R3: more than generation 0 at any of the five budgets | 126 against 125 (54 against 53, p = 0.5) | yes, by one task |
-| R4: no step decided by a person | | yes |
+| Criterion | Sound (registered) | Verified | Sound and right on the whole input pool |
+| --- | --- | --- | --- |
+| R1: solves by generation | 61, 121, 126 | 68, 131, 135 | 54, 106, 105 |
+| R1, second step: tasks gained and lost | 14 and 9 (p = 0.20) | 15 and 11 | 6 and 7 |
+| R2: gains after cycle 1, built with a symbol distilled from a later teacher's discovery | 14 tasks | | 6 tasks |
+| R3: final vocabulary against generation 0 at any of five budgets | 126 against 125 (54 against 53) | 135 against 135 (57 against 57) | 105 against 112 (40 against 47) |
+| R4: no step decided by a person | yes | | |
 
-All four hold by the count rule they were registered with. It is the first loop of this
-study for which they do. Two of the four hold by margins that a sign test does not
-separate from chance: the second generation's gain (five tasks net) and R3 (one task).
+**R3 does not stand.** Its margin is one task, and on one of the 126 tasks the audit's
+verdict is wrong by the audit's own rule. The task is `identify-geq-k` (k = 2) followed
+by `replace-all-k-with-n` (1 by 5). The new vocabulary's program computes the right
+function through a symbol that counts primes below each value, so its cost grows with the
+values. On ten 16s, an input inside the task's range, it uses up the evaluator's 2,000
+steps, which the audit counts as a disagreement. The audit's 200 fresh inputs for this
+task happen to hold no such input; a reviewer ran the same procedure with 20 other seeds
+and one of them did. Generation 0 solves the task with a program that has no such cost.
+With that verdict corrected it is 125 against 125, and "more" is registered as strictly
+more. With three more in-range inputs per task (the longest list of the largest value, of
+the smallest value, and alternating) it is 124 against 125. On verified counts it is a
+tie and on the whole-pool reading generation 0 leads. The script's "all four: True" is
+therefore not a finding of this study. Against the single runs of generation 0 the final
+vocabulary at 10^4 has 126 against 113 at the loop's whole budget on these tasks (336,550;
+the original wording of R3; p = 0.12) and 126 against 117 at 1,126,452 (p = 0.22).
 
-- The chain of R2. In the second cycle the teacher, at 436,734 candidates per task,
-  solved 13 learning tasks soundly with a learned symbol where generation 0 at the same
-  budget finds no public match, and none the other way: nine `append-k` and
+R1, R2 and what the loop did:
+
+- R1 holds on sound and on verified counts. Its second step is small and does not survive
+  a stricter measure: 14 tasks gained and 9 lost, and on the whole-pool reading a fall,
+  106 to 105. Thirteen of the 14 gains go through the append symbol, and 11 of the 14
+  programs share one form. Representation search appends a constant such as -1 with the
+  symbol, and the element function then turns that constant into the value the task
+  appends (`map (lambda x. if x = -1 then 4 else 3x) (append -1 xs)`). Such a program is
+  right while the constant cannot occur in the input. That holds inside the range of the
+  examples and fails outside it. Eight of the 14 are wrong on the input pool.
+- The nine losses are tasks the first cycle's vocabulary solved within 1,200 to 5,000
+  candidates and the final one does not solve within 10^4: six with `drop-k` (k = 5) as
+  their first stage, two with `keep-mod-k`, one with `modulo-k`. Four more symbols moved
+  them out of reach.
+- R2 holds under every measure. In the second cycle the teacher, at 436,734 candidates
+  per task, solved 13 learning tasks soundly with a learned symbol where generation 0 at
+  the same budget finds no public match, and none the other way: nine `append-k` and
   `append-index-k` tasks through `reverse`, and `count-head-in-tail`, `remove-index-k`,
   `pow-k` and `slice-k-n`. The four symbols of that cycle were distilled from those
-  programs. On FRESH-4, 14 tasks are solved at 10^4 by the final vocabulary and by neither
-  generation 0 nor the first cycle's vocabulary, each with one of the four: 13 with the
-  append symbol (`append-k` paired with `mult-k`, `identify-is-prime` or `keep-mod-k`) and
-  one with remove-third and sum. Generation 0 solves none of the 14 at any budget.
-- The ablations add nothing here. The final vocabulary without the four recursive symbols
-  is the first cycle's vocabulary, and without the first cycle's symbols and everything
-  defined through them it is generation 0: the rows are equal program for program. So R2
-  rests on the 14 gains and their programs. The third ablation, reported beside it, removes
-  the 15 first-cycle symbols and keeps the four with their definitions written out: 77
-  sound solves, between generation 0 (61) and the whole vocabulary (126).
-- The nine losses of the second step are tasks the first cycle's vocabulary solved within
-  1,200 to 5,000 candidates and the final one does not solve within 10^4: six with
-  `drop-k` (k = 5) as their first stage, two with `keep-mod-k`, one with `modulo-k`. Four
-  more symbols moved them out of reach.
+  programs, text for text. On FRESH-4, 14 tasks are solved at 10^4 by the final
+  vocabulary and by neither generation 0 nor the first cycle's vocabulary, each with one
+  of the four: 13 with the append symbol (`append-k` paired with `mult-k`,
+  `identify-is-prime` or `keep-mod-k`) and one with remove-third and sum. Generation 0
+  solves none of the 14 at any budget.
+- The two ablations of R2 add nothing in this run. The final vocabulary without the four
+  recursive symbols is the first cycle's vocabulary, and without the first cycle's symbols
+  and everything defined through them it is generation 0: the rows are equal record for
+  record. R2 therefore says only that 14 gains of the second generation use a
+  second-cycle symbol. The third ablation, reported beside it, removes the 15 first-cycle
+  symbols and keeps the four with their definitions written out: 77 sound solves, between
+  generation 0 (61) and the whole vocabulary (126).
 - R3 by output type: 117 against 116 on list outputs, 9 against 9 on the others. The old
-  vocabulary at 10^4 has 135 sound solves on the same 800 tasks (45 against 35 against the
-  same control, p = 0.16), more than the new one's 126.
-- In the third cycle the teacher made four more such discoveries. No symbol from them
-  passed the gate.
+  vocabulary at 10^4 has 135 sound solves on the same 800 tasks, more than the new one.
+- In the third cycle the teacher made four more discoveries. No symbol from them passed
+  the gate.
 - On held-out B, a development set: R1 22, 36, 41; R2 with 5 tasks; R3 41 against 39 (13
   against 11, p = 0.42).
 
+**What the verification confirmed.** The code is byte-identical to the registering commit
+(16 files). The regenerated FRESH-4 has the registered digest and tally. Every budget
+follows its registered formula, every row has its ceiling, and no search ended early.
+Three rows were run again and came out record for record, and a toy run gives the same
+file with one worker and with two. Of 236 comparison items recomputed from the stored
+rows, 231 match; the five that differ all come from the dream test above. No two list
+tasks compute the same function. One vote per pair of routine names gives 38 against 12
+for the primary comparison. Four places where the script is looser than the registered
+text did not fire: the digest is checked on its first 16 hex digits, the missing-run
+check covers the FRESH-4 rows only, p-values are rounded to five decimals before they are
+compared with 0.05, and D5 and D9 would have been marked "not scored" on a stratum that
+is not testable, where the text says they fail.
+
 **Reading.** On new pairings of routines it trained on, the vocabulary this loop built
 solves at 10^5 candidates per task what the same machinery without it does not solve at
-eleven times that budget, and the registered test separates the two. The loop built on
-itself once: `reverse`, made a symbol in the first cycle, let the second cycle's teacher
-solve the `append-k` tasks, their solution became a symbol, and that symbol solves new
-tasks at 10^4 that neither earlier generation solves.
+eleven times that budget. The registered test separates the two, and the comparison holds
+under every measure of a solve that was tried. It is a result about memorised routines:
+the lead is in the tasks where one stage is itself a learned symbol, and there is none
+elsewhere.
+
+The loop built on itself once. `reverse`, made a symbol in the first cycle, let the
+second cycle's teacher solve the `append-k` tasks. Their solution became a symbol, and
+that symbol is in 13 of the 14 new tasks the second generation gains at 10^4. The chain
+is real. What it bought is five tasks net, mostly by programs that are right only inside
+the range of the examples.
 
 What this does not show:
 
-- That the second generation is better than the first, or that the final vocabulary at
-  10^4 beats generation 0 with more budget. Both hold by count and neither is separated
-  from chance.
+- The four criteria. R3 does not stand, and the second step of R1 does not survive a
+  stricter measure of a solve.
 - That the new loop is better than the earlier one. At the same deployment budget they are
   not separated, and at 10^4 the earlier loop's vocabulary solves more.
-- Anything outside what the loop dreamt or trained on. Where no dream composed the pair of
-  routines the lead is 56 against 51. Where a routine was never solved alone, nobody
-  solves the task.
+- Anything outside what the loop turned into symbols. Where no stage equals a symbol it
+  is 67 against 75. Where a routine was never solved alone, nobody solves the task.
 - Open-ended improvement. The third cycle accepted nothing.
 - New routines or parameter values, integer and boolean outputs, the loop as a procedure
   (one run, one vocabulary, the favourable configuration), cost in time, J's sealed pools.
@@ -692,8 +781,11 @@ class expected for the replication ("replicated on FRESH-3, for the divisibility
 only") was wrong: the class is "not established". The class expected for Addendum 8
 ("confirmed") was right, and two of its five expected endings were wrong: more than the
 earlier loop's vocabulary, and a lead where no dream composed the pair of routines. Two
-predictions of Addendum 8 missed on the pessimistic side: R3 and "all four criteria" were
-expected to fail on FRESH-4 and hold by count.
+predictions of Addendum 8, D13 and D14, expected R3 and "all four criteria" to fail on
+FRESH-4. The registered script scores both as met, so both are misses by the registered
+scoring. The verification does not uphold the script's verdict (R3 rests on one wrong
+audit verdict), so neither miss is a result: with that verdict corrected both predictions
+hold.
 
 | ID | Prediction | Outcome (verified) | Score | On sound counts |
 | --- | --- | --- | --- | --- |
@@ -710,8 +802,8 @@ expected to fail on FRESH-4 and hold by count.
 | Q8 | Replication, primary: the sign test on FRESH-3 gives p < 0.05 | | **miss** | p = 0.13 (18 against 11) |
 | D5 | Addendum 8, ending 2: more sound solves than the earlier loop's vocabulary at 10^5 with p < 0.05 | 186 against 166, p = 0.021 | **miss** | 171 against 158, p = 0.094 |
 | D7 | Addendum 8, ending 4: a lead with p < 0.05 where no dream computed the task or composed its pair of routines | | **miss** | 56 against 51, p = 0.18 |
-| D13 | Addendum 8: R3 on FRESH-4, expected to fail | | **miss**: it holds, by one task | 126 against 125, p = 0.5 |
-| D14 | Addendum 8: all four criteria on FRESH-4, expected to fail | | **miss**: all four hold by count | |
+| D13 | Addendum 8: R3 on FRESH-4, expected to fail | 135 against 135: fails | **miss** by the registered scoring: the script prints a pass by one task. The pass does not stand | 126 against 125; 125 against 125 with one wrong audit verdict corrected |
+| D14 | Addendum 8: all four criteria on FRESH-4, expected to fail | | **miss** by the registered scoring, through D13 | |
 | V | One-shot improvement at most, not recursive | three accepted steps in A | **partly wrong** | |
 | V2 | At most two accepted steps, then saturation | three in A, two in B | **partly wrong** | |
 | V3 | Second loop: more steps and a larger held-out gain than the first, not recursive | right for B; in A held-out fell by 13 | **wrong for A** | |
@@ -777,17 +869,20 @@ counts are given; they disagree for the first loop.
 | Expert, A | nothing accepted | | no | yes |
 | Expert, B | yes (20, 22, 22, 25, 26); yes (15, 16, 17, 20, 21) | no by the reading fixed before the ablation (the depth-2 symbols carry nothing). Observed afterwards: 8 later learning solves are lost with the cycle-1 symbols | no (21 against 23 at 2.4 x 10^5, below its cumulative 533,195) | yes |
 | Expert with R, B (the replication) | yes (27, 30, 33, 38); yes (22, 23, 25, 30) | not tested | no (30 against 37 at 413,254) | yes |
-| Deepening, B (Addendum 8), scored on FRESH-4 | yes (68, 131, 135); yes (61, 121, 126) | yes, by the tied chain of Addendum 8: 14 tasks | yes, by one task (126 against 125 for generation 0 at any of five budgets up to 1,126,452) | yes |
+| Deepening, B (Addendum 8), scored on FRESH-4 | yes (68, 131, 135); yes (61, 121, 126); no when only programs right on the whole input pool count (54, 106, 105) | yes, by the tied chain of Addendum 8: 14 tasks (6 on the whole-pool reading) | no. The script counts 126 against 125 for generation 0 at any of five budgets; one of the 126 verdicts is wrong, and it is 135 against 135 verified and 105 against 112 on the whole pool | yes |
 
-The first seven rows are scored on held-out tasks of the exposed partitions and none meets
-all four. The deepening loop is scored on FRESH-4, which it never read, and meets all four
-by the count rule they were registered with. It is the only loop that does. Its margins
-are small where it matters: the second generation's gain is 14 tasks won and 9 lost
-(p = 0.20) and R3 holds by one task of 800 (54 against 53, p = 0.5). On held-out B, a
-development set, it has 22, 36, 41 by generation and 41 against 39 for R3 (13 against 11,
-p = 0.42). Its R2 is stricter than the reading the earlier loops were scored by, and
-those are not re-scored. Counting criteria met does not rank the loops: the first loop in
-A meets R1 on verified counts while its held-out solves end five below where they started.
+No loop meets all four. The first seven rows are scored on held-out tasks of the exposed
+partitions. The deepening loop is scored on FRESH-4, which it never read, and it came
+closest: the registered script printed all four as met. R3 does not survive the
+verification. Its margin was one task of 800, and one of the final vocabulary's 126
+verdicts is wrong by the audit's own rule. R1 holds on sound and verified counts with a
+second step of 14 tasks won and 9 lost (p = 0.20), which becomes a fall when only
+programs right on the whole input pool count. R2 holds under every measure, and its
+ablations coincide with states already measured. On held-out B, a development set, the
+loop has 22, 36, 41 by generation and 41 against 39 for R3 (13 against 11, p = 0.42).
+Its R2 is stricter than the reading the earlier loops were scored by, and those are not
+re-scored. Counting criteria met does not rank the loops: the first loop in A meets R1 on
+verified counts while its held-out solves end five below where they started.
 
 R3 as registered fails for every earlier loop, and it is what the Phase 1 result already
 pointed at: on a fixed set of tasks, budget is a strong baseline. At a deployment budget
@@ -797,12 +892,13 @@ over the seven budgets it has been run at, up to 1.1 million candidates per task
 new tasks it has 71 against 64. Neither difference is separated from chance by the
 registered test, and both are confined to tasks that contain a routine the learned symbols
 encode. The deepening loop's vocabulary at 10^5 is separated from that baseline on
-FRESH-4's list outputs (171 against 116). At its own student budget of 10^4 it is level
-with it (126 against 125).
+FRESH-4's list outputs (171 against 116), on tasks that contain a routine it memorised.
+At its own student budget of 10^4 it is level with it or behind, depending on the measure
+of a solve.
 
 ## Reviews
 
-Six independent reviews touched this study. The first, of the loop harness, is below.
+Seven independent reviews touched this study. The first, of the loop harness, is below.
 The second attacked the draft of the replication's registration before it ran: four
 reviewers, 19 findings, every one acted on (`results/design_review_addendum7.json`;
 Addendum 7 lists what each changed). The third was to verify this document and its tools
@@ -861,6 +957,41 @@ findings: four confirmed, one already disclosed.
   the guard (`rsi5/RESULTS_P1.md`): of 30 defects made on purpose in a scratch copy, the
   test file noticed 22, and all 30 after six tests were added. The hook itself is still
   unreviewed by anyone but the author.
+
+The seventh verified the registered run of Addendum 8 after it had finished: four
+reviewers (a recount with their own soundness verdicts, conformance with the
+registration, the four criteria, confounds), each finding re-tested by a second reviewer.
+Fifteen findings: twelve confirmed, three already disclosed
+(`results/verification_addendum8.json`). The author re-tested the ones that change a
+reading (`addendum8_checks.py`, `results/addendum8_checks.txt`); all reproduce, and the
+section on Addendum 8 is written from them.
+
+- Confirmed, and it changes a verdict: R3's one-task margin rests on a program that uses
+  up the evaluator's step budget on inputs inside the task's range. The audit's sample
+  missed them. Corrected, R3 is a tie and does not hold, and "all four criteria" with it.
+- Confirmed: on verified counts R3 is a tie (135 against 135), and counting only programs
+  right on the whole input pool it is reversed (105 against 112) and the second step of R1
+  is a fall (106 to 105). The second generation's gains are mostly programs that patch a
+  sentinel constant and are right only inside the range of the examples.
+- Confirmed: the lead of the primary comparison sits in the tasks where one stage equals a
+  learned symbol (68 of the 75 new-only tasks). On the other 506 list tasks it is 67
+  against 75. Endings 1 and 5 are carried by those tasks.
+- Confirmed: the two ablations of R2 coincide with states already measured and add
+  nothing in this run.
+- Confirmed, numbers only: the script's test of "a dream computes the task" let three
+  boolean-valued dreams count for integer tasks (ending 4 is 58 against 51 on 546 tasks,
+  not 56 against 51 on 544; the grade is the same). One correct program is stored as not
+  sound because it exceeds the step budget on one audit input.
+- Confirmed, did not fire: four places where the script is looser than the registered
+  text (the section lists them).
+- Already disclosed: sound means right inside the range of the examples; the two
+  vocabularies are complementary; the mechanism was fitted to this population of routines.
+- What held: the code is the registered code, the set is the registered set, 231 of 236
+  recomputed items match (the other five through the dream test), three rows re-run
+  record for record, the run does not depend on the worker count, nothing about FRESH-4
+  reaches the loop, the first-match rule does not favour the trained arm, and the
+  primary comparison holds under every measure of a solve and with one vote per pair of
+  routine names (38 against 12).
 
 ### The harness review
 
@@ -944,7 +1075,11 @@ Each is written as a target property and the criterion that would show it.
 2. **A verdict that means the program is right.** Target: a verified solve computes the
    task's function. Criterion: sound equals verified. Measured: 61 of 68 verified held-out solves are sound
    at generation 0 with all machinery, 19 of 24 on FRESH-2; in the registered Phase 1 run
-   at 10^6, 18 of 28 on FRESH-2.
+   at 10^6, 18 of 28 on FRESH-2. And sound is not yet right: on FRESH-4, 74 of the 367
+   distinct sound programs fail on wider inputs than the audit draws, 21 of the final
+   vocabulary's 126 sound programs at 10^4 fail somewhere on the input pool (14 of
+   generation 0's 117), and a program that runs out of evaluation steps on an in-range
+   input is called sound when the audit's sample misses that input.
 3. **An acceptance signal that cannot be gamed.** Target: a move is accepted only if it
    helps unseen tasks. Criterion: sound held-out solves never fall at an accepted step.
    Measured: they fall at the first accepted step of both loops in configuration A, and by
@@ -979,11 +1114,14 @@ Each is written as a target property and the criterion that would show it.
    their results recounted after it; `dream.py`, `expert.py`, `oracles.py`,
    `audit_all.py`, the ablation and frontier tools and the fixes made after the first
    review were reviewed in the sixth review; `deepen.py`, `confirm.py` and `fresh4.py` as
-   drafts before the run of Addendum 8.
-10. **Criteria met beyond chance.** Target: each generation's gain and the lead over
-    generation 0 at the student budget hold up under a test. Criterion: a sign test passes
-    for each. Measured on FRESH-4: 14 tasks won against 9 lost in the second generation
-    (p = 0.20); 126 against 125 for R3 (54 against 53, p = 0.5).
+   drafts before the run of Addendum 8, and against the registration and the stored
+   results after it (the seventh review).
+10. **Criteria that survive checking.** Target: each generation's gain and the lead over
+    generation 0 at the student budget hold under a test and under every measure of a
+    solve. Criterion: a sign test passes for each, on sound counts and on the whole-pool
+    reading. Measured on FRESH-4: the second generation wins 14 tasks and loses 9
+    (p = 0.20) and falls from 106 to 105 on the whole-pool reading; R3 is 125 against 125
+    once one wrong audit verdict is corrected, and 105 against 112 on the whole pool.
 11. **More than two generations.** Target: improvement that continues. Criterion: a later
     cycle accepts a symbol and the count on new tasks rises again. Measured: the third
     cycle accepted nothing. Every added symbol costs the 10^4 search a task at its edge.
@@ -995,6 +1133,9 @@ Each is written as a target property and the criterion that would show it.
     the replication's at the same deployment budget. Criterion: the registered sign test
     passes on sound counts. Measured: 171 against 158, p = 0.094; with a routine of the
     earlier symbols the earlier vocabulary leads, 93 against 76.
+14. **A gain beyond memorised routines.** Target: the learned vocabulary helps on tasks
+    none of whose stages is itself a symbol. Criterion: a lead on those tasks. Measured
+    (post hoc): 67 against 75 on the 506 such list tasks of FRESH-4.
 
 ## Files and how to run
 
@@ -1003,14 +1144,19 @@ Each is written as a target property and the criterion that would show it.
 `replicate.py` (the registered replication) and `fresh3.py` (its new tasks),
 `deepen.py` (the deepening loop), `confirm.py` (the registered test of Addendum 8),
 `fresh4.py` (its new tasks), `addendum8_tables.py` (recomputes every comparison of
-Addendum 8 from the stored rows and prints the tables), `deepen_dev_eval.py` (development
+Addendum 8 from the stored rows and prints the tables), `addendum8_checks.py` (the
+readings the verification added: the criteria on verified counts and on the whole input
+pool, the step-budget case, the symbol-stage stratum), `deepen_dev_eval.py` (development
 evaluation), `oracles.py` and `audit_all.py` (the audit), `summarise.py` (tables),
 `checks.py` (self-checks), `audit_hybrid.py` and `map_shift.py` (first audit and first
 pilot, superseded). `deepen2.py` and `deepen2_eval.py` are drafts for a next loop; nothing
 reported here was produced by them. `results/` holds every report and log:
 `confirm.json` and `confirm.txt` are the output and the log of the registered run of
-Addendum 8, `addendum8_tables.txt` the tables made from them, `replication.json` the
-replication, and `harness_review.json` the first review's findings with their evidence.
+Addendum 8, `addendum8_tables.txt` the tables made from them, `addendum8_checks.txt` the
+added readings, `verification_addendum8.json` the seventh review's findings with their
+evidence, `replication.json` the replication, and `harness_review.json` the first
+review's findings with their evidence. Files named `dev_after8_*` are development
+measurements made after the run of Addendum 8 and are not evidence.
 
 The first loop, the second loop, expert iteration and their generation-0 files were
 produced before the review's fixes (the expert reports already record rejected matches;
@@ -1034,6 +1180,7 @@ python $E/frontier.py $E/results/loopB2_1e4.json OUT.json 10000 100000
 python $E/audit_all.py loop $E/results/loopB2_1e4.json --list
 python $E/confirm.py OUT.json 4            # the registered test of Addendum 8, about 7.5 hours
 python $E/addendum8_tables.py $E/results/confirm.json
+python $E/addendum8_checks.py $E/results/confirm.json
 ```
 
 Standard library and NumPy only. No transformer or attention layer. No learned controller.

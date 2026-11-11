@@ -2,8 +2,8 @@
 already been read: held-out B, FRESH-3 and, with ``--fresh4``, FRESH-4 (a development set since
 the registered run of Addendum 8 was scored). Not part of any registered protocol.
 
-    python deepen2_eval.py <loop report.json> <out.json> [workers] [--scope all|list] [--fresh4]
-                           [--student-only] [--deploy-only]
+    python deepen2_eval.py <loop report.json> <out.json> [workers] [--scope all|list|typed]
+                           [--components SCfR|SCfRP] [--fresh4] [--student-only] [--deploy-only]
 
 The scope is the report's own unless ``--scope`` is given. The comparisons printed at the end use
 stored rows: generation 0 and the earlier loop on FRESH-3 and held-out B from
@@ -30,6 +30,8 @@ def main() -> None:
     out_path = sys.argv[2]
     workers = int(sys.argv[3]) if len(sys.argv) > 3 and sys.argv[3].isdigit() else 4
     scope = sys.argv[sys.argv.index("--scope") + 1] if "--scope" in sys.argv else report.get("scope", "all")
+    components = sys.argv[sys.argv.index("--components") + 1] if "--components" in sys.argv \
+        else report.get("components", "SCfR")
     learn = CONFIGS["B"]
     held = [p for p in ALL if p not in learn]
     harness = Harness(workers, ALL)
@@ -48,10 +50,11 @@ def main() -> None:
 
     def measure(label, budget):
         started = time.perf_counter()
-        spec = spec_without({"library": report["library"]}, budget, label, set(), report.get("components", "SCfR"))
-        spec["keep"] = deepen2.keep_for(scope, spec["constants"])
+        spec = spec_without({"library": report["library"]}, budget, label, set(), components)
+        spec["keep"] = deepen2.keep_for(scope, spec["constants"], abstractions=spec["abstractions"])
         result = harness.run(spec, partition_names=parts)
-        rows[label] = {"budget": budget, "scope": scope, "partitions": parts, "counts": summary(result),
+        rows[label] = {"budget": budget, "scope": scope, "components": components, "partitions": parts,
+                       "counts": summary(result),
                        "programs": {f"{p}/{r['name']}": [r["program"], r["route"], r["to_solution"]]
                                     for p, rs in result.items() for r in rs if r["solved"]},
                        "rejected": {f"{p}/{r['name']}": [r["program"], r["route"]]
