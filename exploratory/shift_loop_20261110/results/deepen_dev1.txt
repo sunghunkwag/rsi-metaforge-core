@@ -1,0 +1,73 @@
+run   1 student0       budget   10000 tasks 214 learn 121 score  26.58 dream None held-out None lib 0 | 17 s
+run   2 report0        budget   10000 tasks 124 learn None score   0.00 dream None held-out 27 lib 0 | 9 s
+run   3 teacher1       budget  230107 tasks  93 learn 27 score   8.01 dream None held-out None lib 0 | 291 s
+run   4 dreams1        budget   10000 tasks 100 learn None score   0.00 dream [17, 100] held-out None lib 0 | 11 s
+run   5 student1.1     budget   10000 tasks 314 learn 121 score  27.38 dream [34, 100] held-out None lib 3 | 19 s
+     s1_1: (lambda x0: int. (lambda x1: list[int]. ((filter (lambda x2: int. (is_empty (range ((mod x2) x0))))) x1)))  gain 242 tasks 48
+     s1_2: (lambda x0: int. (lambda x1: list[int]. ((filter (lambda x2: int. ((gt ((mod x2) x0)) 0))) x1)))  gain 237 tasks 44
+     s1_3: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. (((if ((eq x2) x0)) ((mul 2) 5)) x2))) x1)))  gain 197 tasks 19
+     accepted: score 26.584 -> 27.384, learn 121 -> 121, dream 17 -> 34
+run   6 student1.2     budget   10000 tasks 314 learn 135 score  29.41 dream [42, 100] held-out None lib 6 | 21 s
+     s2_1: (lambda x0: list[int]. ((map (lambda x1: int. (head (tail x0)))) (range (head x0))))  gain 189 tasks 27
+     s2_2: (lambda x0: list[int]. (lambda x1: int. ((map (lambda x2: int. ((index x2) x0))) (range x1))))  gain 177 tasks 44
+     s2_3: (lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime ((mod x1) 3))) 0) ((sub 1) ((mod x1) 3))))) x0))  gain 154 tasks 13
+     accepted: score 27.384 -> 29.412, learn 121 -> 135, dream 34 -> 42
+run   7 student1.3     budget   10000 tasks 314 learn 145 score  31.66 dream [53, 100] held-out None lib 9 | 19 s
+     s3_1: (lambda x0: list[int]. (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0))  gain 148 tasks 24
+     s3_2: (lambda x0: list[int]. ((cons (head x0)) (tail (tail x0))))  gain 134 tasks 23
+     s3_3: (lambda x0: bool. (((if x0) 1) 0))  gain 120 tasks 56
+     accepted: score 29.412 -> 31.662, learn 135 -> 145, dream 42 -> 53
+run   8 student1.4     budget   10000 tasks 314 learn 142 score  31.29 dream [51, 100] held-out None lib 12 | 27 s
+     s4_1: (lambda x0: int. (lambda x1: int. (lambda x2: list[int]. ((map (lambda x3: int. ((mod ((sub x3) x0)) x1))) x2))))  gain 108 tasks 27
+     s4_2: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. (((if ((eq x2) x0)) ((add -1) -1)) x2))) x1)))  gain 85 tasks 12
+     s4_3: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. ((mod x2) x0))) x1)))  gain 72 tasks 24
+     rejected: score 31.662 -> 31.287, dream 53 -> 51
+run   9 student1.5     budget   10000 tasks 314 learn 143 score  31.56 dream [54, 100] held-out None lib 12 | 33 s
+     s5_1: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. ((mod ((sub x2) -1)) x0))) x1)))  gain 107 tasks 21
+     s5_2: (lambda x0: list[int]. ((map (lambda x1: int. (s3_3 ((gt x1) 1)))) x0))  gain 68 tasks 14
+     s5_3: (lambda x0: list[int]. ((map (lambda x1: int. (s3_3 ((ge x1) ((add 2) 5))))) x0))  gain 68 tasks 9
+     rejected: score 31.662 -> 31.562, dream 53 -> 54
+run  10 report1        budget   10000 tasks 124 learn None score   0.00 dream None held-out 37 lib 9 | 26 s
+run  11 teacher2       budget  310144 tasks  69 learn 26 score   4.98 dream None held-out None lib 9 | 297 s
+run  12 dreams2        budget   10000 tasks 100 learn None score   0.00 dream [37, 100] held-out None lib 9 | 15 s
+run  13 student2.1     budget   10000 tasks 314 learn 150 score  33.66 dream [39, 100] held-out None lib 12 | 30 s
+     s6_1: (lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 3)) ((add -1) -1)) x1))) x0))  gain 142 tasks 16
+     s6_2: (lambda x0: int. (lambda x1: list[int]. (s3_1 ((cons x0) (s3_1 x1)))))  gain 119 tasks 55
+     s6_3: (lambda x0: list[int]. ((map (lambda x1: int. (s3_3 (is_prime x1)))) x0))  gain 78 tasks 19
+     accepted: score 31.662 -> 33.662, learn 145 -> 150, dream 37 -> 39
+run  14 student2.2     budget   10000 tasks 314 learn 149 score  33.62 dream [40, 100] held-out None lib 15 | 27 s
+     s7_1: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. ((add x2) x0))) x1)))  gain 75 tasks 22
+     s7_2: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. ((mul x2) x0))) x1)))  gain 63 tasks 20
+     s7_3: (lambda x0: int. (lambda x1: list[int]. ((s6_2 ((index x0) x1)) x1)))  gain 60 tasks 18
+     rejected: score 33.662 -> 33.619, dream 39 -> 40
+run  15 student2.3     budget   10000 tasks 314 learn 150 score  34.08 dream [45, 100] held-out None lib 15 | 27 s
+     s8_1: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. ((index x0) x1))) x1)))  gain 58 tasks 14
+     s8_2: ((mul 2) 5)  gain 55 tasks 25
+     s8_3: (lambda x0: list[int]. ((s1_3 (head (tail x0))) x0))  gain 53 tasks 14
+     accepted: score 33.662 -> 34.075, learn 150 -> 150, dream 39 -> 45
+run  16 student2.4     budget   10000 tasks 314 learn 149 score  33.82 dream [52, 100] held-out None lib 18 | 22 s
+     s9_1: (lambda x0: list[int]. (((fold (lambda x1: int. (lambda x2: int. ((add x2) x1)))) 0) x0))  gain 52 tasks 10
+     s9_2: (lambda x0: list[int]. ((map (lambda x1: int. (s3_3 (is_square ((add x1) 2))))) x0))  gain 46 tasks 9
+     s9_3: (lambda x0: int. (lambda x1: list[int]. ((cons ((index x0) x1)) x1)))  gain 45 tasks 16
+     rejected: score 34.075 -> 33.818, dream 45 -> 52
+run  17 student2.5     budget   10000 tasks 314 learn 146 score  31.54 dream [45, 100] held-out None lib 18 | 23 s
+     s10_1: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. (s3_3 ((eq x2) x0)))) x1)))  gain 45 tasks 13
+     s10_2: (lambda x0: list[int]. ((index (head x0)) x0))  gain 45 tasks 9
+     s10_3: (lambda x0: list[int]. ((index (length (tail x0))) x0))  gain 41 tasks 8
+     rejected: score 34.075 -> 31.541, dream 45 -> 45
+run  18 report2        budget   10000 tasks 124 learn None score   0.00 dream None held-out 42 lib 15 | 19 s
+run  19 teacher3       budget  334375 tasks  64 learn 18 score   2.38 dream None held-out None lib 15 | 377 s
+run  20 dreams3        budget   10000 tasks 100 learn None score   0.00 dream [47, 100] held-out None lib 15 | 17 s
+run  21 student3.1     budget   10000 tasks 314 learn 149 score  33.92 dream [47, 100] held-out None lib 18 | 26 s
+     s11_1: (lambda x0: list[int]. ((filter (lambda x1: int. ((lt 0) ((mod x1) 5)))) x0))  gain 88 tasks 14
+     s11_2: (lambda x0: list[int]. ((cons (head x0)) (s3_2 (tail x0))))  gain 55 tasks 12
+     s11_3: (lambda x0: list[int]. (((fold (lambda x1: int. (lambda x2: int. ((mul x2) x1)))) 1) x0))  gain 52 tasks 10
+     rejected: score 34.075 -> 33.925, dream 47 -> 47
+run  22 student3.2     budget   10000 tasks 314 learn 158 score  33.78 dream [49, 100] held-out None lib 18 | 25 s
+     s12_1: (lambda x0: list[int]. (tail (tail (tail x0))))  gain 48 tasks 25
+     s12_2: (lambda x0: list[int]. ((map (lambda x1: int. ((mul x1) ((mul x1) x1)))) x0))  gain 46 tasks 9
+     s12_3: (lambda x0: int. ((lt 0) ((mod x0) 5)))  gain 43 tasks 14
+     rejected: score 34.075 -> 33.779, dream 47 -> 49
+cycle 3: nothing accepted: stop
+
+student at 10000: learn 121 -> 150, score 26.584 -> 34.075; held-out by cycle [('report0', 27), ('report1', 37), ('report2', 42)]; symbols 15; training ceiling 110739887, spent 70187291

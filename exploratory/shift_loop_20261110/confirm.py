@@ -23,10 +23,12 @@ One process, no step between its parts that a person decides:
      against everything generation 0 solves at any budget run; the breakdowns; the outcome class
      by the registered rule; the predictions scored.
 
-    python confirm.py <out.json> [workers] [--tiny] [--resume]
+    python confirm.py <out.json> [workers] [--tiny] [--resume] [--rehearse <loop report.json>]
 
 ``--tiny`` is a smoke test at toy budgets. It never generates a FRESH-4 candidate: FRESH-3 tasks
-stand in for both generated sets. ``--resume`` continues an interrupted run from its own output
+stand in for both generated sets. ``--rehearse`` is a second smoke test: it takes a finished
+development report of the loop instead of running the loop, evaluates at small budgets on the same
+stand-in tasks and so walks every analysis path with a real vocabulary; it decides nothing. ``--resume`` continues an interrupted run from its own output
 file: the loop report is taken if the loop had finished (otherwise the loop runs again from the
 start; it is deterministic) and every evaluation row already there is kept if it was made by
 the same vocabulary at the same budget on the same tasks. Results do not depend on the worker
@@ -56,6 +58,9 @@ TASKS = 338                      # the exposed tasks
 STEPS = 2000
 ALPHA = 0.05
 MIN_EVIDENCE = 20                # fresh in-domain inputs a sound verdict on a generated task needs
+MIN_DISCORDANT = 10              # tasks only one arm solves below which a stratum is not read
+EXPECTED_LOOP = {"library_digest": "7b8e1ef31a09a95e50643e64530318f68014abd61923a367bfd850837cc0c93e",
+                 "training_ceiling": 189_239_903}        # the last development run of the frozen loop
 REGISTERED_DIGEST = "6159d55f97e57301"          # the first 16 hex digits; Addendum 8 gives all 64
 TOP = 1_126_452                  # the largest budget generation 0 was run at in Addendum 7
 HELD_RUNGS = {"r181775": 181_775, "r251479": 251_479, "r413254": 413_254, "r569881": 569_881, "top": TOP}
@@ -92,7 +97,9 @@ class Sound:
         return True, checked
 
     def verdict(self, key: str, text: str):
-        """(sound, evidence): evidence is None for an exposed task."""
+        """(sound, evidence): evidence is the number of fresh in-domain inputs a program of a
+        generated task agreed on when it agreed on all of them, None otherwise (an exposed task, or
+        a program that disagreed somewhere)."""
         task = self.tasks.get(key)
         if task is None:
             return bool(self.auditor.sound(key, text)), None
@@ -100,7 +107,7 @@ class Sound:
             if key not in self.inputs:
                 self.inputs[key] = self.oracles.fresh_inputs(key, task, [task.reference])
             agrees, checked = self._agrees(task, text, self.inputs[key])
-            self.cache[(key, text)] = (agrees and checked >= MIN_EVIDENCE, checked)
+            self.cache[(key, text)] = (agrees and checked >= MIN_EVIDENCE, checked if agrees else None)
         return self.cache[(key, text)]
 
     def on_pool(self, key: str, text: str) -> bool:
@@ -136,35 +143,63 @@ def outcome_class(flags: dict) -> str:
         return scope + "not confirmed: no lead on FRESH-4 over what generation 0 solves at any budget run"
     if not flags["significant"]:
         return scope + "not established: a lead on FRESH-4 that the sign test does not separate from chance"
-    endings = [{"none": "only where a routine of the earlier symbols is present",
-                "not separated": "outside the routines of the earlier symbols not separated from chance",
-                "significant": "also outside the routines of the earlier symbols"}[flags["outside_earlier"]],
-               {"none": "no more than the earlier loop's vocabulary at the same deployment budget",
-                "not separated": "not separated from the earlier loop's vocabulary at the same deployment budget",
-                "significant": "and more than the earlier loop's vocabulary at the same deployment budget"}[flags["over_old"]],
-               "with reach beyond the budget" if flags["budget_bound_lead"]
-               else "as a different first match, not reach beyond the budget",
-               {"none": "not where no dream computed the task or composed its pair of routines",
-                "not separated": "where no dream computed the task or composed its pair of routines not separated from chance",
-                "significant": "also where no dream computed the task or composed its pair of routines"}[flags["undreamt"]],
-               {"none": "only where both stages are its own learning tasks",
-                "not separated": "where a stage is not one of its learning tasks not separated from chance",
-                "significant": "also where a stage is not one of its learning tasks"}[flags["beyond_learning_tasks"]]]
+    endings = [
+        worded(flags["outside_earlier"], {
+            "topic": "outside the routines of the earlier symbols",
+            "none": "only where a routine of the earlier symbols is present",
+            "not separated": "outside the routines of the earlier symbols not separated from chance",
+            "significant": "also outside the routines of the earlier symbols"}),
+        worded(flags["over_old"], {
+            "topic": "against the earlier loop's vocabulary at the same deployment budget",
+            "none": "no more than the earlier loop's vocabulary at the same deployment budget",
+            "not separated": "not separated from the earlier loop's vocabulary at the same deployment budget",
+            "significant": "and more than the earlier loop's vocabulary at the same deployment budget"}),
+        worded(flags["budget_bound"], {
+            "topic": "reach beyond the budget",
+            "none": "as a different first match, not reach beyond the budget",
+            "not separated": "reach beyond the budget not separated from chance",
+            "significant": "with reach beyond the budget"}),
+        worded(flags["undreamt"], {
+            "topic": "where no dream computed the task or composed its pair of routines",
+            "none": "not where no dream computed the task or composed its pair of routines",
+            "not separated": "where no dream computed the task or composed its pair of routines not separated from chance",
+            "significant": "also where no dream computed the task or composed its pair of routines"}),
+        worded(flags["beyond_learning_tasks"], {
+            "topic": "where a stage is not one of its learning tasks",
+            "none": "only where both stages are its own learning tasks",
+            "not separated": "where a stage is not one of its learning tasks not separated from chance",
+            "significant": "also where a stage is not one of its learning tasks"})]
     return scope + "confirmed on FRESH-4 against everything generation 0 solves at any budget run; " + "; ".join(endings)
 
 
 def graded(comparison: dict) -> str:
-    if comparison["trained"] <= comparison["control"]:
-        return "none"
-    return "significant" if comparison["p_one_sided"] < ALPHA else "not separated"
+    """'significant': more sound solves with p < ALPHA. Otherwise 'not testable' when fewer than
+    MIN_DISCORDANT tasks are solved by one arm only (nothing can be read from so few, an absence
+    least of all); otherwise 'not separated' (more, p >= ALPHA) or 'none' (no more)."""
+    more = comparison["trained"] > comparison["control"]
+    if more and comparison["p_one_sided"] < ALPHA:
+        return "significant"
+    if comparison["trained_only"] + comparison["control_only"] < MIN_DISCORDANT:
+        return "not testable"
+    return "not separated" if more else "none"
 
 
-def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
+def worded(grade: dict, readings: dict) -> str:
+    if grade["reading"] == "not testable":
+        return (f"{readings['topic']} not testable ({grade['tasks']} tasks, "
+                f"{grade['trained_only'] + grade['control_only']} that only one arm solves)")
+    return readings[grade["reading"]]
+
+
+def main(out_path: str, workers: int, tiny: bool, resume: bool, rehearse: str | None = None) -> None:
     global DEPLOY, TOP, HELD_RUNGS, MIN_EVIDENCE
+    stand_in = tiny or bool(rehearse)               # FRESH-3 tasks stand in for both generated sets
     if tiny:
         deepen.STUDENT, deepen.TEACHER, deepen.CAP, deepen.MAX_CYCLES = 300, 1500, 5000, 2
         deepen.DREAMS_GATE, deepen.DREAMS_CORPUS, deepen.DREAMS_TARGETS, deepen.MAX_TRIALS = 20, 40, 20, 5
         DEPLOY, TOP, HELD_RUNGS = 1500, 3000, {"r2000": 2000, "top": 3000}
+    elif rehearse:
+        DEPLOY, TOP, HELD_RUNGS = 20_000, 60_000, {"r30000": 30_000, "top": 60_000}
     learn = CONFIGS["B"]
     held = [p for p in ALL if p not in learn]
     harness = Harness(workers, ALL)
@@ -174,19 +209,19 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
     if not fresh3.digest(third).startswith("4da13e671411da8c"):
         raise SystemExit("fresh3.make() no longer gives the registered FRESH-3 set")
     tally = {}
-    if tiny:                                        # FRESH-3 tasks stand in: no FRESH-4 candidate is made
+    if stand_in:                                    # FRESH-3 tasks stand in: no FRESH-4 candidate is made
         fourth, third = third[:60], third[60:100]
     else:
         fourth = fresh4.make(statistics=tally)
     digest = fresh3.digest(fourth)
-    if not tiny and (len(fourth) != fresh4.COUNT or not digest.startswith(REGISTERED_DIGEST)):
+    if not stand_in and (len(fourth) != fresh4.COUNT or not digest.startswith(REGISTERED_DIGEST)):
         raise SystemExit(f"this is not the registered FRESH-4 set: {len(fourth)} tasks, digest {digest}")
     harness.add_partition("fresh4", fourth, [task.public_view() for task in fourth])
     harness.add_partition("fresh3", third, [task.public_view() for task in third])
     protocol = {"components": COMPONENTS, "student": deepen.STUDENT, "teacher": deepen.TEACHER, "cap": deepen.CAP,
                 "rejects": deepen.REJECTS, "max_trials": deepen.MAX_TRIALS, "max_cycles": deepen.MAX_CYCLES,
                 "dreams": [deepen.DREAMS_GATE, deepen.DREAMS_CORPUS, deepen.DREAMS_TARGETS],
-                "deploy": DEPLOY, "tiny": tiny, "fresh4_digest": digest}
+                "deploy": DEPLOY, "tiny": tiny, "rehearsal": bool(rehearse), "fresh4_digest": digest}
     previous = json.load(open(out_path)) if resume and os.path.exists(out_path) else {}
     if previous and previous.get("protocol") != protocol:
         raise SystemExit("the file to resume from is not of this protocol")
@@ -201,7 +236,11 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
         json.dump(out, open(out_path, "w"), indent=1)
 
     # ---- 2. the loop ---------------------------------------------------------------------------
-    if previous.get("loop", {}).get("finished"):
+    if rehearse:                                    # a development report of the loop, taken as it is
+        report = json.load(open(rehearse))
+        if not report.get("finished"):
+            raise SystemExit("the loop report to rehearse with is not finished")
+    elif previous.get("loop", {}).get("finished"):
         report = previous["loop"]
         out["loop_taken_from_interrupted_run"] = True
     else:
@@ -211,10 +250,16 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
         sorted((entry["witness"], entry["params"], entry["result"]) for entry in report["library"].values())
     ).encode()).hexdigest()
     save()
-    print(f"loop: {len(report['library'])} symbols, library digest {out['library_digest'][:16]}", flush=True)
+    out["loop_as_in_development"] = None if stand_in else (
+        out["library_digest"] == EXPECTED_LOOP["library_digest"]
+        and report["training_ceiling"] == EXPECTED_LOOP["training_ceiling"])
+    print(f"loop: {len(report['library'])} symbols, library digest {out['library_digest'][:16]}, training ceiling "
+          f"{report['training_ceiling']}; as in development: {out['loop_as_in_development']}", flush=True)
     earlier = json.load(open(EARLIER))
     libraries = {"gen0": {}, "new": report["library"], "old": earlier["loop"]["library"]}
-    training = {"new": report["training_ceiling"], "old": 600_000 if tiny else earlier["training_candidates"]}
+    training = {"new": report["training_ceiling"], "old": earlier["training_candidates"]}
+    if stand_in:                                    # toy ceilings, so that the rungs stay small
+        training = {"new": 1_500_000 if rehearse else report["training_ceiling"], "old": 600_000}
     sets = {"heldB": held, "fresh4": ["fresh4"], "fresh3": ["fresh3"]}
     sizes = {name: sum(len(harness.public[p]) for p in parts) for name, parts in sets.items()}
     c2 = lambda which: round((training[which] + sizes["fresh4"] * DEPLOY) / sizes["fresh4"])
@@ -225,6 +270,9 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
     if c1new <= MEMORY_LIMIT:
         budgets["heldB"]["C1new"] = c1new
     out["c2new_if_training_were_charged_to_300_tasks"] = round((training["new"] + 300 * DEPLOY) / 300)
+    out["top_rung_covers_the_whole_budget"] = {
+        "on_these_tasks": TOP >= budgets["fresh4"]["C2new"],
+        "if_training_were_charged_to_300_tasks": TOP >= out["c2new_if_training_were_charged_to_300_tasks"]}
     out["training_candidates"], out["set_sizes"], out["control_budgets"] = training, sizes, budgets
     out["c1new_on_held_out_b"] = {"budget": c1new, "run": c1new <= MEMORY_LIMIT}
     print(f"training ceilings {training}; control budgets {budgets}", flush=True)
@@ -234,7 +282,8 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
     out["rows"] = rows
 
     def measure(label, state, budget, partitions, only=None):
-        fingerprint = {"state": state, "budget": budget, "partitions": list(partitions),
+        fingerprint = {"state": state if isinstance(state, str) else state[0], "budget": budget,
+                       "partitions": list(partitions),
                        "library": sorted(libraries[state]) if isinstance(state, str) else sorted(state[1]),
                        "only": sorted(only) if only is not None else None}
         if label in rows and rows[label].get("fingerprint") == fingerprint:
@@ -279,7 +328,7 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
     # symbol, and generation 0 at the same budget on the same task finds no public match.
     by_run = {t["run"]: t for t in report["timeline"]}
     sound = Sound({"fresh4": fourth, "fresh3": third})
-    discovery, through = {}, set()
+    discovery, found_by = {}, {}                   # found_by: cycle -> {task: the teacher's program text}
     for cycle in report["cycles"][1:]:
         label = f"gen0@teacher{cycle['cycle']}:learn"
         measure(label, "gen0", cycle["teacher_share"], list(learn), only=set(cycle["unsolved"]))
@@ -291,15 +340,27 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
                      if sound.verdict(key, value[0])[0] and key not in teacher["programs"]
                      and key not in teacher["rejected"]}
         if len(with_symbols) > len(other_way):          # the symbols helped that teacher more than they cost
-            through |= with_symbols
+            found_by[cycle["cycle"]] = {key: teacher["programs"][key][0] for key in with_symbols}
         discovery[str(cycle["cycle"])] = {
             "budget": cycle["teacher_share"], "tasks": len(cycle["unsolved"]),
             "teacher_sound_with_a_symbol_where_generation_0_has_no_match": sorted(with_symbols),
             "generation_0_sound_where_the_teacher_has_no_match": sorted(other_way)}
-    # Recursive symbols: accepted after the first cycle and distilled from such a program; with them
-    # go the symbols defined through them.
-    trials = {t["proposed"]["name"]: t["proposed"] for t in report["timeline"] if t.get("accepted")}
-    seeds = {name for name, info in trials.items() if info["cycle"] >= 2 and set(info["support"]) & through}
+    # Recursive symbols: accepted after the first cycle and distilled from such a program (one of
+    # the programs the symbol folded when it was proposed is a discovery made in that cycle or
+    # before, text for text); with them go the symbols defined through them.
+    trials = {t["proposed"]["name"]: dict(t["proposed"], run=t["run"]) for t in report["timeline"] if t.get("accepted")}
+    cycle_of_run = {t["run"]: cycle["cycle"] for cycle in report["cycles"] for t in report["timeline"]
+                    if cycle["teacher_run"] <= t["run"] <= max(cycle["student_run"], cycle["teacher_run"])}
+    seeds = set()
+    for name, info in trials.items():
+        info.setdefault("cycle", cycle_of_run.get(info["run"], 1))     # reports made before these fields existed
+        folded = info.get("support_programs")
+        if folded is None:                                              # (rehearsals only) fall back on use
+            folded = {key: found_by.get(info["cycle"], {}).get(key) for key, used in by_run[info["run"]]["used"].items()
+                      if name in (used or ())}
+        if info["cycle"] >= 2 and any(text is not None and found_by.get(c, {}).get(key) == text
+                                      for key, text in folded.items() for c in range(2, info["cycle"] + 1)):
+            seeds.add(name)
     recursive = descendants(report["library"], seeds) if seeds else set()
     first_cycle = set(report["cycles"][0]["library"]) if report["cycles"] else set()
     lineage = descendants(report["library"], first_cycle) if first_cycle else set()
@@ -436,6 +497,9 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
         "a routine no learning task has": lambda k, t: bool(origin[k]["unmet"])}
     out["strata"] = {name: stratum(test) for name, test in tests.items()}
     out["strata_new_vs_old"] = {name: stratum(test, treated, old_arm) for name, test in tests.items()}
+    out["more_than_re_pairing_of_trained_instances"] = any(
+        out["strata"][name]["reading"] == "significant"
+        for name in ("no stage instance is a learning task", "a routine no learning task has"))
     rate = lambda keys, kind: (sum(1 for key in keys if task_of[key].kind == kind)
                                / max(1, sum(1 for task in fourth if task.kind == kind)))
     mix = {"list": 0.71, "int": 0.11, "bool": 0.18}                # FRESH-2's output types
@@ -454,22 +518,33 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
         without[routine] = dict(paired(treated & kept, control & kept), tasks=len(kept))
     worst = max(without, key=lambda routine: (without[routine]["p_one_sided"], routine))
     out["leave_one_routine_out"] = {"largest_p": without[worst]["p_one_sided"], "routine": worst, "all": without}
-    # how many routines carry the lead: drop the routines with the largest net lead, one after another
+    # Removing routines in a fixed order of net lead (computed once), with every task that contains
+    # them, until the remaining lead is no longer separated. This loses power as well as lead, so
+    # the number of routines is evidence of narrowness only by the rule in ``reading``.
     net = {}
     for key in treated ^ control:
         for routine in {task_of[key].stages[0][0], task_of[key].stages[1][0]}:
             net[routine] = net.get(routine, 0) + (1 if key in treated else -1)
-    order, kept, dropped_routines, carried = sorted(net, key=lambda r: (-net[r], r)), set(scope), [], None
-    if graded(paired(treated, control)) != "significant":
-        order, carried = [], {"routines_removed_before_the_lead_is_no_longer_separated": "none: there is no separated lead"}
-    for routine in order:
-        kept = {key for key in kept if routine not in (task_of[key].stages[0][0], task_of[key].stages[1][0])}
-        dropped_routines.append(routine)
-        if graded(paired(treated & kept, control & kept)) != "significant":
-            carried = {"routines_removed_before_the_lead_is_no_longer_separated": list(dropped_routines),
-                       "tasks_left": len(kept), "then": paired(treated & kept, control & kept)}
-            break
-    out["lead_carried_by"] = carried or {"routines_removed_before_the_lead_is_no_longer_separated": "never: every routine removed"}
+    per_task = lambda keys: round((len(treated & keys) - len(control & keys)) / max(1, len(keys)), 4)
+    kept, removed, carried = set(scope), [], None
+    if not (out["primary"]["trained"] > out["primary"]["control"] and out["primary"]["p_one_sided"] < ALPHA):
+        carried = {"routines_removed": "none: there is no separated lead"}
+    else:
+        for routine in sorted(net, key=lambda r: (-net[r], r)):
+            kept = {key for key in kept if routine not in (task_of[key].stages[0][0], task_of[key].stages[1][0])}
+            removed.append(routine)
+            left = paired(treated & kept, control & kept)
+            if not (left["trained"] > left["control"] and left["p_one_sided"] < ALPHA):
+                narrow = left["trained"] <= left["control"] and len(kept) >= 200
+                carried = {"routines_removed": list(removed), "tasks_removed": len(scope) - len(kept),
+                           "tasks_left": len(kept), "left": left,
+                           "lead_per_task_in_the_removed_tasks": per_task(scope - kept),
+                           "lead_per_task_in_the_tasks_left": per_task(kept),
+                           "reading": "the lead holds over pairs of these routines only" if narrow
+                           else "the count of routines is not evidence of narrowness"}
+                break
+    out["lead_carried_by"] = carried or {"routines_removed": list(removed), "tasks_left": 0,
+                                         "reading": "the count of routines is not evidence of narrowness"}
     by_routine = {}
     for key, task in scoped.items():
         for routine in {task.stages[0][0], task.stages[1][0]}:
@@ -484,7 +559,7 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
         if t["label"].startswith("student") and "proposed" in t:
             if t.get("accepted"):
                 accepted[t["proposed"]["name"]] = {"real_tasks": t["proposed"]["real_tasks"], "depth": t["proposed"]["depth"],
-                                                   "cycle": t["proposed"]["cycle"],
+                                                   "cycle": trials[t["proposed"]["name"]]["cycle"],
                                                    "on_the_tie_break": t["family_score_exact"] == last_score}
                 last_score = t["family_score_exact"]
         elif t["label"] == "student0":
@@ -515,14 +590,19 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
     #     budget run. R4: no step is decided by a person.
     rises = lambda values: any(a < b < c for a, b, c in zip(values, values[1:], values[2:]))
 
-    def second(gains, used, ablated_label) -> dict:
-        """R2 on one set: ``gains`` are the sound solves of the final vocabulary that neither
-        generation 0 nor the first cycle's vocabulary has; ``used`` maps a task to the learned
-        symbols its program was built with."""
+    def second(gains, used, without_recursive, without_lineage) -> dict:
+        """R2 on one set. ``gains``: the sound solves of the final vocabulary that neither generation 0
+        nor the first cycle's vocabulary has. ``used``: task -> the learned symbols its program was
+        built with. A gain counts when it was built with a recursive symbol, is lost without the
+        recursive symbols and is lost without the first cycle's symbols and those defined through
+        them (the symbols of the earlier generation)."""
         uses = {key for key in gains if set(used.get(key) or ()) & recursive}
-        lost = uses - solved(ablated_label) if recursive else set()
+        lost = uses - solved(without_recursive) if recursive else set()
+        both = lost - solved(without_lineage) if lineage else set()
         return {"gains_after_cycle_1": len(gains), "of_those_built_with_a_recursive_symbol": len(uses),
-                "of_those_lost_without_the_recursive_symbols": len(lost), "holds": len(lost) > 0}
+                "of_those_lost_without_the_recursive_symbols": len(lost),
+                "of_those_also_lost_without_the_first_cycle_and_what_is_defined_through_it": len(both),
+                "holds": len(both) > 0}
 
     lost_final = {}
     for label, names in ablations.items():
@@ -539,7 +619,8 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
     if stages:
         chain.append((f"cycle {stages[-1]['cycle']}", solved("new@student:fresh4")))
     gains4 = chain[-1][1] - chain[1][1] - chain[0][1] if len(chain) > 2 else set()
-    second4 = second(gains4, rows["new@student:fresh4"]["used"], "new-without-recursive@student:fresh4")
+    second4 = second(gains4, rows["new@student:fresh4"]["used"], "new-without-recursive@student:fresh4",
+                     "new-without-cycle1-lineage@student:fresh4")
     third4 = paired(arms["fresh4"]["new@student"], arms["fresh4"]["controls"]["any"])
     first4 = rises([len(keys) for _, keys in chain])
     out["criteria_on_fresh4"] = {
@@ -556,7 +637,8 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
     trajectory = [{"label": t["label"], "verified": t["held_out"], "sound": len(keys)} for t, keys in zip(reports, by_cycle)]
     held_new = {key for key in solved("new@student:heldB")}
     gains_b = held_new - by_cycle[1] - by_cycle[0] if len(by_cycle) > 2 else set()
-    second_b = second(gains_b, rows["new@student:heldB"]["used"], "new-without-recursive@student")
+    second_b = second(gains_b, rows["new@student:heldB"]["used"], "new-without-recursive@student",
+                      "new-without-cycle1-lineage@student")
     held_any = arms["heldB"]["controls"]["any"]
     third_b = paired(arms["heldB"]["new@student"], held_any)
     out["criteria"] = {
@@ -573,9 +655,18 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
         a = arms_for(measure_)
         t, c = a["fresh4"]["new@deploy"] & scope, a["fresh4"]["controls"]["any"] & scope
         o = a["fresh4"]["old@deploy"] & scope
+
+        def grade(comparison, tasks):
+            return dict(comparison, tasks=tasks, reading=graded(comparison))
+
+        def within(keys):
+            return grade(paired(t & keys, c & keys), len(keys))
+
         primary = paired(t, c)
-        within = lambda keys: graded(paired(t & keys, c & keys))
-        kinds = kinds_of(t, c, rows["new@deploy:fresh4"], rows[f"gen0@{top_rung}:fresh4"])["budget_bound"]
+        bound = kinds_of(t, c, rows["new@deploy:fresh4"], rows[f"gen0@{top_rung}:fresh4"])["budget_bound"]
+        bound = {"trained": bound["trained_only"], "control": bound["control_only"],
+                 "trained_only": bound["trained_only"], "control_only": bound["control_only"],
+                 "p_one_sided": bound["p_one_sided"]}
         expected = {f"gen0@{rung}:fresh4" for rung in budgets["fresh4"]} | {
             f"{state}@{at}:fresh4" for state in ("gen0", "new", "old") for at in ("deploy", "student")}
         return {"missing": "" if expected <= set(rows) else f"runs missing: {sorted(expected - set(rows))}",
@@ -584,8 +675,8 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
                 "lead": primary["trained"] > primary["control"],
                 "significant": primary["p_one_sided"] < ALPHA,
                 "outside_earlier": within({key for key in scope if not earlier_routine(task_of[key])}),
-                "over_old": graded(paired(t, o)),
-                "budget_bound_lead": kinds["trained_only"] > kinds["control_only"],
+                "over_old": grade(paired(t, o), len(scope)),
+                "budget_bound": grade(bound, len(scope)),
                 "undreamt": within(scope - dreamt_keys),
                 "beyond_learning_tasks": within({key for key in scope if origin[key]["stages"] < 2})}
 
@@ -612,7 +703,10 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
         print(f"  stratum {name}: {json.dumps(value)}")
     for name, value in out["strata_new_vs_old"].items():
         print(f"  new against old, {name}: {json.dumps(value)}")
-    print("lead carried by:", json.dumps(out["lead_carried_by"]), "| standardised to the mix of FRESH-2, per 100 tasks:",
+    print("more than re-pairing of trained instances (a significant lead where no stage is a learning task or a "
+          "routine has no learning task):", out["more_than_re_pairing_of_trained_instances"])
+    print("routines removed until the lead is not separated:", json.dumps(out["lead_carried_by"]),
+          "| standardised to the mix of FRESH-2, per 100 tasks:",
           out["lead_standardised_to_the_mix_of_fresh2_per_100_tasks"])
     print("clusters:", json.dumps(out["clusters"]))
     print("leave one routine out: largest p", out["leave_one_routine_out"]["largest_p"], "without", worst)
@@ -638,31 +732,35 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
 def predictions(out, report, comparisons, trajectory) -> dict:
     """The predictions of Addendum 8, scored mechanically (the thresholds are the registered ones)."""
     verdict = lambda ok: "PASS" if ok else "FAIL"
-    separated = lambda c: c["trained"] > c["control"] and c["p_one_sided"] < ALPHA
-    primary, strata, fourth = out["primary"], out["strata"], out["criteria_on_fresh4"]
-    budget_bound = out["kinds"]["fresh4, list outputs: new@deploy vs gen0@any"]["budget_bound"]
+    by_grade = lambda grade: ("not scored (stratum not testable)" if grade["reading"] == "not testable"
+                              else verdict(grade["reading"] == "significant"))
+    primary, strata, fourth, flags = out["primary"], out["strata"], out["criteria_on_fresh4"], out["flags"]
     unmet = strata["a routine no learning task has"]
     return {
         "D1": verdict(primary["trained"] > primary["control"]),
         "D2": verdict(primary["p_one_sided"] < ALPHA) if primary["trained"] > primary["control"]
         else "not scored (D1 failed)",
         "D3": verdict(primary["trained"] - primary["control"] >= THRESHOLDS["D3_lead"]),
-        "D4": verdict(separated(strata["without one"])),
-        "D5": verdict(separated(out["new_vs_old"])),
-        "D6": verdict(separated(out["old_vs_any"])),
-        "D7": verdict(separated(strata["no dream does"])),
-        "D8": verdict(separated(strata["not both stage instances are learning tasks"])),
-        "D9": verdict(budget_bound["trained_only"] > budget_bound["control_only"]),
-        "D10": verdict(unmet["trained"] > unmet["control"]),
+        "D4": by_grade(flags["outside_earlier"]),
+        "D5": by_grade(flags["over_old"]),
+        "D6": verdict(out["old_vs_any"]["trained"] > out["old_vs_any"]["control"]
+                      and out["old_vs_any"]["p_one_sided"] < ALPHA),
+        "D7": by_grade(flags["undreamt"]),
+        "D8": by_grade(flags["beyond_learning_tasks"]),
+        "D9": by_grade(flags["budget_bound"]),
+        "D10": "not scored (stratum not testable)" if unmet["reading"] == "not testable"
+        else verdict(unmet["trained"] > unmet["control"]),
         "D11": verdict(fourth["R1"]),
         "D12": verdict(fourth["R2"]),
         "D13": verdict(fourth["R3"]),
-        "D14": verdict(fourth["all_four"])}
+        "D14": verdict(fourth["all_four"]),
+        "thresholds": dict(THRESHOLDS)}
 
 
-THRESHOLDS = {"D3_lead": 80}        # provisional until the registration is in force
+THRESHOLDS = {"D3_lead": 50}
 
 
 if __name__ == "__main__":
+    rehearse_with = sys.argv[sys.argv.index("--rehearse") + 1] if "--rehearse" in sys.argv else None
     main(sys.argv[1], int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2].isdigit() else 4, "--tiny" in sys.argv,
-         "--resume" in sys.argv)
+         "--resume" in sys.argv, rehearse_with)

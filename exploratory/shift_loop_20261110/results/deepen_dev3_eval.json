@@ -1,0 +1,2664 @@
+{
+ "rows": {
+  "new@deploy": {
+   "budget": 100000,
+   "partitions": [
+    "fresh3",
+    "fresh2",
+    "compose24"
+   ],
+   "counts": {
+    "fresh3": 119,
+    "fresh2": 48,
+    "compose24": 15
+   },
+   "programs": {
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . -3)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) ((mul 2) 5))) ((sub -1) 2)) 0))) x0))",
+     "map+fused",
+     50001
+    ],
+    "fresh3/fresh3::((reverse (dyn . 0)) (modulo-k (dyn . 1) (static . 6)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mod x1) (((fold (lambda x2: int. (lambda x3: int. ((add x3) x2)))) 0) (range 4))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))",
+     "re+map+search",
+     13341
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . -1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) ((sub x1) 2)) (neg x1)))) ((cons -1) x0)))",
+     "re+map+fused",
+     40026
+    ],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (replace-all-k-with-n (dyn . 1) (static . 5) (static . -2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 3)) ((sub x1) 5)) (head ((map (lambda x2: int. (((if ((eq x2) 5)) ((add -1) -1)) x2))) ((cons x1) nil)))))) x0))",
+     "map+fused",
+     50001
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 2)) (identify-k (dyn . 1) (static . 3)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (length ((filter (lambda x2: int. ((eq x2) x1))) ((cons 3) nil))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+search",
+     39386
+    ],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (append-k (dyn . 1) (static . 10)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 3)) ((add -1) -1)) x1))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons ((mul 2) 5)) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "search",
+     89379
+    ],
+    "fresh3/fresh3::((add-k (dyn . 0) (static . -2)) (prepend-k (dyn . 1) (static . -8)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) ((sub -1) ((add 2) 5))) ((sub x1) 2)))) ((cons -1) x0)))",
+     "re+map+fused",
+     40025
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . -1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) ((mul 2) 5))) -1) 0))) x0))",
+     "map+fused",
+     50001
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 10)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) ((mul 2) 5))) 5) 0))) x0))",
+     "map+fused",
+     50001
+    ],
+    "fresh3/fresh3::((pow-base-k (dyn . 0) (static . 4)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_empty (range x1))) 5) (((fold (lambda x2: int. (lambda x3: int. ((mul x3) x2)))) 1) ((map (lambda x2: int. 4)) (range x1)))))) x0))",
+     "map+fused",
+     50001
+    ],
+    "fresh3/fresh3::((identify-is-prime (dyn . 0)) (prepend-k (dyn . 1) (static . -8)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) ((sub -1) ((add 2) 5))) (((if (is_prime x1)) 1) 0)))) ((cons -1) x0)))",
+     "re+map+fused",
+     40049
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (length ((filter (lambda x2: int. ((eq x2) 3))) (range x1))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+search",
+     16425
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (identify-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (length ((filter (lambda x2: int. ((eq x2) x1))) ((cons 2) nil))))) ((cons -1) x0)))",
+     "re+map+search",
+     38047
+    ],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (mult-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 2)) ((mul 4) 5)) ((add x1) x1)))) x0))",
+     "map+fused",
+     50001
+    ],
+    "fresh3/fresh3::((identify-is-prime (dyn . 0)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime x1)) 0) 1))) x0))",
+     "map+search",
+     3073
+    ],
+    "fresh3/fresh3::((drop-k (dyn . 0) (static . 2)) (count-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. (((if (is_empty ((filter (lambda x1: int. (not (is_prime x1)))) x0))) 4) 0))",
+     "search",
+     7654
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 10)) (append-k (dyn . 1) (static . 10)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) (((fold (lambda x2: int. (lambda x3: int. ((add x3) x2)))) 0) (range 5))) ((mod x1) (((fold (lambda x2: int. (lambda x3: int. ((add x3) x2)))) 0) (range 5)))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     40040
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (identify-k (dyn . 1) (static . 1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((fold (lambda x2: int. (lambda x3: int. ((add x3) x2)))) 0) ((filter (lambda x2: int. ((eq x2) x1))) (range 2))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+search",
+     13434
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_square ((add x1) 2))) (length ((filter (lambda x2: int. ((eq x2) 2))) (range x1)))) (((fold (lambda x2: int. (lambda x3: int. ((mul x3) x2)))) 1) (range x1))))) ((cons -1) x0)))",
+     "re+map+fused",
+     40019
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . -2)) (add-k (dyn . 1) (static . -5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub -1) 4))) x0))",
+     "map+search",
+     9
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (append-k (dyn . 1) (static . -3)))": [
+     "(lambda x0: list[int]. (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons ((sub -1) 2)) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons ((add -1) -1)) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))))",
+     "search",
+     37014
+    ],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 2) (static . 3)) (sum (dyn . 1)))": [
+     "(lambda x0: list[int]. (((fold (lambda x1: int. (lambda x2: int. ((add x2) x1)))) 0) ((map (lambda x1: int. ((index x1) (tail x0)))) (range 3))))",
+     "search",
+     13985
+    ],
+    "fresh3/fresh3::((drop-k (dyn . 0) (static . 2)) (modulo-k (dyn . 1) (static . 7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mod x1) ((add 2) 5)))) (tail ((cons (head x0)) (tail (tail x0))))))",
+     "re+map+search",
+     14173
+    ],
+    "fresh3/fresh3::((identify-is-prime (dyn . 0)) (add-k (dyn . 1) (static . -7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime x1)) ((sub -1) 5)) ((add -1) ((sub -1) 5))))) x0))",
+     "map+search",
+     5167
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 10)) (modulo-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) 2) ((mod x1) 4)))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     40017
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . -7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((index 0) ((cons 1) x0)))) ((cons 1) x0)))",
+     "search",
+     9635
+    ],
+    "fresh3/fresh3::((remove-mod-k (dyn . 0) (static . 2)) (prepend-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (is_empty ((filter (lambda x2: int. (is_empty (range ((mod x2) 2))))) ((cons x1) nil))))) ((cons 5) x0)))",
+     "re+filter+search",
+     13336
+    ],
+    "fresh3/fresh3::((add-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((add x1) ((add x1) ((mul 4) 5))))) x0))",
+     "map+search",
+     6103
+    ],
+    "fresh3/fresh3::((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (rotate-k (dyn . 1) (static . -1)))": [
+     "(lambda x0: list[int]. (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons 2) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) (tail x0)))))",
+     "search",
+     1760
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (add-k (dyn . 1) (static . -7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 1)) ((sub -1) 5)) ((add -1) ((sub -1) 5))))) x0))",
+     "map+fused",
+     50001
+    ],
+    "fresh3/fresh3::((identify-geq-k (dyn . 0) (static . 2)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (length ((filter (lambda x2: int. ((eq x2) x1))) (range 2))))) x0))",
+     "map+search",
+     3314
+    ],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (add-k (dyn . 1) (static . -5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) 5))) ((map (lambda x1: int. ((index x1) x0))) (range 3))))",
+     "re+map+search",
+     10463
+    ],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 2) (static . 2)) (mult-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((add x1) x1))) (tail ((map (lambda x1: int. ((index x1) x0))) (range 3)))))",
+     "re+map+search",
+     12295
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 1)) 5) (((if ((eq x1) -1)) ((add -1) -1)) x1)))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     40072
+    ],
+    "fresh3/fresh3::((keep-mod-k (dyn . 0) (static . 2)) (identify-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime x1)) 1) 0))) ((filter (lambda x1: int. (is_empty (range ((mod x1) 2))))) x0)))",
+     "re+map+search",
+     13220
+    ],
+    "fresh3/fresh3::((keep-mod-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . 10)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) (((fold (lambda x2: int. (lambda x3: int. ((add x3) x2)))) 0) (range 5))) x1))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((filter (lambda x1: int. (is_empty (range ((mod x1) 2))))) x0))))))",
+     "re+map+fused",
+     40107
+    ],
+    "fresh3/fresh3::((add-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mul 2) ((add x1) 3)))) x0))",
+     "map+search",
+     10820
+    ],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . -2)) (prepend-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) 5) (neg ((add x1) x1))))) ((cons -1) x0)))",
+     "re+map+fused",
+     40059
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (length ((filter (lambda x2: int. ((eq x2) 3))) (range x1))))) ((cons -1) x0)))",
+     "re+map+search",
+     16424
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (identify-is-mod-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((fold (lambda x2: int. (lambda x3: int. ((mul x3) x2)))) 1) (range ((mod x1) 5))))) ((cons -1) x0)))",
+     "re+map+search",
+     15724
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (replace-all-k-with-n (dyn . 1) (static . -1) (static . 2)))": [
+     "(lambda x0: list[int]. ((cons 2) x0))",
+     "search",
+     161
+    ],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (remove-mod-k (dyn . 1) (static . -5)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (((if ((eq x1) 2)) false) ((lt 0) ((mod x1) 5))))) x0))",
+     "filter+fused",
+     50001
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (mult-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 1)) 2) 0))) x0))",
+     "map+search",
+     40522
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (is_empty ((filter (lambda x2: int. (is_empty (range ((mod x2) 2))))) ((cons x1) nil))))) ((cons 3) x0)))",
+     "re+filter+search",
+     13353
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (remove-mod-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. ((eq x1) 1))) x0))",
+     "filter+search",
+     75
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 2)) (len (dyn . 1)))": [
+     "(lambda x0: list[int]. ((sub (length x0)) -1))",
+     "search",
+     986
+    ],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . 3)) (prepend-k (dyn . 1) (static . -8)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) ((sub -1) ((add 2) 5))) ((mul x1) 3)))) ((cons -1) x0)))",
+     "re+map+fused",
+     40016
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 3)) (reverse (dyn . 1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mod x1) 3))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))",
+     "re+map+search",
+     10133
+    ],
+    "fresh3/fresh3::((identify-is-mod-k (dyn . 0) (static . 2)) (head (dyn . 1)))": [
+     "(lambda x0: list[int]. (length ((filter (lambda x1: int. (is_empty (range ((mod x1) 2))))) ((map (lambda x1: int. ((index x1) x0))) (range 1)))))",
+     "search",
+     11447
+    ],
+    "fresh3/fresh3::((add-k (dyn . 0) (static . 3)) (identify-is-mod-k (dyn . 1) (static . 7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_square ((add x1) 5))) 1) 0))) x0))",
+     "map+fused",
+     50001
+    ],
+    "fresh3/fresh3::((identify-is-prime (dyn . 0)) (pow-base-k (dyn . 1) (static . 7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime x1)) ((add 2) 5)) 1))) x0))",
+     "map+fused",
+     50001
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 3)) (append-k (dyn . 1) (static . -2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) ((add -1) -1)) x1))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons 3) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0))))))))",
+     "re+map+fused",
+     40879
+    ],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . -1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mul x1) ((sub -1) 2)))) x0))",
+     "map+search",
+     143
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. 1)) ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "re+map+search",
+     10249
+    ],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (mult-k (dyn . 1) (static . -3)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 2)) ((add 3) ((sub -1) ((mul 2) ((mul 4) 4))))) ((mul 3) (neg x1))))) x0))",
+     "map+fused",
+     50001
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (is-evens (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. ((eq x1) 1))) x0)))",
+     "search",
+     1515
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . -1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) ((add 3) ((sub -1) ((mul 3) 4)))) (neg x1)))) ((cons -1) x0)))",
+     "re+map+fused",
+     40058
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (identify-is-mod-k (dyn . 1) (static . 3)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((fold (lambda x2: int. (lambda x3: int. ((mul x3) x2)))) 1) (range ((mod x1) 3))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+search",
+     14923
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (append-k (dyn . 1) (static . 10)))": [
+     "(lambda x0: list[int]. (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons ((mul 2) 5)) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons ((add -1) -1)) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))))",
+     "search",
+     38664
+    ],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 1) (static . 2)) (reverse (dyn . 1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 1)) 2) x1))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))",
+     "re+map+fused",
+     40025
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (identify-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_square x1)) 0) (((fold (lambda x2: int. (lambda x3: int. ((mul x3) x2)))) 1) (range ((div x1) 3)))))) ((cons -1) x0)))",
+     "re+map+fused",
+     40021
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . -2)) (sum (dyn . 1)))": [
+     "(lambda x0: list[int]. ((sub (((fold (lambda x1: int. (lambda x2: int. ((add x2) x1)))) 0) x0)) 2))",
+     "search",
+     1327
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((fold (lambda x2: int. (lambda x3: int. ((mul x3) x2)))) 1) (range ((mod x1) 4))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+search",
+     15227
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. ((lt 0) ((mod x1) 5)))) ((cons 3) x0)))",
+     "re+filter+search",
+     17994
+    ],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (length ((filter (lambda x2: int. ((eq x2) 4))) (range x1))))) ((map (lambda x1: int. ((index x1) x0))) (range 3))))",
+     "re+map+search",
+     18311
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 10)) (append-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) 4) ((mod x1) (((fold (lambda x2: int. (lambda x3: int. ((add x3) x2)))) 0) (range 5)))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     40037
+    ],
+    "fresh3/fresh3::((identify-geq-k (dyn . 0) (static . 2)) (pow-base-k (dyn . 1) (static . 7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_empty ((filter (lambda x2: int. (is_prime ((add x2) 4)))) (range x1)))) 1) ((add 2) 5)))) x0))",
+     "map+fused",
+     50001
+    ],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 2) (static . 2)) (rotate-k (dyn . 1) (static . 1)))": [
+     "(lambda x0: list[int]. (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) (tail ((map (lambda x1: int. ((index x1) x0))) (range 3)))))",
+     "search",
+     27866
+    ],
+    "fresh3/fresh3::((rotate-k (dyn . 0) (static . -2)) (count-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. (length ((filter (lambda x1: int. ((eq x1) 2))) x0)))",
+     "search",
+     1751
+    ],
+    "fresh3/fresh3::((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (modulo-k (dyn . 1) (static . 7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) 2) ((mod x1) ((add 2) 5))))) ((cons (head ((cons -1) x0))) (tail (tail ((cons -1) x0))))))",
+     "re+map+fused",
+     40229
+    ],
+    "fresh3/fresh3::((remove-mod-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . -2)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (((if (is_square ((mod x1) ((add -1) -1)))) ((le x1) -1)) true))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons ((add -1) -1)) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+filter+fused",
+     40604
+    ],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 2) (static . 2)) (modulo-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mod x1) 4))) (tail ((map (lambda x1: int. ((index x1) x0))) (range 3)))))",
+     "re+map+search",
+     12478
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 3)) (prepend-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) 5) (length ((filter (lambda x2: int. ((eq x2) x1))) ((cons 3) nil)))))) ((cons -1) x0)))",
+     "re+map+fused",
+     40042
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 2)) (sum (dyn . 1)))": [
+     "(lambda x0: list[int]. (length ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "search",
+     1759
+    ],
+    "fresh3/fresh3::((identify-geq-k (dyn . 0) (static . 7)) (prepend-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((gt x1) (((fold (lambda x2: int. (lambda x3: int. ((add x3) x2)))) 0) (range 4)))) 1) (((if ((eq x1) -1)) 5) 0)))) ((cons -1) x0)))",
+     "re+map+fused",
+     40021
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 2)) (mult-k (dyn . 1) (static . 10)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_empty ((filter (lambda x2: int. (is_empty (range ((mod x2) 2))))) ((cons x1) nil)))) (((fold (lambda x2: int. (lambda x3: int. ((add x3) x2)))) 0) (range 5))) 0))) x0))",
+     "map+fused",
+     50001
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 10)) (append-k (dyn . 1) (static . -2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) ((add -1) -1)) ((mod x1) (((fold (lambda x2: int. (lambda x3: int. ((add x3) x2)))) 0) (range 5)))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     40019
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 3)) (add-k (dyn . 1) (static . -5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub ((mod x1) 3)) 5))) x0))",
+     "map+search",
+     6307
+    ],
+    "fresh3/fresh3::((reverse (dyn . 0)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((fold (lambda x2: int. (lambda x3: int. ((mul x3) x2)))) 1) (range ((mod x1) 4))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))",
+     "re+map+search",
+     15236
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 3)) (replace-all-k-with-n (dyn . 1) (static . 5) (static . -2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 5)) ((add -1) -1)) ((mod x1) ((add x1) 5))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     40015
+    ],
+    "fresh3/fresh3::((add-k (dyn . 0) (static . -2)) (mult-k (dyn . 1) (static . 10)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mul ((sub -1) ((mul 3) 3))) ((sub 2) x1)))) x0))",
+     "map+search",
+     16481
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . 3)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) ((add 3) ((add 2) ((mul 5) 5)))) ((mul x1) 3)))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     40075
+    ],
+    "fresh3/fresh3::((reverse (dyn . 0)) (remove-mod-k (dyn . 1) (static . -5)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. ((gt ((mod x1) 5)) 0))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))",
+     "search",
+     2372
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . 10)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 3)) (((fold (lambda x2: int. (lambda x3: int. ((add x3) x2)))) 0) (range 5))) 0))) x0))",
+     "map+fused",
+     50001
+    ],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((fold (lambda x2: int. (lambda x3: int. ((mul x3) x2)))) 1) (range ((mod x1) 4))))) x0))",
+     "map+search",
+     5196
+    ],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 0)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((fold (lambda x2: int. (lambda x3: int. ((mul x3) x2)))) 1) (range (neg x1))))) ((map (lambda x1: int. ((index x1) x0))) (range 3))))",
+     "re+map+search",
+     11480
+    ],
+    "fresh3/fresh3::((drop-k (dyn . 0) (static . 5)) (mult-k (dyn . 1) (static . 3)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mul x1) 3))) (tail ((cons (head (tail (tail (tail x0))))) (tail (tail (tail (tail (tail x0)))))))))",
+     "re+map+search",
+     12284
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (modulo-k (dyn . 1) (static . 6)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) 4) ((mod x1) (((fold (lambda x2: int. (lambda x3: int. ((add x3) x2)))) 0) (range 4)))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     40015
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 10)) (reverse (dyn . 1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mod x1) (((fold (lambda x2: int. (lambda x3: int. ((add x3) x2)))) 0) (range 5))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))",
+     "re+map+search",
+     13398
+    ],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. ((gt ((mod x1) 4)) 0))) ((map (lambda x1: int. ((index x1) x0))) (range 3))))",
+     "re+filter+search",
+     19312
+    ],
+    "fresh3/fresh3::((add-k (dyn . 0) (static . 10)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((add x1) ((mul 2) 5)))) ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "re+map+search",
+     10339
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (add-k (dyn . 1) (static . -5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) ((sub -1) 2)) ((sub x1) 5)))) ((cons -1) x0)))",
+     "re+map+fused",
+     40021
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . -1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (neg ((mod x1) 3)))) x0))",
+     "map+search",
+     1159
+    ],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (length ((filter (lambda x2: int. ((eq x2) 3))) (range x1))))) ((map (lambda x1: int. ((index x1) x0))) (range 3))))",
+     "re+map+search",
+     16725
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 10)) (prepend-k (dyn . 1) (static . -8)))": [
+     "(lambda x0: list[int]. ((cons ((sub -1) ((add 2) 5))) ((cons ((mul 2) 5)) x0)))",
+     "search",
+     66315
+    ],
+    "fresh3/fresh3::((identify-is-mod-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . -2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) ((add -1) -1)) (length ((filter (lambda x2: int. (is_empty (range ((mod x2) 2))))) ((cons x1) nil)))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     40024
+    ],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . -2)) (head (dyn . 1)))": [
+     "(lambda x0: list[int]. ((mul 2) (neg (head x0))))",
+     "search",
+     6842
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . -3)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) ((mod (((fold (lambda x2: int. (lambda x3: int. ((add x3) x2)))) 0) (range 4))) ((sub -1) ((mul 5) ((add 2) 5))))) ((mul 3) (neg x1))))) ((cons -1) x0)))",
+     "re+map+fused",
+     40015
+    ],
+    "fresh3/fresh3::((positions (dyn . 0)) (count-k (dyn . 1) (static . 10)))": [
+     "(lambda x0: list[int]. ((div (length ((filter (lambda x1: int. (is_empty (range ((mod x1) 2))))) x0))) 5))",
+     "search",
+     6496
+    ],
+    "fresh3/fresh3::((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (is-mod-k (dyn . 1) (static . -2)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. (is_prime ((add x1) 4)))) (tail x0))))",
+     "search",
+     144
+    ],
+    "fresh3/fresh3::((intersperse-k (dyn . 0) (static . 10)) (is-squares (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_square (((fold (lambda x1: int. (lambda x2: int. ((add x2) x1)))) 0) ((map (lambda x1: int. (((fold (lambda x2: int. (lambda x3: int. ((mul x3) x2)))) 1) ((map (lambda x2: int. x1)) (range 5))))) x0))))",
+     "search",
+     1446
+    ],
+    "fresh3/fresh3::((repeat-k (dyn . 0) (static . 2)) (len (dyn . 1)))": [
+     "(lambda x0: list[int]. ((mul 2) (length x0)))",
+     "search",
+     1013
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 2)) (head (dyn . 1)))": [
+     "(lambda x0: list[int]. ((mod (head x0)) 2))",
+     "search",
+     889
+    ],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . -2)) (count-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. (length (tail ((filter (lambda x1: int. ((eq x1) (head ((cons -1) x0))))) ((cons -1) x0)))))",
+     "search",
+     874
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 3)) (is-evens (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. ((eq x1) 3))) x0)))",
+     "search",
+     1694
+    ],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . -2)) (has-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((eq -1) (((fold (lambda x1: int. (lambda x2: int. ((add x2) x1)))) 0) x0)))",
+     "search",
+     921
+    ],
+    "fresh3/fresh3::((remove-mod-k (dyn . 0) (static . 2)) (head (dyn . 1)))": [
+     "(lambda x0: list[int]. (head ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "search",
+     1756
+    ],
+    "fresh3/fresh3::((repeat-k (dyn . 0) (static . 2)) (count-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. (((fold (lambda x1: int. (lambda x2: int. ((add x2) x1)))) 0) ((filter (lambda x1: int. ((eq x1) 2))) x0)))",
+     "search",
+     1797
+    ],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 2) (static . 2)) (sum (dyn . 1)))": [
+     "(lambda x0: list[int]. (((fold (lambda x1: int. (lambda x2: int. ((add x2) x1)))) 0) (tail ((map (lambda x1: int. ((index x1) x0))) (range 3)))))",
+     "search",
+     13752
+    ],
+    "fresh3/fresh3::((repeat-k (dyn . 0) (static . 5)) (len (dyn . 1)))": [
+     "(lambda x0: list[int]. ((mul 5) (length x0)))",
+     "search",
+     1370
+    ],
+    "fresh3/fresh3::((remove-mod-k (dyn . 0) (static . 2)) (sum (dyn . 1)))": [
+     "(lambda x0: list[int]. (((fold (lambda x1: int. (lambda x2: int. ((add x2) x1)))) 0) ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "search",
+     1803
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (count-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. (((fold (lambda x1: int. (lambda x2: int. ((mul x2) x1)))) 1) ((filter (lambda x1: int. ((eq x1) 2))) x0)))",
+     "search",
+     1797
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. (is_prime ((add x1) 4)))) ((filter (lambda x1: int. (is_empty (range ((mod x1) 2))))) x0))))",
+     "search",
+     85
+    ],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 3) (static . 4)) (is-primes (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. (not (is_prime x1)))) (tail (tail (tail x0))))))",
+     "search",
+     75
+    ],
+    "fresh3/fresh3::((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (is-primes (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. (not (is_prime x1)))) (tail x0))))",
+     "search",
+     144
+    ],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (has-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((le (head x0)) 2))",
+     "search",
+     916
+    ],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 2) (static . 2)) (is-squares (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_square (head (tail x0))))",
+     "search",
+     92
+    ],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 3) (static . 3)) (has-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((eq 0) (head (tail x0))))",
+     "search",
+     996
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 2)) (is-mod-k (dyn . 1) (static . -2)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. ((eq x1) 2))) x0)))",
+     "search",
+     1638
+    ],
+    "fresh2/((add-k (dyn . 0) (static . 10)) (positions (dyn . 1)))": [
+     "(lambda x0: list[int]. (range (length x0)))",
+     "search",
+     82
+    ],
+    "fresh2/((add-k (dyn . 0) (static . 3)) (append-k (dyn . 1) (static . 10)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) ((mul 2) 5)) ((add x1) 3)))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     40019
+    ],
+    "fresh2/((append-k (dyn . 0) (static . -2)) (head (dyn . 1)))": [
+     "(lambda x0: list[int]. (head x0))",
+     "search",
+     14
+    ],
+    "fresh2/((append-k (dyn . 0) (static . 10)) (add-k (dyn . 1) (static . -7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) 3) ((add x1) ((add -1) ((sub -1) 5)))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     40019
+    ],
+    "fresh2/((append-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (is_empty ((filter (lambda x2: int. (is_empty (range ((mod x2) 2))))) ((cons x1) nil))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons 3) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+filter+search",
+     13653
+    ],
+    "fresh2/((append-k (dyn . 0) (static . 3)) (sum (dyn . 1)))": [
+     "(lambda x0: list[int]. ((add 3) (((fold (lambda x1: int. (lambda x2: int. ((add x2) x1)))) 0) x0)))",
+     "search",
+     1295
+    ],
+    "fresh2/((dedup (dyn . 0)) (is-primes (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. (not (is_prime x1)))) x0)))",
+     "search",
+     18
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . -3)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub ((add x1) x1)) (abs x1)))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) (tail ((cons (head x0)) (tail (tail x0)))))))))",
+     "re+map+search",
+     40498
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 2)) (is-odds (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_prime (length x0)))",
+     "search",
+     80
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . -5)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. ((lt 0) ((mod x1) 5)))) (tail ((cons (head x0)) (tail (tail x0))))))",
+     "re+filter+search",
+     17983
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 5)) (len (dyn . 1)))": [
+     "(lambda x0: list[int]. ((sub (length x0)) 5))",
+     "search",
+     1071
+    ],
+    "fresh2/((identify-geq-k (dyn . 0) (static . 3)) (empty (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty x0))",
+     "search",
+     14
+    ],
+    "fresh2/((identify-geq-k (dyn . 0) (static . 3)) (rotate-k (dyn . 1) (static . -1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (length ((filter (lambda x2: int. ((eq x2) 2))) (range x1))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons (head x0)) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) (tail x0))))))",
+     "re+map+search",
+     16733
+    ],
+    "fresh2/((identify-geq-k (dyn . 0) (static . 7)) (modulo-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (length ((filter (lambda x2: int. ((eq x2) 5))) (range x1))))) x0))",
+     "map+search",
+     8451
+    ],
+    "fresh2/((identify-is-mod-k (dyn . 0) (static . 7)) (pow-base-k (dyn . 1) (static . 7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_square (neg ((mod x1) ((add 2) 5))))) ((add 2) 5)) 1))) x0))",
+     "map+fused",
+     50001
+    ],
+    "fresh2/((identify-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . -7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. 1)) x0))",
+     "map+search",
+     4
+    ],
+    "fresh2/((identify-k (dyn . 0) (static . 1)) (append-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) 5) (((fold (lambda x2: int. (lambda x3: int. ((add x3) x2)))) 0) ((filter (lambda x2: int. ((eq x2) x1))) (range 2)))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     40107
+    ],
+    "fresh2/((identify-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) ((mul 2) 5))) 0) 1))) x0))",
+     "map+fused",
+     50001
+    ],
+    "fresh2/((identify-k (dyn . 0) (static . 10)) (len (dyn . 1)))": [
+     "(lambda x0: list[int]. (length x0))",
+     "search",
+     15
+    ],
+    "fresh2/((keep-mod-k (dyn . 0) (static . 2)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((fold (lambda x2: int. (lambda x3: int. ((mul x3) x2)))) 1) (range ((mod x1) 4))))) ((filter (lambda x1: int. (is_empty (range ((mod x1) 2))))) x0)))",
+     "re+map+search",
+     15212
+    ],
+    "fresh2/((keep-mod-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (is_prime ((sub ((mul x1) x1)) 5)))) x0))",
+     "filter+search",
+     37606
+    ],
+    "fresh2/((keep-mod-k (dyn . 0) (static . 5)) (is-odds (dyn . 1)))": [
+     "(lambda x0: list[int]. ((eq 1) ((mod (((fold (lambda x1: int. (lambda x2: int. ((add x2) x1)))) 0) x0)) 4)))",
+     "search",
+     76426
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 3)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime ((div x1) 5))) ((mod ((mod x1) 3)) 2)) (((fold (lambda x2: int. (lambda x3: int. ((mul x3) x2)))) 1) (range ((mod x1) 3)))))) x0))",
+     "map+fused",
+     50001
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 2)) (identify-is-prime (dyn . 1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. 0)) x0))",
+     "map+search",
+     3
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. 0)) x0))",
+     "map+search",
+     3
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (modulo-k (dyn . 1) (static . 6)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mod x1) 3))) x0))",
+     "map+search",
+     82
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime ((mod (neg x1)) 3))) 5) ((mod x1) 3)))) x0))",
+     "map+fused",
+     50001
+    ],
+    "fresh2/((mult-k (dyn . 0) (static . 10)) (is-odds (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty x0))",
+     "search",
+     14
+    ],
+    "fresh2/((mult-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mul x1) 3))) ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "re+map+search",
+     10296
+    ],
+    "fresh2/((positions (dyn . 0)) (dup (dyn . 1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((div x1) 2))) (range ((mul 2) (length x0)))))",
+     "re+map+search",
+     10982
+    ],
+    "fresh2/((pow-base-k (dyn . 0) (static . 4)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((fold (lambda x2: int. (lambda x3: int. ((mul x3) x2)))) 1) ((filter (lambda x2: int. ((eq x2) x1))) (range 1))))) x0))",
+     "map+search",
+     3160
+    ],
+    "fresh2/((pow-base-k (dyn . 0) (static . 4)) (is-evens (dyn . 1)))": [
+     "(lambda x0: list[int]. ((lt 0) (((fold (lambda x1: int. (lambda x2: int. ((mul x2) x1)))) 1) x0)))",
+     "search",
+     1052
+    ],
+    "fresh2/((prepend-k (dyn . 0) (static . -2)) (append-k (dyn . 1) (static . 10)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 2)) ((mul x1) 5)) (((if ((eq x1) -1)) ((add -1) -1)) x1)))) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons 2) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0))))))",
+     "re+map+fused",
+     70191
+    ],
+    "fresh2/((prepend-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "search",
+     1641
+    ],
+    "fresh2/((prepend-k (dyn . 0) (static . -2)) (modulo-k (dyn . 1) (static . 7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) 5) ((mod x1) ((add 2) 5))))) ((cons -1) x0)))",
+     "re+map+fused",
+     40022
+    ],
+    "fresh2/((prepend-k (dyn . 0) (static . 3)) (append-k (dyn . 1) (static . -2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) ((add -1) -1)) x1))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons 3) x0))))))",
+     "re+map+search",
+     40258
+    ],
+    "fresh2/((remove-mod-k (dyn . 0) (static . 2)) (mult-k (dyn . 1) (static . 10)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mul x1) ((mul 2) 5)))) ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "re+map+search",
+     10382
+    ],
+    "fresh2/((repeat-k (dyn . 0) (static . 3)) (sum (dyn . 1)))": [
+     "(lambda x0: list[int]. ((mul 3) (((fold (lambda x1: int. (lambda x2: int. ((add x2) x1)))) 0) x0)))",
+     "search",
+     1184
+    ],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (positions (dyn . 1)))": [
+     "(lambda x0: list[int]. (range (length x0)))",
+     "search",
+     82
+    ],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (length ((filter (lambda x2: int. ((eq x2) 3))) (range x1))))) x0))",
+     "map+search",
+     6384
+    ],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (is-odds (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty x0))",
+     "search",
+     14
+    ],
+    "fresh2/((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (keep-mod-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (is_square (neg ((mod x1) 2))))) ((cons 2) (tail x0))))",
+     "re+filter+search",
+     14901
+    ],
+    "fresh2/((replace-index-k-with-n (dyn . 0) (static . 3) (static . -2)) (has-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. (is_prime (head (tail ((filter (lambda x1: int. (is_empty (range ((mod x1) 2))))) x0)))))",
+     "search",
+     1047
+    ],
+    "fresh2/((replace-index-k-with-n (dyn . 0) (static . 5) (static . 0)) (count-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. (length ((filter (lambda x1: int. ((eq x1) 2))) x0)))",
+     "search",
+     1751
+    ],
+    "fresh2/((reverse (dyn . 0)) (sum (dyn . 1)))": [
+     "(lambda x0: list[int]. (((fold (lambda x1: int. (lambda x2: int. ((add x2) x1)))) 0) x0))",
+     "search",
+     18
+    ],
+    "fresh2/((rotate-k (dyn . 0) (static . 10)) (is-squares (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_square (((fold (lambda x1: int. (lambda x2: int. ((mul x2) x1)))) 1) x0)))",
+     "search",
+     123
+    ],
+    "fresh2/((slice-k-n (dyn . 0) (static . 3) (static . 3)) (is-odds (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_prime (length (tail ((filter (lambda x1: int. ((eq x1) (head (tail (tail (tail x0))))))) (tail (tail (tail x0))))))))",
+     "search",
+     957
+    ],
+    "fresh2/((uniq (dyn . 0)) (count-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. (length ((filter (lambda x1: int. ((eq x1) 2))) x0)))",
+     "search",
+     1752
+    ],
+    "compose24/fresh20261031::trim-and-increment::p1": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) (tail x0)))",
+     "re+map+search",
+     10126
+    ],
+    "compose24/fresh20261031::trim-and-increment::p2": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) (tail ((cons (head x0)) (tail (tail x0))))))",
+     "re+map+search",
+     10542
+    ],
+    "compose24/fresh20261031::trim-and-increment::p3": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) (tail (tail (tail x0)))))",
+     "re+map+search",
+     10091
+    ],
+    "compose24/fresh20261031::trim-and-increment::p4": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) (tail (tail (tail (tail x0))))))",
+     "re+map+search",
+     10273
+    ],
+    "compose24/fresh20261031::append-reversed-prefix::p1": [
+     "(lambda x0: list[int]. (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons (head x0)) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0))))",
+     "search",
+     875
+    ],
+    "compose24/fresh20261031::reverse-dropped-suffix::p1": [
+     "(lambda x0: list[int]. (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) (tail x0)))",
+     "search",
+     188
+    ],
+    "compose24/fresh20261031::reverse-dropped-suffix::p2": [
+     "(lambda x0: list[int]. (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) (tail ((cons (head x0)) (tail (tail x0))))))",
+     "search",
+     2199
+    ],
+    "compose24/fresh20261031::reverse-dropped-suffix::p3": [
+     "(lambda x0: list[int]. (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) (tail (tail (tail x0)))))",
+     "search",
+     77
+    ],
+    "compose24/fresh20261031::reverse-dropped-suffix::p4": [
+     "(lambda x0: list[int]. (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) (tail (tail (tail (tail x0))))))",
+     "search",
+     1185
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p1": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "re+map+search",
+     10516
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p2": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) ((filter (lambda x1: int. ((gt ((mod x1) 3)) 0))) x0)))",
+     "re+map+search",
+     10689
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p3": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) ((filter (lambda x1: int. ((gt ((mod x1) 4)) 0))) x0)))",
+     "re+map+search",
+     10834
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p4": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) ((filter (lambda x1: int. ((gt ((mod x1) 5)) 0))) x0)))",
+     "re+map+search",
+     10834
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p5": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) ((filter (lambda x1: int. ((gt ((mod x1) ((mul 2) 3))) 0))) x0)))",
+     "re+map+search",
+     12385
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p6": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) ((filter (lambda x1: int. ((gt ((mod x1) ((add 2) 5))) 0))) x0)))",
+     "re+map+search",
+     12417
+    ]
+   },
+   "used": {
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . -3)))": [],
+    "fresh3/fresh3::((reverse (dyn . 0)) (modulo-k (dyn . 1) (static . 6)))": [
+     "s3_1",
+     "s5_1"
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . -1)))": [],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (replace-all-k-with-n (dyn . 1) (static . 5) (static . -2)))": [
+     "s18_1"
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 2)) (identify-k (dyn . 1) (static . 3)))": [
+     "s11_1",
+     "s23_1"
+    ],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (append-k (dyn . 1) (static . 10)))": [
+     "s18_1",
+     "s23_1"
+    ],
+    "fresh3/fresh3::((add-k (dyn . 0) (static . -2)) (prepend-k (dyn . 1) (static . -8)))": [],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . -1)))": [],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 10)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))": [],
+    "fresh3/fresh3::((pow-base-k (dyn . 0) (static . 4)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))": [
+     "s6_1"
+    ],
+    "fresh3/fresh3::((identify-is-prime (dyn . 0)) (prepend-k (dyn . 1) (static . -8)))": [],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "s11_1",
+     "s23_1"
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (identify-k (dyn . 1) (static . 2)))": [
+     "s11_1"
+    ],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (mult-k (dyn . 1) (static . 2)))": [],
+    "fresh3/fresh3::((identify-is-prime (dyn . 0)) (identify-is-mod-k (dyn . 1) (static . -4)))": [],
+    "fresh3/fresh3::((drop-k (dyn . 0) (static . 2)) (count-k (dyn . 1) (static . 2)))": [
+     "s9_1"
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 10)) (append-k (dyn . 1) (static . 10)))": [
+     "s23_1",
+     "s5_1"
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (identify-k (dyn . 1) (static . 1)))": [
+     "s11_1",
+     "s23_1",
+     "s5_1"
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 7)))": [
+     "s11_1",
+     "s6_1"
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . -2)) (add-k (dyn . 1) (static . -5)))": [],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (append-k (dyn . 1) (static . -3)))": [
+     "s23_1"
+    ],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 2) (static . 3)) (sum (dyn . 1)))": [
+     "s2_1",
+     "s5_1"
+    ],
+    "fresh3/fresh3::((drop-k (dyn . 0) (static . 2)) (modulo-k (dyn . 1) (static . 7)))": [
+     "s4_1"
+    ],
+    "fresh3/fresh3::((identify-is-prime (dyn . 0)) (add-k (dyn . 1) (static . -7)))": [],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 10)) (modulo-k (dyn . 1) (static . 4)))": [
+     "s23_1"
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . -7)))": [
+     "s7_1"
+    ],
+    "fresh3/fresh3::((remove-mod-k (dyn . 0) (static . 2)) (prepend-k (dyn . 1) (static . 5)))": [
+     "s17_1"
+    ],
+    "fresh3/fresh3::((add-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . 2)))": [],
+    "fresh3/fresh3::((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (rotate-k (dyn . 1) (static . -1)))": [
+     "s23_1"
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (add-k (dyn . 1) (static . -7)))": [],
+    "fresh3/fresh3::((identify-geq-k (dyn . 0) (static . 2)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "s11_1"
+    ],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (add-k (dyn . 1) (static . -5)))": [
+     "s2_1"
+    ],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 2) (static . 2)) (mult-k (dyn . 1) (static . 2)))": [
+     "s2_1"
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))": [
+     "s23_1"
+    ],
+    "fresh3/fresh3::((keep-mod-k (dyn . 0) (static . 2)) (identify-k (dyn . 1) (static . 2)))": [
+     "s17_1"
+    ],
+    "fresh3/fresh3::((keep-mod-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . 10)))": [
+     "s17_1",
+     "s23_1",
+     "s5_1"
+    ],
+    "fresh3/fresh3::((add-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . 2)))": [],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . -2)) (prepend-k (dyn . 1) (static . 5)))": [],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "s11_1"
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (identify-is-mod-k (dyn . 1) (static . 5)))": [
+     "s6_1"
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (replace-all-k-with-n (dyn . 1) (static . -1) (static . 2)))": [],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (remove-mod-k (dyn . 1) (static . -5)))": [],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (mult-k (dyn . 1) (static . 2)))": [],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "s17_1"
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (remove-mod-k (dyn . 1) (static . 5)))": [],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 2)) (len (dyn . 1)))": [],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . 3)) (prepend-k (dyn . 1) (static . -8)))": [],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 3)) (reverse (dyn . 1)))": [
+     "s3_1"
+    ],
+    "fresh3/fresh3::((identify-is-mod-k (dyn . 0) (static . 2)) (head (dyn . 1)))": [
+     "s17_1",
+     "s2_1"
+    ],
+    "fresh3/fresh3::((add-k (dyn . 0) (static . 3)) (identify-is-mod-k (dyn . 1) (static . 7)))": [],
+    "fresh3/fresh3::((identify-is-prime (dyn . 0)) (pow-base-k (dyn . 1) (static . 7)))": [],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 3)) (append-k (dyn . 1) (static . -2)))": [
+     "s23_1"
+    ],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . -1)))": [],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "s15_1"
+    ],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (mult-k (dyn . 1) (static . -3)))": [],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (is-evens (dyn . 1)))": [
+     "s11_1"
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . -1)))": [],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (identify-is-mod-k (dyn . 1) (static . 3)))": [
+     "s23_1",
+     "s6_1"
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (append-k (dyn . 1) (static . 10)))": [
+     "s23_1"
+    ],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 1) (static . 2)) (reverse (dyn . 1)))": [
+     "s3_1"
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (identify-k (dyn . 1) (static . 2)))": [
+     "s6_1"
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . -2)) (sum (dyn . 1)))": [
+     "s5_1"
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "s23_1",
+     "s6_1"
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 5)))": [],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))": [
+     "s11_1",
+     "s2_1"
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 10)) (append-k (dyn . 1) (static . 4)))": [
+     "s23_1",
+     "s5_1"
+    ],
+    "fresh3/fresh3::((identify-geq-k (dyn . 0) (static . 2)) (pow-base-k (dyn . 1) (static . 7)))": [
+     "s10_1"
+    ],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 2) (static . 2)) (rotate-k (dyn . 1) (static . 1)))": [
+     "s2_1",
+     "s3_1"
+    ],
+    "fresh3/fresh3::((rotate-k (dyn . 0) (static . -2)) (count-k (dyn . 1) (static . 2)))": [
+     "s11_1"
+    ],
+    "fresh3/fresh3::((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (modulo-k (dyn . 1) (static . 7)))": [
+     "s4_1"
+    ],
+    "fresh3/fresh3::((remove-mod-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . -2)))": [
+     "s23_1"
+    ],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 2) (static . 2)) (modulo-k (dyn . 1) (static . 4)))": [
+     "s2_1"
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 3)) (prepend-k (dyn . 1) (static . 5)))": [
+     "s11_1"
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 2)) (sum (dyn . 1)))": [
+     "s15_1"
+    ],
+    "fresh3/fresh3::((identify-geq-k (dyn . 0) (static . 7)) (prepend-k (dyn . 1) (static . 5)))": [
+     "s5_1"
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 2)) (mult-k (dyn . 1) (static . 10)))": [
+     "s17_1",
+     "s5_1"
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 10)) (append-k (dyn . 1) (static . -2)))": [
+     "s23_1",
+     "s5_1"
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 3)) (add-k (dyn . 1) (static . -5)))": [],
+    "fresh3/fresh3::((reverse (dyn . 0)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "s3_1",
+     "s6_1"
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 3)) (replace-all-k-with-n (dyn . 1) (static . 5) (static . -2)))": [
+     "s23_1"
+    ],
+    "fresh3/fresh3::((add-k (dyn . 0) (static . -2)) (mult-k (dyn . 1) (static . 10)))": [],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . 3)))": [
+     "s23_1"
+    ],
+    "fresh3/fresh3::((reverse (dyn . 0)) (remove-mod-k (dyn . 1) (static . -5)))": [
+     "s15_1",
+     "s3_1"
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . 10)))": [
+     "s5_1"
+    ],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "s6_1"
+    ],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 0)))": [
+     "s2_1",
+     "s6_1"
+    ],
+    "fresh3/fresh3::((drop-k (dyn . 0) (static . 5)) (mult-k (dyn . 1) (static . 3)))": [
+     "s12_1",
+     "s4_1"
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (modulo-k (dyn . 1) (static . 6)))": [
+     "s23_1",
+     "s5_1"
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 10)) (reverse (dyn . 1)))": [
+     "s3_1",
+     "s5_1"
+    ],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 4)))": [
+     "s2_1"
+    ],
+    "fresh3/fresh3::((add-k (dyn . 0) (static . 10)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "s15_1"
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (add-k (dyn . 1) (static . -5)))": [],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . -1)))": [],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "s11_1",
+     "s2_1"
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 10)) (prepend-k (dyn . 1) (static . -8)))": [],
+    "fresh3/fresh3::((identify-is-mod-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . -2)))": [
+     "s17_1",
+     "s23_1"
+    ],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . -2)) (head (dyn . 1)))": [],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . -3)))": [
+     "s5_1"
+    ],
+    "fresh3/fresh3::((positions (dyn . 0)) (count-k (dyn . 1) (static . 10)))": [
+     "s17_1"
+    ],
+    "fresh3/fresh3::((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (is-mod-k (dyn . 1) (static . -2)))": [
+     "s10_1"
+    ],
+    "fresh3/fresh3::((intersperse-k (dyn . 0) (static . 10)) (is-squares (dyn . 1)))": [
+     "s24_1",
+     "s5_1"
+    ],
+    "fresh3/fresh3::((repeat-k (dyn . 0) (static . 2)) (len (dyn . 1)))": [],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 2)) (head (dyn . 1)))": [],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . -2)) (count-k (dyn . 1) (static . 2)))": [
+     "s25_1"
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 3)) (is-evens (dyn . 1)))": [
+     "s11_1"
+    ],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . -2)) (has-k (dyn . 1) (static . 2)))": [
+     "s5_1"
+    ],
+    "fresh3/fresh3::((remove-mod-k (dyn . 0) (static . 2)) (head (dyn . 1)))": [
+     "s15_1"
+    ],
+    "fresh3/fresh3::((repeat-k (dyn . 0) (static . 2)) (count-k (dyn . 1) (static . 2)))": [
+     "s11_1",
+     "s5_1"
+    ],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 2) (static . 2)) (sum (dyn . 1)))": [
+     "s2_1",
+     "s5_1"
+    ],
+    "fresh3/fresh3::((repeat-k (dyn . 0) (static . 5)) (len (dyn . 1)))": [],
+    "fresh3/fresh3::((remove-mod-k (dyn . 0) (static . 2)) (sum (dyn . 1)))": [
+     "s15_1",
+     "s5_1"
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (count-k (dyn . 1) (static . 2)))": [
+     "s11_1",
+     "s6_1"
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))": [
+     "s10_1",
+     "s17_1"
+    ],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 3) (static . 4)) (is-primes (dyn . 1)))": [
+     "s12_1",
+     "s9_1"
+    ],
+    "fresh3/fresh3::((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (is-primes (dyn . 1)))": [
+     "s9_1"
+    ],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (has-k (dyn . 1) (static . 2)))": [],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 2) (static . 2)) (is-squares (dyn . 1)))": [
+     "s13_1"
+    ],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 3) (static . 3)) (has-k (dyn . 1) (static . 2)))": [
+     "s13_1"
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 2)) (is-mod-k (dyn . 1) (static . -2)))": [
+     "s11_1"
+    ],
+    "fresh2/((add-k (dyn . 0) (static . 10)) (positions (dyn . 1)))": [],
+    "fresh2/((add-k (dyn . 0) (static . 3)) (append-k (dyn . 1) (static . 10)))": [
+     "s23_1"
+    ],
+    "fresh2/((append-k (dyn . 0) (static . -2)) (head (dyn . 1)))": [],
+    "fresh2/((append-k (dyn . 0) (static . 10)) (add-k (dyn . 1) (static . -7)))": [
+     "s23_1"
+    ],
+    "fresh2/((append-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "s17_1",
+     "s23_1"
+    ],
+    "fresh2/((append-k (dyn . 0) (static . 3)) (sum (dyn . 1)))": [
+     "s5_1"
+    ],
+    "fresh2/((dedup (dyn . 0)) (is-primes (dyn . 1)))": [
+     "s9_1"
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . -3)))": [
+     "s23_1",
+     "s4_1"
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 2)) (is-odds (dyn . 1)))": [],
+    "fresh2/((drop-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . -5)))": [
+     "s4_1"
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 5)) (len (dyn . 1)))": [],
+    "fresh2/((identify-geq-k (dyn . 0) (static . 3)) (empty (dyn . 1)))": [],
+    "fresh2/((identify-geq-k (dyn . 0) (static . 3)) (rotate-k (dyn . 1) (static . -1)))": [
+     "s11_1",
+     "s23_1"
+    ],
+    "fresh2/((identify-geq-k (dyn . 0) (static . 7)) (modulo-k (dyn . 1) (static . 4)))": [
+     "s11_1"
+    ],
+    "fresh2/((identify-is-mod-k (dyn . 0) (static . 7)) (pow-base-k (dyn . 1) (static . 7)))": [],
+    "fresh2/((identify-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . -7)))": [],
+    "fresh2/((identify-k (dyn . 0) (static . 1)) (append-k (dyn . 1) (static . 5)))": [
+     "s11_1",
+     "s23_1",
+     "s5_1"
+    ],
+    "fresh2/((identify-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 5)))": [],
+    "fresh2/((identify-k (dyn . 0) (static . 10)) (len (dyn . 1)))": [],
+    "fresh2/((keep-mod-k (dyn . 0) (static . 2)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "s17_1",
+     "s6_1"
+    ],
+    "fresh2/((keep-mod-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . 5)))": [],
+    "fresh2/((keep-mod-k (dyn . 0) (static . 5)) (is-odds (dyn . 1)))": [
+     "s5_1"
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 3)))": [
+     "s6_1"
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 2)) (identify-is-prime (dyn . 1)))": [],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))": [],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (modulo-k (dyn . 1) (static . 6)))": [],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))": [],
+    "fresh2/((mult-k (dyn . 0) (static . 10)) (is-odds (dyn . 1)))": [],
+    "fresh2/((mult-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "s15_1"
+    ],
+    "fresh2/((positions (dyn . 0)) (dup (dyn . 1)))": [],
+    "fresh2/((pow-base-k (dyn . 0) (static . 4)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "s11_1",
+     "s6_1"
+    ],
+    "fresh2/((pow-base-k (dyn . 0) (static . 4)) (is-evens (dyn . 1)))": [
+     "s6_1"
+    ],
+    "fresh2/((prepend-k (dyn . 0) (static . -2)) (append-k (dyn . 1) (static . 10)))": [
+     "s23_1"
+    ],
+    "fresh2/((prepend-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))": [
+     "s15_1"
+    ],
+    "fresh2/((prepend-k (dyn . 0) (static . -2)) (modulo-k (dyn . 1) (static . 7)))": [],
+    "fresh2/((prepend-k (dyn . 0) (static . 3)) (append-k (dyn . 1) (static . -2)))": [
+     "s23_1"
+    ],
+    "fresh2/((remove-mod-k (dyn . 0) (static . 2)) (mult-k (dyn . 1) (static . 10)))": [
+     "s15_1"
+    ],
+    "fresh2/((repeat-k (dyn . 0) (static . 3)) (sum (dyn . 1)))": [
+     "s5_1"
+    ],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (positions (dyn . 1)))": [],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "s11_1"
+    ],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (is-odds (dyn . 1)))": [],
+    "fresh2/((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (keep-mod-k (dyn . 1) (static . 2)))": [],
+    "fresh2/((replace-index-k-with-n (dyn . 0) (static . 3) (static . -2)) (has-k (dyn . 1) (static . 2)))": [
+     "s13_1",
+     "s17_1"
+    ],
+    "fresh2/((replace-index-k-with-n (dyn . 0) (static . 5) (static . 0)) (count-k (dyn . 1) (static . 2)))": [
+     "s11_1"
+    ],
+    "fresh2/((reverse (dyn . 0)) (sum (dyn . 1)))": [
+     "s5_1"
+    ],
+    "fresh2/((rotate-k (dyn . 0) (static . 10)) (is-squares (dyn . 1)))": [
+     "s6_1"
+    ],
+    "fresh2/((slice-k-n (dyn . 0) (static . 3) (static . 3)) (is-odds (dyn . 1)))": [
+     "s12_1",
+     "s25_1"
+    ],
+    "fresh2/((uniq (dyn . 0)) (count-k (dyn . 1) (static . 2)))": [
+     "s11_1"
+    ],
+    "compose24/fresh20261031::trim-and-increment::p1": [],
+    "compose24/fresh20261031::trim-and-increment::p2": [
+     "s4_1"
+    ],
+    "compose24/fresh20261031::trim-and-increment::p3": [
+     "s12_1"
+    ],
+    "compose24/fresh20261031::trim-and-increment::p4": [
+     "s12_1"
+    ],
+    "compose24/fresh20261031::append-reversed-prefix::p1": [
+     "s23_1"
+    ],
+    "compose24/fresh20261031::reverse-dropped-suffix::p1": [
+     "s3_1"
+    ],
+    "compose24/fresh20261031::reverse-dropped-suffix::p2": [
+     "s3_1",
+     "s4_1"
+    ],
+    "compose24/fresh20261031::reverse-dropped-suffix::p3": [
+     "s12_1",
+     "s3_1"
+    ],
+    "compose24/fresh20261031::reverse-dropped-suffix::p4": [
+     "s12_1",
+     "s3_1"
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p1": [
+     "s15_1"
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p2": [
+     "s15_1"
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p3": [
+     "s15_1"
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p4": [
+     "s15_1"
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p5": [
+     "s15_1"
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p6": [
+     "s15_1"
+    ]
+   },
+   "seconds": 991,
+   "sound": [
+    "compose24/fresh20261031::append-reversed-prefix::p1",
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p1",
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p2",
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p3",
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p4",
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p5",
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p6",
+    "compose24/fresh20261031::reverse-dropped-suffix::p1",
+    "compose24/fresh20261031::reverse-dropped-suffix::p2",
+    "compose24/fresh20261031::reverse-dropped-suffix::p3",
+    "compose24/fresh20261031::reverse-dropped-suffix::p4",
+    "compose24/fresh20261031::trim-and-increment::p1",
+    "compose24/fresh20261031::trim-and-increment::p2",
+    "compose24/fresh20261031::trim-and-increment::p3",
+    "compose24/fresh20261031::trim-and-increment::p4",
+    "fresh2/((add-k (dyn . 0) (static . 10)) (positions (dyn . 1)))",
+    "fresh2/((add-k (dyn . 0) (static . 3)) (append-k (dyn . 1) (static . 10)))",
+    "fresh2/((append-k (dyn . 0) (static . -2)) (head (dyn . 1)))",
+    "fresh2/((append-k (dyn . 0) (static . 10)) (add-k (dyn . 1) (static . -7)))",
+    "fresh2/((append-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))",
+    "fresh2/((append-k (dyn . 0) (static . 3)) (sum (dyn . 1)))",
+    "fresh2/((dedup (dyn . 0)) (is-primes (dyn . 1)))",
+    "fresh2/((drop-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . -3)))",
+    "fresh2/((drop-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . -5)))",
+    "fresh2/((drop-k (dyn . 0) (static . 5)) (len (dyn . 1)))",
+    "fresh2/((identify-geq-k (dyn . 0) (static . 3)) (empty (dyn . 1)))",
+    "fresh2/((identify-geq-k (dyn . 0) (static . 3)) (rotate-k (dyn . 1) (static . -1)))",
+    "fresh2/((identify-is-mod-k (dyn . 0) (static . 7)) (pow-base-k (dyn . 1) (static . 7)))",
+    "fresh2/((identify-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . -7)))",
+    "fresh2/((identify-k (dyn . 0) (static . 1)) (append-k (dyn . 1) (static . 5)))",
+    "fresh2/((identify-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 5)))",
+    "fresh2/((identify-k (dyn . 0) (static . 10)) (len (dyn . 1)))",
+    "fresh2/((keep-mod-k (dyn . 0) (static . 2)) (identify-is-mod-k (dyn . 1) (static . -4)))",
+    "fresh2/((modulo-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 3)))",
+    "fresh2/((modulo-k (dyn . 0) (static . 2)) (identify-is-prime (dyn . 1)))",
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))",
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (modulo-k (dyn . 1) (static . 6)))",
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))",
+    "fresh2/((mult-k (dyn . 0) (static . 10)) (is-odds (dyn . 1)))",
+    "fresh2/((mult-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))",
+    "fresh2/((positions (dyn . 0)) (dup (dyn . 1)))",
+    "fresh2/((pow-base-k (dyn . 0) (static . 4)) (identify-geq-k (dyn . 1) (static . 4)))",
+    "fresh2/((pow-base-k (dyn . 0) (static . 4)) (is-evens (dyn . 1)))",
+    "fresh2/((prepend-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))",
+    "fresh2/((prepend-k (dyn . 0) (static . -2)) (modulo-k (dyn . 1) (static . 7)))",
+    "fresh2/((prepend-k (dyn . 0) (static . 3)) (append-k (dyn . 1) (static . -2)))",
+    "fresh2/((remove-mod-k (dyn . 0) (static . 2)) (mult-k (dyn . 1) (static . 10)))",
+    "fresh2/((repeat-k (dyn . 0) (static . 3)) (sum (dyn . 1)))",
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (positions (dyn . 1)))",
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (identify-geq-k (dyn . 1) (static . 4)))",
+    "fresh2/((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (keep-mod-k (dyn . 1) (static . 2)))",
+    "fresh2/((reverse (dyn . 0)) (sum (dyn . 1)))",
+    "fresh3/fresh3::((add-k (dyn . 0) (static . -2)) (mult-k (dyn . 1) (static . 10)))",
+    "fresh3/fresh3::((add-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((add-k (dyn . 0) (static . 10)) (remove-mod-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((add-k (dyn . 0) (static . 3)) (identify-is-mod-k (dyn . 1) (static . 7)))",
+    "fresh3/fresh3::((add-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (append-k (dyn . 1) (static . -3)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (append-k (dyn . 1) (static . 10)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . 4)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (identify-is-mod-k (dyn . 1) (static . 3)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (identify-k (dyn . 1) (static . 1)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (modulo-k (dyn . 1) (static . 6)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . -4)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 10)) (modulo-k (dyn . 1) (static . 4)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . 3)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 2)) (identify-k (dyn . 1) (static . 3)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 2)) (len (dyn . 1)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 3)) (append-k (dyn . 1) (static . -2)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . -7)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 3)) (replace-all-k-with-n (dyn . 1) (static . 5) (static . -2)))",
+    "fresh3/fresh3::((drop-k (dyn . 0) (static . 2)) (modulo-k (dyn . 1) (static . 7)))",
+    "fresh3/fresh3::((drop-k (dyn . 0) (static . 5)) (mult-k (dyn . 1) (static . 3)))",
+    "fresh3/fresh3::((identify-geq-k (dyn . 0) (static . 2)) (identify-is-mod-k (dyn . 1) (static . -4)))",
+    "fresh3/fresh3::((identify-geq-k (dyn . 0) (static . 2)) (pow-base-k (dyn . 1) (static . 7)))",
+    "fresh3/fresh3::((identify-geq-k (dyn . 0) (static . 7)) (prepend-k (dyn . 1) (static . 5)))",
+    "fresh3/fresh3::((identify-is-mod-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . -2)))",
+    "fresh3/fresh3::((identify-is-mod-k (dyn . 0) (static . 2)) (head (dyn . 1)))",
+    "fresh3/fresh3::((identify-is-prime (dyn . 0)) (add-k (dyn . 1) (static . -7)))",
+    "fresh3/fresh3::((identify-is-prime (dyn . 0)) (identify-is-mod-k (dyn . 1) (static . -4)))",
+    "fresh3/fresh3::((identify-is-prime (dyn . 0)) (pow-base-k (dyn . 1) (static . 7)))",
+    "fresh3/fresh3::((identify-is-prime (dyn . 0)) (prepend-k (dyn . 1) (static . -8)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . -2)) (add-k (dyn . 1) (static . -5)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (add-k (dyn . 1) (static . -7)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (is-evens (dyn . 1)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (mult-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (remove-mod-k (dyn . 1) (static . 5)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . -1)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . -3)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 10)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 2)) (is-mod-k (dyn . 1) (static . -2)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 3)) (is-evens (dyn . 1)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . 10)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 3)) (prepend-k (dyn . 1) (static . 5)))",
+    "fresh3/fresh3::((keep-mod-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . 10)))",
+    "fresh3/fresh3::((keep-mod-k (dyn . 0) (static . 2)) (identify-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 10)) (append-k (dyn . 1) (static . -2)))",
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 10)) (append-k (dyn . 1) (static . 10)))",
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 10)) (append-k (dyn . 1) (static . 4)))",
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 10)) (reverse (dyn . 1)))",
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 2)) (head (dyn . 1)))",
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 2)) (mult-k (dyn . 1) (static . 10)))",
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 2)) (sum (dyn . 1)))",
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 3)) (add-k (dyn . 1) (static . -5)))",
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . -1)))",
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 3)) (reverse (dyn . 1)))",
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . -2)) (count-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . -2)) (head (dyn . 1)))",
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . -1)))",
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . 3)) (prepend-k (dyn . 1) (static . -8)))",
+    "fresh3/fresh3::((pow-base-k (dyn . 0) (static . 4)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))",
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . -2)) (sum (dyn . 1)))",
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . -3)))",
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 10)) (prepend-k (dyn . 1) (static . -8)))",
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (add-k (dyn . 1) (static . -5)))",
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (identify-is-mod-k (dyn . 1) (static . 5)))",
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (identify-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (replace-all-k-with-n (dyn . 1) (static . -1) (static . 2)))",
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 4)))",
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (identify-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . -1)))",
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 5)))",
+    "fresh3/fresh3::((remove-mod-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . -2)))",
+    "fresh3/fresh3::((remove-mod-k (dyn . 0) (static . 2)) (head (dyn . 1)))",
+    "fresh3/fresh3::((remove-mod-k (dyn . 0) (static . 2)) (prepend-k (dyn . 1) (static . 5)))",
+    "fresh3/fresh3::((remove-mod-k (dyn . 0) (static . 2)) (sum (dyn . 1)))",
+    "fresh3/fresh3::((repeat-k (dyn . 0) (static . 2)) (count-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((repeat-k (dyn . 0) (static . 2)) (len (dyn . 1)))",
+    "fresh3/fresh3::((repeat-k (dyn . 0) (static . 5)) (len (dyn . 1)))",
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 1) (static . 2)) (reverse (dyn . 1)))",
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (identify-is-mod-k (dyn . 1) (static . -4)))",
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (mult-k (dyn . 1) (static . -3)))",
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (mult-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (remove-mod-k (dyn . 1) (static . -5)))",
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (append-k (dyn . 1) (static . 10)))",
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (replace-all-k-with-n (dyn . 1) (static . 5) (static . -2)))",
+    "fresh3/fresh3::((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (is-primes (dyn . 1)))",
+    "fresh3/fresh3::((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (rotate-k (dyn . 1) (static . -1)))",
+    "fresh3/fresh3::((reverse (dyn . 0)) (identify-is-mod-k (dyn . 1) (static . -4)))",
+    "fresh3/fresh3::((reverse (dyn . 0)) (modulo-k (dyn . 1) (static . 6)))",
+    "fresh3/fresh3::((reverse (dyn . 0)) (remove-mod-k (dyn . 1) (static . -5)))",
+    "fresh3/fresh3::((rotate-k (dyn . 0) (static . -2)) (count-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 2) (static . 2)) (modulo-k (dyn . 1) (static . 4)))",
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 2) (static . 2)) (mult-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 2) (static . 2)) (rotate-k (dyn . 1) (static . 1)))",
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 2) (static . 2)) (sum (dyn . 1)))",
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 2) (static . 3)) (sum (dyn . 1)))",
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (add-k (dyn . 1) (static . -5)))",
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 0)))",
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 4)))",
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))",
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 4)))"
+   ],
+   "sound_counts": {
+    "fresh3": 104,
+    "fresh2": 37,
+    "compose24": 15
+   }
+  },
+  "new@student": {
+   "budget": 10000,
+   "partitions": [
+    "fresh3",
+    "fresh2",
+    "compose24"
+   ],
+   "counts": {
+    "fresh3": 80,
+    "fresh2": 37,
+    "compose24": 13
+   },
+   "programs": {
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . -3)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) ((mul 2) 5))) ((sub -1) 2)) 0))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . -1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) ((sub x1) 2)) (neg x1)))) ((cons -1) x0)))",
+     "re+map+fused",
+     4026
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 2)) (identify-k (dyn . 1) (static . 3)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 3)) 1) 0))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     4015
+    ],
+    "fresh3/fresh3::((add-k (dyn . 0) (static . -2)) (prepend-k (dyn . 1) (static . -8)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) ((sub -1) ((add 2) 5))) ((sub x1) 2)))) ((cons -1) x0)))",
+     "re+map+fused",
+     4025
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . -1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) ((mul 2) 5))) -1) 0))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 10)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) ((mul 2) 5))) 5) 0))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((gt x1) 3)) 1) 0))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     4015
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (identify-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 2)) 1) 0))) ((cons -1) x0)))",
+     "re+map+fused",
+     4014
+    ],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (mult-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 2)) ((mul 4) 5)) ((add x1) x1)))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh3/fresh3::((identify-is-prime (dyn . 0)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime x1)) 0) 1))) x0))",
+     "map+search",
+     3073
+    ],
+    "fresh3/fresh3::((drop-k (dyn . 0) (static . 2)) (count-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. (((if (is_empty ((filter (lambda x1: int. (not (is_prime x1)))) x0))) 4) 0))",
+     "search",
+     7654
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (identify-k (dyn . 1) (static . 1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 1)) x1) 0))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     4016
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . -2)) (add-k (dyn . 1) (static . -5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub -1) 4))) x0))",
+     "map+search",
+     9
+    ],
+    "fresh3/fresh3::((identify-is-prime (dyn . 0)) (add-k (dyn . 1) (static . -7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime x1)) ((sub -1) 5)) ((add -1) ((sub -1) 5))))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 10)) (modulo-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) 2) ((mod x1) 4)))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     4017
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . -7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. 1)) ((cons -1) x0)))",
+     "re+map+search",
+     1022
+    ],
+    "fresh3/fresh3::((remove-mod-k (dyn . 0) (static . 2)) (prepend-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (is_empty ((filter (lambda x2: int. (is_empty (range ((mod x2) 2))))) ((cons x1) nil))))) ((cons 5) x0)))",
+     "re+filter+search",
+     3882
+    ],
+    "fresh3/fresh3::((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (rotate-k (dyn . 1) (static . -1)))": [
+     "(lambda x0: list[int]. (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons 2) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) (tail x0)))))",
+     "search",
+     2873
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (add-k (dyn . 1) (static . -7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 1)) ((sub -1) 5)) ((add -1) ((sub -1) 5))))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh3/fresh3::((identify-geq-k (dyn . 0) (static . 2)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (length ((filter (lambda x2: int. ((eq x2) x1))) (range 2))))) x0))",
+     "map+search",
+     3314
+    ],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (add-k (dyn . 1) (static . -5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) 5))) ((map (lambda x1: int. ((index x1) x0))) (range 3))))",
+     "re+map+search",
+     1306
+    ],
+    "fresh3/fresh3::((keep-mod-k (dyn . 0) (static . 2)) (identify-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime x1)) 1) 0))) ((filter (lambda x1: int. (is_empty (range ((mod x1) 2))))) x0)))",
+     "re+map+fused",
+     4011
+    ],
+    "fresh3/fresh3::((keep-mod-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . 10)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) (((fold (lambda x2: int. (lambda x3: int. ((add x3) x2)))) 0) (range 5))) x1))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((filter (lambda x1: int. (is_empty (range ((mod x1) 2))))) x0))))))",
+     "re+map+fused",
+     4079
+    ],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . -2)) (prepend-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) 5) (neg ((add x1) x1))))) ((cons -1) x0)))",
+     "re+map+fused",
+     4059
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((gt x1) 3)) 1) 0))) ((cons -1) x0)))",
+     "re+map+fused",
+     4014
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (replace-all-k-with-n (dyn . 1) (static . -1) (static . 2)))": [
+     "(lambda x0: list[int]. ((cons 2) x0))",
+     "search",
+     161
+    ],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (remove-mod-k (dyn . 1) (static . -5)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (((if ((eq x1) 2)) false) ((lt 0) ((mod x1) 5))))) x0))",
+     "filter+fused",
+     5001
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (mult-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 1)) 2) 0))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (is_empty ((filter (lambda x2: int. (is_empty (range ((mod x2) 2))))) ((cons x1) nil))))) ((cons 3) x0)))",
+     "re+filter+search",
+     3886
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (remove-mod-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. ((eq x1) 1))) x0))",
+     "filter+search",
+     75
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 2)) (len (dyn . 1)))": [
+     "(lambda x0: list[int]. ((sub (length x0)) -1))",
+     "search",
+     986
+    ],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . 3)) (prepend-k (dyn . 1) (static . -8)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) ((sub -1) ((add 2) 5))) ((mul x1) 3)))) ((cons -1) x0)))",
+     "re+map+fused",
+     4016
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 3)) (reverse (dyn . 1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mod x1) 3))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))",
+     "re+map+search",
+     1133
+    ],
+    "fresh3/fresh3::((add-k (dyn . 0) (static . 3)) (identify-is-mod-k (dyn . 1) (static . 7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_square ((add x1) 5))) 1) 0))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh3/fresh3::((identify-is-prime (dyn . 0)) (pow-base-k (dyn . 1) (static . 7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime x1)) ((add 2) 5)) 1))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . -1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mul x1) ((sub -1) 2)))) x0))",
+     "map+search",
+     143
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. 1)) ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "re+map+search",
+     1121
+    ],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (mult-k (dyn . 1) (static . -3)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 2)) ((add 3) ((sub -1) ((mul 2) ((mul 4) 4))))) ((mul 3) (neg x1))))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (is-evens (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. ((eq x1) 1))) x0)))",
+     "search",
+     1515
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . -1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) ((add 3) ((sub -1) ((mul 3) 4)))) (neg x1)))) ((cons -1) x0)))",
+     "re+map+fused",
+     4058
+    ],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 1) (static . 2)) (reverse (dyn . 1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 1)) 2) x1))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))",
+     "re+map+fused",
+     4025
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (identify-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 2)) 1) (length (range (neg x1)))))) ((cons -1) x0)))",
+     "re+map+fused",
+     4021
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . -2)) (sum (dyn . 1)))": [
+     "(lambda x0: list[int]. ((sub (((fold (lambda x1: int. (lambda x2: int. ((add x2) x1)))) 0) x0)) 2))",
+     "search",
+     1327
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime ((mod x1) 4))) 0) (length ((filter (lambda x2: int. (is_empty (range ((mod x2) 2))))) ((cons x1) nil)))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     4021
+    ],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((gt x1) 4)) 1) 0))) ((map (lambda x1: int. ((index x1) x0))) (range 3))))",
+     "re+map+fused",
+     4120
+    ],
+    "fresh3/fresh3::((identify-geq-k (dyn . 0) (static . 2)) (pow-base-k (dyn . 1) (static . 7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_empty ((filter (lambda x2: int. (is_prime ((add x2) 4)))) (range x1)))) 1) ((add 2) 5)))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh3/fresh3::((rotate-k (dyn . 0) (static . -2)) (count-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. (length ((filter (lambda x1: int. ((eq x1) 2))) x0)))",
+     "search",
+     1751
+    ],
+    "fresh3/fresh3::((identify-geq-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_empty (range x1))) ((mod x1) 5)) ((mod 1) x1)))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     4045
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 2)) (sum (dyn . 1)))": [
+     "(lambda x0: list[int]. (length ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "search",
+     1759
+    ],
+    "fresh3/fresh3::((reverse (dyn . 0)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime ((mod x1) 4))) 0) (length ((filter (lambda x2: int. (is_empty (range ((mod x2) 2))))) ((cons x1) nil)))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))",
+     "re+map+fused",
+     4027
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . 3)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) ((add 3) ((add 2) ((mul 5) 5)))) ((mul x1) 3)))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     4075
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . 10)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) 3)) (((fold (lambda x2: int. (lambda x3: int. ((add x3) x2)))) 0) (range 5))) 0))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime ((mod x1) 4))) 0) (length ((filter (lambda x2: int. (is_empty (range ((mod x2) 2))))) ((cons x1) nil)))))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 0)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((fold (lambda x2: int. (lambda x3: int. ((mul x3) x2)))) 1) (range (neg x1))))) ((map (lambda x1: int. ((index x1) x0))) (range 3))))",
+     "re+map+search",
+     2330
+    ],
+    "fresh3/fresh3::((add-k (dyn . 0) (static . 10)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((add x1) ((mul 2) 5)))) ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "re+map+search",
+     1241
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (add-k (dyn . 1) (static . -5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) ((sub -1) 2)) ((sub x1) 5)))) ((cons -1) x0)))",
+     "re+map+fused",
+     4021
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . -1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (neg ((mod x1) 3)))) x0))",
+     "map+search",
+     1159
+    ],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((gt x1) 3)) 1) 0))) ((map (lambda x1: int. ((index x1) x0))) (range 3))))",
+     "re+map+fused",
+     4119
+    ],
+    "fresh3/fresh3::((identify-is-mod-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . -2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_square ((mod x1) ((add -1) -1)))) 1) ((sub x1) (abs x1))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     4024
+    ],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . -2)) (head (dyn . 1)))": [
+     "(lambda x0: list[int]. ((mul 2) (neg (head x0))))",
+     "search",
+     6842
+    ],
+    "fresh3/fresh3::((positions (dyn . 0)) (count-k (dyn . 1) (static . 10)))": [
+     "(lambda x0: list[int]. ((div (length ((filter (lambda x1: int. (is_empty (range ((mod x1) 2))))) x0))) 5))",
+     "search",
+     6496
+    ],
+    "fresh3/fresh3::((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (is-mod-k (dyn . 1) (static . -2)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. (is_prime ((add x1) 4)))) (tail x0))))",
+     "search",
+     144
+    ],
+    "fresh3/fresh3::((intersperse-k (dyn . 0) (static . 10)) (is-squares (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_square (((fold (lambda x1: int. (lambda x2: int. ((add x2) x1)))) 0) ((map (lambda x1: int. (((fold (lambda x2: int. (lambda x3: int. ((mul x3) x2)))) 1) ((map (lambda x2: int. x1)) (range 5))))) x0))))",
+     "search",
+     1446
+    ],
+    "fresh3/fresh3::((repeat-k (dyn . 0) (static . 2)) (len (dyn . 1)))": [
+     "(lambda x0: list[int]. ((mul 2) (length x0)))",
+     "search",
+     1013
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 2)) (head (dyn . 1)))": [
+     "(lambda x0: list[int]. ((mod (head x0)) 2))",
+     "search",
+     889
+    ],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . -2)) (count-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. (length (tail ((filter (lambda x1: int. ((eq x1) (head ((cons -1) x0))))) ((cons -1) x0)))))",
+     "search",
+     874
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 3)) (is-evens (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. ((eq x1) 3))) x0)))",
+     "search",
+     1694
+    ],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . -2)) (has-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((eq -1) (((fold (lambda x1: int. (lambda x2: int. ((add x2) x1)))) 0) x0)))",
+     "search",
+     921
+    ],
+    "fresh3/fresh3::((remove-mod-k (dyn . 0) (static . 2)) (head (dyn . 1)))": [
+     "(lambda x0: list[int]. (head ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "search",
+     1756
+    ],
+    "fresh3/fresh3::((repeat-k (dyn . 0) (static . 2)) (count-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. (((fold (lambda x1: int. (lambda x2: int. ((add x2) x1)))) 0) ((filter (lambda x1: int. ((eq x1) 2))) x0)))",
+     "search",
+     1797
+    ],
+    "fresh3/fresh3::((repeat-k (dyn . 0) (static . 5)) (len (dyn . 1)))": [
+     "(lambda x0: list[int]. ((mul 5) (length x0)))",
+     "search",
+     1370
+    ],
+    "fresh3/fresh3::((remove-mod-k (dyn . 0) (static . 2)) (sum (dyn . 1)))": [
+     "(lambda x0: list[int]. (((fold (lambda x1: int. (lambda x2: int. ((add x2) x1)))) 0) ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "search",
+     1803
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (count-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. (((fold (lambda x1: int. (lambda x2: int. ((mul x2) x1)))) 1) ((filter (lambda x1: int. ((eq x1) 2))) x0)))",
+     "search",
+     1797
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. (is_prime ((add x1) 4)))) ((filter (lambda x1: int. (is_empty (range ((mod x1) 2))))) x0))))",
+     "search",
+     85
+    ],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 3) (static . 4)) (is-primes (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. (not (is_prime x1)))) (tail (tail (tail x0))))))",
+     "search",
+     75
+    ],
+    "fresh3/fresh3::((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (is-primes (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. (not (is_prime x1)))) (tail x0))))",
+     "search",
+     144
+    ],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (has-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((le (head x0)) 2))",
+     "search",
+     916
+    ],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 2) (static . 2)) (is-squares (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_square (head (tail x0))))",
+     "search",
+     92
+    ],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 3) (static . 3)) (has-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((eq 0) (head (tail x0))))",
+     "search",
+     996
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 2)) (is-mod-k (dyn . 1) (static . -2)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. ((eq x1) 2))) x0)))",
+     "search",
+     1638
+    ],
+    "fresh2/((add-k (dyn . 0) (static . 10)) (positions (dyn . 1)))": [
+     "(lambda x0: list[int]. (range (length x0)))",
+     "search",
+     82
+    ],
+    "fresh2/((add-k (dyn . 0) (static . 3)) (append-k (dyn . 1) (static . 10)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) ((mul 2) 5)) ((add x1) 3)))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     4019
+    ],
+    "fresh2/((append-k (dyn . 0) (static . -2)) (head (dyn . 1)))": [
+     "(lambda x0: list[int]. (head x0))",
+     "search",
+     14
+    ],
+    "fresh2/((append-k (dyn . 0) (static . 10)) (add-k (dyn . 1) (static . -7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) -1)) 3) ((add x1) ((add -1) ((sub -1) 5)))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     4019
+    ],
+    "fresh2/((append-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (is_empty ((filter (lambda x2: int. (is_empty (range ((mod x2) 2))))) ((cons x1) nil))))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons 3) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+filter+search",
+     3904
+    ],
+    "fresh2/((append-k (dyn . 0) (static . 3)) (sum (dyn . 1)))": [
+     "(lambda x0: list[int]. ((add 3) (((fold (lambda x1: int. (lambda x2: int. ((add x2) x1)))) 0) x0)))",
+     "search",
+     1295
+    ],
+    "fresh2/((dedup (dyn . 0)) (is-primes (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. (not (is_prime x1)))) x0)))",
+     "search",
+     18
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 2)) (is-odds (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_prime (length x0)))",
+     "search",
+     80
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . -5)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (((if (is_square ((sub x1) ((add 1) 5)))) ((lt x1) ((mul 2) 5))) (not ((eq x1) 5))))) (tail ((cons (head x0)) (tail (tail x0))))))",
+     "re+filter+fused",
+     4118
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 5)) (len (dyn . 1)))": [
+     "(lambda x0: list[int]. ((sub (length x0)) 5))",
+     "search",
+     1071
+    ],
+    "fresh2/((identify-geq-k (dyn . 0) (static . 3)) (empty (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty x0))",
+     "search",
+     14
+    ],
+    "fresh2/((identify-geq-k (dyn . 0) (static . 7)) (modulo-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((gt x1) 5)) 1) 0))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh2/((identify-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . -7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. 1)) x0))",
+     "map+search",
+     4
+    ],
+    "fresh2/((identify-k (dyn . 0) (static . 1)) (append-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_empty (range x1))) ((mul 5) (abs x1))) ((div 1) x1)))) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons -1) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0)))))",
+     "re+map+fused",
+     4107
+    ],
+    "fresh2/((identify-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) ((mul 2) 5))) 0) 1))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh2/((identify-k (dyn . 0) (static . 10)) (len (dyn . 1)))": [
+     "(lambda x0: list[int]. (length x0))",
+     "search",
+     15
+    ],
+    "fresh2/((keep-mod-k (dyn . 0) (static . 2)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime ((mod x1) 4))) 0) 1))) ((filter (lambda x1: int. (is_empty (range ((mod x1) 2))))) x0)))",
+     "re+map+fused",
+     4011
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 3)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime ((div x1) 5))) ((mod ((mod x1) 3)) 2)) (((fold (lambda x2: int. (lambda x3: int. ((mul x3) x2)))) 1) (range ((mod x1) 3)))))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 2)) (identify-is-prime (dyn . 1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. 0)) x0))",
+     "map+search",
+     3
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. 0)) x0))",
+     "map+search",
+     3
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (modulo-k (dyn . 1) (static . 6)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mod x1) 3))) x0))",
+     "map+search",
+     82
+    ],
+    "fresh2/((mult-k (dyn . 0) (static . 10)) (is-odds (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty x0))",
+     "search",
+     14
+    ],
+    "fresh2/((mult-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mul x1) 3))) ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "re+map+search",
+     1198
+    ],
+    "fresh2/((pow-base-k (dyn . 0) (static . 4)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((fold (lambda x2: int. (lambda x3: int. ((mul x3) x2)))) 1) ((filter (lambda x2: int. ((eq x2) x1))) (range 1))))) x0))",
+     "map+search",
+     3160
+    ],
+    "fresh2/((pow-base-k (dyn . 0) (static . 4)) (is-evens (dyn . 1)))": [
+     "(lambda x0: list[int]. ((lt 0) (((fold (lambda x1: int. (lambda x2: int. ((mul x2) x1)))) 1) x0)))",
+     "search",
+     1052
+    ],
+    "fresh2/((prepend-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "search",
+     1641
+    ],
+    "fresh2/((remove-mod-k (dyn . 0) (static . 2)) (mult-k (dyn . 1) (static . 10)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mul x1) ((mul 2) 5)))) ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "re+map+search",
+     1255
+    ],
+    "fresh2/((repeat-k (dyn . 0) (static . 3)) (sum (dyn . 1)))": [
+     "(lambda x0: list[int]. ((mul 3) (((fold (lambda x1: int. (lambda x2: int. ((add x2) x1)))) 0) x0)))",
+     "search",
+     1184
+    ],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (positions (dyn . 1)))": [
+     "(lambda x0: list[int]. (range (length x0)))",
+     "search",
+     82
+    ],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((gt x1) 3)) 1) 0))) x0))",
+     "map+fused",
+     5001
+    ],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (is-odds (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty x0))",
+     "search",
+     14
+    ],
+    "fresh2/((replace-index-k-with-n (dyn . 0) (static . 3) (static . -2)) (has-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. (is_prime (head (tail ((filter (lambda x1: int. (is_empty (range ((mod x1) 2))))) x0)))))",
+     "search",
+     1047
+    ],
+    "fresh2/((replace-index-k-with-n (dyn . 0) (static . 5) (static . 0)) (count-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. (length ((filter (lambda x1: int. ((eq x1) 2))) x0)))",
+     "search",
+     1751
+    ],
+    "fresh2/((reverse (dyn . 0)) (sum (dyn . 1)))": [
+     "(lambda x0: list[int]. (((fold (lambda x1: int. (lambda x2: int. ((add x2) x1)))) 0) x0))",
+     "search",
+     18
+    ],
+    "fresh2/((rotate-k (dyn . 0) (static . 10)) (is-squares (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_square (((fold (lambda x1: int. (lambda x2: int. ((mul x2) x1)))) 1) x0)))",
+     "search",
+     123
+    ],
+    "fresh2/((slice-k-n (dyn . 0) (static . 3) (static . 3)) (is-odds (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_prime (length (tail ((filter (lambda x1: int. ((eq x1) (head (tail (tail (tail x0))))))) (tail (tail (tail x0))))))))",
+     "search",
+     957
+    ],
+    "fresh2/((uniq (dyn . 0)) (count-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. (length ((filter (lambda x1: int. ((eq x1) 2))) x0)))",
+     "search",
+     1752
+    ],
+    "compose24/fresh20261031::trim-and-increment::p1": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) (tail x0)))",
+     "re+map+search",
+     1126
+    ],
+    "compose24/fresh20261031::trim-and-increment::p2": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) (tail ((cons (head x0)) (tail (tail x0))))))",
+     "re+map+search",
+     1248
+    ],
+    "compose24/fresh20261031::trim-and-increment::p3": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) (tail (tail (tail x0)))))",
+     "re+map+search",
+     1091
+    ],
+    "compose24/fresh20261031::trim-and-increment::p4": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) (tail (tail (tail (tail x0))))))",
+     "re+map+search",
+     1246
+    ],
+    "compose24/fresh20261031::append-reversed-prefix::p1": [
+     "(lambda x0: list[int]. (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) ((cons (head x0)) (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) x0))))",
+     "search",
+     875
+    ],
+    "compose24/fresh20261031::reverse-dropped-suffix::p1": [
+     "(lambda x0: list[int]. (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) (tail x0)))",
+     "search",
+     188
+    ],
+    "compose24/fresh20261031::reverse-dropped-suffix::p2": [
+     "(lambda x0: list[int]. (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) (tail ((cons (head x0)) (tail (tail x0))))))",
+     "search",
+     3377
+    ],
+    "compose24/fresh20261031::reverse-dropped-suffix::p3": [
+     "(lambda x0: list[int]. (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) (tail (tail (tail x0)))))",
+     "search",
+     77
+    ],
+    "compose24/fresh20261031::reverse-dropped-suffix::p4": [
+     "(lambda x0: list[int]. (((fold (lambda x1: list[int]. (lambda x2: int. ((cons x2) x1)))) nil) (tail (tail (tail (tail x0))))))",
+     "search",
+     2362
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p1": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "re+map+search",
+     1254
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p2": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) ((filter (lambda x1: int. ((gt ((mod x1) 3)) 0))) x0)))",
+     "re+map+search",
+     1270
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p3": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) ((filter (lambda x1: int. ((gt ((mod x1) 4)) 0))) x0)))",
+     "re+map+search",
+     1251
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p4": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((sub x1) -1))) ((filter (lambda x1: int. ((gt ((mod x1) 5)) 0))) x0)))",
+     "re+map+search",
+     1254
+    ]
+   },
+   "used": {
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . -3)))": [],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . -1)))": [],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 2)) (identify-k (dyn . 1) (static . 3)))": [
+     "s23_1"
+    ],
+    "fresh3/fresh3::((add-k (dyn . 0) (static . -2)) (prepend-k (dyn . 1) (static . -8)))": [],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . -1)))": [],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 10)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))": [],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "s23_1"
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (identify-k (dyn . 1) (static . 2)))": [],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (mult-k (dyn . 1) (static . 2)))": [],
+    "fresh3/fresh3::((identify-is-prime (dyn . 0)) (identify-is-mod-k (dyn . 1) (static . -4)))": [],
+    "fresh3/fresh3::((drop-k (dyn . 0) (static . 2)) (count-k (dyn . 1) (static . 2)))": [
+     "s9_1"
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (identify-k (dyn . 1) (static . 1)))": [
+     "s23_1"
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . -2)) (add-k (dyn . 1) (static . -5)))": [],
+    "fresh3/fresh3::((identify-is-prime (dyn . 0)) (add-k (dyn . 1) (static . -7)))": [],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 10)) (modulo-k (dyn . 1) (static . 4)))": [
+     "s23_1"
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . -7)))": [],
+    "fresh3/fresh3::((remove-mod-k (dyn . 0) (static . 2)) (prepend-k (dyn . 1) (static . 5)))": [
+     "s17_1"
+    ],
+    "fresh3/fresh3::((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (rotate-k (dyn . 1) (static . -1)))": [
+     "s23_1"
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (add-k (dyn . 1) (static . -7)))": [],
+    "fresh3/fresh3::((identify-geq-k (dyn . 0) (static . 2)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "s11_1"
+    ],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (add-k (dyn . 1) (static . -5)))": [
+     "s2_1"
+    ],
+    "fresh3/fresh3::((keep-mod-k (dyn . 0) (static . 2)) (identify-k (dyn . 1) (static . 2)))": [
+     "s17_1"
+    ],
+    "fresh3/fresh3::((keep-mod-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . 10)))": [
+     "s17_1",
+     "s23_1",
+     "s5_1"
+    ],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . -2)) (prepend-k (dyn . 1) (static . 5)))": [],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 4)))": [],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (replace-all-k-with-n (dyn . 1) (static . -1) (static . 2)))": [],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (remove-mod-k (dyn . 1) (static . -5)))": [],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (mult-k (dyn . 1) (static . 2)))": [],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "s17_1"
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (remove-mod-k (dyn . 1) (static . 5)))": [],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 2)) (len (dyn . 1)))": [],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . 3)) (prepend-k (dyn . 1) (static . -8)))": [],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 3)) (reverse (dyn . 1)))": [
+     "s3_1"
+    ],
+    "fresh3/fresh3::((add-k (dyn . 0) (static . 3)) (identify-is-mod-k (dyn . 1) (static . 7)))": [],
+    "fresh3/fresh3::((identify-is-prime (dyn . 0)) (pow-base-k (dyn . 1) (static . 7)))": [],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . -1)))": [],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "s15_1"
+    ],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (mult-k (dyn . 1) (static . -3)))": [],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (is-evens (dyn . 1)))": [
+     "s11_1"
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . -1)))": [],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 1) (static . 2)) (reverse (dyn . 1)))": [
+     "s3_1"
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (identify-k (dyn . 1) (static . 2)))": [],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . -2)) (sum (dyn . 1)))": [
+     "s5_1"
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "s17_1",
+     "s23_1"
+    ],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))": [
+     "s2_1"
+    ],
+    "fresh3/fresh3::((identify-geq-k (dyn . 0) (static . 2)) (pow-base-k (dyn . 1) (static . 7)))": [
+     "s10_1"
+    ],
+    "fresh3/fresh3::((rotate-k (dyn . 0) (static . -2)) (count-k (dyn . 1) (static . 2)))": [
+     "s11_1"
+    ],
+    "fresh3/fresh3::((identify-geq-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . 4)))": [
+     "s23_1"
+    ],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 2)) (sum (dyn . 1)))": [
+     "s15_1"
+    ],
+    "fresh3/fresh3::((reverse (dyn . 0)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "s17_1",
+     "s3_1"
+    ],
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . 3)))": [
+     "s23_1"
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . 10)))": [
+     "s5_1"
+    ],
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "s17_1"
+    ],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 0)))": [
+     "s2_1",
+     "s6_1"
+    ],
+    "fresh3/fresh3::((add-k (dyn . 0) (static . 10)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "s15_1"
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (add-k (dyn . 1) (static . -5)))": [],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . -1)))": [],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "s2_1"
+    ],
+    "fresh3/fresh3::((identify-is-mod-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . -2)))": [
+     "s23_1"
+    ],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . -2)) (head (dyn . 1)))": [],
+    "fresh3/fresh3::((positions (dyn . 0)) (count-k (dyn . 1) (static . 10)))": [
+     "s17_1"
+    ],
+    "fresh3/fresh3::((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (is-mod-k (dyn . 1) (static . -2)))": [
+     "s10_1"
+    ],
+    "fresh3/fresh3::((intersperse-k (dyn . 0) (static . 10)) (is-squares (dyn . 1)))": [
+     "s24_1",
+     "s5_1"
+    ],
+    "fresh3/fresh3::((repeat-k (dyn . 0) (static . 2)) (len (dyn . 1)))": [],
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 2)) (head (dyn . 1)))": [],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . -2)) (count-k (dyn . 1) (static . 2)))": [
+     "s25_1"
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 3)) (is-evens (dyn . 1)))": [
+     "s11_1"
+    ],
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . -2)) (has-k (dyn . 1) (static . 2)))": [
+     "s5_1"
+    ],
+    "fresh3/fresh3::((remove-mod-k (dyn . 0) (static . 2)) (head (dyn . 1)))": [
+     "s15_1"
+    ],
+    "fresh3/fresh3::((repeat-k (dyn . 0) (static . 2)) (count-k (dyn . 1) (static . 2)))": [
+     "s11_1",
+     "s5_1"
+    ],
+    "fresh3/fresh3::((repeat-k (dyn . 0) (static . 5)) (len (dyn . 1)))": [],
+    "fresh3/fresh3::((remove-mod-k (dyn . 0) (static . 2)) (sum (dyn . 1)))": [
+     "s15_1",
+     "s5_1"
+    ],
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (count-k (dyn . 1) (static . 2)))": [
+     "s11_1",
+     "s6_1"
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))": [
+     "s10_1",
+     "s17_1"
+    ],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 3) (static . 4)) (is-primes (dyn . 1)))": [
+     "s12_1",
+     "s9_1"
+    ],
+    "fresh3/fresh3::((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (is-primes (dyn . 1)))": [
+     "s9_1"
+    ],
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (has-k (dyn . 1) (static . 2)))": [],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 2) (static . 2)) (is-squares (dyn . 1)))": [
+     "s13_1"
+    ],
+    "fresh3/fresh3::((slice-k-n (dyn . 0) (static . 3) (static . 3)) (has-k (dyn . 1) (static . 2)))": [
+     "s13_1"
+    ],
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 2)) (is-mod-k (dyn . 1) (static . -2)))": [
+     "s11_1"
+    ],
+    "fresh2/((add-k (dyn . 0) (static . 10)) (positions (dyn . 1)))": [],
+    "fresh2/((add-k (dyn . 0) (static . 3)) (append-k (dyn . 1) (static . 10)))": [
+     "s23_1"
+    ],
+    "fresh2/((append-k (dyn . 0) (static . -2)) (head (dyn . 1)))": [],
+    "fresh2/((append-k (dyn . 0) (static . 10)) (add-k (dyn . 1) (static . -7)))": [
+     "s23_1"
+    ],
+    "fresh2/((append-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "s17_1",
+     "s23_1"
+    ],
+    "fresh2/((append-k (dyn . 0) (static . 3)) (sum (dyn . 1)))": [
+     "s5_1"
+    ],
+    "fresh2/((dedup (dyn . 0)) (is-primes (dyn . 1)))": [
+     "s9_1"
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 2)) (is-odds (dyn . 1)))": [],
+    "fresh2/((drop-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . -5)))": [
+     "s4_1"
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 5)) (len (dyn . 1)))": [],
+    "fresh2/((identify-geq-k (dyn . 0) (static . 3)) (empty (dyn . 1)))": [],
+    "fresh2/((identify-geq-k (dyn . 0) (static . 7)) (modulo-k (dyn . 1) (static . 4)))": [],
+    "fresh2/((identify-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . -7)))": [],
+    "fresh2/((identify-k (dyn . 0) (static . 1)) (append-k (dyn . 1) (static . 5)))": [
+     "s23_1"
+    ],
+    "fresh2/((identify-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 5)))": [],
+    "fresh2/((identify-k (dyn . 0) (static . 10)) (len (dyn . 1)))": [],
+    "fresh2/((keep-mod-k (dyn . 0) (static . 2)) (identify-is-mod-k (dyn . 1) (static . -4)))": [
+     "s17_1"
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 3)))": [
+     "s6_1"
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 2)) (identify-is-prime (dyn . 1)))": [],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))": [],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (modulo-k (dyn . 1) (static . 6)))": [],
+    "fresh2/((mult-k (dyn . 0) (static . 10)) (is-odds (dyn . 1)))": [],
+    "fresh2/((mult-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))": [
+     "s15_1"
+    ],
+    "fresh2/((pow-base-k (dyn . 0) (static . 4)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "s11_1",
+     "s6_1"
+    ],
+    "fresh2/((pow-base-k (dyn . 0) (static . 4)) (is-evens (dyn . 1)))": [
+     "s6_1"
+    ],
+    "fresh2/((prepend-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))": [
+     "s15_1"
+    ],
+    "fresh2/((remove-mod-k (dyn . 0) (static . 2)) (mult-k (dyn . 1) (static . 10)))": [
+     "s15_1"
+    ],
+    "fresh2/((repeat-k (dyn . 0) (static . 3)) (sum (dyn . 1)))": [
+     "s5_1"
+    ],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (positions (dyn . 1)))": [],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (identify-geq-k (dyn . 1) (static . 4)))": [],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (is-odds (dyn . 1)))": [],
+    "fresh2/((replace-index-k-with-n (dyn . 0) (static . 3) (static . -2)) (has-k (dyn . 1) (static . 2)))": [
+     "s13_1",
+     "s17_1"
+    ],
+    "fresh2/((replace-index-k-with-n (dyn . 0) (static . 5) (static . 0)) (count-k (dyn . 1) (static . 2)))": [
+     "s11_1"
+    ],
+    "fresh2/((reverse (dyn . 0)) (sum (dyn . 1)))": [
+     "s5_1"
+    ],
+    "fresh2/((rotate-k (dyn . 0) (static . 10)) (is-squares (dyn . 1)))": [
+     "s6_1"
+    ],
+    "fresh2/((slice-k-n (dyn . 0) (static . 3) (static . 3)) (is-odds (dyn . 1)))": [
+     "s12_1",
+     "s25_1"
+    ],
+    "fresh2/((uniq (dyn . 0)) (count-k (dyn . 1) (static . 2)))": [
+     "s11_1"
+    ],
+    "compose24/fresh20261031::trim-and-increment::p1": [],
+    "compose24/fresh20261031::trim-and-increment::p2": [
+     "s4_1"
+    ],
+    "compose24/fresh20261031::trim-and-increment::p3": [
+     "s12_1"
+    ],
+    "compose24/fresh20261031::trim-and-increment::p4": [
+     "s12_1"
+    ],
+    "compose24/fresh20261031::append-reversed-prefix::p1": [
+     "s23_1"
+    ],
+    "compose24/fresh20261031::reverse-dropped-suffix::p1": [
+     "s3_1"
+    ],
+    "compose24/fresh20261031::reverse-dropped-suffix::p2": [
+     "s3_1",
+     "s4_1"
+    ],
+    "compose24/fresh20261031::reverse-dropped-suffix::p3": [
+     "s12_1",
+     "s3_1"
+    ],
+    "compose24/fresh20261031::reverse-dropped-suffix::p4": [
+     "s12_1",
+     "s3_1"
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p1": [
+     "s15_1"
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p2": [
+     "s15_1"
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p3": [
+     "s15_1"
+    ],
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p4": [
+     "s15_1"
+    ]
+   },
+   "seconds": 171,
+   "sound": [
+    "compose24/fresh20261031::append-reversed-prefix::p1",
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p1",
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p2",
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p3",
+    "compose24/fresh20261031::filter-nondivisible-and-shift::p4",
+    "compose24/fresh20261031::reverse-dropped-suffix::p1",
+    "compose24/fresh20261031::reverse-dropped-suffix::p2",
+    "compose24/fresh20261031::reverse-dropped-suffix::p3",
+    "compose24/fresh20261031::reverse-dropped-suffix::p4",
+    "compose24/fresh20261031::trim-and-increment::p1",
+    "compose24/fresh20261031::trim-and-increment::p2",
+    "compose24/fresh20261031::trim-and-increment::p3",
+    "compose24/fresh20261031::trim-and-increment::p4",
+    "fresh2/((add-k (dyn . 0) (static . 10)) (positions (dyn . 1)))",
+    "fresh2/((add-k (dyn . 0) (static . 3)) (append-k (dyn . 1) (static . 10)))",
+    "fresh2/((append-k (dyn . 0) (static . -2)) (head (dyn . 1)))",
+    "fresh2/((append-k (dyn . 0) (static . 10)) (add-k (dyn . 1) (static . -7)))",
+    "fresh2/((append-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))",
+    "fresh2/((append-k (dyn . 0) (static . 3)) (sum (dyn . 1)))",
+    "fresh2/((dedup (dyn . 0)) (is-primes (dyn . 1)))",
+    "fresh2/((drop-k (dyn . 0) (static . 5)) (len (dyn . 1)))",
+    "fresh2/((identify-geq-k (dyn . 0) (static . 3)) (empty (dyn . 1)))",
+    "fresh2/((identify-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . -7)))",
+    "fresh2/((identify-k (dyn . 0) (static . 1)) (append-k (dyn . 1) (static . 5)))",
+    "fresh2/((identify-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 5)))",
+    "fresh2/((identify-k (dyn . 0) (static . 10)) (len (dyn . 1)))",
+    "fresh2/((keep-mod-k (dyn . 0) (static . 2)) (identify-is-mod-k (dyn . 1) (static . -4)))",
+    "fresh2/((modulo-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 3)))",
+    "fresh2/((modulo-k (dyn . 0) (static . 2)) (identify-is-prime (dyn . 1)))",
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))",
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (modulo-k (dyn . 1) (static . 6)))",
+    "fresh2/((mult-k (dyn . 0) (static . 10)) (is-odds (dyn . 1)))",
+    "fresh2/((mult-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))",
+    "fresh2/((pow-base-k (dyn . 0) (static . 4)) (identify-geq-k (dyn . 1) (static . 4)))",
+    "fresh2/((pow-base-k (dyn . 0) (static . 4)) (is-evens (dyn . 1)))",
+    "fresh2/((prepend-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))",
+    "fresh2/((remove-mod-k (dyn . 0) (static . 2)) (mult-k (dyn . 1) (static . 10)))",
+    "fresh2/((repeat-k (dyn . 0) (static . 3)) (sum (dyn . 1)))",
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (positions (dyn . 1)))",
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (identify-geq-k (dyn . 1) (static . 4)))",
+    "fresh2/((reverse (dyn . 0)) (sum (dyn . 1)))",
+    "fresh3/fresh3::((add-k (dyn . 0) (static . 10)) (remove-mod-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((add-k (dyn . 0) (static . 3)) (identify-is-mod-k (dyn . 1) (static . 7)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . 4)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . -2)) (identify-k (dyn . 1) (static . 1)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . -4)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 10)) (modulo-k (dyn . 1) (static . 4)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . 3)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 2)) (identify-k (dyn . 1) (static . 3)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 2)) (len (dyn . 1)))",
+    "fresh3/fresh3::((append-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . -7)))",
+    "fresh3/fresh3::((identify-geq-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . 4)))",
+    "fresh3/fresh3::((identify-geq-k (dyn . 0) (static . 2)) (identify-is-mod-k (dyn . 1) (static . -4)))",
+    "fresh3/fresh3::((identify-geq-k (dyn . 0) (static . 2)) (pow-base-k (dyn . 1) (static . 7)))",
+    "fresh3/fresh3::((identify-is-mod-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . -2)))",
+    "fresh3/fresh3::((identify-is-prime (dyn . 0)) (add-k (dyn . 1) (static . -7)))",
+    "fresh3/fresh3::((identify-is-prime (dyn . 0)) (identify-is-mod-k (dyn . 1) (static . -4)))",
+    "fresh3/fresh3::((identify-is-prime (dyn . 0)) (pow-base-k (dyn . 1) (static . 7)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . -2)) (add-k (dyn . 1) (static . -5)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (add-k (dyn . 1) (static . -7)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (is-evens (dyn . 1)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (mult-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 1)) (remove-mod-k (dyn . 1) (static . 5)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . -1)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 10)) (mult-k (dyn . 1) (static . -3)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 10)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 2)) (is-mod-k (dyn . 1) (static . -2)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 3)) (is-evens (dyn . 1)))",
+    "fresh3/fresh3::((identify-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . 10)))",
+    "fresh3/fresh3::((keep-mod-k (dyn . 0) (static . 2)) (append-k (dyn . 1) (static . 10)))",
+    "fresh3/fresh3::((keep-mod-k (dyn . 0) (static . 2)) (identify-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 2)) (head (dyn . 1)))",
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 2)) (sum (dyn . 1)))",
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . -1)))",
+    "fresh3/fresh3::((modulo-k (dyn . 0) (static . 3)) (reverse (dyn . 1)))",
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . -2)) (count-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . -2)) (head (dyn . 1)))",
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . -1)))",
+    "fresh3/fresh3::((mult-k (dyn . 0) (static . 3)) (prepend-k (dyn . 1) (static . -8)))",
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . -2)) (sum (dyn . 1)))",
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (add-k (dyn . 1) (static . -5)))",
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (identify-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 2)) (replace-all-k-with-n (dyn . 1) (static . -1) (static . 2)))",
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 4)))",
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (identify-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (mult-k (dyn . 1) (static . -1)))",
+    "fresh3/fresh3::((prepend-k (dyn . 0) (static . 3)) (remove-mod-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((remove-mod-k (dyn . 0) (static . 2)) (head (dyn . 1)))",
+    "fresh3/fresh3::((remove-mod-k (dyn . 0) (static . 2)) (prepend-k (dyn . 1) (static . 5)))",
+    "fresh3/fresh3::((remove-mod-k (dyn . 0) (static . 2)) (sum (dyn . 1)))",
+    "fresh3/fresh3::((repeat-k (dyn . 0) (static . 2)) (count-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((repeat-k (dyn . 0) (static . 2)) (len (dyn . 1)))",
+    "fresh3/fresh3::((repeat-k (dyn . 0) (static . 5)) (len (dyn . 1)))",
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 1) (static . 2)) (reverse (dyn . 1)))",
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (identify-is-mod-k (dyn . 1) (static . -4)))",
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (mult-k (dyn . 1) (static . -3)))",
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (mult-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (remove-mod-k (dyn . 1) (static . -5)))",
+    "fresh3/fresh3::((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (is-primes (dyn . 1)))",
+    "fresh3/fresh3::((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (rotate-k (dyn . 1) (static . -1)))",
+    "fresh3/fresh3::((reverse (dyn . 0)) (identify-is-mod-k (dyn . 1) (static . -4)))",
+    "fresh3/fresh3::((rotate-k (dyn . 0) (static . -2)) (count-k (dyn . 1) (static . 2)))",
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (add-k (dyn . 1) (static . -5)))",
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 0)))",
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 4)))",
+    "fresh3/fresh3::((take-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))"
+   ],
+   "sound_counts": {
+    "fresh3": 67,
+    "fresh2": 28,
+    "compose24": 13
+   }
+  }
+ }
+}

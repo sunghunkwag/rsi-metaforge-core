@@ -301,6 +301,8 @@ def run(harness, learn, *, max_cycles=None, components=COMPONENTS, log=print, ch
             new["proposed"] = {"name": symbol.name, "definition": str(symbol.definition), "gain": symbol.score,
                                "tasks": len(symbol.tasks), "real_tasks": sum(1 for t in symbol.tasks if t in family_of),
                                "support": sorted(t for t in symbol.tasks if t in family_of),   # learning tasks it folds
+                               "support_programs": {t: str(full[t]) for t in sorted(symbol.tasks, key=str)
+                                                    if t in family_of},                       # and their programs then
                                "targets": support, "depth": symbol.depth, "phase": phase, "cycle": cycle}
             new["accepted"] = new_score > score or (new_score == score and new["dream"][0] > dream_now)
             tried.append({"trial": trials, "run": new["run"], "phase": phase, "symbol": symbol.name,

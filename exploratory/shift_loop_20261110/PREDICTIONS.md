@@ -482,17 +482,18 @@ divisibility family only.
 - Code: the digest is checked before the run; the largest runs come first; smoke tests
   cannot touch the registered set; every prediction is scored by the script.
 
-# Addendum 8: a deepening loop, tested on new pairings of routines (DRAFT, not in force)
+# Addendum 8: a deepening loop, tested on new pairings of routines
 
 Written 2026-11-11, after Addendum 7 had been scored (outcome class "not established").
 The Owner's instruction after that result was to continue until the criteria are met. This
 registration was not put to the Owner before the run; it is the author's, fixed before
 anything ran on the evaluation set. A draft (commit 8d4e7ae) was attacked by four
 independent reviewers before the registration came into force: confounds and leakage,
-fairness of the control, statistics and claims, implementation. They returned FINDINGS-COUNT
-findings. This text is the draft as changed by them; what each changed is listed at the
-end. Nothing below has been run on FRESH-4, and no solver has run on a FRESH-4 pipeline at
-any budget.
+fairness of the control, statistics and claims, implementation. They returned 20 findings.
+This text is the draft as changed by them; what each changed is listed at the end
+(`results/design_review_addendum8.json` holds the findings with their evidence). It is in
+force from the commit that removes the word DRAFT from its heading. Nothing below has been
+run on FRESH-4, and no solver has run on a FRESH-4 pipeline at any budget.
 
 ## What Addendum 7 left open, and what development changed
 
@@ -522,12 +523,16 @@ sound/verified.
 | | First variant | Second variant | Third variant, the one frozen here |
 | --- | --- | --- | --- |
 | What differs | three symbols per trial, in order of gain | one symbol per trial, targets first, no stop rule in the first phase | the second with the stop rule in both phases |
-| Student at 10^4 on the 214 learning tasks, generation 0 to last | 121 to 150 | 121 to 177 after two cycles (stopped in the third) | pending |
-| Held-out B at 10^4 by cycle | 22/27, 30/37, 33/42 | 22/27, 36/45, 41/50 | pending |
-| Symbols | 15 | 19 after two cycles | pending |
-| Training ceiling | 110,739,887 | 188,819,917 after two cycles | pending |
-| State at 10^5: held-out B; FRESH-3 | 52/65; 101/115 | 52/63; 104/119 (after two cycles) | pending |
-| State at 10^4: held-out B; FRESH-3 | 33/42; 67/81 | 41/50; 67/80 (after two cycles) | pending |
+| Student at 10^4 on the 214 learning tasks, generation 0 to last | 121 to 150 | 121 to 177 after two cycles (stopped in the third) | 121 to 177 |
+| Held-out B at 10^4 by cycle | 22/27, 30/37, 33/42 | 22/27, 36/45, 41/50 | 22/27, 36/45, 41/50 |
+| Symbols | 15 | 19 after two cycles | 19 |
+| Training ceiling | 110,739,887 | 188,819,917 after two cycles | 189,239,903 |
+| State at 10^5: held-out B; FRESH-3 | 52/65; 101/115 | 52/63; 104/119 (after two cycles) | 52/63; 104/119 |
+| State at 10^4: held-out B; FRESH-3 | 33/42; 67/81 | 41/50; 67/80 (after two cycles) | 41/50; 67/80 |
+
+The third variant accepts nothing in its third cycle and ends with the 19 symbols the second
+had after two cycles (the same library, digest `7b8e1ef3...`), so the last two columns
+evaluate the same state.
 
 For comparison, from Addendum 7: the old state at 10^5 has 44/55 on held-out B and 71/86 on
 FRESH-3; generation 0 at any budget has 38 sound solves on held-out B (39 over every budget
@@ -543,7 +548,8 @@ a symbol defined through the first.
 For list outputs: the vocabulary the deepening loop builds lets the same machinery solve
 more new pairings of routine instances, most of them instances it trained on, at 10^5
 candidates per task than generation 0 solves at any budget up to 1,126,452 candidates per
-task, which is more than the whole training and deployment budget.
+task. That is more than the whole training and deployment budget: 336,550 per task on
+these 800 tasks, and 730,800 if the training were charged to 300 tasks as in Addendum 7.
 
 ## Mechanism (frozen)
 
@@ -561,26 +567,31 @@ task, which is more than the whole training and deployment budget.
 3. Training ceilings: T_new is the sum, over every run the deepening loop makes, of budget
    x tasks run (teacher runs, every trial, the dream runs, the held-out report runs).
    T_old = 127,280,000 (Addendum 7). The loop is deterministic and the registered run
-   repeats the last development run, so the numbers are known: LOOP-NUMBERS
+   repeats the last development run, so the numbers are known: three cycles, of which the
+   first two accept symbols (15, then 4 that are each defined through a first-cycle
+   symbol), 37 trials, T_new = 189,239,903, library digest
+   `7b8e1ef31a09a95e50643e64530318f68014abd61923a367bfd850837cc0c93e`. `confirm.py`
+   compares both with its own loop and reports a difference.
 4. Evaluation on FRESH-4 (N = 800) at the student budget 10^4 and the deployment budget
    10^5 for *new*, *old* and generation 0. Generation 0 also at
    - C2old = (T_old + N x 10^5) / N = 259,100,
-   - C2new = (T_new + N x 10^5) / N = C2NEW,
+   - C2new = (T_new + N x 10^5) / N = 336,550,
    - 1,126,452, the largest budget generation 0 was run at in Addendum 7.
    Training is charged at T/N per task, so these two "whole budgets" are smaller than they
-   would be on fewer tasks: charged to 300 tasks, as in Addendum 7, C2new would be C2NEW300.
+   would be on fewer tasks: charged to 300 tasks, as in Addendum 7, C2new would be 730,800.
    The top rung is above that too.
    "Any budget": the union of everything generation 0 solves on FRESH-4 at the five
    budgets. It is the control of the primary comparison.
 5. Held-out B (124 tasks, a development set): the three states at 10^4 and 10^5;
    generation 0 at every budget it has been run at there (181,775; 251,479; 413,254;
-   569,881; 1,126,452) and at C1new = (T_new + 124 x 10^5) / 338 = C1NEW. FRESH-3 (a
+   569,881; 1,126,452) and at C1new = (T_new + 124 x 10^5) / 338 = 596,568. FRESH-3 (a
    development set): *new* at 10^4 and 10^5, compared with the rows of Addendum 7.
 6. For the criteria, after the loop and outside it: generation 0 on each later cycle's
    unsolved learning tasks at that cycle's teacher budget; the vocabulary after each
    accepting cycle on FRESH-4 at 10^4; the final vocabulary at 10^4 without the recursive
    symbols (defined below), without the first cycle's symbols, and without the first
-   cycle's symbols and every symbol defined through them.
+   cycle's symbols and every symbol defined through them (a symbol keeps working when a
+   symbol it is defined through is removed: it is inlined).
 
 Cost is counted in constructed candidates, at ceilings. Not counted for the trained arms:
 compression and dream making in the driver (a reviewer measured the dream making at about
@@ -656,8 +667,9 @@ Sound solves, as in Addendum 7: the verified program agrees with the generating 
 on the fresh inputs of `oracles.fresh_inputs` (up to 200, inside the task's own range,
 inputs whose reference output lies beyond the generator's caps skipped). New here: a
 verdict needs at least 20 such inputs; with fewer the program is not counted as sound, in
-any arm, and the report gives the number of programs this removes. Verified counts are
-reported beside sound counts.
+any arm, and the report gives the number of programs this removes (programs that agree on
+every input they were checked on, fewer than 20). Verified counts are reported beside sound
+counts.
 
 A run stops at its first public match, as before. For every task only one arm solves
 soundly the report states what the other arm did: (a) no public match within its budget,
@@ -676,15 +688,19 @@ lead (below).
 | Outcome | Reading |
 | --- | --- |
 | A registered run is missing, or the set is not the registered one | No class. The report says what is missing. |
+| C2new exceeds what four workers hold in memory (1,700,000) | No class, and no rerun under this registration. (With the loop of development it is 336,550.) |
+| The loop's library or training ceiling differs from the development run | The class is read as registered; the report states the difference. |
 | The loop accepts no symbol | Not confirmed: the new state is generation 0. |
 | *New* has no more sound solves than the control | Not confirmed. |
 | More, with p >= 0.05 | Not established. The size of the lead is reported; no claim. |
 | More, with p < 0.05 | Confirmed for list outputs on FRESH-4 against everything generation 0 solves at any budget run, with the five endings below. |
 
-Endings of a "confirmed" outcome, each decided mechanically on list-output tasks. In each,
-"none" means *new* has no more sound solves than the other arm, "not separated" means more
-with p >= 0.05, and "significant" means more with p < 0.05 (the same sign test). A stratum
-is small where stated, and "not separated" there is not evidence of absence.
+Endings of a "confirmed" outcome, each decided mechanically on list-output tasks with the
+same sign test. Four grades: "significant" (more sound solves than the other arm, p <
+0.05); otherwise "not testable" when fewer than 10 tasks are solved by one arm only (the
+ending then says so, with the size of the stratum, and reads nothing from it); otherwise
+"not separated" (more, p >= 0.05) or "none" (no more). A "none" is therefore never read
+from an empty or nearly silent stratum.
 
 1. Breadth: the tasks with neither `slice-k-n` nor a divisibility routine. "Only where a
    routine of the earlier symbols is present" (none); "outside the routines of the earlier
@@ -694,32 +710,50 @@ is small where stated, and "not separated" there is not evidence of absence.
    ceilings differ: T_new against 127,280,000): *new* at 10^5 against *old* at 10^5. "No
    more than"; "not separated from"; "and more than the earlier loop's vocabulary at the
    same deployment budget".
-3. Budget: "with reach beyond the budget" if the new-only tasks of kind (a) outnumber the
-   control-only tasks of kind (a); otherwise "as a different first match, not reach beyond
-   the budget".
+3. Budget: the new-only tasks of kind (a) against the control-only tasks of kind (a), by
+   the same test and grades. "With reach beyond the budget" (significant); "reach beyond
+   the budget not separated from chance"; "as a different first match, not reach beyond
+   the budget" (none).
 4. Dreams: the tasks that no dream program of the run computes and whose pair of routine
-   names no dream composed. "Not where no dream computed the task or composed its pair of
+   names no dream composed. The size of this stratum is not known before the run: it
+   shrinks with every cycle of dreams, towards the tasks with a routine the loop never
+   solved alone. "Not where no dream computed the task or composed its pair of
    routines"; "... not separated from chance"; "also where no dream computed the task or
    composed its pair of routines".
-5. Learning tasks: the tasks in which not both stage instances are learning tasks (386
-   list-output tasks). "Only where both stages are its own learning tasks"; "where a stage
-   is not one of its learning tasks not separated from chance"; "also where a stage is not
-   one of its learning tasks".
+5. Learning tasks: the tasks in which not both stage instances are learning tasks (448
+   list-output tasks: 386 with one such stage, 62 with none). "Only where both stages are
+   its own learning tasks"; "where a stage is not one of its learning tasks not separated
+   from chance"; "also where a stage is not one of its learning tasks".
 
 "More" means strictly more. The class is decided on sound counts; the same rule on verified
 counts is printed beside it and a difference is stated.
 
+Power, from a simulation by the reviewer of the statistics (exact sign test; the
+development effect on FRESH-3's list tasks is 36 new-only against 7 control-only per 213
+tasks): at half that effect the strata of endings 1 and 5 (494 and 448 tasks) pass in
+more than 98% of draws, a 200-task stratum in 81%, the 135 list tasks with a routine no
+learning task has in 64%, the 62 with no learning-task stage in 29%. At the effect of
+Addendum 7 a 200-task stratum passes in 35%.
+
 Reported with the class, deciding nothing:
 
-- How many routines carry the lead: the routines with the largest net lead are removed one
-  after another (every task that contains them) until the remaining lead is no longer
-  separated from chance; the report names them and the number of tasks left. If the list
-  is short, the report says that the lead holds over pairs of these routines and claims
-  nothing for the others. The primary test without each routine in turn; the sign test
-  over routine clusters; solves by routine for the three arms.
+- How far the lead reaches over routines: routines are removed in a fixed order of net
+  lead, computed once, each with every task that contains it, until the remaining lead is
+  no longer separated from chance; the report names them, the tasks left, and the lead per
+  task among the removed tasks and among the tasks left. Removing tasks loses power as
+  well as lead (the reviewer's simulation: an effect spread evenly over all routines at
+  the size of Addendum 7 is "carried" by one to three routines in 70% of draws). So the
+  report says "the lead holds over pairs of these routines only" only if the tasks left
+  number at least 200 and show no lead at all; otherwise it says that the count of
+  routines is not evidence of narrowness. The primary test without each routine in turn;
+  the sign test over routine clusters; solves by routine for the three arms.
 - The finer strata: both stage instances are learning tasks; one; none (62 list-output
-  tasks); a routine no learning task has (141 tasks); a routine the loop never solved
-  alone; each for *new* against the control and for *new* against *old*.
+  tasks); a routine no learning task has (135 list-output tasks); a routine the loop never
+  solved alone; each for *new* against the control and for *new* against *old*, with its
+  grade. One line is fixed now: the result shows more than re-pairing of trained instances
+  only if the stratum with no learning-task stage or the stratum with a routine no
+  learning task has is "significant". Both have low power (above), so anything else there
+  is not read as absence.
 - The 44 tasks with other outputs; the lead standardised to FRESH-2's mix of output types
   (it rests on 37 and 7 tasks).
 - *New* at 10^4 against generation 0 at any budget; every comparison against the single
@@ -746,14 +780,17 @@ loop has ended.
   solves soundly with a program that uses a learned symbol, where generation 0 on the same
   task at the same budget finds no public match; it counts only if that teacher has more
   such tasks than generation 0 has the other way round. A *recursive symbol* is a symbol
-  accepted after the first cycle that was distilled from a discovery (the discovery is one
-  of the learning programs it folds), together with the symbols defined through it. R2
-  holds if some FRESH-4 task is solved soundly by the final vocabulary at 10^4, by neither
-  generation 0 nor the first cycle's vocabulary, with a program the search built with a
-  recursive symbol, and is no longer solved soundly when the recursive symbols are taken
-  out of the final vocabulary. This is stricter than the reading used for the earlier
-  loops, which are not re-scored. Two plain ablations are reported beside it (without the
-  first cycle's symbols; without them and every symbol defined through them).
+  accepted after the first cycle that was distilled from a discovery: one of the learning
+  programs it folded when it was proposed is, text for text, a discovery made in that
+  cycle or an earlier one. With it go the symbols defined through it. R2 holds if some
+  FRESH-4 task is solved soundly by the final vocabulary at 10^4, by neither generation 0
+  nor the first cycle's vocabulary, with a program the search built with a recursive
+  symbol, and is solved soundly neither when the recursive symbols are taken out of the
+  final vocabulary nor when the first cycle's symbols and every symbol defined through
+  them are taken out. The last condition is the original's ablation of the earlier
+  generation; the chain before it is added. The report gives the number of such tasks.
+  The earlier loops were scored by a looser reading and are not re-scored. One more
+  ablation is reported beside it (without the first cycle's symbols alone).
 - R3: the final vocabulary at 10^4 has more sound solves than generation 0 at any of the
   five budgets (up to 1,126,452). The original wording asks for generation 0 run once at
   the cumulative budget; the union is stricter. The sign test is reported beside it.
@@ -773,11 +810,12 @@ C1new.
 For the one vocabulary this run produces, on the pairs `fresh4.py` draws from, for list
 outputs, at 10^5 candidates per task: more sound solves than generation 0 has at any
 budget run up to 1,126,452 candidates per task, cost counted in constructed candidates
-with training charged at T_new / 800 per task, with the five endings as they fall.
+with training charged at T_new / 800 per task (the top rung also covers a charge to 300
+tasks), with the five endings as they fall.
 
 What it would not: new routines or parameter values; integer and boolean outputs; more
-than re-pairing of routine instances the loop trained on, unless the fifth ending and the
-finer strata show a lead of their own; a routine population the mechanism was not fitted
+than re-pairing of routine instances the loop trained on, unless one of the two strata
+named above is significant; a routine population the mechanism was not fitted
 to; the loop as a procedure (one run, one vocabulary, one configuration, the favourable
 one); cost in time; J's sealed pools; TEST; open-ended or general self-improvement, or
 anything about systems other than this enumerator on these list tasks.
@@ -797,12 +835,16 @@ tuned on, so some shrinkage is expected).
 | D6 | *Old* at 10^5 has more sound solves than generation 0 at any budget with p < 0.05 (list outputs; it does not change the class of Addendum 7) | PASS (low) |
 | D7 | Ending 4: where no dream computed the task or composed its pair of routines, more with p < 0.05 | PASS (moderate) |
 | D8 | Ending 5: where not both stage instances are learning tasks, more with p < 0.05 | PASS (moderate) |
-| D9 | Ending 3: the new-only tasks of kind (a) outnumber the control-only tasks of kind (a) | PASS (high) |
-| D10 | On the tasks with a routine no learning task has, *new* has more sound solves than the control | PASS (low) |
+| D9 | Ending 3 reads "with reach beyond the budget": the new-only tasks of kind (a) outnumber the control-only tasks of kind (a) with p < 0.05 | PASS (high) |
+| D10 | On the 135 list-output tasks with a routine no learning task has, *new* has more sound solves than the control | PASS (low) |
 | D11 | R1 on FRESH-4 | PASS (moderate) |
 | D12 | R2 on FRESH-4 | PASS (moderate) |
 | D13 | R3 on FRESH-4: the final vocabulary at 10^4 has more sound solves than generation 0 at any budget | FAIL (moderate) |
 | D14 | All four criteria on FRESH-4 | FAIL (moderate) |
+
+D4, D5, D7, D8 and D9 pass when their ending is "significant"; D4, D7, D8 and D10 are not
+scored if their stratum is "not testable". The script prints the threshold of D3 with the
+scores.
 
 Known from development and therefore not predictions: the loop's own trajectory (it is
 deterministic and the registered run repeats it) and everything on held-out B and FRESH-3.
@@ -851,4 +893,34 @@ itself (the draft scored them on held-out B, a development set); the loop's stop
 applies to both phases of a cycle (the second variant spent 17 trials in a row on
 rejections); each trial records the learning tasks its symbol folds.
 
-The reviewers of statistics and of the implementation did not finish: REVIEW-GAP
+From the review of statistics and claims (6 findings):
+
+- A fourth grade, "not testable", so that no ending reads an absence from a stratum in
+  which fewer than 10 tasks are solved by one arm only; the size of ending 4's stratum is
+  stated as unknown before the run; a power table for the strata.
+- "How many routines carry the lead" is reworded: the procedure loses power as it removes
+  tasks, so the count of routines is read as narrowness only under a fixed rule.
+- The threshold of D3 is one number in the text and in the script (the draft had 50 and
+  80); D10 names its scope.
+- Ending 5's stratum is 448 tasks, not 386; the licence's "unless" is a mechanical rule on
+  two named strata.
+- R2 keeps the original's ablation of the earlier generation's symbols as a condition.
+- Outcomes the table did not cover (a loop that differs from development; a cumulative
+  budget that cannot be run); ending 3 is graded by the test instead of by raw counts;
+  thin evidence counts only programs that agree on everything they were checked on.
+
+From the review of the implementation (5 findings):
+
+- A recursive symbol is identified by the text of the program it folded and by the cycle
+  of the discovery, not by the task alone (a later teacher can re-solve a task whose
+  older program the symbol folds); each trial records those programs.
+- `--resume` kept no row of an ablated or per-cycle vocabulary (its fingerprint held a
+  tuple); it does now.
+- The three points above that both reviewers found (D3, ending 5, thin evidence).
+
+It also confirmed, by running: the loop and the generator are deterministic across hash
+seeds and worker counts; the generator's exclusions and counts; that a rejected candidate
+leaves no state behind; that no decision of the loop reads a held-out record.
+
+The first attempt at these two reviews was stopped by a usage limit. Both were then run on
+another model, against the draft as already changed for the first two, and finished.
