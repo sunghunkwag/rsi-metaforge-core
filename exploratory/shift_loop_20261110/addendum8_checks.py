@@ -86,9 +86,10 @@ def main(path: str) -> None:
         print(f"  {measure:8s} R1 by generation {len(zero)}, {len(one)}, {len(two)}; second step "
               f"{len(two - one)} gained, {len(one - two)} lost | R2 gains after cycle 1: {len(gains)} | "
               f"R3 {line(two, union)}; list outputs {line(two, union, listed)}")
-    two = arm(["new@student"], "sound")
-    print("  R3 against the single runs of generation 0 (sound): " + "; ".join(
-        f"{label.split('@')[1]} {line(two, arm([label], 'sound'))}" for label in GEN0))
+    for measure in ("sound", "verified", "pool"):
+        two = arm(["new@student"], measure)
+        print(f"  R3 against the single runs of generation 0 ({measure}): " + "; ".join(
+            f"{label.split('@')[1]} {line(two, arm([label], measure))}" for label in GEN0))
 
     print("\nThe task that decides R3, and the step budget of the evaluator")
     key = "fresh4/fresh4::((identify-geq-k (dyn . 0) (static . 2)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))"
@@ -130,11 +131,43 @@ def main(path: str) -> None:
             out |= {key for key in row["sound"] if survives(key, row["programs"][key][0])}
         return out
     zero, one, two, union = stressed(["gen0@student"]), stressed(["cycle1@student"]), stressed(["new@student"]), stressed(GEN0)
-    print("  sound, and right on three more in-range inputs per task (the longest list of the largest value, of the "
-          "smallest value, alternating):")
-    print(f"    R1 by generation {len(zero)}, {len(one)}, {len(two)} | R3 {line(two, union)}")
-    lost = {label: sorted(set(rows[f'{label}:fresh4']['sound']) - stressed([label])) for label in ("new@student",) + GEN0}
+    print("  two rules for a program that runs out of steps, each applied to every row")
+    print("  rule 1, it fails: sound, and right within the step budget on three more in-range inputs per task (the "
+          "longest list of the largest value, of the smallest value, alternating):")
+    print(f"    R1 by generation {len(zero)}, {len(one)}, {len(two)} | R3 {line(two, union)} | primary "
+          f"{line(stressed(['new@deploy']), union, listed)}")
+    lost = {label: sorted(set(rows[f'{label}:fresh4']['sound']) - stressed([label]))
+            for label in ("new@student", "cycle1@student", "new@deploy", "old@deploy") + GEN0}
     print("    sound programs that fail one of them: " + ", ".join(f"{label} {len(keys)}" for label, keys in lost.items()))
+
+    def patient(labels):
+        """Rule 2: running out of steps on an audit input is not a disagreement (200,000 steps)."""
+        out = set()
+        for label in labels:
+            row = rows[f"{label}:fresh4"]
+            out |= set(row["sound"])
+            for key, (text, _, _) in row["programs"].items():
+                if key in row["sound"]:
+                    continue
+                task, term, agree, checked = task_of[key], parse(text), True, 0
+                if key not in sound.inputs:
+                    sound.inputs[key] = sound.oracles.fresh_inputs(key, task, [task.reference])
+                for xs in sound.inputs[key]:
+                    want = task.reference(list(xs))
+                    if want is None or sound.kind(want) is None:
+                        continue
+                    checked += 1
+                    got = evaluate(term, (list(xs),), step_budget=200_000)
+                    if not got.ok or not same(got.value, want):
+                        agree = False
+                        break
+                if agree and checked >= confirm.MIN_EVIDENCE:
+                    out.add(key)
+        return out
+    zero, one, two, union = patient(["gen0@student"]), patient(["cycle1@student"]), patient(["new@student"]), patient(GEN0)
+    print("  rule 2, it does not: the audit's own inputs with 200,000 steps where a program was called not sound:")
+    print(f"    R1 by generation {len(zero)}, {len(one)}, {len(two)} | R3 {line(two, union)} | primary "
+          f"{line(patient(['new@deploy']), union, listed)} | new against old {line(patient(['new@deploy']), patient(['old@deploy']), listed)}")
 
     key = "fresh4/fresh4::((remove-mod-k (dyn . 0) (static . 2)) (identify-geq-k (dyn . 1) (static . 7)))"
     text = rows["new@deploy:fresh4"]["programs"][key][0]

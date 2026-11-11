@@ -448,10 +448,12 @@ def _install(spec):
     keep = spec.get("keep") or {}
     _STATE["spaces"] = {"elem": _restrict(vocabulary, keep.get("elem")),
                         "list": _restrict(vocabulary, keep.get("list"))}
-    listed = _STATE["spaces"]["list"]
-    # P: the learned symbols of the list space with the integer constants and nothing else
+    # P: learned symbols with the integer constants and nothing else. They are the learned symbols
+    # of the list space unless the spec names them (keep["symbols"]): a symbol named there and not
+    # in the list space is used by P alone and costs the other searches nothing.
+    listed = _STATE["spaces"]["list"] if keep.get("symbols") is None else _restrict(vocabulary, keep["symbols"])
     _STATE["spaces"]["symbols"] = Vocabulary(listed.name, tuple(p for p in listed.primitives if p in listed.admitted),
-                                             listed.integer_constants, (), listed.admitted)
+                                             vocabulary.integer_constants, (), listed.admitted)
     _STATE["spec"] = spec["id"]
 
 
@@ -557,25 +559,27 @@ def solve(job) -> dict:
                 break
             spent += used
     first = []
-    if record["term"] is None and switches.get("P") and switches.get("R") and len(input_types) == 1 \
-            and input_types[0] == LIST_INT and output_type.tag == "list" and spaces["symbols"].admitted:
-        # P: programs made of learned symbols, the input and constants only. A vocabulary with no
-        # learned symbol has nothing to enumerate here, so generation 0 is not changed by P.
+    if record["term"] is None and switches.get("P") and len(input_types) == 1 \
+            and input_types[0] == LIST_INT and spaces["symbols"].admitted:
+        # P: programs made of learned symbols, the input and constants only, for any output type.
+        # A vocabulary with no learned symbol has nothing to enumerate here, so generation 0 is
+        # not changed by P. For a list output the re-representations found here go to R first.
         vocabulary = spaces["symbols"]
         if switches.get("C"):
             vocabulary = _with_constants(vocabulary, abduce_constants(examples=examples))
         narrow = bu.Engine(vocabulary, max_size=MAX_SIZE, step_budget=STEPS, max_lambda_depth=LAMBDA_DEPTH)
         _ASKED["last"] = None
         quick = narrow.search(examples, request, probes.inputs_for(input_types, _STATE["probes"]),
-                              min(budget // 20, max(0, budget - spent) // 8))
+                              min(budget // spec.get("p_share", 20), max(0, budget - spent) // 8))
         if quick.term is not None:
             record.update(term=term_to_dict(quick.term), route="symbols",
                           to_solution=spent + quick.candidates_to_solution, used=learned_in(_ASKED["last"]))
             spent += quick.candidates_to_solution
         else:
             spent += quick.candidates
-            first, tested = preimages(narrow, examples, output_type)
-            spent += tested
+            if switches.get("R") and output_type.tag == "list":
+                first, tested = preimages(narrow, examples, output_type)
+                spent += tested
     if record["term"] is None and switches.get("R") and len(input_types) == 1 \
             and input_types[0] == LIST_INT and output_type.tag == "list":
         scan = min(budget // 10, max(0, budget - spent) // 4)

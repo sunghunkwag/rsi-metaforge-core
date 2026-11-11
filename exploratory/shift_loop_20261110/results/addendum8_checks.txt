@@ -3,6 +3,8 @@ R1 to R3 on FRESH-4 (800 tasks, 10^4 candidates per task) under three measures
   verified R1 by generation 68, 131, 135; second step 15 gained, 11 lost | R2 gains after cycle 1: 15 | R3 135 against 135 (57 against 57, p = 0.5373); list outputs 124 against 124 (52 against 52, p = 0.539)
   pool     R1 by generation 54, 106, 105; second step 6 gained, 7 lost | R2 gains after cycle 1: 6 | R3 105 against 112 (40 against 47, p = 0.8044); list outputs 96 against 104 (35 against 43, p = 0.8459)
   R3 against the single runs of generation 0 (sound): student 126 against 61 (72 against 7, p = 5.295e-15); deploy 126 against 102 (64 against 40, p = 0.01182); C2old 126 against 102 (65 against 41, p = 0.01251); C2new 126 against 113 (59 against 46, p = 0.1207); top 126 against 117 (57 against 48, p = 0.2176)
+  R3 against the single runs of generation 0 (verified): student 135 against 68 (75 against 8, p = 4.55e-15); deploy 135 against 112 (67 against 44, p = 0.01815); C2old 135 against 113 (68 against 46, p = 0.02436); C2new 135 against 124 (62 against 51, p = 0.1734); top 135 against 129 (60 against 54, p = 0.3199)
+  R3 against the single runs of generation 0 (pool): student 105 against 54 (58 against 7, p = 2.135e-11); deploy 105 against 88 (51 against 34, p = 0.04103); C2old 105 against 88 (52 against 35, p = 0.04284); C2new 105 against 99 (46 against 40, p = 0.295); top 105 against 103 (44 against 42, p = 0.4571)
 
 The task that decides R3, and the step budget of the evaluator
   program of new@student: (lambda x0: list[int]. ((map (lambda x1: int. (((if (is_empty ((filter (lambda x2: int. (is_prime ((add x2) 4)))) (range x1)))) 0) 5))) x0))
@@ -10,9 +12,12 @@ The task that decides R3, and the step budget of the evaluator
   on [16, 16, 16, 16, 16, 16, 16, 16, 16, 16]: with 2000 steps ok = False; with 200,000 steps equal to the reference: True
   on [14, 12, 2, 16, 14, 14, 9, 13, 16, 7]: with 2000 steps ok = False; with 200,000 steps equal to the reference: True
   sound in: new@student True, generation 0 at some budget True, cycle 1 True
-  sound, and right on three more in-range inputs per task (the longest list of the largest value, of the smallest value, alternating):
-    R1 by generation 61, 120, 124 | R3 124 against 125 (53 against 54, p = 0.5766)
-    sound programs that fail one of them: new@student 2, gen0@student 0, gen0@deploy 0, gen0@C2old 0, gen0@C2new 0, gen0@top 0
+  two rules for a program that runs out of steps, each applied to every row
+  rule 1, it fails: sound, and right within the step budget on three more in-range inputs per task (the longest list of the largest value, of the smallest value, alternating):
+    R1 by generation 61, 120, 124 | R3 124 against 125 (53 against 54, p = 0.5766) | primary 169 against 116 (75 against 22, p = 3.037e-08)
+    sound programs that fail one of them: new@student 2, cycle1@student 1, new@deploy 2, old@deploy 0, gen0@student 0, gen0@deploy 0, gen0@C2old 0, gen0@C2new 0, gen0@top 0
+  rule 2, it does not: the audit's own inputs with 200,000 steps where a program was called not sound:
+    R1 by generation 61, 121, 126 | R3 126 against 125 (54 against 53, p = 0.5) | primary 172 against 116 (76 against 20, p = 3.66e-09) | new against old 172 against 158 (48 against 34, p = 0.07534)
   the other way round, new@deploy on remove-mod-k 2 then identify-geq-k 7: stored sound False; on [15] * 10 with 2000 steps ok = False; with 200,000 steps equal to the reference: True
 
 The primary comparison and the endings where a stage equals a learned symbol, and where none does (a stratum chosen after the data were read)
