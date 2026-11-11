@@ -138,7 +138,7 @@ A move is one run of every task and is accepted only if verified learning solves
 | the symbols with the full vocabulary | 121/123 | 19/24 | 19/24 | 0/0 |
 | best state at 10^5 | 126/131 | 25/35 | 18/28 | 7/7 |
 | generation 0 (S + f) at 10^5 | 132/134 | 19/28 | 18/27 | 1/1 |
-| generation 0 (S + C + f) at 2.4 x 10^5 | 144/148 | 23/35 | 22/34 | 1/1 |
+| generation 0 (S + C + f) at 2.4 x 10^5 (the loop's own cumulative budget is 2.3 x 10^5) | 144/148 | 23/35 | 22/34 | 1/1 |
 
 - All 17 learning gains of configuration A are one family, `slice-k-n`. The second
   compress step defines a symbol on a first-step symbol (`s4_1 = s3_1 (tail xs) n`) and
@@ -161,7 +161,7 @@ The acceptance signal is verified learning solves plus dream solves.
 | compress | 84/84 | 59/65 | 42 of 60 |
 | compress | 80/80 | 56/62 | 61 of 80 |
 | four more accepted steps, 15 symbols (best state, run 23 of 24) | 81/81 | 48/55 | 84 of 100 |
-| generation 0 at 251,479 | 93/95 | 88/103 | |
+| generation 0 at 251,479 (the loop's own cumulative budget is 253,846) | 93/95 | 88/103 | |
 
 | Configuration B | Learning (214) | Held-out (124) | FRESH-2 | COMPOSE-24 | Dream solves |
 | --- | --- | --- | --- | --- | --- |
@@ -368,14 +368,16 @@ Changes the reading of the results:
    program to the same hidden examples. In the first loop, configuration B, three of the
    six learning tasks gained at the best step had a public match rejected at generation 0,
    and one acceptance off the best chain rested on such a task alone. Configuration A had
-   none. Reports now record every rejected match. The loop is not changed: with one or two
-   hidden examples a wrong program can still be selected.
+   none. Reports written from now on record every rejected match; of the stored ones only
+   the expert-iteration reports do. The loop is not changed: with one or two hidden
+   examples a wrong program can still be selected.
 3. **The engine stops at the first size level that adds nothing.** With a cut vocabulary
-   that is level 2. Every second-cut row in the recorded logs (runs of one second with 17
-   or 18 solves) is an engine stop, not a search. The harness now continues until six
-   levels in a row are empty. On a tiny run the corrected second cut solves 78 learning
-   tasks where the stop gave 44; it is rejected either way. The recorded second cuts were
-   all rejected and were not re-run at 10^4.
+   that can be level 2. Three of the 15 second-cut rows in the recorded logs are such
+   stops, not searches: runs of one second with 17 or 18 solves (second loop, run 15 in A,
+   runs 19 and 22 in B). The harness now continues until six levels in a row are empty. On
+   a tiny run the corrected second cut solves 78 learning tasks where the stop gave 44; it
+   is rejected either way. All 15 recorded second cuts were rejected; none was re-run at
+   10^4.
 4. **Control accounting.** The planned control gives every task runs x 10^4 candidates,
    although no decision reads the held-out tasks. What a loop needs is less: 102,544 per
    task (first loop, A), 149,290 (first, B), 140,296 (second, A), 181,775 (second, B).
@@ -400,8 +402,9 @@ Disclosed, not changed:
   old, inconsistent rules and are not quoted here.
 - A learned symbol's fast path is strict where its inlined term is lazy, so a program that
   fits can be dropped. No effect was measured.
-- Apoptosis breaks ties in usage by name: 7 of the 17 list symbols kept at generation 0
-  are kept for their spelling.
+- Apoptosis breaks ties in usage by name. In the recorded loops that decides 5 of the 17
+  kept list symbols and 2 element symbols in configuration A, none in the first loop of
+  configuration B, and 4 list symbols in its second loop.
 - A list-level fused solve is booked one to three candidates over the budget (F rows only).
 - `gen0_1e4*.json` and `gen0_1e5.json` were written before identity tasks were sent to the
   direct route: 14 rows per variant show `map (lambda x. x) xs` where the current code
@@ -465,9 +468,10 @@ Each is written as a target property and the criterion that would show it.
 superseded). `results/` holds every report and log, and `harness_review.json` the
 review's findings with their evidence.
 
-The first loop and its generation-0 files were produced before the review's fixes, the
-second loop and expert iteration with reports that also record rejected matches, the
-frontier, the ablations and the controls after the fixes. At 300 candidates the fixed
+The first loop, the second loop, expert iteration and their generation-0 files were
+produced before the review's fixes (the expert reports already record rejected matches;
+the loop reports hold only their count); the frontier, the ablations, the 569,881 control
+and the replication after the fixes. At 300 candidates the fixed
 harness gives field-identical records on all 338 tasks, and it reproduces the recorded
 10^4 numbers of the second loop's three states and of the expert student.
 
