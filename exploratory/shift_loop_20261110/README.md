@@ -13,35 +13,38 @@ be quoted as a result of the package. A claim needs J's sealed pools.
 ## Answer
 
 Not by the four criteria fixed in advance. Three loops were built and run in two
-configurations each. One of the six, expert iteration in configuration B, meets three of
-the four and is the only one that kept improving for five cycles. A combination made
-after the fact, its vocabulary with representation search switched on, is the one state in
-this study that beats generation 0 given the whole training and deployment budget: 44
-sound held-out solves at 10^5 against 37 at 569,881. That is one configuration on exposed
-tasks, chosen after the results were seen, and it has not been replicated.
+configurations each. The one positive comparison was then put to a registered replication
+on 300 new tasks, and its outcome class is "not established".
 
 - The gains that are real come from machinery designed by hand. At 10^4 candidates per
   task the spec shift, element-space fusion and representation search take sound held-out
   solves from 28 to 61 of 202.
 - The two loops that rearrange the vocabulary saturate within one to three accepted steps.
   Generation-0 machinery given a loop's cumulative budget once solves more held-out tasks
-  than that loop's state does at 10^4. This holds for all six.
+  than that loop's state does at 10^4. This holds for every loop.
 - One step of real transfer was measured, twice. In configuration B both loops learned
   `filter (lambda x. gt (mod x k) 0)` as one symbol. In the second loop representation
   search used it as a new view of the input, and sound held-out solves on the composition
-  partitions went from 22 to 30 at 10^4. The symbols found the same programs earlier, no
-  more: their lead over generation 0 is 6 sound solves at 10^4, 3 at 10^5 and 1 at 251,479.
-  It did not repeat: no later symbol was accepted.
+  partitions went from 22 to 30 at 10^4. The net lead of its symbols closes with budget
+  (6 sound solves at 10^4, 3 at 10^5, 1 at 251,479), but the solved sets stay different.
+  No later symbol was accepted.
 - A signal the loop can produce by itself is gamed at once. With dream tasks in the
   acceptance signal, configuration A took its dream solves from 26 to 84 while sound
   held-out solves fell from 61 to 48.
 - Expert iteration with three principles taken from Terminal-RSI did nothing in
   configuration A: its two-family screen removed every useful symbol. In configuration B
   five cycles in a row were accepted. At 10^4 sound learning solves went from 119 to 143
-  and sound held-out solves from 15 to 21, and nine later solves rest on first-cycle
-  symbols. With representation search switched on, its vocabulary is the best state
-  measured: 143 and 33 against 119 and 22 for generation 0 at the same 10^4, and 44
-  against 35 on held-out at 10^5.
+  and sound held-out solves from 15 to 21, and eight later solves rest on first-cycle
+  symbols.
+- With representation search in that loop from generation 0 (the registered replication),
+  sound held-out solves rose at each of three accepted cycles: 22, 23, 25, 30 at 10^4.
+- On 300 new tasks the learned vocabulary helps at an equal budget: 58 sound solves
+  against 45 at 10^4 (p = 0.018) and 71 against 54 at 10^5 (p = 0.002).
+- Against everything generation 0 solves at any budget up to the whole training and
+  deployment budget it is 71 against 64, which the registered test does not separate from
+  chance (p = 0.13). The lead sits in tasks with a slice or a divisibility routine, which
+  are the routines the learned symbols encode. On the 196 tasks without a divisibility
+  routine it is 42 against 42.
 - A review of this harness found that part of what the verifier accepts on FRESH-2 is
   wrong programs: its tasks have one or two hidden examples. Every count below is therefore
   given twice, sound/verified.
@@ -197,7 +200,10 @@ review (the 10^4 row reproduces the loop's own numbers).
 | 251,479 | 37/50 | 33/46 | 38/51 |
 
 The cut helps at 10^4 and costs at every larger budget. The three symbols lead generation
-0 by 6, 3 and 1 sound solves: they bring programs forward, they do not add reach.
+0 by 6, 3 and 1 sound solves. The net lead closes; the solved sets do not merge. At 251,479
+the symbols solve four tasks that generation 0 solves at none of the five budgets it was
+run at (it spends 251,479 candidates on each without a public match), and they miss three
+that generation 0 solves.
 
 ### Expert iteration (three principles from Terminal-RSI)
 
@@ -230,12 +236,13 @@ Configuration B:
   cycles 3, 4 and 5 were already waiting in the older corpus.
 - Ablations of the final 15 symbols at 10^4 (`expert_ablate.py`): all, 143/147 and 21/26;
   without the three depth-2 symbols, 143/147 and 22/27; without the cycle-1 symbols and
-  the three built on them, 120/124 and 19/23. Cycle 1 added 14 verified learning solves by
-  itself and its removal loses 23, so 9 later solves rest on cycle-1 symbols. The worker's
-  record of the symbols each search used agrees: 9 learning solutions combine a cycle-1
-  symbol or a symbol built on one with a cycle-2 symbol (`slice-k-n` with k = 4 or 5 as
-  take-n of drop-3). The depth-2 symbols themselves are shorthand: dropping them loses
-  nothing.
+  the three built on them, 120/124 and 19/23. Cycle 1 gained 15 verified learning solves
+  and lost one. Removing its symbols loses 23: those 15 and 8 that were first solved in
+  later cycles, so 8 later solves rest on cycle-1 symbols. The worker's record of the
+  symbols each search used shows the dependence from another side: 9 learning solutions
+  combine a cycle-1 symbol or a symbol built on one with a cycle-2 symbol (`slice-k-n`
+  with k = 4 or 5 as take-n of drop-3), 7 of them among the 8. The depth-2 symbols
+  themselves are shorthand: dropping them loses nothing.
 - The 15 symbols at 10^5 on held-out: 28/38, against 19/28 for generation 0 (S + f).
 - Against generation 0 at the loop's cumulative budget (533,195 per task) the student
   loses on held-out: 21/26 against 23/35 at 2.4 x 10^5 already.
@@ -256,22 +263,112 @@ a pre-image in the second loop. One run each with R switched on, registered befo
 | generation 0, S + C + f + R | 569,881 | | 37/50 | 27/40 | 10/10 |
 
 At an equal budget per task the combined state leads generation 0 by 11 sound held-out
-solves at 10^4 and by 9 at 10^5, and at 10^5 it is ahead of generation 0 at 251,479. Unlike
-the second loop's three symbols, this lead does not close with budget.
+solves at 10^4 and by 9 at 10^5, and at 10^5 it is ahead of generation 0 at 251,479.
 
-Generation 0 has stopped gaining: 37 sound held-out solves at 251,479 and 37 at 569,881,
-which is the whole cost of training (533,195 per task) plus the 10^5 run on the held-out
-tasks. The trained state at 10^5 has 44: eleven sound FRESH-2 solves generation 0 does not
-reach, four the other way. Both predictions written before that control ran hold (K1, K2).
+Generation 0 has stopped gaining: 37 sound held-out solves at 251,479 and 37 at 569,881.
+That budget is the per-task share of training (533,195) plus deployment when the total is
+spread over all 338 tasks. Run on the 124 held-out tasks only, it is 37% of the total. The
+trained state at 10^5 has 44: eleven sound FRESH-2 solves generation 0 does not reach,
+four the other way. Both predictions written before that control ran hold (K1, K2).
 
 Read as fixed in advance: this is R3 at a deployment budget of 10^5, for one configuration,
 for a state built by switching R on after the loop had run without it. It is not R3 as
-registered: at the loop's own 10^4 the state has 33 against 37. It is not a clean test and
-it has not been replicated. The run that would test it is expert iteration with R from
-generation 0, with its predictions approved before it starts.
+registered: at the loop's own 10^4 the state has 33 against 37. It is not a clean test.
 
-What it costs: 533,195 candidates per task of training for all 338 tasks, 1.8 x 10^8 in
-all. At 10^4 the trained state reaches about what generation 0 reaches at 10^5 on the
+What a design review then found in it, each point checked again by the author. Eleven
+against four is p = 0.059 on a sign test, and nine against four against everything
+generation 0 solves at any of five budgets (39). The lead is one routine family: eight
+against one in the 30 FRESH-2 tasks with a divisibility routine, three against three in
+the other 70, none in COMPOSE-24. On five of the eleven, generation 0 had not run out of
+budget: it had stopped at a wrong first match.
+
+### Registered replication on new tasks (Addendum 7)
+
+The Owner approved a replication with its predictions and controls fixed first. Four
+independent reviewers attacked the draft protocol before anything ran at a real budget
+(19 findings, `results/design_review_addendum7.json`); the registered protocol is the
+draft as changed by them. `replicate.py` runs it in one process with no decision between
+its steps: expert iteration with R from generation 0, the evaluation, the controls, the
+audit, the outcome class. The first process died with its container during the
+evaluation. It was restarted from the saved loop report, as the registration provides,
+and the three rows it had finished came out identical.
+
+**FRESH-3**: 300 new two-stage tasks drawn by a seeded rule from the stage instances of
+FRESH-1 and FRESH-2 (`fresh3.py`): new pairings, no new routine, no new parameter value,
+no pair of routine names that FRESH-2 has, no function an exposed task computes, FRESH-2's
+mix of output types, 8 public and 8 hidden examples. No solver had run on it before the
+registered run.
+
+The loop, configuration B:
+
+| Cycle | Student at 10^4: learning (214) | held-out B (124) | Teacher at 10^5 before the cycle |
+| --- | --- | --- | --- |
+| 0 | 119/121 | 22/27 | |
+| 1 | 128/130 | 23/30 | 132/134 |
+| 2 | 136/140 | 25/33 | 149/151 |
+| 3 | 142/147 | 30/38 | 149/153 |
+| 4 | two batches rejected | | 146/152 |
+
+It kept nine symbols, among them take-n, drop-2, keep-multiples-of-k and
+remove-multiples-of-k. Its training ceiling is T = 127,280,000 candidates.
+
+Evaluation:
+
+| State | Budget per task | Held-out B (124) | FRESH-3 (300) |
+| --- | --- | --- | --- |
+| generation 0 | 10^4 | 22/27 | 45/57 |
+| trained | 10^4 | 30/38 | 58/72 |
+| generation 0 | 10^5 | 35/45 | 54/68 |
+| trained | 10^5 | 44/55 | 71/86 |
+| generation 0 | 228,969 | | 55/71 |
+| generation 0 | 413,254 (C1 on held-out B) | 37/50 | |
+| generation 0 | 524,267 (C2 on FRESH-3: the whole budget on these tasks) | | 61/78 |
+| generation 0 | 1,126,452 (C2 on held-out B) | 37/50 | |
+| generation 0, everything solved at any budget above | | 38 sound | 64 sound |
+| the earlier combination (15 symbols, R switched on afterwards) | 10^5 | 44/55 | 75/91 |
+
+**Primary comparison.** FRESH-3, the trained state at 10^5 against generation 0 at any
+budget: 71 sound solves against 64. Eighteen tasks only the trained state solves, eleven
+only generation 0: p = 0.13. **Outcome class: not established**, on sound and on verified
+counts.
+
+Beside it, as registered, deciding nothing:
+
+- Equal budget per task: 58 against 45 at 10^4 (23 against 10, p = 0.018) and 71 against
+  54 at 10^5 (24 against 7, p = 0.0017).
+- Against the single run with the whole budget on these tasks (524,267): 71 against 61
+  (21 against 11, p = 0.055).
+- Tasks where the other arm ran out of budget without a public match: 13 only trained
+  against 5 only control (p = 0.048). Of the other trained-only tasks, on 4 the control
+  stopped at a first match the verifier rejected and on 1 at a verified program that is
+  not sound; of the other control-only tasks, on 6 the trained state stopped at a rejected
+  first match.
+- Family: 29 against 22 on the 104 tasks with a divisibility stage; 42 against 42 on the
+  other 196.
+- Routines: the first-stage clusters with a net for the trained state are `slice-k-n`
+  (+8), the divisibility family (+7) and `drop-k` (+1); seven routines have a net of 1 or 2
+  for the control. Without the 29 tasks that contain `slice-k-n` it is 62 against 63. The
+  trained-only solutions use the take symbol (8), drop-2 (7), remove-multiples (5),
+  bool-to-int (5) and keep-multiples (5).
+- Output type: 62 against 55 on list outputs, 9 against 9 on integer and boolean outputs.
+- Stricter soundness (agreement on the whole input pool): 61 against 53 (p = 0.11).
+- Held-out B: 44 against 38 at any budget (10 against 4, p = 0.09), 44 against 37 at C1
+  and at C2. The loop with R rebuilt the earlier combination's count. These 124 tasks are
+  the ones the idea was found on: descriptive.
+- The earlier combination on FRESH-3: 75 against 64 (20 against 9, p = 0.03). One of
+  several secondary comparisons, uncorrected.
+- Outside its budget the loop read 3,098 verifier verdicts on learning tasks and spent 4
+  seconds in compression. The evaluation runs spent 56% to 75% of their budget ceilings.
+
+Reading. On new pairings of routines it has met, the learned vocabulary is worth much at a
+fixed budget per task. Against the same machinery with the whole budget the lead is seven
+sound solves in 300 and the registered test does not separate it from chance. The lead is
+where the task contains a routine that a learned symbol encodes, and nowhere else. The loop
+turns the routines of its learning set into symbols; it does not turn them into reach on
+other routines.
+
+What the earlier combination costs: 533,195 candidates per task of training for all 338
+tasks, 1.8 x 10^8 in all. At 10^4 the trained state reaches about what generation 0 reaches at 10^5 on the
 held-out compositions (33 sound against 35), a saving near 9 x 10^4 candidates per new
 task. On that arithmetic the training pays for itself after about two thousand new tasks
 of the same kind; this benchmark has 124. This is arithmetic on the measured numbers, not
@@ -280,10 +377,12 @@ a measured result.
 ## Predictions, misses first
 
 Scored on verified counts, as registered. Where the sound count changes the reading it is
-given in the last column.
+given in the last column. K1 and Q1 to Q10 were registered on sound counts and are scored
+on them.
 
-Ten of 37 predictions missed, and three of the four verdicts written in advance were
-wrong in part.
+Eleven of 47 predictions missed, and three of the four verdicts written in advance were
+wrong in part. The outcome class expected for the replication ("replicated on FRESH-3, for
+the divisibility family only") was wrong too: the class is "not established".
 
 | ID | Prediction | Outcome (verified) | Score | On sound counts |
 | --- | --- | --- | --- | --- |
@@ -297,6 +396,7 @@ wrong in part.
 | E2 | Expert A: 3 more families with a learning solve | 17 to 17 | **miss** | |
 | F1 | At 10^5 the second loop's best state leads generation 0 by 3 | 42 against 45 | **miss** | 32 against 35 |
 | F4 | At 251,479 a learned vocabulary still leads by 3 | 51 against 50 | **miss** | 38 against 37 |
+| Q8 | Replication, primary: the sign test on FRESH-3 gives p < 0.05 | | **miss** | p = 0.13 (18 against 11) |
 | V | One-shot improvement at most, not recursive | three accepted steps in A | **partly wrong** | |
 | V2 | At most two accepted steps, then saturation | three in A, two in B | **partly wrong** | |
 | V3 | Second loop: more steps and a larger held-out gain than the first, not recursive | right for B; in A held-out fell by 13 | **wrong for A** | |
@@ -328,32 +428,58 @@ wrong in part.
 | V4 | The harvest stops growing within 3 cycles | A: never grew; B: 134, 151, 155, 150 | right | B: 132, 149, 148, 144 |
 | K1 | Generation 0 at 569,881 solves fewer sound held-out tasks than the combined state at 10^5 (44) | 37 | hit | |
 | K2 | Generation 0 at 569,881 solves at most 55 verified held-out tasks | 50 | hit | |
+| Q1 | Replication: 3 cycles accept a symbol and the final student has 138 verified learning solves | 3 cycles; 147 | hit | |
+| Q2 | Held-out B at 10^4: the final student has 28 sound solves | | hit | 30 |
+| Q3 | Held-out B at 10^5: the trained state has 40 sound solves | | hit | 44 |
+| Q4 | Held-out B: more sound solves than generation 0 at C1 | | hit | 44 against 37 |
+| Q5 | Held-out B: more sound solves than generation 0 at any budget | | hit | 44 against 38 |
+| Q6 | FRESH-3 at equal budgets: a lead of 6 sound solves at 10^4 and at 10^5 | | hit | 13 and 17 |
+| Q7 | FRESH-3, primary: more sound solves than generation 0 at any budget | | hit | 71 against 64 |
+| Q9 | FRESH-3 without the divisibility family: the trained state has more (expected to fail) | | failed, as expected | 42 against 42 |
+| Q10 | FRESH-3: budget-bound trained-only tasks outnumber budget-bound control-only tasks | | hit | 13 against 5 |
 
 ## Verdict against the four criteria
 
-On sound held-out counts.
+R1 is registered on held-out solves. Predictions were scored on verified counts, so both
+counts are given; they disagree for the first loop.
 
-| Loop | R1: held-out rises in two generations running | R2: a later gain rests on an earlier symbol | R3: beats generation 0 at the cumulative budget | R4: no human input |
+| Loop | R1: held-out rises in two generations running (verified; sound) | R2: a later gain rests on an earlier symbol | R3: beats generation 0 at the cumulative budget (sound) | R4: no human input |
 | --- | --- | --- | --- | --- |
-| First, A | no (54, 50, 52, 52) | yes, on the learning set: without `s4_1`, built on `s3_1`, 94 of 97 | no (52 against 74) | yes |
-| First, B | yes, by 1 and 2 (15, 16, 18) | no | no (18 against 23) | yes |
-| Second, A | no (61 down to 48) | no | no (48 against 88) | yes |
-| Second, B | yes (22, 23, 30) | no: the gain comes from that step's own symbols | no (30 against 37) | yes |
+| First, A | yes (61, 53, 55, 56); no (54, 50, 52, 52) | yes, on the learning set: without `s4_1`, built on `s3_1`, 94 of 97 | no (52 against 74) | yes |
+| First, B | no (20, 19, 26); yes (15, 16, 18) | no | no (18 against 23) | yes |
+| Second, A | no; no (61 down to 48) | no | no (48 against 88) | yes |
+| Second, B | yes (27, 28, 38); yes (22, 23, 30) | no: the gain comes from that step's own symbols | no (30 against 37) | yes |
 | Expert, A | nothing accepted | | no | yes |
-| Expert, B | yes (15, 16, 17, 20, 21) | yes, on the learning set: 9 later solves are lost with the cycle-1 symbols. Not by the reading fixed before the ablation, which asked the depth-2 symbols to carry a gain | no (21 against 23 at 2.4 x 10^5, below its cumulative 533,195) | yes |
-| Expert B vocabulary with R | one state, no generations | as above | at 10^4 no (33 against 37); at 10^5 yes (44 against 37 at 569,881) | no: R was switched on by hand after the loop |
+| Expert, B | yes (20, 22, 22, 25, 26); yes (15, 16, 17, 20, 21) | no by the reading fixed before the ablation (the depth-2 symbols carry nothing). Observed afterwards: 8 later learning solves are lost with the cycle-1 symbols | no (21 against 23 at 2.4 x 10^5, below its cumulative 533,195) | yes |
+| Expert with R, B (the replication) | yes (27, 30, 33, 38); yes (22, 23, 25, 30) | not tested | no (30 against 37 at 413,254) | yes |
 
-No loop meets all four. Expert iteration in configuration B meets three.
+No loop meets all four. Counting criteria met does not rank the loops: the first loop in A
+meets R1 on verified counts while its held-out solves end five below where they started.
 
-R3 as registered fails everywhere, and it is what the Phase 1 result already pointed at: on
-a fixed set of tasks, budget is a strong baseline. The one exception is at a larger
-deployment budget. Generation 0 saturates near 37 sound held-out solves however much
-budget it gets, and the expert vocabulary with R reaches 44 at 10^5. That is the only
-measurement in this study where a learned vocabulary is ahead of the same machinery at
-equal total cost on held-out tasks, and it is the one that most needs a registered
-replication.
+R3 as registered fails for every loop, and it is what the Phase 1 result already pointed
+at: on a fixed set of tasks, budget is a strong baseline. At a deployment budget of 10^5
+the picture is closer. On the 124 held-out tasks the trained state has 44 sound solves
+and generation 0 has 38 at any budget up to 1.1 million candidates per task. On 300 new
+tasks it has 71 against 64. Neither difference is separated from chance by the registered
+test, and both are confined to tasks that contain a routine the learned symbols encode.
 
-## Review of this harness
+## Reviews
+
+Three independent reviews touched this study. The first, of the loop harness, is below.
+The second attacked the draft of the replication's registration before it ran: four
+reviewers, 19 findings, every one acted on (`results/design_review_addendum7.json`;
+Addendum 7 lists what each changed). The third was to verify this document and its tools
+with five reviewers; four were cut off by a usage limit (the audit, the loop code after
+its fixes, the normal-forms argument of the package, the second corrections of its guard)
+and only the recount finished. It recomputed 372 table cells of this README and of
+`rsi5/RESULTS_P1.md` from the stored files and found none wrong, and it found seven
+statements in the prose that the data does not support. The author re-tested them; all
+seven are corrected here: what the frontier shows at task level, the count of criteria
+met, the wording of the 569,881 control, eight later solves (not nine), the tie-break
+count, which reports record rejected matches, and two controls run at another loop's
+budget.
+
+### The harness review
 
 An adversarial review returned 16 findings. The seven on semantics were re-tested by a
 second agent; the other nine by the author, because the skeptic agents were cut off by a
@@ -447,22 +573,29 @@ Each is written as a target property and the criterion that would show it.
    total cost. Criterion: candidates and uncounted work both equal. Measured: candidates
    only. The bit-mask scan of fusion, the reference re-checks, compression and dream
    making in the driver are not counted.
-6. **Replication of the one positive result.** Target: the combined state's lead holds
-   when it is predicted. Criterion: expert iteration run with R from generation 0, its
-   predictions and its control fixed and approved before the run, on tasks not used to
-   choose the combination. Measured: not run. The combination was chosen after its parts
-   had been measured on these same tasks.
-7. **Independent review of every part.** Target: each file attacked by someone who did not
+6. **A lead over the whole budget on new tasks.** Target: the trained state at 10^5 beats
+   everything generation 0 solves at any budget. Criterion: the registered sign test on
+   FRESH-3 passes. Measured: 71 against 64, p = 0.13.
+7. **Breadth.** Target: the lead reaches tasks whose routines are not the ones the symbols
+   encode. Criterion: a lead on the tasks without those routines. Measured: 42 against 42
+   on the 196 tasks without a divisibility stage; 62 against 63 without `slice-k-n`.
+8. **New routines.** Target: transfer to routines and parameters the loop has not met.
+   Criterion: a registered test on such tasks. Measured: not tested. FRESH-3 re-pairs the
+   stage instances of FRESH-1 and FRESH-2.
+9. **Independent review of every part.** Target: each file attacked by someone who did not
    write it. Criterion: a reviewed finding list per file. Measured: `hybrid.py` and
    `loop.py` reviewed; `compress.py` (written by a sub-agent) is covered by round-trip
    tests on real programs and by the review's 24,000 inlining checks, not by its own
-   review; `dream.py`, `expert.py`, `oracles.py`, `audit_all.py`, the ablation and
-   frontier tools and the fixes made after the review have had none.
+   review; `replicate.py` and `fresh3.py` were reviewed as a draft before the run;
+   `dream.py`, `expert.py`, `oracles.py`, `audit_all.py`, the ablation and frontier tools
+   and the fixes made after the first review have had none (the review that was to cover
+   them was cut off).
 
 ## Files and how to run
 
 `hybrid.py` (harness), `loop.py`, `compress.py`, `dream.py`, `expert.py`, `frontier.py`,
 `state_run.py` (re-run one state), `expert_ablate.py`, `expert_dependence.py`,
+`replicate.py` (the registered replication) and `fresh3.py` (its new tasks),
 `oracles.py` and `audit_all.py` (the audit), `summarise.py` (tables), `checks.py`
 (self-checks), `audit_hybrid.py` and `map_shift.py` (first audit and first pilot,
 superseded). `results/` holds every report and log, and `harness_review.json` the
