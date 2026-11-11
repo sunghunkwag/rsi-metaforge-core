@@ -33,8 +33,10 @@ count or on where a run was interrupted.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
+import re
 import sys
 import time
 
@@ -114,8 +116,7 @@ def descendants(library: dict, roots: set) -> set:
     while grew:
         grew = False
         for name, entry in library.items():
-            if name not in found and any(f"{other} " in entry["definition"] + " " or f"({other} " in entry["definition"]
-                                         or f" {other})" in entry["definition"] for other in found):
+            if name not in found and set(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", entry["definition"])) & found:
                 found.add(name)
                 grew = True
     return found
@@ -154,8 +155,8 @@ def graded(comparison: dict) -> str:
 def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
     global DEPLOY, STRICT, HELD_RUNGS, MIN_EVIDENCE
     if tiny:
-        deepen.STUDENT, deepen.TEACHER, deepen.CAP = 300, 1500, 5000
-        deepen.DREAMS_GATE, deepen.DREAMS_CORPUS, deepen.MAX_BATCHES = 20, 40, 4
+        deepen.STUDENT, deepen.TEACHER, deepen.CAP, deepen.MAX_CYCLES = 300, 1500, 5000, 2
+        deepen.DREAMS_GATE, deepen.DREAMS_CORPUS, deepen.DREAMS_TARGETS, deepen.MAX_TRIALS = 20, 40, 20, 5
         DEPLOY, STRICT, HELD_RUNGS = 1500, 2500, {"C1old": 2000, "C2old": 3000}
     learn = CONFIGS["B"]
     held = [p for p in ALL if p not in learn]
@@ -176,8 +177,8 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
     harness.add_partition("fresh4", fourth, [task.public_view() for task in fourth])
     harness.add_partition("fresh3", third, [task.public_view() for task in third])
     protocol = {"components": COMPONENTS, "student": deepen.STUDENT, "teacher": deepen.TEACHER, "cap": deepen.CAP,
-                "batch": deepen.BATCH, "rejects": deepen.REJECTS, "max_batches": deepen.MAX_BATCHES,
-                "max_cycles": deepen.MAX_CYCLES, "dreams": [deepen.DREAMS_GATE, deepen.DREAMS_CORPUS],
+                "rejects": deepen.REJECTS, "max_trials": deepen.MAX_TRIALS, "max_cycles": deepen.MAX_CYCLES,
+                "dreams": [deepen.DREAMS_GATE, deepen.DREAMS_CORPUS, deepen.DREAMS_TARGETS],
                 "deploy": DEPLOY, "tiny": tiny, "fresh4_digest": digest}
     previous = json.load(open(out_path)) if resume and os.path.exists(out_path) else {}
     if previous and previous.get("protocol") != protocol:
@@ -199,10 +200,14 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
     else:
         report = deepen.run(harness, learn, components=COMPONENTS)
     out["loop"] = report
+    out["library_digest"] = hashlib.sha256(json.dumps(
+        sorted((entry["witness"], entry["params"], entry["result"]) for entry in report["library"].values())
+    ).encode()).hexdigest()
     save()
+    print(f"loop: {len(report['library'])} symbols, library digest {out['library_digest'][:16]}", flush=True)
     earlier = json.load(open(EARLIER))
     libraries = {"gen0": {}, "new": report["library"], "old": earlier["loop"]["library"]}
-    training = {"new": report["training_ceiling"], "old": earlier["training_candidates"]}
+    training = {"new": report["training_ceiling"], "old": 600_000 if tiny else earlier["training_candidates"]}
     sets = {"heldB": held, "fresh4": ["fresh4"], "fresh3": ["fresh3"]}
     sizes = {name: sum(len(harness.public[p]) for p in parts) for name, parts in sets.items()}
     c2 = lambda which: round((training[which] + sizes["fresh4"] * DEPLOY) / sizes["fresh4"])
@@ -391,10 +396,10 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
             symbols[symbol] = symbols.get(symbol, 0) + 1
     out["new_only_by_symbol"] = dict(sorted(symbols.items(), key=lambda item: -item[1]))
     out["new_only_with_a_symbol_built_on_a_symbol"] = deep_use
-    strict = {label: {key for key, value in rows[label]["programs"].items()
-                      if key.startswith("fresh4/") and sound.on_pool(key, value[0])}
+    strict = {label: {key for key in rows[label]["sound"]
+                      if key.startswith("fresh4/") and sound.on_pool(key, rows[label]["programs"][key][0])}
               for label in rows if rows[label]["partitions"] == ["fresh4"]}
-    out["fresh4_on_whole_pool"] = paired(strict["new@deploy:fresh4"], set().union(
+    out["fresh4_sound_and_on_whole_pool"] = paired(strict["new@deploy:fresh4"], set().union(
         *(keys for label, keys in strict.items() if label.startswith("gen0@"))))
     out["thin_evidence"] = {label: len(row["thin_evidence"]) for label, row in rows.items() if row["thin_evidence"]}
 
@@ -474,10 +479,10 @@ def main(out_path: str, workers: int, tiny: bool, resume: bool) -> None:
     print("new-only tasks by learned symbol:", json.dumps(out["new_only_by_symbol"]),
           "| with a symbol built on a symbol:", deep_use)
     print("dreamt:", json.dumps(out["dreamt"]), "| thin evidence:", json.dumps(out["thin_evidence"]))
-    print("FRESH-4 on the whole input pool:", json.dumps(out["fresh4_on_whole_pool"]))
+    print("FRESH-4, sound and right on the whole input pool:", json.dumps(out["fresh4_sound_and_on_whole_pool"]))
     print("criteria:", json.dumps(out["criteria"]))
     print("loop: verdicts read", report.get("verdicts_read"), "| seconds in compression and dreaming",
-          round(sum(report.get("propose_seconds", [])), 1), "| training ceiling", report["training_ceiling"],
+          round(sum(report.get("driver_seconds", [])), 1), "| training ceiling", report["training_ceiling"],
           "spent", report["training_spent"])
     print("predictions:", json.dumps(out["predictions"]))
     print("flags:", json.dumps(out["flags"]))
@@ -498,7 +503,7 @@ def predictions(out, report, comparisons, trajectory) -> dict:
     outside = out["strata"]["without one"]
     undreamt = out["strata"]["no dream computes it"]
     criteria = out["criteria"]
-    accepted_cycles = sum(1 for cycle in report["cycles"] if cycle["accepted_batches"])
+    accepted_cycles = sum(1 for cycle in report["cycles"] if cycle["accepted"])
     return {
         "P1": verdict(accepted_cycles >= THRESHOLDS["P1_cycles"] and last["learn"] >= THRESHOLDS["P1_learn"]),
         "P2": verdict(trajectory[-1]["sound"] >= THRESHOLDS["P2_held_sound"]),

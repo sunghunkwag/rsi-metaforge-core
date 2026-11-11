@@ -481,3 +481,264 @@ divisibility family only.
   trained arm uses outside its budget.
 - Code: the digest is checked before the run; the largest runs come first; smoke tests
   cannot touch the registered set; every prediction is scored by the script.
+
+# Addendum 8: a deepening loop, tested on new tasks (DRAFT, not in force)
+
+Written 2026-11-11, after Addendum 7 had been scored (outcome class "not established").
+The Owner's instruction after that result was to continue until the criteria are met. This
+registration was not put to the Owner before the run; it is the author's, fixed before
+anything ran on the evaluation set. This text is a draft: it comes into force when the
+design review at the end has been acted on and the commit says so. Nothing below has been
+run on FRESH-4, and no solver has run on a FRESH-4 task at any budget.
+
+## What Addendum 7 left open, and what development changed
+
+Read off the replication's own records (learning set only):
+
+- The loop never solved 60 of its 214 learning tasks, and 17 routine families not once
+  (`append-k`, `rotate-k`, `has-k` but for one task, `reverse`, `sum`, `product`, ...).
+  Generation 0 solves eight of the 60 at about 200,000 candidates; the teacher stopped at
+  100,000 and spent most of that on tasks the student already solved.
+- A routine that is solved once has no reuse inside the learning set, so compression never
+  proposed it, and the two-family screen removed routine symbols that it did propose.
+- On FRESH-3 the lead sat in the routines the nine symbols encode. Routines the loop had
+  not solved alone were not solved in compositions by either arm (`append-k`: 1 of 31 tasks
+  for the trained state, 2 for generation 0; `has-k`, `rotate-k`, `reverse`: none).
+
+`deepen.py` changes four things (its docstring states them): the teacher's budget goes to
+the learning tasks the student does not solve; compression counts reuse on dream
+compositions of the loop's own verified programs, half of them built around the teacher's
+solutions the student cannot find; symbols are tried one at a time, those a teacher's
+solution uses first; real verdicts decide before dream solves.
+
+Development ran the loop in configuration B, twice. Its decisions read learning tasks
+only. The author read held-out B and FRESH-3 after each run and chose between two variants
+on them, so both are development sets now and nothing measured on them is evidence:
+
+| | First variant (three symbols per trial, in order of gain) | Second variant, the one frozen here (one symbol per trial, targets first) |
+| --- | --- | --- |
+| Student at 10^4 on the 214 learning tasks, generation 0 to last | 121 to 150 | 121 to 177 after two cycles (still running at the time of this draft) |
+| Held-out B at 10^4 by cycle, verified | 27, 37, 42 | 27, 45, 50 (running) |
+| Symbols | 15 | 19 after two cycles (running) |
+| Training ceiling | 110,739,887 | pending |
+| Final state at 10^5, sound/verified: held-out B; FRESH-3 | 52/65; 101/115 | pending |
+| Final state at 10^4, sound/verified: held-out B; FRESH-3 | 33/42; 67/81 | pending |
+
+For comparison, from Addendum 7: the old state at 10^5 has 44/55 on held-out B and 71/86 on
+FRESH-3; generation 0 at any budget has 38 and 64 sound solves. A recursive link showed in
+both variants: `reverse` became a symbol in the first cycle, and in the second cycle the
+teacher solved the `append-k` tasks with it (`reverse (cons k (reverse xs))`), which became
+a symbol defined through the first.
+
+## The claim under test
+
+The vocabulary the deepening loop builds lets the same machinery solve more new two-stage
+tasks at 10^5 candidates per task than generation 0 solves at any budget up to the whole
+training and deployment budget.
+
+## Mechanism (frozen)
+
+`confirm.py`, one process, deterministic, no step between its parts decided by a person:
+
+1. `deepen.run`, configuration B, machinery S + C + f + R, constants as in `deepen.py` at
+   the registered commit: student 10^4; a teacher run has a ceiling of 214 x 10^5
+   candidates, spent in equal shares of at most 10^6 on the learning tasks the student does
+   not solve; 100 gate dreams and 300 corpus dreams per cycle, up to 150 of the 300 around
+   the targets; at most 24 trials per cycle; the second phase of a cycle ends after 3
+   rejections in a row; at most 12 cycles; the loop stops after a cycle that accepts
+   nothing. Its final vocabulary is the state called *new*.
+2. *old*: the final vocabulary of the Addendum 7 loop, from `results/replication.json`.
+   Generation 0: the same machinery with no learned symbol.
+3. Training ceilings: T_new is the sum, over every run the deepening loop makes, of budget
+   x tasks run (teacher runs, every trial, the dream runs, the held-out report runs).
+   T_old = 127,280,000 (Addendum 7).
+4. Evaluation on FRESH-4 (N = 1,000) at the student budget 10^4 and the deployment budget
+   10^5 for *new*, *old* and generation 0. Generation 0 also at
+   - C2old = (T_old + N x 10^5) / N = 227,280,
+   - C2new = (T_new + N x 10^5) / N,
+   - 524,267: the whole-budget rung of Addendum 7 on FRESH-3, kept so that the control is
+     run at least as far as it was there.
+   "Any budget": the union of everything generation 0 solves on FRESH-4 at the five
+   budgets. It is the control of the primary comparison.
+5. Held-out B (124 tasks, a development set): the three states at 10^4 and 10^5;
+   generation 0 at 413,254 and 1,126,452 (the rungs of Addendum 7) and at
+   C1new = (T_new + 124 x 10^5) / 338 if that is at most 1,700,000, the largest budget
+   four workers hold in memory. FRESH-3 (a development set): *new* at 10^4 and 10^5,
+   compared with the rows of Addendum 7.
+6. For criterion R2, after the loop and outside it: generation 0 on each later cycle's
+   unsolved learning tasks at that cycle's teacher budget; the final vocabulary without
+   the first cycle's symbols and the symbols defined through them, at 10^4.
+
+Cost is counted in constructed candidates, at ceilings. Not counted for the trained arms:
+compression and dream making in the driver, and the verifier's verdicts on the learning
+tasks, which generation 0 never receives. The report gives both (seconds; the number of
+verdicts on learning tasks).
+
+The registered FRESH-4 set is checked by its digest before the loop starts. The largest
+runs come first. If the process dies it is restarted with `--resume`: the loop report is
+kept if the loop had finished (otherwise the loop runs again from its start), and a
+finished evaluation row is kept if it was made by the same vocabulary at the same budget
+on the same tasks. The report says if that happened. Results do not depend on the number
+of workers.
+
+## Evaluation set
+
+**FRESH-4** (primary): 1,000 new two-stage tasks made by `fresh4.py`.
+
+- The candidates are FRESH-3's 3,710 pairs of stage instances (Addendum 7) without the 300
+  that became FRESH-3 tasks, in the order of one shuffle under a new seed.
+- Inputs, the 8 public and 8 hidden examples and the repair of an all-equal public side
+  are made as for FRESH-3, with each task's own seeded generator.
+- A candidate is skipped if fewer than 16 inputs are usable, if it is constant, if it is
+  the identity on its examples, or if it computes on its 16 inputs what an exposed task's
+  reference, a FRESH-3 task or an earlier FRESH-4 task computes.
+- No quota by output type. The first 1,000 candidates that pass are FRESH-4 (1,669
+  examined). The candidates after them are a reserve that nothing generates or runs.
+- Digest `d54c6593098b45401c639c33e47e2abadec477849a2d9750a1f09139213a64b4`.
+
+What FRESH-4 is and is not.
+
+- New pairings of the stage instances of FRESH-1 and FRESH-2. No routine is new and no
+  parameter value is new. No pair of stage instances is a FRESH-3 task, but the same
+  routines and instances occur in both sets.
+- 964 list outputs, 28 integer, 8 boolean. FRESH-3's quotas used up nearly every pipeline
+  with an integer or boolean output (a check of the unused candidates found 73 and 24
+  among 1,904). On FRESH-3 the trained state led on list outputs only (62 against 55; 9
+  against 9 on the others), and S and R act on list outputs only. FRESH-4 therefore tests
+  the claim for list outputs; it cannot show anything for integer or boolean outputs.
+- 332 tasks have a divisibility routine in a stage and 73 have `slice-k-n`. These are the
+  routines the old symbols encode (Addendum 7). The names are fixed now: `slice-k-n` and
+  the divisibility family of Addendum 7.
+- An empty public input in 367 tasks, a negative public value in 141, median longest
+  public input 9.
+- Its generator was written by the author after Addendum 7 and the development runs above
+  had been read. FRESH-3 guided the design; FRESH-4 comes from the same population of
+  pairs.
+- What has run on it: nothing. The generator was run to count the set and to print its
+  digest. Smoke tests use FRESH-3 tasks and generate no FRESH-4 candidate.
+- The loop's dreams are pairs of its own solved routines, which is the form of these
+  tasks. A dream can compute the same function as a FRESH-4 task when both stages are
+  learning tasks the loop solved. The report counts the FRESH-4 tasks whose 16 examples
+  some dream program of the run reproduces, and the fourth ending below reads the primary
+  comparison without them.
+
+## Outcome measure
+
+Sound solves, as in Addendum 7: the verified program agrees with the generating function
+on the fresh inputs of `oracles.fresh_inputs` (up to 200, inside the task's own range,
+inputs whose reference output lies beyond the generator's caps skipped). New here: a
+verdict needs at least 20 such inputs; with fewer the program is not counted as sound, in
+any arm, and the report gives the number of programs this removes. Verified counts are
+reported beside sound counts.
+
+A run stops at its first public match, as before. For every task only one arm solves
+soundly the report states what the other arm did: (a) no public match within its budget,
+(b) a public match the verifier rejected, (c) a verified program that is not sound. For
+generation 0 this is read at its largest budget.
+
+## Primary outcome and how it is read (fixed now)
+
+Primary comparison: on FRESH-4, *new* at 10^5 against generation 0 at any budget, sound
+solves, exact one-sided sign test on the tasks only one arm solves, alpha 0.05. The test is
+valid for the population of pairs FRESH-4 is drawn from, for the one vocabulary this run
+produces.
+
+| Outcome | Reading |
+| --- | --- |
+| A registered run is missing, or the set is not the registered one | No class. The report says what is missing. |
+| The loop accepts no symbol | Not confirmed: the new state is generation 0. |
+| *New* has no more sound solves than the control | Not confirmed. |
+| More, with p >= 0.05 | Not established. The size of the lead is reported; no claim. |
+| More, with p < 0.05 | Confirmed on FRESH-4 against everything generation 0 solves at any budget run, with the four endings below. |
+
+Endings of a "confirmed" outcome, each decided mechanically. In each, "none" means *new*
+has no more sound solves than the other arm, "not separated" means more with p >= 0.05,
+and "significant" means more with p < 0.05 (the same sign test).
+
+1. Breadth: the primary comparison on the tasks with neither `slice-k-n` nor a
+   divisibility routine. "Only where a routine of the earlier symbols is present" (none);
+   "outside the routines of the earlier symbols not separated from chance"; "also outside
+   the routines of the earlier symbols" (significant).
+2. Against the earlier loop: *new* at 10^5 against *old* at 10^5 on FRESH-4. "No more than
+   the earlier loop"; "not separated from the earlier loop"; "and more than the earlier
+   loop".
+3. Budget: "with reach beyond the budget" if the new-only tasks of kind (a) outnumber the
+   control-only tasks of kind (a); otherwise "as a different first match, not reach beyond
+   the budget".
+4. Dreams: the primary comparison on the tasks that no dream program of the run computes.
+   "Not on the tasks no dream of the loop computed"; "on the tasks no dream of the loop
+   computed not separated from chance"; "also on the tasks no dream of the loop computed".
+
+"More" means strictly more. The class is decided on sound counts; the same rule on verified
+counts is printed beside it and a difference is stated.
+
+Secondary, reported without deciding anything: every comparison against the single runs;
+*new* at 10^4 against generation 0 at any budget; *old* at 10^5 against generation 0 at any
+budget and against the union up to its own C2 (the comparison of Addendum 7 again, on
+these tasks); *new* against *old* at 10^4; the strata by output type; the primary test
+without each routine in turn, with the largest of those p-values and its routine; solves
+by routine for the three arms; the sign test over routine clusters (it decides nothing);
+the new-only tasks by the learned symbols their programs use, and how many use a symbol
+defined through another symbol; sound by the audit and on the whole input pool; held-out B
+and FRESH-3, both development sets.
+
+## The four criteria
+
+Scored on held-out B at 10^4 and on the learning set, descriptive: held-out B is a
+development set.
+
+- R1: sound held-out B solves of the student rise in two cycles running.
+- R2: (a) some later cycle's teacher solves a learning task that generation 0 does not
+  solve at the same budget, and (b) without the first cycle's symbols and those defined
+  through them, the final student loses a learning solve that was first made after the
+  first cycle.
+- R3: the final student at 10^4 has more sound held-out B solves than generation 0 at any
+  budget run there. If C1new exceeds the memory limit, the report says that the cumulative
+  budget itself was not run.
+- R4: no step of `confirm.py` is decided by a person.
+
+The same four on FRESH-4 are not defined (no cycle-by-cycle run there); the secondary
+comparison of *new* at 10^4 against generation 0 at any budget is the R3 analogue on new
+tasks.
+
+## What a positive outcome would license
+
+For the one vocabulary this run produces, on the pairs `fresh4.py` draws from (list
+outputs, 96 in 100), at 10^5 candidates per task: more sound solves than generation 0 has
+at any budget run, up to the larger of 524,267 and the whole training and deployment
+budget, cost counted in constructed candidates, with the four endings as they fall.
+
+What it would not: new routines or parameter values; integer and boolean outputs; the loop
+as a procedure (one run, one vocabulary, one configuration, the favourable one); cost in
+time; J's sealed pools; TEST; anything about systems other than this enumerator on these
+list tasks.
+
+## Predictions
+
+Thresholds marked provisional are fixed when the registration comes into force, from the
+development numbers of the frozen variant; the review is asked to treat them as open.
+
+| ID | Prediction | Expected |
+| --- | --- | --- |
+| D1 | FRESH-4, primary: *new* at 10^5 has more sound solves than generation 0 at any budget | PASS (high) |
+| D2 | The sign test of D1 gives p < 0.05 (scored only if D1 passes) | PASS (high) |
+| D3 | *New* at 10^5 leads generation 0 at any budget by at least 80 sound solves (provisional) | PASS (moderate) |
+| D4 | Breadth: on the tasks with neither `slice-k-n` nor a divisibility routine, *new* has more sound solves than the control with p < 0.05 | PASS (moderate) |
+| D5 | *New* at 10^5 has more sound solves than *old* at 10^5 with p < 0.05 | PASS (high) |
+| D6 | *Old* at 10^5 has more sound solves than generation 0 at any budget with p < 0.05 (the comparison of Addendum 7 on more tasks) | PASS (moderate) |
+| D7 | *New* at 10^4 has more sound solves than generation 0 at any budget | PASS (low) |
+| D8 | On the tasks no dream computes, *new* has more sound solves than the control with p < 0.05 | PASS (moderate) |
+| D9 | The new-only tasks of kind (a) outnumber the control-only tasks of kind (a) | PASS (high) |
+| D10 | R2 holds in both parts | PASS (moderate) |
+| D11 | Integer and boolean outputs (36 tasks): *new* and the control are within 3 sound solves of each other | PASS (moderate) |
+
+Known from development and therefore not predictions: the loop's own trajectory (it is
+deterministic and the registered run repeats it), R1 and R3 on held-out B.
+
+Expected outcome class, not counted as a prediction: confirmed, also outside the routines
+of the earlier symbols, more than the earlier loop, with reach beyond the budget, also on
+the tasks no dream computed.
+
+## What the review changed
+
+(to be written after the design review)
