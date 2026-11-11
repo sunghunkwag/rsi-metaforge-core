@@ -131,3 +131,4 @@ gen0@r251479:heldB         budget   251479 {'fresh2': 40, 'compose24': 10} | spe
 gen0@r181775:heldB         budget   181775 {'fresh2': 36, 'compose24': 10} | spent 13739171 of 22540100 | 172 s
 gen0@top:fresh4            budget  1126452 {'fresh4': 129} | spent 729065027 of 901161600 | 8561 s
 gen0@C2new:fresh4          budget   336550 {'fresh4': 124} | spent 222114829 of 269240000 | 4327 s
+gen0@C2old:fresh4          budget   259100 {'fresh4': 113} | spent 174451282 of 207280000 | 2513 s
