@@ -1,0 +1,8 @@
+new@student 10000 {'fresh3': 97, 'fresh2': 38, 'compose24': 13, 'fresh4': 151} 310 s
+new@student verified {'fresh3': 97, 'fresh2': 38, 'compose24': 13, 'fresh4': 151} sound {'fresh3': 82, 'fresh2': 30, 'compose24': 13, 'fresh4': 138}
+new@student on fresh3 against generation 0 at any budget run: {'trained': 82, 'control': 64, 'trained_only': 37, 'control_only': 19, 'p_one_sided': 0.01112}
+new@student on fresh3 against the loop of Addendum 8 at the same budget: {'trained': 82, 'control': 67, 'trained_only': 16, 'control_only': 1, 'p_one_sided': 0.00014}
+new@student on held-out B against generation 0 at any budget run: {'trained': 43, 'control': 39, 'trained_only': 13, 'control_only': 9, 'p_one_sided': 0.26173}
+new@student on held-out B against the loop of Addendum 8 at the same budget: {'trained': 43, 'control': 41, 'trained_only': 3, 'control_only': 1, 'p_one_sided': 0.3125}
+new@student on fresh4 against generation 0 at any budget run: {'trained': 138, 'control': 125, 'trained_only': 60, 'control_only': 47, 'p_one_sided': 0.12295}
+new@student on fresh4 against the loop of Addendum 8 at the same budget: {'trained': 138, 'control': 126, 'trained_only': 13, 'control_only': 1, 'p_one_sided': 0.00092}

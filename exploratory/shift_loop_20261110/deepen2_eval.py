@@ -16,7 +16,6 @@ import time
 
 import confirm
 import deepen2
-import fresh3
 from expert_ablate import spec_without
 from hybrid import ALL, Harness, summary
 from loop import CONFIGS
@@ -34,6 +33,7 @@ def main() -> None:
     learn = CONFIGS["B"]
     held = [p for p in ALL if p not in learn]
     harness = Harness(workers, ALL)
+    import fresh3                                   # loads the FRESH partitions: after the fork
     third = fresh3.make()
     harness.add_partition("fresh3", third, [t.public_view() for t in third])
     generated = {"fresh3": third}
