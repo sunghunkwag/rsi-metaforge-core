@@ -94,6 +94,16 @@ to a new registration ([`RESULTS_P1.md`](../RESULTS_P1.md), "Adversarial review"
   (restored).** The values −2 to −5 are built from three symbols (`add -1 -1`, `mul -1 2`,
   `sub 0 2`) where `neg k` would be two, so every program that needs one is one symbol
   longer than the language allows.
+- **A replacement must be in the vocabulary.** The filter looks at the shape of a term,
+  not at the vocabulary. `length nil` is refused for the literal `0`, `length (cons a b)`
+  for `add 1 (length b)`, `sub e e` and `mod e e` for `0`, `div e e` for `1`. Both
+  registered vocabularies hold `0`, `1`, `add` and the booleans, so there the replacement
+  exists. A vocabulary cut that keeps `length` and drops the literal `0` or `add` (the
+  exploratory harness makes such cuts) loses the refused form and its replacement
+  together: a third review showed `length xs + 1` at size 7 instead of 4, and
+  `cons 0 xs` not found at all, in the cut vocabulary of one recorded state. The same
+  holds for `abs k` and `neg k` when a constant enters the vocabulary without its
+  absolute value or its negation (the harness abduces constants from the examples).
 - **`fix1` without recursion is a let-binding.** `fix1 x (λrec. λy. body)` shares the
   value of `x` among the occurrences of `y`. Its replacement `body[y := x]` repeats `x`:
   it is longer when `y` occurs twice or more and `x` is not small, and it may not be

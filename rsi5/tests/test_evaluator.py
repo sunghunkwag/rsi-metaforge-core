@@ -89,11 +89,11 @@ class ParityWithRsi2(unittest.TestCase):
         from rsi5.engine.bottomup import Engine
         inputs = [[], [0], [3, 1, 2], [5, -1, 7, 7, 2], [1, 1, 1, 1], [10, 2]]
         examples = [((xs,), [-999]) for xs in inputs]                  # unreachable target
+        pinned = {"original": (1051, 5212), "restored": (1335, 6893)}  # programs, agreeing evaluations
         for vocabulary in (ORIGINAL, RESTORED):
             engine = Engine(vocabulary)
             engine.search(examples, Arrow(ListOf(INT), ListOf(INT)), [], budget=4000)
             programs = [expr for pool in engine.top.pools.values() for expr in pool]
-            self.assertGreater(len(programs), 1000)
             self.assertTrue(any(expr.kind == "prim" and expr.head in ("map", "filter", "fold") for expr in programs))
             agreed = 0
             for expr in programs:
@@ -108,7 +108,7 @@ class ParityWithRsi2(unittest.TestCase):
                         agreed += 1
                     elif error is None:
                         self.assertIn("budget", reference.error, f"{term} on {xs}")
-            self.assertGreater(agreed, 5000)
+            self.assertEqual((len(programs), agreed), pinned[vocabulary.name])
 
 
 class RestoredPrimitivesAreTotal(unittest.TestCase):

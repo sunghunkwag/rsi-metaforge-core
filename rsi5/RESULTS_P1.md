@@ -269,6 +269,14 @@ changes: P1-1 to P1-4 are scored on verified counts as registered, and the five 
 FRESH-1 solves at 10⁵ are all sound. The FRESH-2 column of the headline table should be
 read as 18, not 28.
 
+"Sound" holds inside the task's own range of lengths and values and no further. A third
+review (below) re-tested the sound programs on wider inputs. One of the 18 is wrong there:
+a `positions` stage (the indices of the non-zero elements) whose examples hold no 0 is
+solved as `range (length xs)`, which the audit cannot tell from the routine. On a wider
+test the restored FRESH-2 cell at 10⁶ is 17. Most other failures on wider inputs are
+`caesar-cipher` tasks whose examples lie below the modulus, where the program is right on
+the task's real domain.
+
 ### Compute
 
 | Partition | Vocabulary | Candidates evaluated | Wall s (4 workers) | Mean completed size (top) | Mean pool size | Digest |
@@ -392,14 +400,44 @@ route through it; the reviewer of the driver found three by other means.
 | The test that no hidden example travels to a worker could not fail: its byte pattern never occurs inside another pickle. | It compares values, for every task of every partition, and a second test feeds it views that do leak. | `test_public_view_is_plain_data_without_hidden_examples`, `test_hidden_example_check_catches_a_leaking_view` |
 | No test ran the driver: with both `guard.install()` calls removed from `phase1.py` the suite stayed green. | One test runs `phase1.main` with a probe around the worker's function and checks the hook in the driver and in every worker, the content of each job, and the written verdicts against an independent verifier and the registered file. `load_plan`'s refusals have their own tests. | `test_run_driver_itself`, [`tests/test_plan.py`](tests/test_plan.py) |
 | The import list tested the first component of a name, so `from multiprocessing import util, sharedctypes` passed, and the documents said the list closed the unaudited process starts. | `multiprocessing` and `concurrent` are held to exact names; no solver module spells the identifiers of the unaudited routes. The documents now say what this cannot close. | `test_import_list_refuses_the_unaudited_routes`, `test_no_solver_module_spells_an_unaudited_route` |
-| The closure agreement test excused any failure in a term with a partial application anywhere, and did not assert its pinned count. | The count is asserted (191), and a second test admits no excuse on the corpus that matters: 2,386 programs from the engine's own pools, both vocabularies. | `test_closures_agree_on_the_programs_the_engine_builds` |
+| The closure agreement test excused any failure in a term with a partial application anywhere, and did not assert its pinned count. | The count is asserted (191), and a second test admits no excuse on the corpus that matters: 2,386 programs from the engine's own pools, both vocabularies (1,051 and 1,335; a third review found that this count was quoted and not asserted, and it is asserted now). | `test_closures_agree_on_the_programs_the_engine_builds` |
 | The static scans passed on an empty file list; several spellings of the sealed names were not seen. | A test names the modules the scans must cover; constants built with `%`, `join`, `format` and bytes are folded. | `test_static_scans_cover_the_solver_modules` |
 | Renames and links relative to a directory descriptor, a link into a sealed directory, bytes paths, a seal given through a symbolic link and `pty.spawn` were claimed and held by no attack. | Attacks added for each. | `tests/guard_attacks.py` |
 | The guard test opened the package's own `list_tasks2.json` for writing: had the guard regressed, the test would have truncated it. | The write is aimed at a decoy of that name; the real file is decided from its name alone. | `test_guard_blocks_pool_access` |
 | The documents said an `and`/`or` guard is always lost. Only the vectorised path is strict; the closures skip the right side, so a guard inside a lambda body works when the canonical order puts it first. | `NORMAL_FORMS.md`, `ARCHITECTURE.md` and the table below say so. | `test_vectorised_and_or_are_strict` |
 
-Not re-reviewed: the normal-forms argument ("a replacement is defined at least as often")
-had no reviewer; these corrections of the corrections have had none either.
+Not re-reviewed at the time: the normal-forms argument ("a replacement is defined at least
+as often") had no reviewer, and these corrections of the corrections had none either. A
+third review took both up.
+
+### Third review: the normal-forms argument, the audit, the second corrections
+
+Four reviewers, each finding re-tested by a second reviewer. Five findings: four
+confirmed (one of them in the exploratory study and reported there), one already
+disclosed. Two earlier attempts at this review were cut off by a usage limit.
+
+- **Normal forms.** Every rule was checked by hand against the reference semantics, and an
+  exhaustive check was run with the engine itself on seven restricted vocabularies up to
+  completed sizes 5 to 9: every behaviour built with the filter off has an equal or more
+  defined behaviour of no larger size with the filter on, except the cases already listed
+  below (`neg k`, the order and strictness of `and`/`or`, `fix1` as a let-binding). In the
+  registered vocabularies the argument holds beyond those. It has a condition the document
+  did not state: the replacement must be in the vocabulary. Both registered vocabularies
+  hold the literals 0 and 1, `add` and the booleans, so the condition is met in the
+  registered run. It is not met under the cut vocabularies and the abduced constants of the
+  exploratory harness ([`engine/NORMAL_FORMS.md`](engine/NORMAL_FORMS.md) now says so).
+  Not exercised: `fix1` bodies large enough to show the loss of sharing.
+- **The extended audit.** Its two columns for the restored vocabulary were recomputed and
+  match; every reference gets 200 fresh inputs inside its domain; the two audits agree on
+  the 60 programs both cover. "Sound" is correctness inside the examples' range (the
+  paragraph above gives the one registered cell this moves on a wider test).
+- **The second corrections.** By reading: a worker that dies fails the run; no path to a
+  late fork was found on Python 3.13 (3.11 was not checked); a late worker would refuse
+  every task; no path the driver or a worker must open is refused. One finding: the
+  2,386-program corpus was quoted and not asserted; the test asserts both counts now.
+  **Not reviewed:** an undeclared route through the guard's new code. The reviewer ran no
+  attack against the hook and says so: "that lens is unreviewed, not cleared". The guard
+  remains what this report calls it, a tripwire.
 
 ### Deferred to a new registration (engine findings)
 

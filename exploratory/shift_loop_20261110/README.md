@@ -86,6 +86,13 @@ one. The fresh inputs stay inside the task's own range of lengths and values and
 over the reference's outputs, so a boolean task is tested on both answers. The two audits
 agree on the 60 programs that `rsi5.audit_p1` also covers.
 
+Sound therefore means right inside the range of the task's examples, and no further. A
+reviewer re-tested the 630 distinct sound programs of the result files on wider inputs:
+89 fail there, most of them on `caesar-cipher` tasks whose examples lie below the modulus
+(the program is right on the task's real domain). The comparisons do not move: on held-out
+B none of the 10 trained-only and none of the 4 control-only programs fails; on FRESH-3
+none of the 18 trained-only and one of the 11 control-only.
+
 Counts are written sound/verified. The audit is report-only: no loop reads it. Hidden
 examples per task: 1 or 2 on FRESH-1 and FRESH-2, 14 on COMPOSE-24, mostly 3 to 5 elsewhere.
 
@@ -199,7 +206,11 @@ review (the 10^4 row reproduces the loop's own numbers).
 | 181,775 | 36/46 | | |
 | 251,479 | 37/50 | 33/46 | 38/51 |
 
-The cut helps at 10^4 and costs at every larger budget. The three symbols lead generation
+The cut helps at 10^4 and costs at every larger budget. A cut state's numbers measure the
+cut together with the engine's normal-form filter: the filter refuses `length nil` for the
+literal `0`, and this state's cut dropped that literal from the list space, so both are
+gone (a reviewer showed `cons 0 xs` not found at all in it). How many solves that costs is
+not measured. The three symbols lead generation
 0 by 6, 3 and 1 sound solves. The net lead closes; the solved sets do not merge. At 251,479
 the symbols solve four tasks that generation 0 solves at none of the five budgets it was
 run at (it spends 251,479 candidates on each without a public match), and they miss three
@@ -230,10 +241,13 @@ Configuration B:
   10^5 without symbols (135 against 134).
 - The harvest grew once on sound counts (132 to 149) and twice on verified counts (134,
   151, 155), then fell back to 150 as the vocabulary grew.
-- One recursive link. Replaying the proposal step (`expert_dependence.py`) shows that two
-  of the three cycle-2 symbols, `tail (tail (tail xs))` and `filter (lambda x. gt (mod x k)
-  0)`, are proposed only because of the programs the cycle-1 symbols added. The symbols of
-  cycles 3, 4 and 5 were already waiting in the older corpus.
+- One recursive link. Replaying the proposal step (`expert_dependence.py`) shows that one
+  of the three cycle-2 symbols, `tail (tail (tail xs))`, is proposed only because of the
+  programs the cycle-1 symbols added: seven of the ten programs it folds are slice programs
+  the teacher found with the take symbol. The other two (the filter symbol and a constant)
+  and the symbols of cycles 3, 4 and 5 were already waiting in the older corpus. An earlier
+  version of this sentence counted the filter symbol too: the replay compared one attempt's
+  batch only, and a reviewer found it.
 - Ablations of the final 15 symbols at 10^4 (`expert_ablate.py`): all, 143/147 and 21/26;
   without the three depth-2 symbols, 143/147 and 22/27; without the cycle-1 symbols and
   the three built on them, 120/124 and 19/23. Cycle 1 gained 15 verified learning solves
@@ -482,7 +496,7 @@ test, and both are confined to tasks that contain a routine the learned symbols 
 
 ## Reviews
 
-Four independent reviews touched this study. The first, of the loop harness, is below.
+Six independent reviews touched this study. The first, of the loop harness, is below.
 The second attacked the draft of the replication's registration before it ran: four
 reviewers, 19 findings, every one acted on (`results/design_review_addendum7.json`;
 Addendum 7 lists what each changed). The third was to verify this document and its tools
@@ -510,6 +524,32 @@ control covers, the held-out B union against every budget generation 0 has been 
 the pool reading of soundness, the number of verdicts read, three registered secondary
 lines that were missing (the 228,969 run, the cluster p-values, the pooled comparisons),
 and what "no solver had run on it" covers.
+
+The fifth attacked the draft of Addendum 8 before anything ran on its evaluation set: four
+reviewers, 20 findings, every one acted on (`results/design_review_addendum8.json`;
+Addendum 8 lists what each changed). Two of the four were stopped by a usage limit at the
+first attempt and were run again on another model against the revised draft.
+
+The sixth reached the four parts that two earlier attempts had not: the audit, the loop
+code after its fixes, the normal-forms argument of the package and the second corrections
+of its guard and driver. Four reviewers, each finding re-tested by a second one. Five
+findings: four confirmed, one already disclosed.
+
+- Confirmed: the dependence replay compared one attempt's batch, so the Expert B section
+  named two cycle-2 symbols as depending on cycle-1 programs where it is one
+  (`expert_dependence.py` is fixed, its output regenerated, the sentence corrected).
+- Confirmed: under a cut vocabulary, and with abduced constants, the engine's normal-form
+  filter loses programs whose replacement the vocabulary no longer holds (stated above and
+  in `rsi5/engine/NORMAL_FORMS.md`; not measured).
+- Confirmed, in the package: a corpus size quoted in `rsi5/RESULTS_P1.md` was not asserted
+  by the test cited for it (it is now).
+- Already disclosed: sound is correctness inside the examples' range (the numbers above).
+- What held: the audit's table for the registered run recomputes; every reference gets 200
+  fresh inputs inside its domain; the PATIENCE wrapper never fires with the full
+  vocabulary; the "all" ablation reproduces the final student program for program; the
+  ablation arithmetic (15, 23, 8, 9 and 7) recomputes from the files.
+- Not reviewed: an undeclared route through the guard's newest code. That reviewer ran no
+  attack against the hook and says the lens is unreviewed, not cleared.
 
 ### The harness review
 
@@ -621,7 +661,8 @@ Each is written as a target property and the criterion that would show it.
    review; `replicate.py` and `fresh3.py` were reviewed as a draft before the run and
    their results recounted after it; `dream.py`, `expert.py`, `oracles.py`,
    `audit_all.py`, the ablation and frontier tools and the fixes made after the first
-   review have had none (the two reviews that were to cover them were cut off).
+   review were reviewed in the sixth review; `deepen.py`, `confirm.py` and `fresh4.py` as
+   drafts before the run of Addendum 8.
 
 ## Files and how to run
 

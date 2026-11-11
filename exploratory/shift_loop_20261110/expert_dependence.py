@@ -4,7 +4,8 @@ For each accepted cycle k >= 2 of an expert-iteration report, the screened propo
 replayed twice with the library the cycle started from: once on the corpus the loop really had
 (every verified learning program up to that cycle's teacher run), and once on the corpus as it
 stood when cycle k - 1 proposed, before that cycle's symbols had added any program to it.
-Equal proposals mean cycle k's symbols were already waiting in the older corpus.
+A symbol that the older corpus proposes too, in any of its attempts, was already waiting
+there. For each symbol the report also counts the supporting programs the older corpus lacks.
 
 No search is run: only compression in the driver.
 
@@ -95,11 +96,16 @@ if __name__ == "__main__":
             continue
         frozen = previous[2]                                        # the corpus cycle k - 1 proposed from
         real = proposals(after, lib, set(tab), family_of, cycle, attempts=len(students))[len(students) - 1]
-        older = proposals(frozen, lib, set(tab), family_of, cycle, attempts=len(students))[len(students) - 1]
-        same = {compress.key(a) for a in real} & {compress.key(a) for a in older}
+        # On the older corpus the greedy order differs, so a symbol can come up in another attempt:
+        # the comparison is with everything the older corpus proposes in as many attempts.
+        older = {compress.key(a) for batch in proposals(frozen, lib, set(tab), family_of, cycle, attempts=len(students))
+                 for a in batch}
+        same = {compress.key(a) for a in real} & older
         print(f"cycle {cycle}: accepted symbols {[str(a.definition)[:70] for a in real]}")
         print(f"   corpus then {len(after)} programs; frozen one cycle earlier {len(frozen)} programs; "
               f"{len(same)} of {len(real)} symbols are proposed from the older corpus too")
         for a in real:
-            if compress.key(a) not in same:
-                print(f"   only with the newer programs: {a.definition}  (tasks {len(a.tasks)})")
+            changed = [t for t in a.tasks if t not in frozen or frozen[t] != after[t]]
+            where = "proposed from the older corpus too" if compress.key(a) in same else "only with the newer programs"
+            print(f"   {where}: {a.definition}  (tasks {len(a.tasks)}, of them {len(changed)} with a program "
+                  f"the older corpus does not hold)")
