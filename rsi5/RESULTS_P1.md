@@ -366,7 +366,7 @@ the fact. `PREDICTIONS_P1.md` and the result files are untouched.
 
 | Finding | Correction | Shown by |
 | --- | --- | --- |
-| The guard let a sealed file be reached through a directory descriptor (`dir_fd`), an inherited descriptor, a hard link, a rename, the working directory or a child program. | [`guard.py`](guard.py) rewritten: every such route is refused, as are the start methods that launch a fresh interpreter and an unaudited file reader. | [`tests/test_guard.py`](tests/test_guard.py): 105 constructed attacks on a decoy tree are refused; one residual is pinned |
+| The guard let a sealed file be reached through a directory descriptor (`dir_fd`), an inherited descriptor, a hard link, a rename, the working directory or a child program. | [`guard.py`](guard.py) rewritten: every such route is refused, as are the start methods that launch a fresh interpreter and an unaudited file reader. | [`tests/test_guard.py`](tests/test_guard.py): 114 constructed attacks on a decoy tree are refused (105 before the mutation test below); one residual is pinned |
 | The run driver built the tasks and the verifier before it forked its workers, so every worker held every hidden example in memory. | The workers are forked first, hold no task and no loader, seal the loader packages for themselves and receive public examples only. A worker forked late refuses to search. | `test_workers_are_forked_before_any_task_is_loaded`, `test_worker_forked_after_the_tasks_refuses_to_search` |
 | The check that no solver module imports J missed `from . import judge` and `from .. import judge`; J's copied audit flags no rsi5 import. | Relative imports are resolved before the check. A solver module may import only a short list of modules. | `test_judge_import_check_catches_every_form`, `test_import_list_refuses_the_unaudited_routes` |
 | The admitted-primitive loader used a dynamic importer, which J's audit refuses. | Static imports (fixed before this section was written). | `test_judge_audit_findings_are_the_declared_ones` |
@@ -394,7 +394,7 @@ route through it; the reviewer of the driver found three by other means.
 
 | Finding | Correction | Shown by |
 | --- | --- | --- |
-| The guard failed open on a name it could not read: a `bytearray` or `memoryview` path (accepted by Python 3.11, the Actions version) and an `__index__` object standing for a descriptor were not resolved, so a sealed file was opened and a sealed directory listed. | The hook reads the characters the system call will see from any bytes-like, path-like or `str`-subclass object, resolves `__index__` descriptors, and refuses a name it cannot read. | `test_every_path_into_a_sealed_directory_is_refused` (49 attacks) |
+| The guard failed open on a name it could not read: a `bytearray` or `memoryview` path (accepted by Python 3.11, the Actions version) and an `__index__` object standing for a descriptor were not resolved, so a sealed file was opened and a sealed directory listed. | The hook reads the characters the system call will see from any bytes-like, path-like or `str`-subclass object, resolves `__index__` descriptors, and refuses a name it cannot read. | `test_every_path_into_a_sealed_directory_is_refused` (49 attacks). Those cases could not notice a wrong reading of the name (the mutation test below); `test_a_name_is_read_from_the_object_that_carries_it` and `FailClosed` can |
 | From a working directory removed after the hook was installed, `os.getcwd()` fails while the kernel still follows `..`; a relative path into a sealed directory was allowed. | The directory is read from `/proc/self/cwd`; with no working directory known, a relative name is refused. | `test_deleted_working_directory_still_resolves` |
 | "A worker forked late fails the run" was false for the case that produces one: a worker that dies leaves `multiprocessing.Pool` waiting for ever. | The pool is a `concurrent.futures` executor, which never replaces a worker and raises when one dies. | `test_dead_worker_fails_the_run` |
 | The test that no hidden example travels to a worker could not fail: its byte pattern never occurs inside another pickle. | It compares values, for every task of every partition, and a second test feeds it views that do leak. | `test_public_view_is_plain_data_without_hidden_examples`, `test_hidden_example_check_catches_a_leaking_view` |
@@ -438,6 +438,37 @@ disclosed. Two earlier attempts at this review were cut off by a usage limit.
   **Not reviewed:** an undeclared route through the guard's new code. The reviewer ran no
   attack against the hook and says so: "that lens is unreviewed, not cleared". The guard
   remains what this report calls it, a tripwire.
+
+### The guard's newest code: still not reviewed; a mutation test of its tests instead
+
+A second attempt to have an independent reviewer attack the hook's newest code was made on
+2026-11-11. The reviewer was stopped by its model's safety classifier before any case ran.
+The request was not re-worded to get around the stop. That lens therefore stays unreviewed
+by anyone but the author; it needs a human reviewer.
+
+What the author did instead tests the tests, not the guard.
+[`tests/guard_mutation.py`](tests/guard_mutation.py) breaks one property of `guard.py` at
+a time (30 mutants) in a scratch copy of the tree and runs `tests/test_guard.py`. The test
+file as it stood after the second review noticed 22 of them. The 8 it missed:
+
+- Three were masked by the scenario itself. The cases that carry the sealed name in a
+  `str` subclass, a `bytearray` or a `memoryview` ran in a process that held a descriptor
+  on the sealed directory. The hook's scan of open directories then refuses the name
+  whatever the hook reads from the object, so those cases could not notice a wrong reading
+  of the name. They were added by the corrections of the second review, whose own finding
+  was tests that could not fail.
+- Five were fail-closed branches that no test reached: a name that cannot be read, a name
+  that cannot be resolved, an unknown working directory, an unreadable source of a rename,
+  and an `__index__` object that stands for a harmless descriptor.
+
+Added: the scenario `carried_names` (a process with no descriptor on the decoy tree; the
+sealed name carried by `str` and `bytes` subclasses whose methods describe a harmless
+path, by path-like objects that return them, by a `bytearray` and a `memoryview`; and the
+other direction, a harmless file named by an object that describes the sealed one), and
+the class `FailClosed`, which calls the name resolution and the hook directly. All 30
+mutants are now noticed, on Python 3.13 and 3.11. `guard.py` is unchanged: a mutant is a
+defect made on purpose, and none of them was found in the guard. The suite has 80 tests;
+by the count used above, 114 constructed routes are refused.
 
 ### Deferred to a new registration (engine findings)
 
@@ -490,10 +521,11 @@ registration, which is the Owner's call together with the §3.3 gate.
    file or a hidden example. Criterion: a solver given arbitrary Python fails to read a
    secret planted in J's directory, because J and the verifier run in another process
    under an identity whose files the solver's identity cannot read. Measured: an audit
-   hook in the same process, a tripwire. It refuses the 105 routes constructed in
+   hook in the same process, a tripwire. It refuses the 114 routes constructed in
    `tests/test_guard.py`, and static checks keep `ctypes`, native modules and
    `_posixsubprocess` out of the solver's source. Two reviews each found routes through
-   the hook that the one before had missed; a third would likely find more. Arbitrary
+   the hook that the one before had missed; a third would likely find more, and none has
+   taken place (one reviewer ran no attack, one was stopped by a safety classifier). Arbitrary
    Python still gets through: `ctypes` or a native module, `_posixsubprocess.fork_exec`,
    `multiprocessing.util.spawnv_passfds`, a descriptor, hard link or bind mount that predates the
    hook, a thread that changes what a name refers to between the hook's check and the

@@ -76,6 +76,38 @@ class Liar(str):
         return "harmless.txt"
 
 
+class LiarBytes(bytes):
+    """A ``bytes`` whose methods describe another, harmless path; the system call sees the real one."""
+    def decode(self, *args, **kwargs):
+        return "harmless.txt"
+
+    def __bytes__(self):
+        return b"harmless.txt"
+
+    def __str__(self):
+        return "harmless.txt"
+
+
+class Alarmist(str):
+    """The other direction: a ``str`` that names a harmless file while its methods describe ``claim``."""
+    claim = ""
+
+    def startswith(self, *args):
+        return True
+
+    def __str__(self):
+        return self.claim
+
+
+class Carrier:
+    """A path-like object that hands over exactly what it was given."""
+    def __init__(self, name):
+        self.name = name
+
+    def __fspath__(self):
+        return self.name
+
+
 def paths(root, sealed, secret) -> dict:
     join = os.path.join
     before_dir = os.open(sealed, os.O_RDONLY)       # descriptors opened before install()
@@ -141,6 +173,32 @@ def paths(root, sealed, secret) -> dict:
         "parent_memory": lambda: open(f"/proc/{os.getppid()}/mem", "rb").close(),
         # A documented residual, pinned so that no document can claim otherwise:
         "residual_read_of_descriptor_opened_before_install": lambda: os.read(before_file, 5),
+    })
+
+
+def carried_names(root, sealed, secret) -> dict:
+    """The sealed name carried by objects whose own methods describe a harmless path. Unlike
+    ``paths``, this process holds no descriptor on the decoy tree: there the conservative scan of
+    open directories refuses these names whatever the hook reads from the object, so that mode
+    cannot fail on a wrong reading (a mutation test of the guard showed it)."""
+    guard.seal(sealed)
+    guard.install()
+    os.chdir(os.path.join(root, "open"))
+    harmless, raw = os.path.join(root, "open", "readme.txt"), os.fsencode(secret)
+    Alarmist.claim = secret
+    return run({
+        "str_subclass": lambda: open(Liar(secret)).read(),
+        "str_subclass_os_open": lambda: os.open(Liar(secret), os.O_RDONLY),
+        "str_subclass_listdir": lambda: os.listdir(Liar(sealed)),
+        "bytes_subclass": lambda: open(LiarBytes(raw)).read(),
+        "bytes_subclass_os_open": lambda: os.open(LiarBytes(raw), os.O_RDONLY),
+        "pathlike_of_str_subclass": lambda: open(Carrier(Liar(secret))).read(),
+        "pathlike_of_bytes_subclass": lambda: os.open(Carrier(LiarBytes(raw)), os.O_RDONLY),
+        "bytearray_path": lambda: os.read(os.open(bytearray(raw), os.O_RDONLY), 5),
+        "memoryview_path": lambda: os.read(os.open(memoryview(raw), os.O_RDONLY), 5),
+        # The other direction: nothing harmless is refused because of what an object says of itself.
+        "harmless_named_by_an_alarmist": lambda: open(Alarmist(harmless)).read(),
+        "harmless_relative": lambda: open("readme.txt").read(),
     })
 
 
@@ -227,6 +285,10 @@ def spawn(root, sealed, secret) -> dict:
         "pty_spawn": lambda: importlib.import_module("pty").spawn(["/bin/cat", secret]),
         "readline": lambda: importlib.import_module("readline"),
         "readline_statement": statement("import readline"),
+        # Where such a module is loaded from a file the import event refuses it as well; the held
+        # name is what refuses it when it is built into the interpreter.
+        "unguarded_names_held": lambda: all(name in sys.modules and sys.modules[name] is None
+                                            for name in guard.UNGUARDED_MODULES),
     })
 
 
@@ -483,7 +545,7 @@ def driver(root, sealed, secret) -> dict:
 
 
 MODES = {function.__name__: function for function in
-         (paths, working_directory, deleted_cwd, symlinked_seal, spawn, imports, preloaded, keep, benign,
+         (paths, carried_names, working_directory, deleted_cwd, symlinked_seal, spawn, imports, preloaded, keep, benign,
           loaders, worker, early_workers, late_worker, dead_worker, driver)}
 
 if __name__ == "__main__":

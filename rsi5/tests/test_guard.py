@@ -19,6 +19,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 from rsi5 import guard, partitions
 
@@ -96,6 +97,23 @@ class Paths(Attack):
         self.assertEqual(sorted(set(after) - set(before)), ["alias"])
         self.assertEqual({name: after[name] for name in before}, before)
 
+    def test_a_name_is_read_from_the_object_that_carries_it(self):
+        """The sealed name carried by objects whose own methods describe a harmless path, in a
+        process that holds no descriptor on the decoy tree. In the ``paths`` scenario the scan of
+        open directories refuses these names whatever the hook reads from the object: with the
+        reading broken on purpose that scenario still passed. This one does not."""
+        out, before, after = self.attack("carried_names")
+        readable = "allowed:'readable\\n'"
+        expected = {"harmless_named_by_an_alarmist": readable, "harmless_relative": readable}
+        either = {"bytearray_path", "memoryview_path"}      # named files before Python 3.12 only
+        for name, result in out.items():
+            if name in either:
+                self.assertIn(result, ("PermissionError", "other:TypeError"), name)
+            else:
+                self.assertEqual(result, expected.get(name, "PermissionError"), name)
+        self.assertEqual(len(out), 11)
+        self.assertEqual(after, before)
+
     def test_working_directory_inside_a_sealed_directory(self):
         out, _, _ = self.attack("working_directory", start="decoypkg/sealed")
         self.assertEqual(out, {"listdir_no_argument": "PermissionError", "scandir_no_argument": "PermissionError",
@@ -144,7 +162,101 @@ class Programs(Attack):
             "fork_then_exec": "allowed:42",       # the child caught PermissionError and exited 42
             # The start methods that launch a fresh interpreter, and the unaudited file reader:
             "spawn_start_method": "ImportError", "forkserver_start_method": "ImportError",
-            "readline": "ImportError", "readline_statement": "ImportError"})
+            "readline": "ImportError", "readline_statement": "ImportError",
+            "unguarded_names_held": "allowed:True"})
+
+
+class Lying(str):
+    """A ``str`` whose methods describe ``claim``; a system call would see the real text."""
+    claim = "harmless.txt"
+
+    def __str__(self):
+        return self.claim
+
+    def startswith(self, *args):
+        return False
+
+
+class LyingBytes(bytes):
+    def decode(self, *args, **kwargs):
+        return "harmless.txt"
+
+    def __bytes__(self):
+        return b"harmless.txt"
+
+
+class Carried:
+    def __init__(self, name):
+        self.name = name
+
+    def __fspath__(self):
+        return self.name
+
+
+class Indexed:
+    def __init__(self, descriptor):
+        self.descriptor = descriptor
+
+    def __index__(self):
+        return self.descriptor
+
+
+class FailClosed(unittest.TestCase):
+    """The name resolution of the hook, called directly; no hook is installed in this process.
+    A process's memory file is sealed by rule, so these cases need no decoy. Each case was
+    written against a mutation of ``guard.py`` that the scenarios above did not notice: reading
+    a name through the object's own methods, skipping bytes-like objects, allowing a name that
+    cannot be read or resolved, taking an unknown working directory for the root."""
+    SEALED, HARMLESS = "/proc/self/mem", "/proc/self/status"
+
+    def test_the_name_is_read_from_whatever_carries_it(self):
+        carriers = {
+            "str": str, "bytes": os.fsencode, "path": Path,
+            "str subclass that describes another path": Lying,
+            "bytes subclass that describes another path": lambda name: LyingBytes(os.fsencode(name)),
+            "bytearray": lambda name: bytearray(os.fsencode(name)),
+            "memoryview": lambda name: memoryview(os.fsencode(name)),
+            "path-like of a lying str": lambda name: Carried(Lying(name)),
+            "path-like of lying bytes": lambda name: Carried(LyingBytes(os.fsencode(name)))}
+        for label, carry in carriers.items():
+            self.assertTrue(guard.blocked_path(carry(self.SEALED)), label)
+            self.assertFalse(guard.blocked_path(carry(self.HARMLESS)), label)
+
+    def test_what_an_object_says_of_itself_is_not_believed(self):
+        class Alarmist(Lying):
+            claim = self.SEALED
+        self.assertFalse(guard.blocked_path(Alarmist(self.HARMLESS)))      # names a harmless file
+        self.assertTrue(guard.blocked_path(Lying(self.SEALED)))             # names the sealed one
+
+    def test_a_name_that_cannot_be_read_or_resolved_is_refused(self):
+        for name in (object(), 3.5, ("a",), "a\0b", b"a\0b"):
+            self.assertTrue(guard.blocked_path(name), repr(name))
+            for event, arguments in (("open", (name, "r", 0)), ("os.listdir", (name,)), ("os.scandir", (name,)),
+                                     ("os.chdir", (name,)), ("os.link", (name, "target", None, None)),
+                                     ("os.link", ("source", name, None, None)),
+                                     ("os.rename", (name, "target", None, None)),
+                                     ("os.rename", ("source", name, None, None))):
+                with self.assertRaises(PermissionError, msg=f"{event} {name!r}"):
+                    guard._hook(event, arguments)
+
+    def test_an_unknown_working_directory_refuses_relative_names(self):
+        absolute = os.path.realpath(__file__)                   # no symbolic link left to read
+        with mock.patch.object(guard.os, "getcwd", side_effect=OSError), \
+                mock.patch.object(guard.os, "readlink", side_effect=OSError):
+            self.assertTrue(guard.blocked_path("readme.txt"))
+            self.assertTrue(guard.blocked_path(None))            # os.listdir() with no argument
+            self.assertFalse(guard.blocked_path(absolute))       # an absolute name needs no working directory
+        self.assertFalse(guard.blocked_path("readme.txt"))
+
+    def test_an_index_object_is_the_descriptor_it_stands_for(self):
+        sealed, harmless = os.open(self.SEALED, os.O_RDONLY), os.open(self.HARMLESS, os.O_RDONLY)
+        try:
+            for descriptor, expected in ((sealed, True), (harmless, False)):
+                self.assertEqual(guard.blocked_path(descriptor), expected)
+                self.assertEqual(guard.blocked_path(Indexed(descriptor)), expected)
+        finally:
+            os.close(sealed)
+            os.close(harmless)
 
 
 class Imports(Attack):
