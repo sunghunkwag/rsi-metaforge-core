@@ -1,0 +1,183 @@
+FRESH-4 digest 6159d55f97e57301, 800 tasks, 756 with a list output
+loop: 19 symbols, library digest 7b8e1ef31a09a95e, as in development: True; training ceilings {'new': 189239903, 'old': 127280000}
+control budgets: {'fresh4': {'C2old': 259100, 'C2new': 336550, 'top': 1126452}, 'heldB': {'r181775': 181775, 'r251479': 251479, 'r413254': 413254, 'r569881': 569881, 'top': 1126452, 'C1new': 596568}}; resumed: None
+
+| Cycle | Learning tasks the student does not solve | Teacher budget per such task | Taught | Trials | Symbols accepted | Student at 10^4 on learning (verified) | Held-out B at 10^4 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | | | | | | 121 | 22/27 |
+| 1 | 93 | 230,107 | 27 | 21 | 15 | 165 | 36/45 |
+| 2 | 49 | 436,734 | 14 | 10 | 4 | 177 | 41/50 |
+| 3 | 37 | 578,378 | 5 | 6 | 0 | 177 | no symbol accepted |
+training ceiling 189,239,903, spent 103,919,484; verdicts read on learning tasks 8,311; seconds in compression and dreaming 476
+
+| State | Budget per task | Held-out B (124) | FRESH-4 (800) | FRESH-4, list outputs (756) |
+| --- | --- | --- | --- | --- |
+| generation 0 | 10,000 | 22/27 | 61/68 | 56/62 |
+| new | 10,000 | 41/50 | 126/135 | 117/124 |
+| old | 10,000 | 30/38 | 135/142 | 129/135 |
+| generation 0 | 100,000 | 35/45 | 102/112 | 95/103 |
+| new | 100,000 | 52/63 | 185/203 | 171/186 |
+| old | 100,000 | 44/55 | 167/177 | 158/166 |
+| generation 0 | 181,775 (r181775) | 36/46 |  |  |
+| generation 0 | 251,479 (r251479) | 37/50 |  |  |
+| generation 0 | 259,100 (C2old) |  | 102/113 | 94/103 |
+| generation 0 | 336,550 (C2new) |  | 113/124 | 105/114 |
+| generation 0 | 413,254 (r413254) | 37/50 |  |  |
+| generation 0 | 569,881 (r569881) | 37/50 |  |  |
+| generation 0 | 596,568 (C1new) | 37/50 |  |  |
+| generation 0 | 1,126,452 (top) | 37/50 | 117/129 | 108/118 |
+| generation 0, everything solved at any budget above | | 39 sound | 125 sound | 116 sound |
+new@deploy:fresh3: 104/119 of 300 (a development set)
+new@student:fresh3: 67/80 of 300 (a development set)
+budgets spent, share of ceiling: gen0@top:heldB 56%, gen0@C1new:heldB 57%, gen0@r569881:heldB 57%, gen0@r413254:heldB 58%, gen0@r251479:heldB 60%, gen0@r181775:heldB 61%, gen0@top:fresh4 81%, gen0@C2new:fresh4 82%, gen0@C2old:fresh4 84%, gen0@deploy:heldB 63%, gen0@student:heldB 76%, new@deploy:heldB 46%, new@student:heldB 59%, old@deploy:heldB 55%, old@student:heldB 68%, gen0@deploy:fresh4 85%, gen0@student:fresh4 91%, new@deploy:fresh4 75%, new@student:fresh4 85%, old@deploy:fresh4 79%, old@student:fresh4 84%, new@deploy:fresh3 52%, new@student:fresh3 67%, gen0@teacher2:learn 93%, gen0@teacher3:learn 93%, new-without-recursive@student 46%, new-without-recursive@student:fresh4 85%, new-without-cycle1-lineage@student 60%, new-without-cycle1-lineage@student:fresh4 91%, new-without-cycle1-only@student 54%, new-without-cycle1-only@student:fresh4 90%, cycle1@student:fresh4 85%
+
+PRIMARY, list outputs, new at 100,000 against generation 0 at any budget: 171 against 116 (75 against 20, p = 0)
+  on verified counts: 186 against 124 (81 against 19, p = 0)
+  other outputs (44 tasks): 14 against 9 (8 against 3, p = 0.1133)
+  new against old at 100,000: 171 against 158 (48 against 35, p = 0.09373)
+  old against generation 0 at any budget: 158 against 116 (51 against 9, p = 0)
+
+Comparisons on all tasks of a set (sound):
+  heldB: new@deploy vs gen0@student: 52 against 22 (31 against 1, p = 0)
+  heldB: new@deploy vs gen0@equal: 52 against 35 (19 against 2, p = 0.00011)
+  heldB: new@deploy vs gen0@r181775: 52 against 36 (18 against 2, p = 0.0002)
+  heldB: new@deploy vs gen0@r251479: 52 against 37 (17 against 2, p = 0.00036)
+  heldB: new@deploy vs gen0@r413254: 52 against 37 (17 against 2, p = 0.00036)
+  heldB: new@deploy vs gen0@r569881: 52 against 37 (17 against 2, p = 0.00036)
+  heldB: new@deploy vs gen0@top: 52 against 37 (17 against 2, p = 0.00036)
+  heldB: new@deploy vs gen0@C1new: 52 against 37 (17 against 2, p = 0.00036)
+  heldB: new@deploy vs gen0@any: 52 against 39 (16 against 3, p = 0.00221)
+  heldB: new@student vs gen0@student: 41 against 22 (24 against 5, p = 0.00027)
+  heldB: new@student vs gen0@any: 41 against 39 (13 against 11, p = 0.4194)
+  heldB: old@deploy vs gen0@student: 44 against 22 (22 against 0, p = 0)
+  heldB: old@deploy vs gen0@equal: 44 against 35 (11 against 2, p = 0.01123)
+  heldB: old@deploy vs gen0@r181775: 44 against 36 (10 against 2, p = 0.01929)
+  heldB: old@deploy vs gen0@r251479: 44 against 37 (11 against 4, p = 0.05923)
+  heldB: old@deploy vs gen0@r413254: 44 against 37 (11 against 4, p = 0.05923)
+  heldB: old@deploy vs gen0@r569881: 44 against 37 (11 against 4, p = 0.05923)
+  heldB: old@deploy vs gen0@top: 44 against 37 (11 against 4, p = 0.05923)
+  heldB: old@deploy vs gen0@C1new: 44 against 37 (11 against 4, p = 0.05923)
+  heldB: old@deploy vs gen0@any: 44 against 39 (9 against 4, p = 0.1334)
+  heldB: old@student vs gen0@student: 30 against 22 (12 against 4, p = 0.03841)
+  heldB: old@student vs gen0@any: 30 against 39 (6 against 15, p = 0.9867)
+  heldB: new@deploy vs old@deploy: 52 against 44 (16 against 8, p = 0.07579)
+  heldB: new@student vs old@student: 41 against 30 (15 against 4, p = 0.00961)
+  fresh4: new@deploy vs gen0@student: 185 against 61 (129 against 5, p = 0)
+  fresh4: new@deploy vs gen0@equal: 185 against 102 (98 against 15, p = 0)
+  fresh4: new@deploy vs gen0@C2old: 185 against 102 (100 against 17, p = 0)
+  fresh4: new@deploy vs gen0@C2new: 185 against 113 (89 against 17, p = 0)
+  fresh4: new@deploy vs gen0@top: 185 against 117 (88 against 20, p = 0)
+  fresh4: new@deploy vs gen0@any: 185 against 125 (83 against 23, p = 0)
+  fresh4: new@student vs gen0@student: 126 against 61 (72 against 7, p = 0)
+  fresh4: new@student vs gen0@any: 126 against 125 (54 against 53, p = 0.5)
+  fresh4: old@deploy vs gen0@student: 167 against 61 (107 against 1, p = 0)
+  fresh4: old@deploy vs gen0@equal: 167 against 102 (72 against 7, p = 0)
+  fresh4: old@deploy vs gen0@C2old: 167 against 102 (74 against 9, p = 0)
+  fresh4: old@deploy vs gen0@C2new: 167 against 113 (63 against 9, p = 0)
+  fresh4: old@deploy vs gen0@top: 167 against 117 (61 against 11, p = 0)
+  fresh4: old@deploy vs gen0@any: 167 against 125 (54 against 12, p = 0)
+  fresh4: old@student vs gen0@student: 135 against 61 (77 against 3, p = 0)
+  fresh4: old@student vs gen0@any: 135 against 125 (45 against 35, p = 0.1572)
+  fresh4: new@deploy vs old@deploy: 185 against 167 (56 against 38, p = 0.03949)
+  fresh4: new@student vs old@student: 126 against 135 (39 against 48, p = 0.8582)
+  fresh4: old@deploy vs gen0 up to C2old: 167 against 108 (69 against 10, p = 0)
+  fresh3 (development set): new@deploy vs gen0@any of Addendum 7: 104 against 64 (49 against 9, p = 0)
+  fresh3 (development set): new@deploy vs old@deploy of Addendum 7: 104 against 71 (45 against 12, p = 1e-05)
+
+| Ending | Tasks | New against the other arm | Grade |
+| --- | --- | --- | --- |
+| 1 breadth: neither slice-k-n nor a divisibility routine | 494 | 95 against 63 (42 against 10, p = 0) | significant |
+| 2 against the old vocabulary at the same deployment budget | 756 | 171 against 158 (48 against 35, p = 0.09373) | not separated |
+| 3 budget: tasks where the other arm found no public match | 756 | 72 against 15 (72 against 15, p = 0) | significant |
+| 4 dreams: no dream computes the task or composes its pair | 544 | 56 against 51 (12 against 7, p = 0.1796) | not separated |
+| 5 learning tasks: not both stage instances are learning tasks | 448 | 97 against 78 (29 against 10, p = 0.00169) | significant |
+
+| Stratum (list outputs) | Tasks | New against generation 0 at any budget | Grade | New against old | Grade |
+| --- | --- | --- | --- | --- | --- |
+| with a routine of the earlier symbols (slice-k-n or the divisibility family) | 262 | 76 against 53 (33 against 10, p = 0.0003) | significant | 76 against 93 (9 against 26, p = 0.9991) | none |
+| without one | 494 | 95 against 63 (42 against 10, p = 0) | significant | 95 against 65 (39 against 9, p = 1e-05) | significant |
+| a dream computes the task or composes its pair of routines | 212 | 115 against 65 (63 against 13, p = 0) | significant | 115 against 102 (41 against 28, p = 0.07402) | not separated |
+| no dream does | 544 | 56 against 51 (12 against 7, p = 0.1796) | not separated | 56 against 56 (7 against 7, p = 0.6047) | none |
+| a routine the loop never solved alone | 387 | 4 against 4 (1 against 1, p = 0.75) | not testable | 4 against 5 (0 against 1, p = 1) | not testable |
+| both stage instances are learning tasks | 308 | 74 against 38 (46 against 10, p = 0) | significant | 74 against 51 (36 against 13, p = 0.0007) | significant |
+| one stage instance is a learning task | 386 | 91 against 71 (29 against 9, p = 0.00083) | significant | 91 against 100 (12 against 21, p = 0.9599) | none |
+| no stage instance is a learning task | 62 | 6 against 7 (0 against 1, p = 1) | not testable | 6 against 7 (0 against 1, p = 1) | not testable |
+| not both stage instances are learning tasks | 448 | 97 against 78 (29 against 10, p = 0.00169) | significant | 97 against 107 (12 against 22, p = 0.9712) | none |
+| a routine no learning task has | 135 | 2 against 3 (0 against 1, p = 1) | not testable | 2 against 3 (0 against 1, p = 1) | not testable |
+more than re-pairing of trained instances: False
+kinds: {'trained_only': {'no public match': 72, 'rejected': 3}, 'control_only': {'rejected': 4, 'no public match': 15, 'verified, not sound': 1}, 'budget_bound': {'trained_only': 72, 'control_only': 15, 'p_one_sided': 0.0}}
+dreamt: {'dream_programs': 1115, 'pairs_of_routine_families_dreamt': 676, 'fresh4_tasks_a_dream_computes': 45, 'fresh4_tasks_whose_routine_pair_was_dreamt': 220, 'fresh4_tasks_with_a_routine_the_loop_never_solved_alone': 400}
+provenance: {'both stage instances are learning tasks': 336, 'one': 400, 'none': 64, 'with a routine no learning task has': 141}
+routines removed until the lead is not separated: {'routines_removed': ['reverse', 'append-k'], 'tasks_removed': 129, 'tasks_left': 627, 'left': {'trained': 125, 'control': 116, 'trained_only': 29, 'control_only': 20, 'p_one_sided': 0.12643}, 'lead_per_task_in_the_removed_tasks': 0.3566, 'lead_per_task_in_the_tasks_left': 0.0144, 'reading': 'the count of routines is not evidence of narrowness'}
+leave one routine out: largest p 0.00032 without reverse
+clusters: {'by first-stage routine': {'for_trained': {'add-k': 1, 'append-k': 6, 'divisibility family': 16, 'identify-is-prime': 2, 'identify-k': 1, 'mult-k': 8, 'reverse': 13, 'slice-k-n': 8, 'take-k': 7}, 'for_control': {'drop-k': -1, 'identify-geq-k': -3, 'replace-all-k-with-n': -2, 'replace-index-k-with-n': -1}, 'level': 0, 'p_one_sided': 0.13342}, 'by second-stage routine': {'for_trained': {'add-k': 3, 'append-k': 17, 'divisibility family': 7, 'identify-geq-k': 1, 'identify-is-prime': 3, 'identify-k': 5, 'mult-k': 3, 'positions': 1, 'replace-all-k-with-n': 3, 'reverse': 13}, 'for_control': {'pow-base-k': -1}, 'level': 1, 'p_one_sided': 0.00586}}
+standardised to the mix of FRESH-2, per 100 tasks: 4.4
+sound and right on the whole pool: 143 against 104 (59 against 20, p = 1e-05)
+thin evidence (programs not counted as sound for fewer than 20 fresh inputs): {}
+new-only tasks by learned symbol: {'s3_1': 26, 's23_1': 21, 's2_1': 15, 's15_1': 13, 's17_1': 9, 's5_1': 8, 's11_1': 6, 's6_1': 5, 's4_1': 2, 's12_1': 1} | with a symbol built on a symbol: 21 | with a symbol no learning program uses: 0
+
+| Routine | List tasks | New | Old | Generation 0, any budget |
+| --- | --- | --- | --- | --- |
+| `add-k` | 85 | 37 | 43 | 33 |
+| `append-k` | 82 | 23 | 0 | 0 |
+| `dedup` | 47 | 0 | 0 | 0 |
+| `drop-k` | 33 | 14 | 16 | 15 |
+| `dup` | 47 | 1 | 1 | 1 |
+| `identify-geq-k` | 62 | 16 | 18 | 18 |
+| `identify-is-mod-k` | 71 | 21 | 18 | 13 |
+| `identify-is-prime` | 36 | 19 | 14 | 14 |
+| `identify-k` | 33 | 11 | 8 | 5 |
+| `intersperse-k` | 52 | 0 | 0 | 0 |
+| `keep-mod-k` | 65 | 26 | 36 | 22 |
+| `modulo-k` | 64 | 17 | 21 | 15 |
+| `mult-k` | 70 | 30 | 21 | 19 |
+| `positions` | 55 | 1 | 1 | 0 |
+| `pow-base-k` | 54 | 2 | 3 | 3 |
+| `pow-k` | 24 | 1 | 0 | 1 |
+| `prepend-k` | 56 | 15 | 15 | 15 |
+| `remove-mod-k` | 40 | 14 | 14 | 5 |
+| `repeat-k` | 99 | 0 | 0 | 0 |
+| `replace-all-k-with-n` | 85 | 35 | 43 | 34 |
+| `replace-index-k-with-n` | 48 | 3 | 5 | 4 |
+| `reverse` | 50 | 26 | 0 | 0 |
+| `rotate-k` | 81 | 0 | 0 | 0 |
+| `slice-k-n` | 39 | 8 | 21 | 0 |
+| `sort` | 37 | 0 | 0 | 0 |
+| `take-k` | 24 | 18 | 14 | 11 |
+| `uniq` | 60 | 0 | 0 | 0 |
+
+criteria on FRESH-4 (all tasks, sound, at the student budget):
+  R1 by generation: [['generation 0', 61], ['cycle 1', 121], ['cycle 2', 126]] -> True
+  R2: {'gains_after_cycle_1': 14, 'of_those_built_with_a_recursive_symbol': 14, 'of_those_lost_without_the_recursive_symbols': 14, 'of_those_also_lost_without_the_first_cycle_and_what_is_defined_through_it': 14, 'holds': True} -> True
+  R3: 126 against 125 (54 against 53, p = 0.5) -> True | separated: False
+  R4: True | all four: True
+  recursive symbols: ['s22_1', 's23_1', 's24_1', 's25_1'] | with those defined through them: ['s22_1', 's23_1', 's24_1', 's25_1']
+  discoveries in cycle 2 (budget 436,734, 49 tasks): 13 for the teacher, 0 the other way
+  discoveries in cycle 3 (budget 578,378, 37 tasks): 4 for the teacher, 0 the other way
+  without-recursive: 4 symbols removed; FRESH-4 sound solves lost 14, gained 9
+  without-cycle1-lineage: 19 symbols removed; FRESH-4 sound solves lost 72, gained 7
+  without-cycle1-only: 15 symbols removed; FRESH-4 sound solves lost 61, gained 12
+criteria on held-out B (a development set): {'R1': {'verified': True, 'sound': True}, 'R2': True, 'R3': True, 'R4': True} | R3: 41 against 39 (13 against 11, p = 0.4194)
+
+predictions: 4 missed, 1 not scored, 9 hit, of 14
+| ID | Prediction | Expected | Outcome | Score |
+| --- | --- | --- | --- | --- |
+| D5 | Ending 2: more sound solves than old at 10^5 with p < 0.05 | PASS (high) | FAIL | **miss** |
+| D7 | Ending 4: where no dream computed the task or composed its pair, more with p < 0.05 | PASS (moderate) | FAIL | **miss** |
+| D13 | R3 on FRESH-4: the final vocabulary at 10^4 has more sound solves than generation 0 at any budget | FAIL (moderate) | PASS | **miss** |
+| D14 | All four criteria on FRESH-4 | FAIL (moderate) | PASS | **miss** |
+| D10 | On the list tasks with a routine no learning task has, new has more sound solves | PASS (low) | not scored (stratum not testable) | not scored |
+| D1 | Primary, list outputs: new at 10^5 has more sound solves than generation 0 at any budget | PASS (high) | PASS | hit |
+| D2 | The sign test of D1 gives p < 0.05 | PASS (high) | PASS | hit |
+| D3 | The lead of D1 is at least 50 sound solves | PASS (moderate) | PASS | hit |
+| D4 | Ending 1: outside the routines of the earlier symbols, more with p < 0.05 | PASS (moderate) | PASS | hit |
+| D6 | Old at 10^5 has more sound solves than generation 0 at any budget with p < 0.05 | PASS (low) | PASS | hit |
+| D8 | Ending 5: where not both stage instances are learning tasks, more with p < 0.05 | PASS (moderate) | PASS | hit |
+| D9 | Ending 3: budget-bound new-only tasks outnumber budget-bound control-only tasks with p < 0.05 | PASS (high) | PASS | hit |
+| D11 | R1 on FRESH-4 | PASS (moderate) | PASS | hit |
+| D12 | R2 on FRESH-4 | PASS (moderate) | PASS | hit |
+
+OUTCOME: for list outputs (756 of 800 tasks): confirmed on FRESH-4 against everything generation 0 solves at any budget run; also outside the routines of the earlier symbols; not separated from the earlier loop's vocabulary at the same deployment budget; with reach beyond the budget; where no dream computed the task or composed its pair of routines not separated from chance; also where a stage is not one of its learning tasks
+on verified counts: for list outputs (756 of 800 tasks): confirmed on FRESH-4 against everything generation 0 solves at any budget run; also outside the routines of the earlier symbols; and more than the earlier loop's vocabulary at the same deployment budget; with reach beyond the budget; where no dream computed the task or composed its pair of routines not separated from chance; also where a stage is not one of its learning tasks
+
+recomputed comparisons that differ from the stored ones: none
