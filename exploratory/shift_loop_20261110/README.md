@@ -549,7 +549,12 @@ findings: four confirmed, one already disclosed.
   vocabulary; the "all" ablation reproduces the final student program for program; the
   ablation arithmetic (15, 23, 8, 9 and 7) recomputes from the files.
 - Not reviewed: an undeclared route through the guard's newest code. That reviewer ran no
-  attack against the hook and says the lens is unreviewed, not cleared.
+  attack against the hook and says the lens is unreviewed, not cleared. A second attempt
+  on 2026-11-11 was stopped by the reviewing model's safety classifier before any case
+  ran; the request was not re-worded. The author then tested the guard's tests instead of
+  the guard (`rsi5/RESULTS_P1.md`): of 30 defects made on purpose in a scratch copy, the
+  test file noticed 22, and all 30 after six tests were added. The hook itself is still
+  unreviewed by anyone but the author.
 
 ### The harness review
 
