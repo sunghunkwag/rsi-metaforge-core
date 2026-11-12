@@ -195,3 +195,14 @@ The Phases 0–I record — frozen instruments, registered predictions, per-phas
 ---
 
 <sub>Maintained as a research artifact. Results, terminology, and implementation are experimental, bounded, and subject to revision.</sub>
+
+
+---
+
+### RSI-6 protocol feasibility review (2026-11-12, non-audit)
+
+[Draft protocol review](research/REVIEW_RSI6_PROTOCOL_20261112.md) · [preregistration](research/PREREG_RSI6_PROTOCOL_FEASIBILITY_20261112.md) · [complete raw JSON](research/results/protocol_feasibility_raw_20261112.json) · [executable checker](research/protocol_feasibility_20261112.py).
+
+[Draft PR #61](https://github.com/sunghunkwag/rsi-metaforge-core/pull/61) · [Dedicated CI passed on checker SHA `523831d9a3298d54deaf2940c977cc0cf1d75074`](https://github.com/sunghunkwag/rsi-metaforge-core/actions/runs/43144401642) · [Quick CI run](https://github.com/sunghunkwag/rsi-metaforge-core/actions/runs/43144401585). The dedicated check passed; Quick CI was still running when recorded.
+
+A main-based, source-only review of the **unmerged** RSI-6 design (PR #58 at `355fc090d390c29933e481777d8d2a2353cf5ff4`) found a feasibility blocker: the stated role formula `G=floor((n-6)/2)` gives **0 rounds with 7 candidate categories**, while **10 independently admitted categories** are needed for two rounds (deficit **3**). Five preregistered arithmetic checks and four local unit tests passed. The pilot's `<=10`-seed **power threshold** must not be confused with an actual run cap or the independent requirement of 40 paired trajectories. Additional review findings concern equivalence testing, fresh-instance correctness, actual CPU parity, category-level clustering and forgetting. No audit tasks or verifiers were run, no new RSI improvement was measured, and the reviewed WO-5 remains **unapproved**. The earlier #57 negative result is unchanged.

@@ -1,0 +1,37 @@
+name: RSI-6 protocol feasibility review
+
+on:
+  pull_request:
+    paths:
+      - "research/protocol_feasibility_20261112.py"
+      - "research/test_protocol_feasibility_20261112.py"
+      - "research/PREREG_RSI6_PROTOCOL_FEASIBILITY_20261112.md"
+      - "research/REVIEW_RSI6_PROTOCOL_20261112.md"
+      - "research/results/protocol_feasibility_raw_20261112.json"
+      - ".github/workflows/protocol-feasibility-20261112.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run four static tests
+        run: python -m unittest research.test_protocol_feasibility_20261112 -v
+      - name: Reproduce arithmetic without accessing benchmark data
+        run: |
+          python -m research.protocol_feasibility_20261112 --output /tmp/rsi6_protocol_feasibility.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          result = json.loads(Path("/tmp/rsi6_protocol_feasibility.json").read_text())
+          assert result["preregistered_checks_passed"]
+          assert result["candidate_evaluations"] == 0
+          assert result["interpreter_calls"] == 0
+          assert result["audit_tasks_read"] == 0
+          assert not result["rsi_success_claim"]
+          PY
