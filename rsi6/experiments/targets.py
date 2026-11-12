@@ -45,16 +45,18 @@ def say(*parts) -> None:
     print(time.strftime("%H:%M:%S"), *parts, flush=True)
 
 
-def memory_of(version: dict, envs, budget: dict, ledger, purpose: str) -> dict:
-    """The memory a version has after acquiring on the given environments, in order."""
+def memory_of(version: dict, envs, budget: dict, cache, purpose: str) -> dict:
+    """The memory a version has after acquiring on the given environments, in order. The memory
+    itself is not in the ledger, so the acquisitions are repeated when the driver is started
+    again; their records are written once."""
     memory = None
     for name in envs:
-        roles.check(environments.load(name).category, ledger)
-        result = run.measure({"env": name, "version": version, "seed": 1, "budget": budget, "purpose": purpose,
-                              "memory": memory, "return_memory": True})
-        result["record"]["role"] = "source"
-        result["record"]["key"] = run.key_of({"env": name, "version": version, "seed": 1, "budget": budget, "memory": memory})
-        ledger.append(result["record"])
+        roles.check(environments.load(name).category, cache.ledger)
+        job = {"env": name, "version": version, "seed": 1, "budget": budget, "purpose": purpose, "memory": memory}
+        result = run.measure(dict(job, return_memory=True))
+        key = run.key_of(job)
+        if key not in cache.by_key:
+            cache.by_key[key] = cache.ledger.append(dict(result["record"], role="source", key=key))
         memory = result["memory"]
     return memory
 
@@ -62,13 +64,15 @@ def memory_of(version: dict, envs, budget: dict, ledger, purpose: str) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--ledger", default=LEDGER)
+    parser.add_argument("--targets", default=os.path.join(REGISTRY, "targets.json"),
+                        help="the list of admitted target adapters (another file only for a development run)")
     args = parser.parse_args()
     reg = json.load(open(os.path.join(REGISTRY, "registration.json")))
     ledger = ledgers.Ledger(args.ledger)
     frozen = ledger.select(type="freeze")
     if not frozen:
         raise SystemExit("the lineages are not frozen: no target run before that")
-    admitted = json.load(open(os.path.join(REGISTRY, "targets.json")))["admitted"]
+    admitted = json.load(open(args.targets))["admitted"]
     targets = sorted(admitted)
     if not ledger.select(type="unlock", role="target"):
         ledger.append({"type": "unlock", "role": "target", "targets": targets})
@@ -89,7 +93,7 @@ def main() -> int:
     # arms with memory: what each version carries from every environment it met before the targets
     earlier = rounds.pool(ledger)
     for arm, version in (("skills", v0), ("memory", final_self)):
-        memory = memory_of(version, earlier, budget, ledger, f"memory:{arm}")
+        memory = memory_of(version, earlier, budget, cache, f"memory:{arm}")
         jobs = [dict(job, memory=memory) for job in rounds.jobs_for(version, targets, seeds, budget, f"target:{arm}")]
         results[arm] = cache.get(jobs)
         say(arm, "entries in memory", len(memory["entries"]), "acquired %.4f gain %+.4f" % (
@@ -101,21 +105,30 @@ def main() -> int:
     share = spent / (len(targets) * len(seeds))
     primary_arm = [a for a in arms if a.startswith("self:")][-1] if any(a.startswith("self:") for a in arms) else "frozen"
     for arm, field, start in (("compute", "train", budget["train"]), ("search", "test_e", budget["test_e"])):
-        rows = []
+        # every (environment, seed) pair is raised on its own; the pairs of one level run side by side
+        want, value, last = {}, {}, {}
         for name in targets:
             for seed in seeds:
                 reference = [r for r in results[primary_arm] if r["env"] == name and r["seed"] == seed][0]
-                want = reference["cpu"]["acquire"] + reference["cpu"]["apply"] + share
-                value, record = start, None
-                for _ in range(12):
-                    this = dict(budget, **{field: value})
-                    if arm == "search":
-                        this["train"] = 0.0
-                    record = cache.get([{"env": name, "version": v0, "seed": seed, "budget": this, "purpose": f"target:{arm}"}])[0]
-                    if record["cpu"]["acquire"] + record["cpu"]["apply"] >= want:
-                        break
-                    value *= 2.0
-                rows.append(dict(record, matched_cpu=want, reached=record["cpu"]["acquire"] + record["cpu"]["apply"] >= want))
+                want[(name, seed)] = reference["cpu"]["acquire"] + reference["cpu"]["apply"] + share
+                value[(name, seed)] = start
+        pending = list(want)
+        for _ in range(12):
+            if not pending:
+                break
+            jobs = []
+            for name, seed in pending:
+                this = dict(budget, **{field: value[(name, seed)]})
+                if arm == "search":
+                    this["train"] = 0.0
+                jobs.append({"env": name, "version": v0, "seed": seed, "budget": this, "purpose": f"target:{arm}"})
+            for pair, record in zip(pending, cache.get(jobs)):
+                last[pair] = record
+                value[pair] *= 2.0
+            pending = [pair for pair in pending if last[pair]["cpu"]["acquire"] + last[pair]["cpu"]["apply"] < want[pair]]
+            say(arm, "level done;", len(pending), "pairs below the matched CPU")
+        rows = [dict(last[pair], matched_cpu=want[pair],
+                     reached=last[pair]["cpu"]["acquire"] + last[pair]["cpu"]["apply"] >= want[pair]) for pair in want]
         results[arm] = rows
         ledger.append({"type": "matched", "arm": arm, "share_per_run": share, "spent_by_self_lineage": spent,
                        "keys": [r["key"] for r in rows], "reached": [bool(r["reached"]) for r in rows]})
