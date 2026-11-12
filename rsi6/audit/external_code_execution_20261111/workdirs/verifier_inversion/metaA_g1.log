@@ -1,0 +1,5 @@
+pool size 107 M0 active 24 train 69 valid 28
+gen0 train 28 valid 10 calls 8425
+gen1 best train dTrain=+3 activate b.str:int valid 10->11 (gain 1 lost 0) ADOPT
+final active added: ['b.str:int'] removed: []
+final stages [{'op': 'enum', 'depth': 2, 'share': 0.6}, {'op': 'climb', 'seed': 'best', 'share': 0.4}] leafcap 30 meta train calls 59008

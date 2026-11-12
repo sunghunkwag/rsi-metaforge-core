@@ -274,3 +274,21 @@ Use available authorized computational resources. Clearly distinguish experiment
 Before implementing domain-specific solvers, identify the shared acquisition mechanism that can learn across these environments, modify that mechanism, and measure whether the modifications improve subsequent acquisition on unseen domains.
 
 Do not begin another fixed-domain optimization project disguised as recursive self-improvement.
+
+## Further instruction of 2026-11-12, verbatim
+
+### 6
+
+The revised research direction is substantially closer to the objective. However, correct the following issues before experimental implementation.
+
+1. Prevent repeated selection against the same adoption-validation categories from causing meta-level overfitting. Keep the final sealed categories untouched until the entire improvement process is complete.
+2. Measure post-learning performance on fresh, previously unseen instances. Improvement in training performance or pre-learning search efficiency alone must not count as new capability acquisition.
+3. Demonstrate that modifications to L improve the effectiveness of subsequent capability acquisition across generations, rather than merely accumulating skills, memories, or task-specific optimizations.
+4. Audit all environment adapters for hidden domain-specific solvers, heuristics, and privileged information.
+5. Match actual computational costs across recursive and nonrecursive baselines, not merely evaluation-call counts.
+6. Preserve and audit the previously executed external-verifier commands and their outputs. Do not request unrestricted execution permissions or bypass existing controls.
+7. Continue using available CPU resources and authorized interfaces. External model API credentials are not a prerequisite for the proposed core experiments.
+8. Respect the existing Owner approval requirements and the fact that Amendment A1 remains unenacted.
+
+The decisive research target remains recursive improvement of the general capability-acquisition mechanism itself. Do not downgrade this objective to isolated benchmark optimization.
+Proceed with independent design reviews and correct the research protocol before implementing experiments.
