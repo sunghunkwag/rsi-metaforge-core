@@ -40,7 +40,13 @@
      "minor findings fixed: the test of zero columns now runs at the registered budget and asserts that learning rounds happened; 'one to eight' input variables; fresh problems are checked before the learner is called",
      "after these fixes: 26 of 26 tests pass, and 15 recorded runs (5 environments, 5 versions; search, gate and confirmation runs) repeat identically with the final code"
     ],
-    "auditor_b": "scope: no recorded result changed, degrees of freedom of the choice, the written record. Still repeating the recorded runs when the registered run was resumed; its report is added to the same directory when it ends",
+    "auditor_b": {
+     "scope": "no recorded result changed, degrees of freedom of the choice, the written record",
+     "verdict": "none: the agent was stopped by the usage limit of the session before it reported",
+     "what_its_working_files_show": "it had repeated, with the corrected code, all 1,192 runs that were in the ledger before the correction (1,228 repetitions in four passes); every one was identical to its ledger record in all 23 compared fields, among them the scores, the fresh instances, the units, the learner's report and the digest of the capability",
+     "files": "rsi6/audit/layout_correction_20261112/auditor_b_working_files/ (its scripts and outputs; the logs of the repetitions reduced to the record index and the comparison), and auditor_b_partial_summary.json, a count made by the orchestrating session from those logs",
+     "not_done": "its checks of the degrees of freedom and of the wording of this record were not reported"
+    },
     "resumed_utc": "2026-11-12T14:38:07Z",
     "machine_note": "the gate and confirmation runs of round 2 were measured while the second auditor's two processes were repeating recorded runs on the same four-core machine; scores do not depend on load, measured CPU-seconds may"
    },

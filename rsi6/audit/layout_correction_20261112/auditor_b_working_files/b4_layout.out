@@ -1,0 +1,35 @@
+(a) every instance of every adapter, training and fresh form, seeds 3, 11, 101
+   forecasting: instances 192, problems built 1152, distinct layouts 1
+         1152 ('predict', True, 1, 1)
+   jobshop: instances 71, problems built 426, distinct layouts 1
+         426 ('assign', True, False, (False, False), (False, True), 0, 0, 0, 0, 0, 1, True, True)
+   binpacking: instances 40, problems built 240, distinct layouts 1
+         240 ('assign', False, True, (False, True), (False, False), 1, 1, 0, 0, 0, 0, True, True)
+   quadassign: instances 97, problems built 582, distinct layouts 1
+         582 ('assign', False, False, (False,), (False,), 0, 0, 1, 1, 0, 0, True, True)
+   pmedian: instances 20, problems built 120, distinct layouts 1
+         120 ('assign', False, True, (False, True), (False, False), 0, 0, 0, 0, 1, 0, True, True)
+   knapsack: instances 180, problems built 1080, distinct layouts 1
+         1080 ('assign', False, True, (False, True), (False, False), 31, 0, 0, 0, 0, 0, True, True)
+   regression: instances 118, problems built 708, distinct layouts 1
+         708 ('predict', False, 8, 8)
+(b) what measure() checks, for every (env, budget, seed) with a run record
+   combinations: 34
+   problems built 1196; combinations the new check would refuse: 0; fresh ids and n_train equal to the recorded ones in every combination: True
+   run records whose fresh_ids, n_train, n_fresh, groups, threshold or category differ from the corrected code's: 0 of 1192
+(c) knapsack and regression under the registered run budget (construction only)
+   knapsack part A: train 16 from groups {'5.100': 4, '5.250': 5, '10.250': 4, '30.250': 2, '30.100': 1}; fresh (all 24) groups {'10.100': 24}; this part 12 from {'10.100': 12}; problems built 264; layout mismatches 0; layout ('assign', False, True, (False, True), (False, False), 31, 0, 0, 0, 0, 0, True, True)
+   knapsack part B: train 16 from groups {'5.100': 4, '5.250': 5, '10.250': 4, '30.250': 2, '30.100': 1}; fresh (all 24) groups {'10.100': 24}; this part 12 from {'10.100': 12}; problems built 264; layout mismatches 0; layout ('assign', False, True, (False, True), (False, False), 31, 0, 0, 0, 0, 0, True, True)
+   knapsack search budget: train 12 from groups {'5.100': 2, '5.250': 5, '10.250': 2, '30.250': 2, '30.100': 1}
+   regression part A: train 16 from groups {'hard': 11, 'easy': 5}; fresh (all 24) groups {'medium': 24}; this part 12 from {'medium': 12}; problems built 264; layout mismatches 0; layout ('predict', False, 8, 8)
+   regression part B: train 16 from groups {'hard': 11, 'easy': 5}; fresh (all 24) groups {'medium': 24}; this part 12 from {'medium': 12}; problems built 264; layout mismatches 0; layout ('predict', False, 8, 8)
+   regression search budget: train 12 from groups {'hard': 8, 'easy': 4}
+(d) the learner's own descriptor names against the kernel's layout()
+   forecasting (predict): (ordered, columns of observed, columns of queries) over instances: {(True, 1, 1): 192}
+   jobshop: instances 71; (capacity is None, capacity.max() > 1): {(False, True): 71}; distinct descriptor-name lists over instances, worst over 138 versions: 1; size of the parameter vector under the default version: [6]
+   binpacking: instances 40; (capacity is None, capacity.max() > 1): {(True, None): 40}; distinct descriptor-name lists over instances, worst over 138 versions: 1; size of the parameter vector under the default version: [10]
+   quadassign: instances 97; (capacity is None, capacity.max() > 1): {(False, False): 97}; distinct descriptor-name lists over instances, worst over 138 versions: 1; size of the parameter vector under the default version: [8]
+   pmedian: instances 20; (capacity is None, capacity.max() > 1): {(True, None): 20}; distinct descriptor-name lists over instances, worst over 138 versions: 1; size of the parameter vector under the default version: [8]
+   knapsack: instances 180; (capacity is None, capacity.max() > 1): {(True, None): 180}; distinct descriptor-name lists over instances, worst over 138 versions: 1; size of the parameter vector under the default version: [69]
+        default-version descriptors of knapsack: ['opt:dsoft', 'opt:viol', 'opt:dhard', 'opt:usage', 'opt:optsum[0]', 'opt:optsum[1]', 'opt:optsum[2]', 'opt:optsum[3]', 'opt:optsum[4]', 'opt:optsum[5]', 'opt:optsum[6]', 'opt:optsum[7]', 'opt:optsum[8]', 'opt:optsum[9]', 'opt:optsum[10]', 'opt:optsum[11]', 'opt:optsum[12]', 'opt:optsum[13]', 'opt:optsum[14]', 'opt:optsum[15]', 'opt:optsum[16]', 'opt:optsum[17]', 'opt:optsum[18]', 'opt:optsum[19]', 'opt:optsum[20]', 'opt:optsum[21]', 'opt:optsum[22]', 'opt:optsum[23]', 'opt:optsum[24]', 'opt:optsum[25]', 'opt:optsum[26]', 'opt:optsum[27]', 'opt:optsum[28]', 'opt:optsum[29]', 'opt:optsum[30]', 'var1:va[0]', 'var1:va[1]', 'var1:va[2]', 'var1:va[3]', 'var1:va[4]', 'var1:va[5]', 'var1:va[6]', 'var1:va[7]', 'var1:va[8]', 'var1:va[9]', 'var1:va[10]', 'var1:va[11]', 'var1:va[12]', 'var1:va[13]', 'var1:va[14]', 'var1:va[15]', 'var1:va[16]', 'var1:va[17]', 'var1:va[18]', 'var1:va[19]', 'var1:va[20]', 'var1:va[21]', 'var1:va[22]', 'var1:va[23]', 'var1:va[24]', 'var1:va[25]', 'var1:va[26]', 'var1:va[27]', 'var1:va[28]', 'var1:va[29]', 'var1:va[30]', 'var2:feasible', 'var2:best', 'var2:regret']
+   regression (predict): (ordered, columns of observed, columns of queries) over instances: {(False, 8, 8): 118}

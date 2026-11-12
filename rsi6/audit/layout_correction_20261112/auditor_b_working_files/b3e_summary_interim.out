@@ -1,0 +1,23 @@
+phase1: planned 60, repeated 60, all planned done: True, identical 60, different 0, key recomputed equal 60, by env {'binpacking': 12, 'forecasting': 12, 'jobshop': 12, 'pmedian': 12, 'quadassign': 12}, version digests 48
+phase2: planned 640, repeated 640, all planned done: True, identical 640, different 0, key recomputed equal 640, by env {'forecasting': 276, 'pmedian': 182, 'quadassign': 182}, version digests 138
+phase3: planned 96, repeated 65, all planned done: False, identical 65, different 0, key recomputed equal 65, by env {'binpacking': 41, 'jobshop': 24}, version digests 55
+ALL PHASES: distinct run records repeated: 729 of 1192 | identical: 729 | different: 0
+   records repeated twice (in two phases): 36 | of these, both repetitions identical to the ledger: 36
+   by environment: {'binpacking': '53 of 276', 'forecasting': '276 of 276', 'jobshop': '36 of 276', 'pmedian': '182 of 182', 'quadassign': '182 of 182'}
+   version digests: 138 of 138
+   budgets: {(12, 'A'): 657, (16, 'B'): 36, (16, 'A'): 36}
+   purposes: {'confirm:1:random': 12, 'confirm:1:self': 24, 'gate:1:random': 12, 'gate:1:self': 24, 'search:1:random': 107, 'search:1:self': 118, 'search:2:random': 184, 'search:2:self': 248}
+   seeds: {11: 331, 12: 326, 101: 6, 102: 6, 103: 6, 104: 6, 105: 6, 106: 6, 201: 6, 202: 6, 203: 6, 204: 6, 205: 6, 206: 6}
+   fields compared in every repetition: ['acquired', 'budget', 'capability', 'category', 'env', 'fresh_acquired', 'fresh_groups', 'fresh_ids', 'fresh_untrained', 'gain', 'memory_in', 'n_fresh', 'n_train', 'report', 'seed', 'threshold', 'train_acquired', 'train_groups', 'train_untrained', 'type', 'units', 'untrained', 'version']
+   the ten fields named in the task present and compared in every repetition: True
+   repetitions whose stored values (untrained, acquired, gain, train_*, capability) differ from the ledger on a second comparison: 0
+   what the repeated records contain (env, learned, gain): {('binpacking', 'learned', 'gain != 0'): 48, ('binpacking', 'not learned', 'gain == 0'): 5, ('forecasting', 'learned', 'gain != 0'): 56, ('forecasting', 'not learned', 'gain == 0'): 220, ('jobshop', 'learned', 'gain != 0'): 25, ('jobshop', 'not learned', 'gain == 0'): 11, ('pmedian', 'learned', 'gain != 0'): 114, ('pmedian', 'learned', 'gain == 0'): 1, ('pmedian', 'not learned', 'gain == 0'): 67, ('quadassign', 'learned', 'gain != 0'): 151, ('quadassign', 'not learned', 'gain == 0'): 31}
+   measured CPU, repetition / ledger (not a result; for information): {'binpacking': 'median 1.03 (n 53)', 'jobshop': 'median 1.05 (n 36)', 'pmedian': 'median 1.03 (n 182)', 'quadassign': 'median 1.06 (n 182)'}
+   total CPU-seconds of the repetitions (process time): 1961.9
+NEGATIVE CONTROLS (jobs that are deliberately not the recorded ones)
+   idx 509 quadassign: the recorded job: fields that differ from the ledger record: []
+   idx 509 quadassign: another seed: fields that differ from the ledger record: ['acquired', 'capability', 'fresh_acquired', 'fresh_untrained', 'gain', 'report', 'seed', 'train_acquired', 'train_untrained', 'units', 'untrained']
+   idx 509 quadassign: another version: fields that differ from the ledger record: ['report', 'units', 'version']
+   idx 39 forecasting: the recorded job: fields that differ from the ledger record: []
+   idx 39 forecasting: another seed: fields that differ from the ledger record: ['report', 'seed', 'units']
+   idx 39 forecasting: another version: fields that differ from the ledger record: ['report', 'version']

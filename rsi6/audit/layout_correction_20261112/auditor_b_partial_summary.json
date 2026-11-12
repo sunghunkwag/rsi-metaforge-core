@@ -1,0 +1,40 @@
+{
+ "what": "summary, made by the orchestrating session from the second auditor's working files, of the recorded runs it had repeated with the corrected code before the usage limit of the session stopped it; the auditor gave no verdict",
+ "rows": 1228,
+ "distinct_records_repeated": 1192,
+ "runs_recorded_before_the_correction": 1192,
+ "all_identical": true,
+ "not_repeated": [],
+ "by_environment": {
+  "binpacking": 276,
+  "forecasting": 288,
+  "jobshop": 276,
+  "pmedian": 194,
+  "quadassign": 194
+ },
+ "fields_compared": [
+  "acquired",
+  "budget",
+  "capability",
+  "category",
+  "env",
+  "fresh_acquired",
+  "fresh_groups",
+  "fresh_ids",
+  "fresh_untrained",
+  "gain",
+  "memory_in",
+  "n_fresh",
+  "n_train",
+  "report",
+  "seed",
+  "threshold",
+  "train_acquired",
+  "train_groups",
+  "train_untrained",
+  "type",
+  "units",
+  "untrained",
+  "version"
+ ]
+}

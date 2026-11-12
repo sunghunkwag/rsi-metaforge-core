@@ -24,8 +24,7 @@ from rsi6.kernel.environment import split
 from rsi6.kernel.ledger import digest
 from rsi6.kernel.environment import _order
 from rsi6.kernel.problem import Meter, view
-from rsi6.learner import version as versions
-from rsi6.learner.learner import Learner
+from rsi6.learner import designs
 
 BUDGET = {"train": 40.0, "test_c": 2.0, "test_e": 1.0, "n_train": 16, "n_fresh": 24}
 
@@ -81,7 +80,7 @@ def measure(job: dict) -> dict:
     train_ids, fresh_ids = split(env, budget["n_train"], budget["n_fresh"])
     if budget.get("part") in ("A", "B"):          # one half of the fresh instances decides, the other confirms afterwards
         fresh_ids = halves(env, fresh_ids)[0 if budget["part"] == "A" else 1]
-    learner = Learner(job["version"])
+    learner = designs.make(job["version"])
     relabel = lambda i: _seed(seed, env.name, i, "relabel")      # every instance has its own relabelling
     meter = Meter(0.0)
     problems = [env.problem(i, meter, relabel(i), True)[0] for i in train_ids]
@@ -117,7 +116,7 @@ def measure(job: dict) -> dict:
     train_a, _ = scores(train_ids, capability)
     record = {
         "type": "run", "purpose": job.get("purpose", ""), "env": env.name, "category": env.category,
-        "version": versions.digest(job["version"]), "seed": seed, "budget": budget,
+        "version": designs.digest(job["version"]), "seed": seed, "budget": budget,
         "n_train": len(train_ids), "n_fresh": len(fresh_ids), "threshold": float(env.threshold_for(fresh_ids)),
         "fresh_ids": list(fresh_ids), "fresh_groups": sorted({env.group(i) for i in fresh_ids}),
         "train_groups": sorted({env.group(i) for i in train_ids}),
@@ -137,7 +136,7 @@ def measure(job: dict) -> dict:
 
 def key_of(job: dict) -> str:
     """What identifies a run: the same key always gives the same record apart from measured cost."""
-    return digest({"env": job["env"], "version": versions.digest(job["version"]), "seed": int(job["seed"]),
+    return digest({"env": job["env"], "version": designs.digest(job["version"]), "seed": int(job["seed"]),
                    "budget": job["budget"], "memory": digest(job.get("memory"))})
 
 

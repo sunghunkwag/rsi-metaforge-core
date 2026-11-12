@@ -12,8 +12,7 @@ from rsi6 import environments
 from rsi6.kernel import roles
 from rsi6.kernel.problem import BudgetExhausted, Meter, view
 from rsi6.kernel.run import Cache
-from rsi6.learner import version as versions
-from rsi6.learner.learner import Learner
+from rsi6.learner import designs
 from rsi6.meta import space
 
 RULES = {
@@ -75,7 +74,7 @@ def search(improver: str, improver_version, start: dict, envs, seeds, budget: di
     rng = np.random.default_rng(seed)
     trace = {}
     if improver == "learner":
-        learner = Learner(improver_version)
+        learner = designs.make(improver_version)
         capability = {"kind": "assign", "weights": {}, "edit_stats": edit_stats} if edit_stats else None
         learner.apply(capability, view(problem), rng)
         trace = learner.trace
@@ -97,14 +96,14 @@ def search(improver: str, improver_version, start: dict, envs, seeds, budget: di
     expected = trace.get("expected", [])
     return {
         "type": "search", "tag": tag, "improver": improver,
-        "improver_version": versions.digest(improver_version) if improver_version else None,
-        "start": versions.digest(start), "envs": list(envs), "seeds": list(seeds), "cpu_limit": cpu_limit,
+        "improver_version": designs.digest(improver_version) if improver_version else None,
+        "start": designs.digest(start), "envs": list(envs), "seeds": list(seeds), "cpu_limit": cpu_limit,
         "cpu_used": float(sum(h["cpu"] for h in history)), "evaluated": len(history),
         "improving": int(sum(1 for h in history if h["cost"] < 0.0)),
         "best_cost": None if best is None else best["cost"],
-        "nominee": None if nominee is None else versions.digest(nominee),
+        "nominee": None if nominee is None else designs.digest(nominee),
         "nominee_version": nominee,
-        "nominee_changes": None if nominee is None else versions.differences(start, nominee),
+        "nominee_changes": None if nominee is None else designs.differences(start, nominee),
         "costs": [round(h["cost"], 6) for h in history],
         "expected": expected,
         "brier": None if not expected else float(np.mean([(p - y) ** 2 for p, y in expected])),
@@ -133,7 +132,7 @@ def gate(incumbent: dict, nominee: dict, envs, seeds, budget: dict, cache: Cache
     conditions = {"improvement": bool(both >= RULES["margin"]), "gain_interval": bool(low > 0.0),
                   "cpu": bool(ratio <= RULES["cpu_ratio"])}
     return {
-        "type": "gate", "tag": tag, "incumbent": versions.digest(incumbent), "nominee": versions.digest(nominee),
+        "type": "gate", "tag": tag, "incumbent": designs.digest(incumbent), "nominee": designs.digest(nominee),
         "envs": list(envs), "seeds": list(seeds), "mean_min": float(both), "mean_gain_change": float(d_gain.mean()),
         "mean_acquired_change": float(d_acq.mean()), "gain_lower_bound": low, "cpu_ratio": float(ratio),
         "per_env": {e: {"gain_change": float(d_gain[idx].mean()), "acquired_change": float(d_acq[idx].mean())}
@@ -152,7 +151,7 @@ def confirm(incumbent: dict, nominee: dict, envs, seeds, budget: dict, cache: Ca
     other = cache.get(jobs_for(nominee, envs, seeds, part, tag + ":nominee"))
     d_gain = np.array([o["gain"] - b["gain"] for b, o in zip(base, other)])
     d_acq = np.array([o["acquired"] - b["acquired"] for b, o in zip(base, other)])
-    return {"type": "confirm", "tag": tag, "incumbent": versions.digest(incumbent), "nominee": versions.digest(nominee),
+    return {"type": "confirm", "tag": tag, "incumbent": designs.digest(incumbent), "nominee": designs.digest(nominee),
             "envs": list(envs), "seeds": list(seeds), "mean_gain_change": float(d_gain.mean()),
             "mean_acquired_change": float(d_acq.mean()), "mean_min": improvement(base, other),
             "runs": len(base), "cpu": {"incumbent": cpu_of(base), "nominee": cpu_of(other)}}

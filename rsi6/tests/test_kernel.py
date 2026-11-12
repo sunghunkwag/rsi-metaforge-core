@@ -5,6 +5,7 @@ test plumbing. They are not environments, and no number obtained on them is repo
 """
 from __future__ import annotations
 
+import json
 import os
 import pickle
 import sys
@@ -452,6 +453,39 @@ def test_no_model_or_network_imports():
                 text = open(os.path.join(folder, name)).read()
                 for word in banned:
                     assert f"import {word}" not in text and f"from {word}" not in text, (name, word)
+
+
+def test_second_design_keeps_the_contract():
+    """The second design of the learner: a well-formed answer whatever the budget, the meter is
+    respected, a run repeats exactly, and built descriptors are part of the capability by name."""
+    from rsi6.learner import designs
+    version = designs.default("b")
+    assert designs.design_of(version) == "b" and designs.digest(version) != designs.digest(designs.default("a"))
+    for ordered in (False, True):
+        for limit in (30.0, 2000.0, 60000.0):
+            outcomes = []
+            for _ in range(2):
+                meter = Meter(limit)
+                problems = [_Fixture(8, 5, seed, meter, ordered) for seed in range(8)]
+                learner = designs.make(version)
+                capability, _, report = learner.acquire([view(P) for P in problems], np.random.default_rng(3))
+                assert meter.used <= limit + 1e-9, (limit, meter.used)
+                test = _Fixture(8, 5, 99, Meter(400.0), ordered)
+                answer = learner.apply(capability, view(test), np.random.default_rng(4))
+                assert test.well_formed(answer), (ordered, limit)
+                outcomes.append((json.dumps(capability, sort_keys=True), answer.tolist(), report["tests"]))
+            assert outcomes[0] == outcomes[1], "the second design does not repeat exactly"
+            if capability is not None:
+                for expr in capability["built"]:
+                    assert any(name == f"opt:{expr}" or expr in name for name in capability["weights"]), expr
+
+
+def test_first_design_is_untouched_by_the_dispatch():
+    """Versions of the first design go through the frozen modules: same digest, same learner class."""
+    from rsi6.learner import designs
+    v0 = versions.default()
+    assert designs.digest(v0) == versions.digest(v0) == "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a"
+    assert type(designs.make(v0)) is Learner and designs.design_of(v0) == "a"
 
 
 def main() -> int:
