@@ -1,9 +1,11 @@
-# RSI-6: results of the two registered rounds
+# RSI-6: results of the rounds of self-modification
 
 Every number here is printed by `python -m rsi6.experiments.report` from the ledger
 (`rsi6/ledger/main.jsonl`, hash-chained). The registration is `rsi6/registry/registration.json`,
 written to the ledger before the first round. The test on the sealed target categories has not
-been run (amendment 1): this document covers the rounds of self-modification only.
+been run yet: this document covers the rounds of self-modification only. The first sections are
+about the two registered rounds (first design of the learner), the section near the end about
+the continued process (second design).
 
 ## What missed, and what did not go as designed
 
@@ -126,14 +128,63 @@ adopted.
   is not enacted). No third-party code is executed.
 * Nothing here is evidence about artificial general intelligence.
 
-## What happens next
+## What happened next
 
-Amendment 1 keeps the targets sealed until the improvement process is complete. Amendment 2
-registers the continued process: a second design of the learner, written by the experimenter
+Amendment 1 kept the targets sealed until the improvement process is complete. Amendment 2
+registered the continued process: a second design of the learner, written by the experimenter
 from the findings above (one descriptor at a time, descriptors built from existing ones, a
 proposal distribution and plans relative to the budget as version fields), searches that count
 breadth across categories, a gate on the third adoption set, and one target test that covers
-both processes, with an arm that gives the first design the measured CPU of the second.
+both processes, with an arm that gives the first design the measured CPU of the second. Its
+round is reported below. Both processes are now frozen; the target adapters are being built
+and audited by independent agents, and the target test follows.
+
+## The continued process: round b1 (amendment 2)
+
+Generation 0 here is the second design of the learner, written by the experimenter. What is
+tested is whether versions the system finds for itself pass a gate on categories it has not
+seen. Registration: `registry/registration_b.json`. Round b1 searched the pool of seven
+categories and was gated on graph partitioning and set covering, whose adapters were built and
+audited by independent agents (`audit/adapters_adoption3/`).
+
+**What missed.** Nothing was adopted here either. No registered prediction about the round
+missed: B1, B2 and B3 held.
+
+| improver | candidates | nominee, source pool (breadth) | gate | confirmation | adopted |
+|---|---|---|---|---|---|
+| learner (generation 0, second design) | 26 | +0.0045 | −0.0818 | −0.0176 | no |
+| random proposer | 29 | +0.0035 | +0.0097 (lower bound −0.00005) | +0.0137 | no |
+
+* The learner's nominee changed seven fields. At the gate it lost on set covering (acquired
+  −0.143) and changed nothing on partitioning (−0.002).
+* The random proposer's nominee changed one field (`plan.checks`). It met the margin (+0.0097
+  against 0.005) and used less CPU (0.89), and failed the third condition by a hair: the lower
+  bound of the gain interval was −0.00005. On the confirmation half it was +0.0137. The rule
+  was registered before the round and is applied as written. The same thing happened in round
+  1: the random proposer's single change came closest (+0.0098, lower bound −0.0030,
+  confirmation +0.0129).
+* The self search ranked its candidates above noise (correlation between the two seeds 0.53;
+  0.39 for the random proposer). The changes still do not generalise: over the self search's
+  candidates the mean correlation between categories is +0.10; knapsack improved under 81% of
+  them and quadratic assignment under 62%, bin packing and both prediction categories under
+  none.
+* Round b2 was not run: the registered rule runs it only after an adoption.
+
+**Generation 0 of the second design on the two gate categories**, its first contact with them
+(12 runs each, fresh instances):
+
+| category | untrained | acquired | gain | threshold |
+|---|---|---|---|---|
+| graph partitioning | 0.6046 | 0.8668 | +0.2622 | 0.900 |
+| set covering | 0.1840 | 0.7072 | +0.5232 | 0.950 |
+
+It acquires a large part of both capabilities and reaches neither threshold. This says nothing
+yet about the first design on these categories, nor about equal measured CPU; the registered
+comparison of the designs is on the sealed targets.
+
+**Across the three rounds** the picture is the same: six nominees, none adopted; the two that
+came closest were single-field changes proposed at random; every nominee the learner found by
+following its own measurements on the pool lost on the new categories.
 
 ## How to reproduce
 
