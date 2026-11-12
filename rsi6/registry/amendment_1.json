@@ -1,0 +1,23 @@
+{
+ "amendment": 1,
+ "utc": "2026-11-12T14:48:04Z",
+ "after": "the two registered rounds and the record that freezes the lineages (all three at generation 0; no version was adopted)",
+ "decisions": [
+  "The test on the sealed target categories is postponed, and the targets stay sealed: no data fetched, no adapter written. Reasons: every registered lineage is generation 0, so the registered primary comparison has nothing to compare (prediction R5 holds by its own clause for that case); the Owner's instruction 6 says to keep the final sealed categories untouched until the entire improvement process is complete, and instruction 7 says to examine failures and improve the implementation. One target test will be run when the continued process is frozen; it covers the arms registered here and the arms of the continued process.",
+  "The third adoption set of the draw (setcover, partitioning), which the registration left unused and sealed, becomes the gate of the continued process. Its adapters are built now by independent builders and audited by other agents. The role lock stays: no learner run on either category before that gate. If one cannot be built exactly or fails its audit, the next reserve of the draw takes its place and the replacement is recorded.",
+  "The continued process (a redesigned learner and its rounds of self-modification) will be registered in a second amendment before any of its rounds. Until then only development on the source pool happens: the three source categories and the four adoption categories that the two rounds released."
+ ],
+ "what_the_two_rounds_showed": {
+  "adoptions": 0,
+  "nominees_at_the_gate": {
+   "round 1 self": -0.0023,
+   "round 1 random": 0.0098,
+   "round 2 self": -0.0563,
+   "round 2 random": 0.0
+  },
+  "generation_0_gain_on_fresh_instances": "above zero in three of seven categories (bin packing, job shop, quadratic assignment); zero or near zero in forecasting, p-median, knapsack and regression",
+  "learning_iterations_at_the_registered_budget": "one to three in six of seven categories",
+  "modifications": "the change of the acquired score that a candidate version brings in one category is nearly uncorrelated with what it brings in another (mean correlation between categories -0.21 to +0.06 over four searches)"
+ },
+ "not_changed": "the registration of the two rounds and its records, the rules of the gate, the roles of the draw, the registered arms of the target test"
+}
