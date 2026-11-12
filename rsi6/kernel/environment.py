@@ -44,15 +44,40 @@ class Environment:
         """The external reference value of an instance (for reports and audits)."""
         raise NotImplementedError
 
+    def group(self, instance_id: str) -> str:
+        """The published group an instance belongs to (its family, generator class or size
+        class). Training and fresh instances are taken from different groups."""
+        return ""
 
-def split(ids, key: str, n_train: int, n_fresh: int):
+
+def _order(items, key: str) -> list:
+    return sorted(items, key=lambda i: hashlib.sha256(f"{key}|{i}".encode()).hexdigest())
+
+
+def split(env, n_train: int, n_fresh: int):
     """A fixed, seeded split of an environment's instances into training and fresh ones.
-    The split depends on the environment's name only, so every version and every seed is
-    scored on the same fresh instances, and no fresh instance is ever a training instance."""
-    order = sorted(ids, key=lambda i: hashlib.sha256(f"{key}|{i}".encode()).hexdigest())
-    n_train = min(n_train, len(order) // 2)
-    n_fresh = min(n_fresh, len(order) - n_train)
-    return order[:n_train], order[n_train:n_train + n_fresh]
+
+    It depends on the environment only, so every version and every seed is scored on the same
+    fresh instances, and no fresh instance is ever a training instance. When the benchmark's
+    instances come in published groups, whole groups go to one side: the fresh instances are
+    then not siblings of the training ones. Groups are taken for the fresh side, in a seeded
+    order, until it holds ``n_fresh`` instances or half of all instances; the training side is
+    drawn from the rest."""
+    ids = list(env.instance_ids())
+    groups = {}
+    for i in ids:
+        groups.setdefault(env.group(i), []).append(i)
+    if len(groups) < 2:
+        order = _order(ids, env.name)
+        n_train = min(n_train, len(order) // 2)
+        return order[:n_train], order[n_train:n_train + min(n_fresh, len(order) - n_train)]
+    names = _order(groups, env.name + "|groups")
+    fresh, k = [], 0
+    while k < len(names) - 1 and len(fresh) < n_fresh and 2 * len(fresh) < len(ids):
+        fresh += groups[names[k]]
+        k += 1
+    train = [i for name in names[k:] for i in groups[name]]
+    return _order(train, env.name)[:n_train], _order(fresh, env.name)[:n_fresh]
 
 
 def relabel(rng, n: int):

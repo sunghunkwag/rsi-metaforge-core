@@ -87,6 +87,9 @@ class BinPacking(Environment):
     def reference(self, instance_id):
         return float(self.instances[instance_id]["best"])
 
+    def group(self, instance_id):
+        return instance_id.split("_")[0]                   # the size class: u120, u250, u500
+
     def problem(self, instance_id, meter, seed, training):
         inst = self.instances[instance_id]
         rng = np.random.default_rng(seed)

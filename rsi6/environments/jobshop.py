@@ -4,7 +4,9 @@ Published form: J jobs, M machines; each job is a fixed sequence of M operations
 given machine for a given time. A schedule is valid when every operation starts after the
 job's previous operation has finished and no machine runs two operations at once; its cost is
 the makespan, the time the last operation finishes. Reference: the optimum, or the best known
-upper bound, published with each instance.
+upper bound, published with each instance. Only instances whose optimum is proven in the
+published table are used: an independent check of that table found upper bounds that are out of
+date and one that contradicts another source.
 
 Answer form: a sequence of J*M job indices in which every job appears M times. The k-th
 appearance of a job stands for its k-th operation, and every operation starts as early as the
@@ -107,12 +109,12 @@ class JobShop(Environment):
     name = category = "jobshop"
     form = "assign"
     threshold = 0.85
-    anchor = "a makespan within 1/0.85 of the published optimum or best known upper bound, on average"
+    anchor = "a makespan within 1/0.85 of the published proven optimum, on average"
 
     def __init__(self):
         fetch.fetch("jobshop", quiet=True)
         self.index = {row["name"]: row for row in json.load(open(fetch.path("jobshop", "instances.json")))
-                      if row["jobs"] * row["machines"] <= MAX_OPERATIONS}
+                      if row["jobs"] * row["machines"] <= MAX_OPERATIONS and row.get("optimum") is not None}
         self._parsed = {}
 
     def instance_ids(self):
@@ -124,8 +126,10 @@ class JobShop(Environment):
         return self._parsed[instance_id]
 
     def reference(self, instance_id):
-        row = self.index[instance_id]
-        return float(row["optimum"] if row.get("optimum") is not None else row["bounds"]["upper"])
+        return float(self.index[instance_id]["optimum"])
+
+    def group(self, instance_id):
+        return instance_id.rstrip("0123456789")            # the family: abz, ft, la, orb, swv, ta, yn, dmu
 
     def problem(self, instance_id, meter, seed, training):
         machine, duration = self._instance(instance_id)

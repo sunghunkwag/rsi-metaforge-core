@@ -7,6 +7,10 @@ REGISTRY = {
     "jobshop": ("rsi6.environments.jobshop", "JobShop"),
     "binpacking": ("rsi6.environments.binpacking", "BinPacking"),
     "forecasting": ("rsi6.environments.forecasting", "Forecasting"),
+    "quadassign": ("rsi6.environments.quadassign", "QuadAssign"),
+    "pmedian": ("rsi6.environments.pmedian", "PMedian"),
+    "knapsack": ("rsi6.environments.knapsack", "Knapsack"),
+    "regression": ("rsi6.environments.regression", "Regression"),
 }
 _CACHE = {}
 

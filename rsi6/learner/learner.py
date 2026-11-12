@@ -315,6 +315,8 @@ def construct(P, layout: Layout, theta: np.ndarray, rng, shortlist: int, tempera
         else:
             v = int(U[0])
             Dv = P.candidates(s, U)[0]
+        if P.domain is not None:
+            allowed = allowed & P.domain[v]
         value = _opt_features(P, layout, ctx, s, v, Dv, allowed, step) @ t_opt
         value = np.where(allowed, value + 1e-9 * rng.random(P.n_opts), -np.inf)
         if temperature > 0.0:
@@ -332,59 +334,52 @@ def _finish_arbitrarily(P, s: dict | None) -> np.ndarray:
     """A well-formed answer from an unfinished state, without any evaluation."""
     a = np.full(P.n_vars, -1, dtype=np.int64) if s is None else s["a"].copy()
     used = np.bincount(a[a >= 0], minlength=P.n_opts)
-    o = 0
     for v in np.flatnonzero(a < 0):
-        if P.capacity is not None:
-            while used[o] >= P.capacity[o]:
-                o += 1
+        free = np.ones(P.n_opts, dtype=bool) if P.capacity is None else used < P.capacity
+        if P.domain is not None:
+            free = free & P.domain[v]
+        o = int(np.flatnonzero(free)[0])
         a[v] = o
         used[o] += 1
-        if P.capacity is None:
-            o = (o + 1) % P.n_opts
     return a
 
 
-def _edit(P, version: dict, a: np.ndarray, rng) -> np.ndarray | None:
-    """One random composite change of a complete answer that keeps it well formed."""
-    kinds = []
+def _edit_kinds(P, version: dict) -> list:
     reusable = P.capacity is None or int(P.capacity.max()) > 1
+    kinds = []
     if version["edit.reassign"] and reusable:
         kinds.append("reassign")
     if version["edit.swap"]:
         kinds.append("swap")
-    if version["edit.reverse"]:
-        kinds.append("reverse")
-    if version["edit.move"]:
-        kinds.append("move")
-    if not kinds or P.n_vars < 2:
-        return None
-    kind = kinds[int(rng.integers(len(kinds)))]
+    return kinds
+
+
+def _edit(P, kind: str, i: int, j: int, a: np.ndarray, rng) -> np.ndarray | None:
+    """One elementary change of a complete answer (give variable ``i`` another option, or
+    exchange the options of ``i`` and ``j``), or ``None`` if the result would not be well formed."""
     b = a.copy()
-    i, j = (int(x) for x in rng.choice(P.n_vars, size=2, replace=False))
     if kind == "reassign":
-        o = int(rng.integers(P.n_opts))
-        if o == b[i]:
+        choices = np.arange(P.n_opts) if P.domain is None else np.flatnonzero(P.domain[i])
+        choices = choices[choices != b[i]]
+        if len(choices) == 0:
             return None
+        o = int(choices[int(rng.integers(len(choices)))])
         if P.capacity is not None and np.count_nonzero(b == o) >= P.capacity[o]:
             return None
         b[i] = o
-    elif kind == "swap":
+    else:
         if b[i] == b[j]:
             return None
         b[i], b[j] = b[j], b[i]
-    elif kind == "reverse":
-        lo, hi = min(i, j), max(i, j)
-        b[lo:hi + 1] = b[lo:hi + 1][::-1].copy()
-    else:
-        moved = b[i]
-        b = np.delete(b, i)
-        b = np.insert(b, j if j < len(b) else len(b), moved)
+        if P.domain is not None and not (P.domain[i, b[i]] and P.domain[j, b[j]]):
+            return None
     return b
 
 
 class Learner:
     def __init__(self, version: dict):
         self.v = versions.validate(version)
+        self.trace = {}
 
     # ---- the contract ---------------------------------------------------------------------
     def acquire(self, problems, rng, memory=None):
@@ -552,36 +547,94 @@ class Learner:
 
     def _apply_assign(self, capability, P, rng):
         v = self.v
-        lay = Layout(P, v)
-        theta = lay.vector(capability["weights"]) if capability else lay.prior(v)
-        shortlist = int(v["shortlist"])
-        if not P.ordered:
-            while shortlist > 1 and self._cost(P, shortlist) > P.meter.left():
-                shortlist //= 2
-        best, best_key, hold = None, None, []
+        best, best_key = None, None
+        if P.start_answer is not None:
+            # an answer is already known for this instance: begin from it
+            best = P.start_answer.copy()
+            try:
+                totals = P.start_totals if P.start_totals is not None else P.evaluate(best)
+            except BudgetExhausted:
+                return best
+            best_key = _key(totals, P)
+        else:
+            lay = Layout(P, v)
+            theta = lay.vector(capability["weights"]) if capability else lay.prior(v)
+            shortlist = int(v["shortlist"])
+            if not P.ordered:
+                while shortlist > 1 and self._cost(P, shortlist) > P.meter.left():
+                    shortlist //= 2
+            hold = []
+            try:
+                totals, answer = construct(P, lay, theta, rng, shortlist, hold=hold)
+                best, best_key = answer, _key(totals, P)
+            except BudgetExhausted:
+                return _finish_arbitrarily(P, hold[0] if hold else None)
+            try:
+                if v["test.sampled"]:
+                    while P.meter.left() > 2 * self._cost(P, shortlist):
+                        totals, answer = construct(P, lay, theta, rng, shortlist, temperature=float(v["test.temperature"]))
+                        key = _key(totals, P)
+                        if key < best_key:
+                            best, best_key = answer, key
+            except BudgetExhausted:
+                return best
+        return self._improve(capability, P, rng, best, best_key)
+
+    def _improve(self, capability, P, rng, best, best_key):
+        """Composite changes of a complete answer until the budget ends. With ``edit.adaptive``
+        the kinds of change and the variables that have paid off are tried more often, and what
+        was observed is kept in ``self.trace`` (and may be handed back in a later call)."""
+        v = self.v
+        kinds = _edit_kinds(P, v)
+        prior = (capability or {}).get("edit_stats") or {}
+        tries = {k: float(prior.get("kinds", {}).get(k, [0, 0])[0]) for k in kinds}
+        wins = {k: float(prior.get("kinds", {}).get(k, [0, 0])[1]) for k in kinds}
+        var_tries, var_wins = np.zeros(P.n_vars), np.zeros(P.n_vars)
+        if len(prior.get("vars", [])) == P.n_vars:
+            var_tries, var_wins = np.array([t for t, _ in prior["vars"]], float), np.array([w for _, w in prior["vars"]], float)
+        expectations = []
+        self.trace = {"kinds": {}, "vars": [], "expected": expectations, "evaluated": 0, "improved": 0}
+        if not kinds or P.n_vars < 2:
+            return best
+        misses = 0
         try:
-            totals, answer = construct(P, lay, theta, rng, shortlist, hold=hold)
-            best, best_key = answer, _key(totals, P)
-        except BudgetExhausted:
-            return _finish_arbitrarily(P, hold[0] if hold else None)
-        try:
-            if v["test.sampled"]:
-                while P.meter.left() > 2 * self._cost(P, shortlist):
-                    totals, answer = construct(P, lay, theta, rng, shortlist, temperature=float(v["test.temperature"]))
-                    key = _key(totals, P)
-                    if key < best_key:
-                        best, best_key = answer, key
-            misses = 0
             while misses < 50 * P.n_vars:
-                candidate = _edit(P, v, best, rng)
+                if v["edit.adaptive"]:
+                    draws = [rng.beta(wins[k] + 1.0, tries[k] - wins[k] + 1.0) for k in kinds]
+                    kind = kinds[int(np.argmax(draws))]
+                    weight = (var_wins + 1.0) / (var_tries + 2.0)
+                    i = int(rng.choice(P.n_vars, p=weight / weight.sum()))
+                else:
+                    kind = kinds[int(rng.integers(len(kinds)))]
+                    i = int(rng.integers(P.n_vars))
+                j = int(rng.integers(P.n_vars - 1))
+                j = j + 1 if j >= i else j
+                candidate = _edit(P, kind, i, j, best, rng)
+                for _ in range(int(v["edit.chain"]) - 1):      # a composite change: several elementary ones
+                    if candidate is None:
+                        break
+                    i2, j2 = (int(x) for x in rng.choice(P.n_vars, size=2, replace=False))
+                    candidate = _edit(P, kind, i2, j2, candidate, rng)
                 if candidate is None:
                     misses += 1
                     continue
+                expected = float((wins[kind] + 1.0) / (tries[kind] + 2.0) * (var_wins[i] + 1.0) / (var_tries[i] + 2.0) * 2.0)
                 key = _key(P.evaluate(candidate), P)
-                if key < best_key or (v["edit.accept_equal"] and key == best_key):
+                better = key < best_key
+                expectations.append([min(expected, 1.0), int(better)])
+                tries[kind] += 1.0
+                var_tries[i] += 1.0
+                self.trace["evaluated"] += 1
+                if better:
+                    wins[kind] += 1.0
+                    var_wins[i] += 1.0
+                    self.trace["improved"] += 1
+                if better or (v["edit.accept_equal"] and key == best_key):
                     best, best_key = candidate, key
         except BudgetExhausted:
             pass
+        self.trace["kinds"] = {k: [tries[k], wins[k]] for k in kinds}
+        self.trace["vars"] = [[float(t), float(w)] for t, w in zip(var_tries, var_wins)]
         return best
 
     # ---- the prediction form --------------------------------------------------------------

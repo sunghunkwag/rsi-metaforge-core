@@ -25,10 +25,9 @@ from rsi6.kernel.problem import PredictProblem
 FREQUENCIES = ("Hourly", "Weekly", "Yearly", "Quarterly")
 PER_FREQUENCY = 48
 MAX_HISTORY = 240
-# sMAPE of the organisers' Naive 2 benchmark, from the competition's results paper
-# (Makridakis, Spiliotis, Assimakopoulos 2020, Table 4): yearly 16.342, quarterly 11.012,
-# and 4.754 for the weekly, daily and hourly series together.
-NAIVE2 = {"Yearly": 16.342, "Quarterly": 11.012, "Weekly": 4.754, "Hourly": 4.754}
+# sMAPE of the organisers' Naive 2 benchmark per frequency, as published in the competition's
+# "Evaluation and Ranks" table (read as data by an independent check on 2026-11-12).
+NAIVE2 = {"Yearly": 16.34, "Quarterly": 11.01, "Weekly": 9.161, "Hourly": 18.38}
 
 
 def smape(forecast: np.ndarray, actual: np.ndarray) -> float:
@@ -52,7 +51,10 @@ class Forecasting(Environment):
 
     def __init__(self):
         fetch.fetch("forecasting", quiet=True)
-        self.series = {}
+        self.series, self.kind = {}, {}
+        with open(fetch.path("forecasting", "M4-info.csv"), newline="") as handle:
+            for row in csv.DictReader(handle):
+                self.kind[row["M4id"]] = row["category"]
         for frequency in FREQUENCIES:
             history = _rows(fetch.path("forecasting", f"{frequency}-train.csv"))
             future = _rows(fetch.path("forecasting", f"{frequency}-test.csv"))
@@ -66,6 +68,9 @@ class Forecasting(Environment):
 
     def reference(self, instance_id):
         return self.series[instance_id][2].tolist()
+
+    def group(self, instance_id):
+        return self.kind[instance_id]                      # the competition's domain of the series
 
     def problem(self, instance_id, meter, seed, training):
         _, history, future = self.series[instance_id]

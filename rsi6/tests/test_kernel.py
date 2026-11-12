@@ -186,7 +186,7 @@ def test_problem_carries_no_reference():
 
 def test_training_problems_only_reach_acquire():
     env = environments.load("forecasting")
-    train, fresh = run.split(env.instance_ids(), env.name, 8, 8)
+    train, fresh = run.split(env, 8, 8)
     assert not set(train) & set(fresh)
     for iid in fresh[:2]:
         problem, _ = env.problem(iid, Meter(1e9), 0, False)
@@ -204,6 +204,41 @@ def test_a_run_repeats_exactly():
     for record in (a, b):
         record.pop("cpu")
     assert ledgers.canon(a) == ledgers.canon(b)
+
+
+def test_split_keeps_groups_apart():
+    for name in environments.REGISTRY:
+        if roles.role_of(name) != "source":
+            continue
+        env = environments.load(name)
+        train, fresh = run.split(env, 16, 24)
+        assert not set(train) & set(fresh)
+        groups_train, groups_fresh = {env.group(i) for i in train}, {env.group(i) for i in fresh}
+        if len({env.group(i) for i in env.instance_ids()}) > 1:
+            assert not groups_train & groups_fresh, name
+        assert len(fresh) >= 24, (name, len(fresh))
+
+
+def test_gate_rule_refuses_a_lower_untrained_score():
+    """A version that only lowers its untrained score gains nothing under the rule."""
+    from rsi6.meta import rounds
+    base = [{"acquired": 0.80, "gain": 0.10}] * 4
+    sabotage = [{"acquired": 0.80, "gain": 0.30}] * 4          # same acquired, untrained pushed down
+    search_only = [{"acquired": 0.90, "gain": 0.10}] * 4       # better untrained search, nothing more learned
+    real = [{"acquired": 0.90, "gain": 0.20}] * 4
+    assert rounds.paired(base, sabotage).mean() == 0.0
+    assert abs(rounds.paired(base, search_only).mean()) < 1e-12
+    assert rounds.paired(base, real).mean() > 0.09
+
+
+def test_audit_record_is_intact():
+    """The preserved record of the external code that was executed is pinned by its manifest."""
+    import hashlib
+    root = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "audit",
+                        "external_code_execution_20261111")
+    for line in open(os.path.join(root, "MANIFEST.sha256")):
+        sha, name = line.split(None, 1)
+        assert hashlib.sha256(open(os.path.join(root, name.strip()), "rb").read()).hexdigest() == sha, name
 
 
 def test_version_schema():

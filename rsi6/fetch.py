@@ -31,10 +31,20 @@ def fetch(name: str, quiet: bool = False) -> dict:
     changed = False
     for entry in manifest["files"]:
         target = os.path.join(DATA, name, entry["path"])
+        if entry.get("missing"):
+            continue
         if not os.path.exists(target):
             os.makedirs(os.path.dirname(target), exist_ok=True)
-            subprocess.run(["curl", "-sS", "-L", "--fail", "--max-time", "600", "-A", AGENT, "-o", target + ".part",
-                            entry["url"]], check=True)
+            done = subprocess.run(["curl", "-sS", "-L", "--fail", "--max-time", "600", "-A", AGENT, "-o",
+                                   target + ".part", entry["url"]])
+            if done.returncode != 0:
+                if not manifest.get("allow_missing"):
+                    raise RuntimeError(f"{name}/{entry['path']}: could not be fetched")
+                entry["missing"] = True               # listed by the source, not served by it
+                changed = True
+                if os.path.exists(target + ".part"):
+                    os.remove(target + ".part")
+                continue
             os.replace(target + ".part", target)
         sha = hashlib.sha256(open(target, "rb").read()).hexdigest()
         if entry.get("sha256") is None:

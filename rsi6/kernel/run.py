@@ -26,7 +26,7 @@ from rsi6.kernel.problem import Meter
 from rsi6.learner import version as versions
 from rsi6.learner.learner import Learner
 
-BUDGET = {"train": 40.0, "test_c": 2.0, "test_e": 1.0, "n_train": 16, "n_fresh": 16}
+BUDGET = {"train": 40.0, "test_c": 2.0, "test_e": 1.0, "n_train": 16, "n_fresh": 24}
 
 
 def _seed(*parts) -> int:
@@ -43,7 +43,11 @@ def measure(job: dict) -> dict:
     """One run. ``job``: env, version, seed, budget, purpose, and optionally memory."""
     env = environments.load(job["env"])
     budget, seed = job["budget"], int(job["seed"])
-    train_ids, fresh_ids = split(env.instance_ids(), env.name, budget["n_train"], budget["n_fresh"])
+    train_ids, fresh_ids = split(env, budget["n_train"], budget["n_fresh"])
+    if budget.get("part") == "A":                 # one half of the fresh instances decides, ...
+        fresh_ids = fresh_ids[0::2]
+    elif budget.get("part") == "B":               # ... the other half confirms afterwards
+        fresh_ids = fresh_ids[1::2]
     learner = Learner(job["version"])
     relabel_seed = _seed(seed, env.name, "relabel")
     meter = Meter(0.0)
@@ -88,6 +92,33 @@ def measure(job: dict) -> dict:
     return {"record": record}
 
 
+def key_of(job: dict) -> str:
+    """What identifies a run: the same key always gives the same record apart from measured cost."""
+    return digest({"env": job["env"], "version": versions.digest(job["version"]), "seed": int(job["seed"]),
+                   "budget": job["budget"], "memory": digest(job.get("memory"))})
+
+
+class Cache:
+    """Runs already in the ledger, by key. A repeated request is served from the ledger, so a
+    driver that is started again repeats nothing and reads the same numbers."""
+
+    def __init__(self, ledger):
+        self.ledger = ledger
+        self.by_key = {r["key"]: r for r in ledger.records if r.get("type") == "run" and "key" in r}
+
+    def get(self, jobs, workers: int = 4) -> list:
+        missing = [job for job in jobs if key_of(job) not in self.by_key]
+        seen, todo = set(), []
+        for job in missing:
+            k = key_of(job)
+            if k not in seen:
+                seen.add(k)
+                todo.append(job)
+        for result in run(todo, self.ledger, workers):
+            self.by_key[result["record"]["key"]] = result["record"]
+        return [self.by_key[key_of(job)] for job in jobs]
+
+
 def run(jobs, ledger, workers: int = 4) -> list:
     """Run the jobs (role lock first), append their records to the ledger in job order, and
     return the results."""
@@ -102,5 +133,6 @@ def run(jobs, ledger, workers: int = 4) -> list:
         results = [measure(job) for job in jobs]
     for job, result in zip(jobs, results):
         result["record"]["role"] = job["role"]
-        ledger.append(result["record"])
+        result["record"]["key"] = key_of(job)
+        result["record"] = ledger.append(result["record"])
     return results

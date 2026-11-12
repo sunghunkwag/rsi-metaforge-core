@@ -61,13 +61,18 @@ class AssignProblem:
     kind = "assign"
 
     def __init__(self, n_vars: int, n_opts: int, hard, ordered: bool = False, capacity=None, var_attr=None,
-                 opt_attr=None, var_var=(), opt_opt=(), var_opt=(), occ_attr=(), detail=None,
-                 meter: Meter | None = None):
+                 opt_attr=None, var_var=(), opt_opt=(), var_opt=(), occ_attr=(), detail=None, domain=None,
+                 start_answer=None, start_totals=None, meter: Meter | None = None):
         self.n_vars, self.n_opts = int(n_vars), int(n_opts)
         self.hard = np.asarray(hard, dtype=bool)
         self.n_groups = len(self.hard)
         self.detail = np.zeros(self.n_groups, dtype=bool) if detail is None else np.asarray(detail, dtype=bool)
         self.occ_attr = tuple(np.asarray(m, dtype=float) for m in occ_attr)
+        # which options each variable may take at all (None: every option), and an answer that is
+        # already known for this instance together with its totals (None: none is known)
+        self.domain = None if domain is None else np.asarray(domain, dtype=bool)
+        self.start_answer = None if start_answer is None else np.asarray(start_answer, dtype=np.int64)
+        self.start_totals = None if start_totals is None else np.asarray(start_totals, dtype=float)
         self.ordered = bool(ordered)
         self.capacity = None if capacity is None else np.asarray(capacity, dtype=np.int64)
         self.var_attr = np.zeros((self.n_vars, 0)) if var_attr is None else np.asarray(var_attr, dtype=float)
@@ -133,7 +138,8 @@ class AssignProblem:
             raise ValueError("variable already assigned")
         if self.ordered and v != s["n"]:
             raise ValueError("variables of this problem are assigned in index order")
-        if not 0 <= o < self.n_opts or (self.capacity is not None and s["used"][o] >= self.capacity[o]):
+        if not 0 <= o < self.n_opts or (self.capacity is not None and s["used"][o] >= self.capacity[o]) \
+                or (self.domain is not None and not self.domain[v, o]):
             raise ValueError("option not available")
         self._push(s, v, o)
         s["used"][o] += 1
@@ -152,6 +158,8 @@ class AssignProblem:
         """A complete assignment that respects ranges and capacities."""
         a = np.asarray(answer)
         if a.shape != (self.n_vars,) or a.dtype.kind not in "iu" or a.min(initial=0) < 0 or a.max(initial=0) >= self.n_opts:
+            return False
+        if self.domain is not None and not bool(np.all(self.domain[np.arange(self.n_vars), a])):
             return False
         return self.capacity is None or bool(np.all(np.bincount(a, minlength=self.n_opts) <= self.capacity))
 
