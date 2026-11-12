@@ -1,0 +1,32 @@
+{
+ "what": "corrections made after the registration was written to the ledger; the registration file itself is not changed (the driver refuses a registration that differs from the recorded one)",
+ "corrections": [
+  {
+   "utc": "2026-11-12T13:38:32Z",
+   "when_in_the_run": "after round 1 was complete and after the five searches of round 2; after the unlock of adoption:2; before any run on an environment of adoption:2 was recorded",
+   "event": "the registered run stopped with an error at the first run of the learner on the environment knapsack (gate of round 2): problems of that environment had 1 + m attribute columns with m = 5, 10 or 30, and the learner builds one parameter vector per environment. The environment regression had the same defect (laws with one to nine input variables).",
+   "what": [
+    "rsi6/environments/knapsack.py: every problem is presented with one profit column and as many constraint columns as the largest number of constraints of the benchmark's problems; absent constraints are zero columns (exact: a constraint whose coefficients are all zero binds nothing)",
+    "rsi6/environments/regression.py: every law is presented with as many input columns as the law with the most variables has; absent variables are zero columns (exact: the law does not depend on them)",
+    "rsi6/kernel/run.py: layout() and a check that refuses an environment whose training or fresh problems differ in generic layout, before the learner is called",
+    "rsi6/tests/test_kernel.py: three tests (the layout is the same for every instance of every environment; the kernel refuses a fixture with different layouts; zero columns are exact and can be learned from, on made-up numbers)"
+   ],
+   "not_changed": "the learner (rsi6/learner/learner.py, rsi6/learner/version.py) and rsi6/kernel/problem.py have the hashes of the last correction recorded in freeze_L0.json; no registered number, seed, budget or rule changed",
+   "alternatives_not_taken": [
+    "hiding the constraint coefficients (only the profit column): takes published instance data away from the learner",
+    "keeping one class of problems only: discards two thirds of the benchmark after the fact",
+    "changing the learner so that it accepts problems of different layouts: a change of the frozen learner that the contract does not need"
+   ],
+   "scores_seen_before_the_choice": "none: no run of the learner on knapsack or regression existed, in the registered ledger or in development",
+   "files": {
+    "rsi6/environments/knapsack.py": "8b6f71b548a87a7d710170fff7b8c8ca4d351b0ba9518f10323fbff325103132",
+    "rsi6/environments/regression.py": "68bd8e652e963e2d840f4eb4ca94e4b9664e2bd46b703cf619fccb6cefa6f096",
+    "rsi6/kernel/run.py": "99186b95b8303121823d6653ddc7221726677e5b8524bbb55a2abd0f1eaa7dc5",
+    "rsi6/learner/learner.py": "a30b3c28d38357d1297efb36e04d1a83b5bf0010386100171ba9f4a0cd20683b",
+    "rsi6/learner/version.py": "96764716cedea50c2f0844644948790f6b373c3c2c47db74c8017beb57f0cdfa",
+    "rsi6/kernel/problem.py": "1b74f1af5bab5a20caac0b1d2a5fc21f07d074bd702a86f8e6c47d4943ab28c5"
+   },
+   "independent_audit": null
+  }
+ ]
+}

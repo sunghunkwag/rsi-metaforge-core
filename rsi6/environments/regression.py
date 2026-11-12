@@ -10,6 +10,12 @@ of its test sample. The score is the coefficient of determination of the predict
 queries, cut to [0, 1]. Threshold anchor: the data set's own criterion for a recovered law,
 a coefficient of determination above 0.999.
 
+Every problem of an environment must have the same generic layout. The laws have between one
+and nine input variables, so every law is presented with as many input columns as the law with
+the most variables has, and a law with fewer variables has zero in the others. This is exact:
+the law does not depend on them. (At first a law had as many columns as it had variables; the
+kernel now refuses such an environment before the learner is called.)
+
 The benchmark was made for symbolic regression; here only its samples are used, and no
 expression is searched for. Supplementary files that state the laws are not fetched.
 
@@ -52,6 +58,7 @@ class Regression(Environment):
         self.refused = sorted(i for i in self.laws if len(np.unique(self._load(i)[3])) < 100)
         for i in self.refused:
             del self.laws[i]
+        self.width = max(self._load(i)[0].shape[1] for i in self.laws)
 
     def instance_ids(self):
         return sorted(self.laws)
@@ -76,7 +83,8 @@ class Regression(Environment):
         ctx_x, ctx_y, qry_x, qry_y = self._load(instance_id)
         rng = np.random.default_rng(seed)
         columns, _ = relabel(rng, ctx_x.shape[1])             # the order of the input variables carries nothing
-        problem = PredictProblem(ctx_x[:, columns], ctx_y, qry_x[:, columns], ordered=False,
+        pad = lambda x: np.column_stack([x[:, columns], np.zeros((len(x), self.width - x.shape[1]))])
+        problem = PredictProblem(pad(ctx_x), ctx_y, pad(qry_x), ordered=False,
                                  target=qry_y if training else None, meter=meter)
         return problem, (lambda answer: np.asarray(answer, dtype=float))
 

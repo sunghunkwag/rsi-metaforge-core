@@ -8,8 +8,16 @@ library's file mkcbres), which are best known values, not proven optima.
 
 Answer form: every item takes option 0 (left) or 1 (taken). Groups: [0] minus the profit of the
 taken items (soft, a cost); [1] the total amount by which limits are exceeded (hard). The
-profits and the constraint coefficients of an item are exposed as its attributes. The limits
-b(i) are in no exposed array: they act only through the hard group.
+profit and the constraint coefficients of an item are exposed as its attributes: one column for
+the profit and one column per constraint. The limits b(i) are in no exposed array: they act
+only through the hard group.
+
+Every problem of an environment must have the same generic layout. The benchmark's problems
+have 5, 10 or 30 constraints, so every problem is presented with 30 constraint columns, and a
+problem with fewer constraints has zero in the others. This is exact: a constraint whose
+coefficients are all zero binds nothing. (At first a problem had as many columns as it had
+constraints. The learner stopped with an error on it in the first gate run of round 2, before
+any record of this environment existed. The kernel now checks the layout itself.)
 """
 from __future__ import annotations
 
@@ -50,11 +58,13 @@ def results(text: str) -> dict:
 
 
 class KnapsackProblem(AssignProblem):
-    def __init__(self, profit, use, limit, meter):
+    def __init__(self, profit, use, limit, meter, width=None):
         n = len(profit)
         self.profit, self.use, self.limit = profit, use, limit
+        shown = np.zeros((n, max(len(limit), width or 0)))     # absent constraints: zero coefficients
+        shown[:, :len(limit)] = use.T
         super().__init__(n_vars=n, n_opts=2, hard=[False, True], ordered=False, capacity=None,
-                         var_attr=np.column_stack([profit, use.T]), meter=meter)
+                         var_attr=np.column_stack([profit, shown]), meter=meter)
 
     def partial_totals(self, a):
         taken = a == 1
@@ -97,6 +107,7 @@ class Knapsack(Environment):
             for k, problem in enumerate(parse(open(fetch.path("knapsack", f"mknapcb{number}.txt")).read())):
                 name = f"{label}-{k:02d}"
                 self.instances[name] = dict(problem, best=best[name])
+        self.width = max(len(inst["limit"]) for inst in self.instances.values())
 
     def instance_ids(self):
         return sorted(self.instances)
@@ -113,7 +124,7 @@ class Knapsack(Environment):
         item_perm, _ = relabel(rng, len(inst["profit"]))
         row_perm, _ = relabel(rng, len(inst["limit"]))
         problem = KnapsackProblem(inst["profit"][item_perm], inst["use"][np.ix_(row_perm, item_perm)],
-                                  inst["limit"][row_perm], meter)
+                                  inst["limit"][row_perm], meter, self.width)
 
         def decode(answer):
             out = np.empty(len(item_perm), dtype=np.int64)

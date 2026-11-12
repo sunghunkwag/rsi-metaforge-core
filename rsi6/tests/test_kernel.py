@@ -17,6 +17,7 @@ import numpy as np
 from rsi6 import environments
 from rsi6.kernel import ledger as ledgers
 from rsi6.kernel import roles, run
+from rsi6.kernel.environment import Environment
 from rsi6.kernel.problem import AssignProblem, BudgetExhausted, Meter, PredictProblem, view
 from rsi6.learner import version as versions
 from rsi6.learner.learner import Learner
@@ -166,6 +167,72 @@ def test_view_hides_the_adapter():
             except ValueError:
                 continue
             raise AssertionError(f"{name}: the learner could write to the observed targets")
+
+
+def test_layout_is_the_same_for_every_instance():
+    """Every instance of an environment has the same generic layout (numbers of attribute
+    columns, relations and groups): a learner's descriptors are defined per environment."""
+    for name in environments.REGISTRY:
+        env = environments.load(name)
+        train, fresh = run.split(env, 16, 24)
+        seen = {run.layout(env.problem(i, Meter(float("inf")), 3, True)[0]) for i in train + fresh}
+        assert len(seen) == 1, (name, len(seen))
+
+
+def test_kernel_refuses_instances_with_different_layouts():
+    """An environment whose instances differ in layout is refused by the kernel before the
+    learner is called."""
+    class Uneven(Environment):
+        name = category = "uneven-fixture"
+        form = "predict"
+
+        def instance_ids(self):
+            return [f"i{k:02d}" for k in range(12)]
+
+        def problem(self, instance_id, meter, seed, training):
+            k = int(instance_id[1:])
+            x = np.random.default_rng(k).random((40, 2 + k % 3))
+            return PredictProblem(x[:30], x[:30].sum(axis=1), x[30:], ordered=False,
+                                  target=x[30:].sum(axis=1) if training else None, meter=meter), (lambda a: a)
+
+        def score(self, instance_id, answer):
+            return 0.5
+
+    environments._CACHE["uneven-fixture"] = Uneven()
+    try:
+        run.measure({"env": "uneven-fixture", "version": versions.default(), "seed": 1,
+                     "budget": dict(run.BUDGET, n_train=4, n_fresh=4)})
+    except RuntimeError as error:
+        assert "layout" in str(error)
+    else:
+        raise AssertionError("the kernel accepted instances with different layouts")
+    finally:
+        del environments._CACHE["uneven-fixture"]
+
+
+def test_padded_columns_are_exact_and_learnable():
+    """Plumbing, on made-up numbers (not the benchmark's): problems with different numbers of
+    constraints, presented with zero columns for the absent ones, have one layout, evaluate
+    as their specification says, and the learner learns from them and answers them."""
+    from rsi6.environments.knapsack import KnapsackProblem
+    rng = np.random.default_rng(0)
+    meter = Meter(0.0)
+    problems = []
+    for m in (2, 5, 3, 2, 5, 3):
+        use = rng.integers(1, 50, size=(m, 14)).astype(float)
+        problems.append(KnapsackProblem(rng.integers(10, 99, size=14).astype(float), use, use.sum(axis=1) / 2, meter, 5))
+    meter.limit = 20.0 * sum(P.construction_units() for P in problems)
+    assert len({run.layout(P) for P in problems}) == 1 and problems[0].var_attr.shape == (14, 6)
+    P = problems[0]
+    assert np.all(P.var_attr[:, 3:] == 0) and np.array_equal(P.var_attr[:, 1:3], P.use.T)
+    learner = Learner(versions.default())
+    capability, _, report = learner.acquire([view(p) for p in problems], np.random.default_rng(1))
+    meter.limit = float("inf")
+    answer = learner.apply(capability, view(problems[4]), np.random.default_rng(2))
+    assert problems[4].well_formed(answer), report
+    taken = answer == 1
+    assert np.allclose(problems[4].partial_totals(answer),
+                       [-problems[4].profit[taken].sum(), np.maximum(problems[4].use[:, taken].sum(axis=1) - problems[4].limit, 0).sum()])
 
 
 def test_assignment_is_metered():
