@@ -24,3 +24,4 @@ reports/
 rsi6/data/
 rsi6/ledger/dev.jsonl
 rsi6/ledger/dev_b.jsonl
+rsi6/ledger/live.jsonl
