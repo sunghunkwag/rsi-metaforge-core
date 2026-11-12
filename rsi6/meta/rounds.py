@@ -29,10 +29,20 @@ def cpu_of(records) -> float:
     return float(sum(r["cpu"]["acquire"] + r["cpu"]["apply"] for r in records))
 
 
-def paired(base, other) -> np.ndarray:
-    """Per run: the smaller of the change in the acquired score and the change in gain. A version
-    that only lowers its untrained score, or only searches better untrained, gets nothing."""
-    return np.array([min(o["acquired"] - b["acquired"], o["gain"] - b["gain"]) for b, o in zip(base, other)])
+def changes(base, other) -> tuple:
+    """Mean change of the acquired score and of the gain: over seeds within an environment, then
+    over environments."""
+    envs = sorted({r["env"] for r in base})
+    acquired = [np.mean([o["acquired"] - b["acquired"] for b, o in zip(base, other) if b["env"] == e]) for e in envs]
+    gain = [np.mean([o["gain"] - b["gain"] for b, o in zip(base, other) if b["env"] == e]) for e in envs]
+    return float(np.mean(acquired)), float(np.mean(gain))
+
+
+def improvement(base, other) -> float:
+    """The smaller of the two mean changes. A version that only lowers its untrained score, or
+    only searches better untrained, gets nothing. (The means are taken first: the mean of
+    per-run minima would be pulled down by noise alone.)"""
+    return min(changes(base, other))
 
 
 def pool(ledger) -> list:
@@ -58,7 +68,7 @@ def search(improver: str, improver_version, start: dict, envs, seeds, budget: di
         cpu = cpu_of(records)
         if cpu > RULES["search_cpu_ratio"] * base_cpu:
             return 1.0, cpu
-        return -float(paired(base, records).mean()), cpu
+        return -improvement(base, records), cpu
 
     meter = Meter(cpu_limit)
     problem = space.VersionProblem(start, cost, meter)
@@ -107,7 +117,7 @@ def gate(incumbent: dict, nominee: dict, envs, seeds, budget: dict, cache: Cache
     part = dict(budget, part="A")
     base = cache.get(jobs_for(incumbent, envs, seeds, part, tag + ":incumbent"))
     other = cache.get(jobs_for(nominee, envs, seeds, part, tag + ":nominee"))
-    both = paired(base, other)
+    both = improvement(base, other)
     d_gain = np.array([o["gain"] - b["gain"] for b, o in zip(base, other)])
     d_acq = np.array([o["acquired"] - b["acquired"] for b, o in zip(base, other)])
     rng = np.random.default_rng(seed)
@@ -120,11 +130,11 @@ def gate(incumbent: dict, nominee: dict, envs, seeds, budget: dict, cache: Cache
         means.append(np.mean([d_gain[rng.choice(idx, size=len(idx))].mean() for idx in by_env.values()]))
     low = float(np.quantile(means, 1.0 - RULES["level"]))
     ratio = cpu_of(other) / max(cpu_of(base), 1e-9)
-    conditions = {"improvement": bool(both.mean() >= RULES["margin"]), "gain_interval": bool(low > 0.0),
+    conditions = {"improvement": bool(both >= RULES["margin"]), "gain_interval": bool(low > 0.0),
                   "cpu": bool(ratio <= RULES["cpu_ratio"])}
     return {
         "type": "gate", "tag": tag, "incumbent": versions.digest(incumbent), "nominee": versions.digest(nominee),
-        "envs": list(envs), "seeds": list(seeds), "mean_min": float(both.mean()), "mean_gain_change": float(d_gain.mean()),
+        "envs": list(envs), "seeds": list(seeds), "mean_min": float(both), "mean_gain_change": float(d_gain.mean()),
         "mean_acquired_change": float(d_acq.mean()), "gain_lower_bound": low, "cpu_ratio": float(ratio),
         "per_env": {e: {"gain_change": float(d_gain[idx].mean()), "acquired_change": float(d_acq[idx].mean())}
                     for e, idx in by_env.items()},
@@ -144,5 +154,5 @@ def confirm(incumbent: dict, nominee: dict, envs, seeds, budget: dict, cache: Ca
     d_acq = np.array([o["acquired"] - b["acquired"] for b, o in zip(base, other)])
     return {"type": "confirm", "tag": tag, "incumbent": versions.digest(incumbent), "nominee": versions.digest(nominee),
             "envs": list(envs), "seeds": list(seeds), "mean_gain_change": float(d_gain.mean()),
-            "mean_acquired_change": float(d_acq.mean()), "mean_min": float(paired(base, other).mean()),
+            "mean_acquired_change": float(d_acq.mean()), "mean_min": improvement(base, other),
             "runs": len(base), "cpu": {"incumbent": cpu_of(base), "nominee": cpu_of(other)}}

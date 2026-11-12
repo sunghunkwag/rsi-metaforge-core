@@ -222,13 +222,13 @@ def test_split_keeps_groups_apart():
 def test_gate_rule_refuses_a_lower_untrained_score():
     """A version that only lowers its untrained score gains nothing under the rule."""
     from rsi6.meta import rounds
-    base = [{"acquired": 0.80, "gain": 0.10}] * 4
-    sabotage = [{"acquired": 0.80, "gain": 0.30}] * 4          # same acquired, untrained pushed down
-    search_only = [{"acquired": 0.90, "gain": 0.10}] * 4       # better untrained search, nothing more learned
-    real = [{"acquired": 0.90, "gain": 0.20}] * 4
-    assert rounds.paired(base, sabotage).mean() == 0.0
-    assert abs(rounds.paired(base, search_only).mean()) < 1e-12
-    assert rounds.paired(base, real).mean() > 0.09
+    base = [{"env": "e", "acquired": 0.80, "gain": 0.10}] * 4
+    sabotage = [{"env": "e", "acquired": 0.80, "gain": 0.30}] * 4      # same acquired, untrained pushed down
+    search_only = [{"env": "e", "acquired": 0.90, "gain": 0.10}] * 4   # better untrained search, nothing more learned
+    real = [{"env": "e", "acquired": 0.90, "gain": 0.20}] * 4
+    assert rounds.improvement(base, sabotage) == 0.0
+    assert abs(rounds.improvement(base, search_only)) < 1e-12
+    assert rounds.improvement(base, real) > 0.09
 
 
 def test_audit_record_is_intact():

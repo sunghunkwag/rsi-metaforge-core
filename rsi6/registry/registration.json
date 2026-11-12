@@ -66,7 +66,7 @@
   "bootstrap": 2000,
   "level": 0.9
  },
- "primary_endpoint": "on the target categories, runs with empty memory: mean over categories of the paired per-seed value min(change in acquired, change in gain) between the final version of the self lineage and the generation-0 version; claimed only if it is at least 0.01 and its 95% bootstrap interval, resampling categories and seeds, excludes zero",
+ "primary_endpoint": "on the target categories, runs with empty memory: the smaller of the mean change in the acquired score and the mean change in gain (means over seeds within a category, then over categories) between the final version of the self lineage and the generation-0 version; claimed only if it is at least 0.01 and its 95% bootstrap interval, resampling categories and seeds, excludes zero",
  "controls": [
   "generation 0 (frozen original)",
   "generation 0 with memory of its own earlier acquisitions (skills only)",
@@ -138,5 +138,13 @@
   "anything about categories outside assignment-form optimisation and prediction",
   "that a capability outside the learner's own descriptors and methods was acquired",
   "open-ended or general improvement"
- ]
+ ],
+ "revisions": [
+  {
+   "utc": "2026-11-12T11:05:43Z",
+   "before_any_registered_round": true,
+   "what": "the improvement of a version over another is the smaller of the two MEAN changes (acquired, gain), not the mean of per-run minima: a development round on the source categories showed that the mean of minima is pulled below zero by seed noise alone, which made neutral changes look harmful. This matches the wording of the rule ('improve acquired and gain by this much, on average'). No number was changed."
+  }
+ ],
+ "development_round": "one round on the source categories only (development ledger, not committed, not evidence): the learner as improver found no improving version in 16 evaluations; the random proposer found one (a setting that spends spare test-time budget on sampled constructions), which the gate refused for using 1.26 times the measured CPU"
 }

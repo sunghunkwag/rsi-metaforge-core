@@ -24,8 +24,24 @@ LEDGER = os.path.join(os.path.dirname(HERE), "ledger", "main.jsonl")
 REGISTRATION = os.path.join(os.path.dirname(HERE), "registry", "registration.json")
 
 
-def paired_min(base, other) -> np.ndarray:
-    return np.array([min(o["acquired"] - b["acquired"], o["gain"] - b["gain"]) for b, o in zip(base, other)])
+def both_interval(acquired: dict, gain: dict, rng, draws: int = 5000, level: float = 0.95):
+    """The smaller of the mean change in acquired and the mean change in gain (means over seeds
+    within a category, then over categories), with an interval that resamples categories and,
+    within each, seeds, and recomputes the statistic."""
+    names = sorted(acquired)
+
+    def statistic(pick):
+        a = np.mean([np.mean(acquired[n][idx]) for n, idx in pick])
+        g = np.mean([np.mean(gain[n][idx]) for n, idx in pick])
+        return min(a, g)
+
+    point = statistic([(n, np.arange(len(acquired[n]))) for n in names])
+    values = []
+    for _ in range(draws):
+        chosen = [names[k] for k in rng.choice(len(names), size=len(names))]
+        values.append(statistic([(n, rng.choice(len(acquired[n]), size=len(acquired[n]))) for n in chosen]))
+    low, high = np.quantile(values, [(1 - level) / 2, 1 - (1 - level) / 2])
+    return float(point), float(low), float(high)
 
 
 def by_key(ledger) -> dict:
@@ -99,14 +115,13 @@ def targets_section(ledger, reg) -> dict | None:
     base = arms["frozen"]
 
     def compare(name, other, reference=base):
-        values, acquired, gain = {}, {}, {}
+        acquired, gain = {}, {}
         for env in sorted({r["env"] for r in reference}):
             b = sorted((r for r in reference if r["env"] == env), key=lambda r: r["seed"])
             o = sorted((r for r in other if r["env"] == env), key=lambda r: r["seed"])
-            values[env] = paired_min(b, o)
             acquired[env] = np.array([y["acquired"] - x["acquired"] for x, y in zip(b, o)])
             gain[env] = np.array([y["gain"] - x["gain"] for x, y in zip(b, o)])
-        comparisons[name] = {"min_change": blocked_interval(values, rng), "acquired_change": blocked_interval(acquired, rng),
+        comparisons[name] = {"min_change": both_interval(acquired, gain, rng), "acquired_change": blocked_interval(acquired, rng),
                              "gain_change": blocked_interval(gain, rng)}
 
     for arm in arms:
