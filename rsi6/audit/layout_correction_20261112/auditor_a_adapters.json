@@ -1,0 +1,158 @@
+{
+ "verdict": "pass_with_findings",
+ "summary": "Auditor A. No blocking defect found. I could not show that the corrected adapters are inexact or carry information beyond the published instances; I could show that the kernel's layout check is incomplete in one respect that none of the seven environments triggers.\n\nWhat holds, with my own parsers and evaluators (no rsi6 code in them):\n- Knapsack: all 180 problems (30 per class, 6 classes) x 2 seeds. var_attr is (n, 31): column 0 the profit, columns 1..m the instance's coefficients under a seeded permutation of items and of constraints, columns m+1..30 exactly +0.0. partial_totals, the start/candidates/assign/totals path (through the view and on the adapter's object), evaluate, decode and Environment.score agree exactly with my evaluator on 6480 complete selections (3676 feasible, 2804 infeasible) and 9000 partially decided states. 0 failures. The name-to-problem mapping is confirmed independently: the LP optimum of my parse equals the LP optimum published under the same name for 180 of 180 (largest relative difference 4.5e-11; 0 of 180 against the neighbouring name).\n- Regression: all 118 used laws x 2 seeds. Presented inputs are the published input columns in a seeded permuted order followed by exactly-zero columns, bit for bit; observed targets and the scorer's target are the published value columns; no query equals an observed row; the training flag changes only the attached target. 0 failures.\n- Information: the public fields of the view hold only the instance's numbers; limits, best values, names and classes are in no array; changing the limits changes no field. Zero columns are always last and reveal only m or d (plus the benchmark maximum, 30 and 8).\n- Layout: one kernel layout and one learner descriptor list per environment over 3196 constructed problems (7 environments, training and fresh, 7 seeds, 9 versions).\n- Claims: learner.py, version.py and problem.py have the recorded hashes; the diff is the whole change to its four files (git blob hashes match in both directions); 38 recorded runs of the five recorded environments repeat identically under the corrected kernel; the ledger chain is intact (1211 records, no run on knapsack or regression); the registration digest is unchanged.\n\nFindings: 1 major (run.layout() does not record capacity.max() > 1, which the learner's Layout reads; on fixtures the kernel accepts such a mix and the learner either fails inside acquire or, for index-ordered problems, silently cuts the weight vector by position), 3 minor (the learner part of the third new test performs zero learning rounds; 'one to nine input variables' is wrong, the data have one to eight; 'before the learner is called' is not true for a deviating fresh problem), and notes.\n\nRules kept: the learner was never called on a knapsack or regression instance (only on recorded runs of the other five environments via measure() without any ledger write, and on made-up fixtures). No network (subprocess guarded). Nothing under REPO was written (no file newer than the diff, no __pycache__). All scripts and their outputs are in /tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/audit2/work_a (a*.py, a*.out). Every script was run as: cd /tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/audit2/repo && PYTHONDONTWRITEBYTECODE=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python3 -B <script>.",
+ "checks": [
+  {
+   "id": "A0 pre-flight and hashes",
+   "what_was_run": "work_a/a00_preflight.py (no rsi6 import): every manifest entry present with its recorded SHA-256, so loading an adapter downloads nothing and rewrites no manifest; SHA-256 of the files named in corrections.json and freeze_L0.json",
+   "n": "699 manifest entries, 9 hash comparisons",
+   "result": "All data files present with the recorded hashes (quadassign has 5 entries flagged missing by the source, allow_missing). corrections.json 'files': 6 of 6 match REPO (knapsack.py 8b6f71b5.., regression.py 68bd8e65.., run.py 99186b95.., learner.py a30b3c28.., version.py 96764716.., problem.py 1b74f1af..). freeze_L0.json last correction: 3 of 3 match. (The original freeze hashes of learner.py and problem.py, which registration.json still lists, differ: that is the recorded correction of 12:44:41Z, not part of this diff.)"
+  },
+  {
+   "id": "A1 parser, tables and names (knapsack)",
+   "what_was_run": "work_a/a10_knapsack.py (own parser of mknapcb1,2,4,5,7,8 with exact integers, own reading of mkcbres.txt) and work_a/a11_knapsack_lp.py (own bounded-variable simplex; LP relaxation of my parse against the LP table published in mkcbres.txt)",
+   "n": "180 problems",
+   "result": "Files give classes 5.100, 5.250, 10.100, 10.250, 30.100, 30.250 by their own header numbers; stated optimum is 0 in all 180. Adapter profit, coefficients, limits, reference and group equal my parse for 180 of 180; width 30. LP optimum of my parse equals the published LP optimum of the same name for 180 of 180 (largest relative difference 4.5e-11); against the next name 0 of 180 agree; best feasible value is below the LP optimum for all (gap 0.06% to 3.2%). Tightness per block of ten is 0.25, 0.5, 0.75 in every class."
+  },
+  {
+   "id": "A1a presentation (knapsack)",
+   "what_was_run": "work_a/a10_knapsack.py: item and constraint correspondence derived from the presented arrays alone, then compared with the seeded permutations; work_a/a12_view_equals_problem.py (view arrays against the problem object, 5 seeds)",
+   "n": "180 instances x 2 seeds (kernel relabel seed of gate seed 101, and seed 7); 5400 zero-column checks; 900 problems in a12",
+   "result": "0 failures. var_attr has shape (n, 31); column 0 is the profit; columns 1..m are a permutation of the m constraint rows; columns m+1..30 are exactly +0.0; the relabelling is default_rng(seed).permutation(n) then .permutation(m); the padded presentation equals the unpadded one (width None) plus zero columns; view arrays are bit-identical to the problem object's and read-only."
+  },
+  {
+   "id": "A1b evaluation (knapsack)",
+   "what_was_run": "work_a/a10_knapsack.py: own evaluator in exact integers against partial_totals, evaluate, view.evaluate, and the path start/candidates/assign/totals (2 paths through the view and 1 on the adapter's object per problem, three variables asked per step, including already decided ones; meter counted)",
+   "n": "6480 complete selections (3676 feasible, 2804 infeasible; 18 per instance and seed: empty, full, six random densities, random-greedy maximal, maximal plus one item, stopped early, density-greedy); 2520 random partial states; 1080 paths with 6480 from-scratch checks of partial states",
+   "result": "0 failures, all comparisons exact (==). Group 0 is minus the profit of the taken items, group 1 the total excess over the limits; the hard total is zero exactly when my evaluator says feasible; candidates of a decided item are zero; units charged are 1 + 7n per path as specified."
+  },
+  {
+   "id": "A1c score and decode (knapsack)",
+   "what_was_run": "work_a/a10_knapsack.py: Environment.score on decode(answer) and on my own decoding, against value/best from my parse of mkcbres.txt; malformed answers",
+   "n": "6480 selections; 1440 malformed answers",
+   "result": "0 failures: decode equals my decoding; score equals value/best when feasible and 0 otherwise, exactly. The code cuts the score at 1 (min(1.0, value/best)); no selection of mine exceeded the best value (my density-greedy selections reach 0.834 to 0.9956 of it), so the cut was never active. Malformed answers score 0."
+  },
+  {
+   "id": "A2 exactness (regression)",
+   "what_was_run": "work_a/a02_regression_survey.py and work_a/a20_regression.py: own reader of the 240 published files (Python float per token), own scorer (fsum), compared bit for bit with the problems for training=True and training=False",
+   "n": "118 used laws (29 easy, 39 medium, 50 hard) x 2 seeds = 236 problem pairs; 1416 score comparisons",
+   "result": "0 failures. Shapes (256, 8), (128, 8), (256,); presented columns are the published input columns in the seeded permuted order, then exactly-zero columns; ctx_y is the validation value column; reference and training target are the test value column; no query row equals an observed row; training flag changes no array, fresh problems have no target and feedback raises PermissionError; score equals my coefficient of determination cut to [0, 1] within 1e-9; exact target scores 1; malformed answers score 0. Refused laws are exactly the two the text names. Number of input columns over all 120 laws: 1 to 8 (largest: hard/feynman-i.9.18 with 8)."
+  },
+  {
+   "id": "A3 information",
+   "what_was_run": "work_a/a10_knapsack.py and a20_regression.py (public fields, reference and limits as scalars, limits changed, training flag), a31_reachable.py (public and private attributes), a30_siblings.py (shared data between groups), a21/a32/a33 (near-duplicates and coincidences with hidden targets), grep of rsi6/learner for private access",
+   "n": "180 knapsack and 118 regression fresh problems",
+   "result": "Public view fields are the generic ones only; no string anywhere. Knapsack: the best value and the limits are no entry of any array (0 of 180); multiplying the limits changes no field of the view. Regression: no fresh target is held (_target is None). Zero columns are always last and their number is 30-m or 8-d, which the unpadded shape revealed too; the padded width additionally tells the benchmark maximum (30; 8, set by a law that is in neither the training nor the fresh set of the split). All 24 fresh knapsack problems are of class 10.100, so the padding distinguishes none of them. No run of six consecutive numbers is shared between knapsack classes (0 for all 15 pairs) and no column is shared between laws. Row position does not predict the target (largest rank correlation 0.22). The learner's source touches no private attribute (imports numpy, BudgetExhausted and version only). Behind the view, by Python convention only, sit _problem and _states (see the note)."
+  },
+  {
+   "id": "A4 uniform layout on the seven environments",
+   "what_was_run": "work_a/a40_layout.py: every training and fresh problem of run.split(env, 16, 24) (and 12, 24), seeds 3 and the kernel relabel seeds of run seeds 11, 12, 101, 104, 201, 301; run.layout() and Layout(view(P), version).names for generation 0, the four nominees in the ledger and four variants (scale z, scale rank, two template pairs); array shapes against n_vars and n_opts; also every usable instance once. work_a/a44_predict_layout.py for the prediction form",
+   "n": "3196 problems constructed (392 jobshop, 308 binpacking, 392 forecasting, 392 quadassign, 210 pmedian, 392 knapsack, 392 regression, plus 718 usable instances)",
+   "result": "One kernel layout per environment, in the split and over all usable instances. For the five assignment environments one descriptor list per environment for each of the 9 versions (knapsack: 69 descriptors for generation 0, 70 for nominee 3a5b3ee1350b, 69 for b108b1ce6514). 'reusable' is uniform within each environment (True, True, False for quadassign, True, True). 0 problems whose arrays do not fit their sizes. For forecasting and regression no Layout object can be built (AttributeError: 'PredictView' object has no attribute 'hard'); by the code of _describe, and on made-up problems of the same shapes, the default version builds 10 and 25 descriptor columns for every instance. Knapsack split: training 5.100 x4, 5.250 x5, 10.250 x4, 30.250 x2, 30.100 x1; fresh 10.100 x24. Regression split: training from easy and hard, fresh 24 from medium."
+  },
+  {
+   "id": "A4 completeness of the check",
+   "what_was_run": "work_a/a41_layout_gap.py: made-up fixtures through run.measure; Layout construction on one knapsack problem",
+   "n": "4 fixture runs",
+   "result": "Gap found (finding 1): capacity.max() > 1 is not in run.layout(). The fourth element of the prediction layout cannot differ (finding 6). A deviating fresh problem is refused after acquire and after apply on earlier fresh problems (finding 4). Zero columns are inert under minmax and z but not under rank (finding 5)."
+  },
+  {
+   "id": "A5 ledger and registration",
+   "what_was_run": "work_a/a01_ledger.py and work_a/a50_ledger_cpu.py (own reading of rsi6/ledger/main.jsonl)",
+   "n": "1211 records",
+   "result": "Chain intact. 1192 run records: binpacking 276, forecasting 276, jobshop 276, pmedian 182, quadassign 182; none on knapsack or regression. Round 1 done; five search records of round 2; last record is the unlock of adoption:2 (idx 1210). This matches 'when_in_the_run' of corrections.json. registration.json digest equals the registration record. All four nominee versions in the ledger have feat.scale = minmax."
+  },
+  {
+   "id": "A5 recorded results unchanged",
+   "what_was_run": "work_a/a51_repeat_records.py: recorded runs repeated with rsi6.kernel.run.measure under the corrected kernel and compared field by field (all fields except measured cpu and the ledger's own idx/prev/h/role/key; key recomputed). No ledger write.",
+   "n": "38 recorded runs: binpacking 5, forecasting 10, jobshop 5, pmedian 8, quadassign 10; five versions; search, gate and confirm purposes",
+   "result": "38 of 38 identical apart from measured CPU; key_of equal for all; ledger file size and SHA-256 unchanged."
+  },
+  {
+   "id": "A5 the diff is the whole change",
+   "what_was_run": "git blob hash of the four files in REPO against the diff's index lines; then patch -R of the diff on copies in work_a/diffcheck and blob hash again (work_a/blobhash.py)",
+   "n": "4 files, both directions",
+   "result": "Post-image: 162186c, 301bfd4, 554a11b, efa88ac as the diff states. Pre-image after reverse application: 80260ff, 09dc772, e9546aa, 010216f as the diff states."
+  },
+  {
+   "id": "A5 the three new tests",
+   "what_was_run": "work_a/a42_tests.py (the three tests called one by one, learner calls counted) and work_a/a43_third_test.py (the third test's body with budget factors 20, 40, 200, with and without zero columns; made-up numbers only)",
+   "n": "3 tests; 6 variants",
+   "result": "All three pass. Test 1 and 2 call the learner 0 times (the fixture with uneven training layouts is refused before acquire). Test 3 calls acquire once and apply once, but acquire does no learning round (finding 2). With factor 40 or 200 and zero columns the learner runs rounds without error (1 and 6 iterations, learned True); without zero columns it raises the ValueError of the original event."
+  },
+  {
+   "id": "Rules kept",
+   "what_was_run": "find REPO -newer correction.diff; find REPO -name __pycache__ -o -name '*.pyc' -o -name dev.jsonl; subprocess.run replaced by a refusing stub in every script that imports rsi6",
+   "n": "after the last script",
+   "result": "No file under REPO is newer than the diff file; no __pycache__, no .pyc, no development ledger. No subprocess was started by the package. Never more than one process at a time."
+  }
+ ],
+ "findings": [
+  {
+   "severity": "major",
+   "where": "rsi6/kernel/run.py, layout() (and rsi6/tests/test_kernel.py, test_layout_is_the_same_for_every_instance)",
+   "what": "The check is incomplete: the learner's Layout also depends on whether options can be reused (learner.py line 93: reusable = capacity is None or capacity.max() > 1, which switches the descriptors 'usage' and 'optsum[..]'), and layout() records only 'capacity is None'. Two instances of one environment whose capacities differ across that line have the same kernel layout and different descriptor lists. The kernel then accepts the environment. For problems in free order the learner fails inside acquire, as in the original event. For problems assigned in index order nothing fails and the weight vector of the first problem is cut by position on the others, so a weight reaches another descriptor. No environment in REGISTRY is affected (reusable is uniform in all five assignment environments), so round 2 is not at risk; the target adapters are still to be written and will rely on this check, and the new test compares run.layout() only.",
+   "evidence": "work_a/a41_layout_gap.py (made-up fixtures, 6 variables, 8 options; first training instance holds 2 per option, the others 1) printed: 'ordered=True: run.layout equal: True ... descriptors, options hold 2: [opt:dsoft, opt:usage, opt:vo[0]]; options hold 1: [opt:dsoft, opt:vo[0]]'; 'run.measure, ordered=True: ACCEPTED, no error ... constructions in which the parameter vector was longer than the problem's own descriptor list: 1058 of 1602; (descriptors, parameters) = [(2, 3)]'; 'run.measure, ordered=False: the kernel did not refuse; the learner failed: ValueError: matmul ... (size 4 is different from 3), raised in: learner.py:construct <- learner.py:_rollouts <- learner.py:_acquire_assign'; and for one such fixture 'total with the vector cut by position 0.5579 (the usage weight acts on vo[0]), with the weights taken by name 2.3875'. work_a/a40_layout.py printed reusable per environment: jobshop {True: 392}, binpacking {True: 308}, quadassign {False: 392}, pmedian {True: 210}, knapsack {True: 392}.",
+   "suggested_fix": "Add the element 'P.capacity is None or int(P.capacity.max()) > 1' to layout(), and let test_layout_is_the_same_for_every_instance also compare Layout(view(P), versions.default()).names for assignment environments, so the test follows whatever the learner reads. This changes the hash of run.py in corrections.json; it changes no recorded result, since all seven environments are uniform in that element."
+  },
+  {
+   "severity": "minor",
+   "where": "rsi6/tests/test_kernel.py, test_padded_columns_are_exact_and_learnable; rsi6/registry/corrections.json 'what'[3] ('zero columns are exact and can be learned from, on made-up numbers')",
+   "what": "The part of the test that calls the learner does not exercise learning. With the test's budget (20 times the construction units) acquire performs no round and no construction, so the code path in which the registered run stopped (construct inside _rollouts) is never reached. 'The learner learns from them' is not established by the test, and with the same budget the uncorrected presentation passes that part too; only the test's first assert (one layout, shape (14, 6)) separates the two. The correction itself works: with the registered factor 40 the padded problems are learned from and the unpadded ones raise the original error.",
+   "evidence": "work_a/a42_tests.py printed: 'PASS test_padded_columns_are_exact_and_learnable (learner calls inside: acquire 1, apply 1)' and, for the same numbers, 'iterations 0 | constructions 0 | learned False | failed: decide: the budget did not allow one round of learning'. work_a/a43_third_test.py printed: 'zero columns, budget factor 20: iterations 0, constructions 0, learned False'; 'zero columns, factor 40: iterations 1, constructions 64, learned True, failed: None'; 'zero columns, factor 200: iterations 6, constructions 384, learned True'; 'no zero columns, factor 20: layouts 3; acquire returned: iterations 0 ...'; 'no zero columns, factor 40: acquire RAISED ValueError: matmul ...'.",
+   "suggested_fix": "Use a factor of at least 40.0 in the test and assert report['iterations'] >= 1 and report['failed'] is None; or reword the test and the record to what is asserted (one layout, exact evaluation, a well-formed answer)."
+  },
+  {
+   "severity": "minor",
+   "where": "rsi6/registry/corrections.json 'event' ('laws with one to nine input variables'); rsi6/environments/regression.py module text ('The laws have between one and nine input variables')",
+   "what": "The number is wrong. The published files have between one and eight input columns; the law with the most (hard/feynman-i.9.18) has eight, and the adapter's width is 8. The code is right (it takes the maximum from the data); the written record and the docstring are not.",
+   "evidence": "work_a/a02_regression_survey.py (own reader, all 240 files) printed: 'easy ... {1: 4, 2: 13, 3: 8, 4: 4, 5: 1}', 'medium ... {1: 2, 2: 15, 3: 13, 4: 7, 5: 2, 6: 1}', 'hard ... {1: 1, 2: 9, 3: 13, 4: 14, 5: 9, 6: 2, 7: 1, 8: 1}', 'largest number of input columns over all 120 laws: 8 [hard/feynman-i.9.18]'. work_a/a20_regression.py printed: 'laws used by the adapter: 118 | refused: [easy/feynman-iii.12.43, medium/feynman-iii.15.12] | width: 8'.",
+   "suggested_fix": "Write 'one to eight' in both places."
+  },
+  {
+   "severity": "minor",
+   "where": "rsi6/kernel/run.py, measure() / scores(); rsi6/registry/corrections.json 'what'[2] ('refuses an environment whose training or fresh problems differ in generic layout, before the learner is called')",
+   "what": "True for training problems only. Fresh problems are built and checked one at a time inside scores(), after learner.acquire has run and after learner.apply has answered the fresh problems before the deviating one. The run is then lost by an exception (nothing is recorded), but the learner has been called on the environment.",
+   "evidence": "work_a/a41_layout_gap.py, part 3 (prediction fixture, four uniform training problems, the fourth fresh problem with one more column) printed: 'refused with: late-uneven-fixture: instances of one environment must have the same generic layout' and 'calls of the learner before the refusal: acquire 1, apply 3'. For uneven training problems work_a/a42_tests.py counted 'acquire 0, apply 0'.",
+   "suggested_fix": "Compute the layouts of the fresh problems (and of the training problems rebuilt for scoring) before learner.acquire; construction is cheap and uses no meter. Or reword to 'before the learner is called on that problem'."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/learner/learner.py _rank (frozen, not in the diff) together with the zero columns of rsi6/environments/knapsack.py",
+   "what": "Zero columns are inert for the learner under feat.scale minmax and z, but not under rank: _rank turns a constant column into a ramp over the index, so each zero column becomes the item's position (after relabelling: noise) in the variable descriptors va[c], and [-1, +1] for [left, taken] in optsum[c]. On a 5-constraint problem these 25 descriptors would be weighted by weights that mean real constraints on 30-constraint problems. It is latent in this experiment: generation 0 and every nominee in the ledger use minmax, so no version that can run in the gate, the confirmation or the target test uses rank.",
+   "evidence": "work_a/a41_layout_gap.py, part 4 printed: '_mm(zeros): [0.0, ...] | _zc(zeros): [0.0, ...] | _rank(zeros): [-1.0, -0.6, -0.2, 0.2, 0.6, 1.0]', '_rank(zeros(2)): [-1.0, 1.0]', 'knapsack 5.100-00, feat.scale=minmax: ... non-zero entries 0 of 2500', 'feat.scale=z: ... 0 of 2500', 'feat.scale=rank: min -1.000 max +1.000 non-zero entries 2500 of 2500; all 25 columns identical: True'. work_a/a01_ledger.py printed: 'nominee versions with feat.scale: {464ea7440b21: minmax, cd349a06ef6d: minmax, 3a5b3ee1350b: minmax, b108b1ce6514: minmax}'.",
+   "suggested_fix": "No code change (the learner is frozen). State in the record that the padding is exact for the problem and inert for the learner under minmax and z only."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/kernel/run.py layout(), prediction branch; rsi6/kernel/problem.py PredictProblem.__init__ (frozen, not in the diff)",
+   "what": "The fourth element of the prediction layout (qry_x.shape[1]) can never differ from the third: the constructor reshapes the queries to the observed entities' number of columns. An adapter that gave queries with another number of columns is therefore not refused by layout(); the queries are silently re-cut (or the constructor raises when the sizes do not divide).",
+   "evidence": "work_a/a41_layout_gap.py, part 2 printed: 'observed entities with 4 columns, 12 queries with 3 columns -> qry_x.shape (9, 4) | run.layout (predict, False, 4, 4)'."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/registry/corrections.json",
+   "what": "Three small points of the record. (a) 'files' pins six files but not rsi6/tests/test_kernel.py, the fourth file of the diff (its SHA-256 in REPO is f4adeab51f33ecea5ea6d23bc02c1277704a8569fba81f0306a53585bd7dcdf5); in the audit copy that file and corrections.json carry a later time (13:41:06) than the record's utc (13:38:32Z). (b) 'independent_audit' is null. (c) 'stopped with an error at the first run of the learner on the environment knapsack' is shorter than what the code does: the gate hands 12 jobs (6 knapsack, 6 regression) to a pool of 4 workers and Pool.map raises only when all have ended, so measure() was also entered for regression in that attempt. This is an inference from the code, not an observation. It does not touch 'scores_seen_before_the_choice: none': in both environments acquire raises before any fresh problem is answered, and the ledger holds no record of either.",
+   "evidence": "work_a/a00_preflight.py printed 'corrections.json lists test_kernel.py: False'. rsi6/meta/rounds.py jobs_for and gate; rsi6/kernel/run.py run(): 'multiprocessing.get_context(\"fork\").Pool(workers) ... pool.map(measure, jobs, chunksize=1)'. work_a/a01_ledger.py printed 'any record mentioning knapsack/regression as env of a run: False'."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/kernel/problem.py AssignView / PredictView (frozen, not in the diff)",
+   "what": "The view hides the adapter by convention only. view._problem is the adapter's object (knapsack: profit, use and the limits b(i), which the adapter's text says are in no exposed array; regression: _target, which is None on fresh problems), view._states holds the working tables, the arrays 'a' and 'used' of a state are shared with the inner state, and view.meter is the kernel's writable Meter. No reference value, name or class is in these objects, and the frozen learner touches none of them. Unchanged by the diff.",
+   "evidence": "work_a/a31_reachable.py printed: 'knapsack: view attributes public [...] private [_problem, _states]', 'adapter object behind view._problem: class KnapsackProblem, attributes [..., limit, ..., profit, ..., use, ...]', 'over 180 fresh problems: reference values found among all numbers held by the adapter's object: 0; string attributes: 0'. Grep of rsi6/learner for _problem, _states, _inner, __dict__, getattr, vars(, _target: no hit."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/learner/learner.py _describe (frozen, not in the diff) on the data of rsi6/environments/regression.py",
+   "what": "Outside the diff and not caused by the padding, but it will shape the regression numbers of round 2. The files hold physical magnitudes down to 1e-38, and the learner's test for a constant is absolute (std < 1e-12, then scale 1.0). 5 of the 24 fresh laws have observed targets under that test (1 in the gate half, 4 in the confirmation half; 0 of the 16 training laws). On such a law the untrained answer is unaffected, while an accepted fitted predictor answers at the wrong magnitude and scores 0. 8 of the 24 fresh laws and 4 of the 16 training laws also have a real input column under the test, which the learner then treats exactly like a zero column. The rule of freeze_L0.json forbids changing this to raise a score; the result should be read with it, and the two halves are hit unequally.",
+   "evidence": "work_a/a22_split_facts.py printed: 'regression training (16): observed-target std < 1e-12 in 0 | laws with an input column of std < 1e-12: 4', 'fresh (24): ... in 5 | ... 8', 'fresh half A (gate): ... 1', 'fresh half B (confirm): ... 4', 'fresh laws with observed-target std < 1e-12: medium/feynman-i.34.27 2.7e-24, bonus.8 2.3e-23, ii.34.29a 5.8e-15, ii.37.1 2.3e-20, iii.15.14 3.0e-32'. work_a/a23_tiny_synthetic.py (made-up function, no law of the benchmark) printed: 'targets x 1: score untrained 0.9518 | with the acquired predictor 0.9839' and 'targets x 1e-25: score untrained 0.9518 | with the acquired predictor 0.0000 | typical |prediction - target| 1.39e-01'."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/data/regression/medium/*/feynman-iii.17.37.txt as used by rsi6/environments/regression.py (not in the diff)",
+   "what": "A third degenerate law besides the two that are refused: its published value equals its first published input bit for bit in 122 of the 128 queries (and 250 of the 256 observed rows), because 1 + alpha*cos(theta) rounds to 1. For this law the hidden target is therefore present in the presented inputs. It is published data, not something the adapter adds, and the law is in neither the training nor the fresh set of split(16, 24), so no registered run uses it.",
+   "evidence": "work_a/a33_degenerate_law.py printed: 'medium/feynman-iii.17.37: d=3; queries whose value equals one of their own inputs: 122 of 128 (per published input column: [122, 0, 0]); observed rows: 250 of 256; status in split(16,24): not in the split', e.g. 'query 0 inputs [2.7005236264859574e-17, 4.848279464243882e-18, 6.276710586426753] value 2.7005236264859574e-17'. work_a/a32_reference_coincidences.py: no other law has more than 9 such rows (those are targets equal to 0.0 in hard/feynman-i.6.20 and i.6.20b).",
+   "suggested_fix": "Nothing for round 2. If the instance set is ever revised, this law belongs with the two refused ones."
+  }
+ ]
+}

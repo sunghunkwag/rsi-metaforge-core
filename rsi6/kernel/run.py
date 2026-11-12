@@ -59,7 +59,8 @@ def layout(P) -> tuple:
     """The generic layout of a problem: what must be the same for every instance of an environment."""
     if P.kind == "predict":
         return ("predict", bool(P.ordered), P.ctx_x.shape[1], P.qry_x.shape[1])
-    return ("assign", bool(P.ordered), P.capacity is None, tuple(P.hard.tolist()), tuple(P.detail.tolist()),
+    return ("assign", bool(P.ordered), P.capacity is None, P.capacity is None or int(P.capacity.max()) > 1,
+            tuple(P.hard.tolist()), tuple(P.detail.tolist()),
             P.var_attr.shape[1], P.opt_attr.shape[1], len(P.var_var), len(P.opt_opt), len(P.var_opt), len(P.occ_attr),
             P.domain is None, P.start_answer is None)
 
@@ -84,8 +85,10 @@ def measure(job: dict) -> dict:
     relabel = lambda i: _seed(seed, env.name, i, "relabel")      # every instance has its own relabelling
     meter = Meter(0.0)
     problems = [env.problem(i, meter, relabel(i), True)[0] for i in train_ids]
+    # every problem of the run, training and fresh, must have one layout: checked before the learner is called at all
     shape = layout(problems[0])
-    if any(layout(P) != shape for P in problems):
+    if any(layout(P) != shape for P in problems) or any(
+            layout(env.problem(i, Meter(0.0), relabel(i), False)[0]) != shape for i in list(fresh_ids) + list(train_ids)):
         raise RuntimeError(f"{env.name}: instances of one environment must have the same generic layout")
     meter.limit = budget["train"] * sum(P.construction_units() for P in problems)
     started = time.process_time()
@@ -97,8 +100,6 @@ def measure(job: dict) -> dict:
         out, used = [], 0.0
         for i in ids:
             P, decode = env.problem(i, Meter(0.0), relabel(i), False)
-            if layout(P) != shape:
-                raise RuntimeError(f"{env.name}: instances of one environment must have the same generic layout")
             P.meter.limit = _test_limit(P, budget)
             answer = learner.apply(cap, view(P), np.random.default_rng(_seed(seed, env.name, i, "apply")))
             try:                                         # a malformed answer scores 0; it is never repaired

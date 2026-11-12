@@ -175,8 +175,20 @@ def test_layout_is_the_same_for_every_instance():
     for name in environments.REGISTRY:
         env = environments.load(name)
         train, fresh = run.split(env, 16, 24)
-        seen = {run.layout(env.problem(i, Meter(float("inf")), 3, True)[0]) for i in train + fresh}
-        assert len(seen) == 1, (name, len(seen))
+        problems = [env.problem(i, Meter(float("inf")), 3, True)[0] for i in train + fresh]
+        assert len({run.layout(P) for P in problems}) == 1, name
+        if env.form == "assign":                 # and the learner's own descriptor list follows from the layout
+            from rsi6.learner.learner import Layout
+            assert len({tuple(Layout(view(P), versions.default()).names) for P in problems}) == 1, name
+
+
+def test_layout_covers_what_the_learner_reads():
+    """Two problems whose options differ in whether they can be taken more than once have
+    different layouts (the learner's descriptors depend on it)."""
+    one = _Fixture(6, 8, 1, Meter(float("inf")), False)
+    two = _Fixture(6, 8, 1, Meter(float("inf")), False)
+    two.capacity = np.full(8, 1)
+    assert run.layout(one) != run.layout(two)
 
 
 def test_kernel_refuses_instances_with_different_layouts():
@@ -221,12 +233,13 @@ def test_padded_columns_are_exact_and_learnable():
     for m in (2, 5, 3, 2, 5, 3):
         use = rng.integers(1, 50, size=(m, 14)).astype(float)
         problems.append(KnapsackProblem(rng.integers(10, 99, size=14).astype(float), use, use.sum(axis=1) / 2, meter, 5))
-    meter.limit = 20.0 * sum(P.construction_units() for P in problems)
+    meter.limit = 40.0 * sum(P.construction_units() for P in problems)       # the registered training budget
     assert len({run.layout(P) for P in problems}) == 1 and problems[0].var_attr.shape == (14, 6)
     P = problems[0]
     assert np.all(P.var_attr[:, 3:] == 0) and np.array_equal(P.var_attr[:, 1:3], P.use.T)
     learner = Learner(versions.default())
     capability, _, report = learner.acquire([view(p) for p in problems], np.random.default_rng(1))
+    assert report["iterations"] >= 1 and report["constructions"] > 0, report       # the path on which the run had stopped
     meter.limit = float("inf")
     answer = learner.apply(capability, view(problems[4]), np.random.default_rng(2))
     assert problems[4].well_formed(answer), report

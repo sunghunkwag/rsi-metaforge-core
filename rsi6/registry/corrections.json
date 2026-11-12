@@ -4,12 +4,12 @@
   {
    "utc": "2026-11-12T13:38:32Z",
    "when_in_the_run": "after round 1 was complete and after the five searches of round 2; after the unlock of adoption:2; before any run on an environment of adoption:2 was recorded",
-   "event": "the registered run stopped with an error at the first run of the learner on the environment knapsack (gate of round 2): problems of that environment had 1 + m attribute columns with m = 5, 10 or 30, and the learner builds one parameter vector per environment. The environment regression had the same defect (laws with one to nine input variables).",
+   "event": "the registered run stopped with an error in the gate of round 2, the first time the learner was run on the adoption set of that round (twelve runs, six on knapsack and six on regression, had been handed to four worker processes; no record of any of them was written): problems of knapsack had 1 + m attribute columns with m = 5, 10 or 30, and the learner builds one parameter vector per environment. The environment regression had the same defect (laws with one to eight input variables).",
    "what": [
-    "rsi6/environments/knapsack.py: every problem is presented with one profit column and as many constraint columns as the largest number of constraints of the benchmark's problems; absent constraints are zero columns (exact: a constraint whose coefficients are all zero binds nothing)",
-    "rsi6/environments/regression.py: every law is presented with as many input columns as the law with the most variables has; absent variables are zero columns (exact: the law does not depend on them)",
-    "rsi6/kernel/run.py: layout() and a check that refuses an environment whose training or fresh problems differ in generic layout, before the learner is called",
-    "rsi6/tests/test_kernel.py: three tests (the layout is the same for every instance of every environment; the kernel refuses a fixture with different layouts; zero columns are exact and can be learned from, on made-up numbers)"
+    "rsi6/environments/knapsack.py: every problem is presented with one profit column and as many constraint columns as the largest number of constraints of the benchmark's problems (30); absent constraints are zero columns (exact: a constraint whose coefficients are all zero binds nothing)",
+    "rsi6/environments/regression.py: every law is presented with as many input columns as the law with the most variables has (8); absent variables are zero columns (exact: the law does not depend on them)",
+    "rsi6/kernel/run.py: layout() and a check that refuses an environment whose training or fresh problems differ in generic layout; all problems of a run are checked before the learner is called",
+    "rsi6/tests/test_kernel.py: four tests (one layout and one descriptor list for every instance of every environment; the layout covers whether an option can be taken more than once; the kernel refuses a fixture with different layouts; zero columns are exact and are learned from at the registered budget, on made-up numbers)"
    ],
    "not_changed": "the learner (rsi6/learner/learner.py, rsi6/learner/version.py) and rsi6/kernel/problem.py have the hashes of the last correction recorded in freeze_L0.json; no registered number, seed, budget or rule changed",
    "alternatives_not_taken": [
@@ -20,13 +20,35 @@
    "scores_seen_before_the_choice": "none: no run of the learner on knapsack or regression existed, in the registered ledger or in development",
    "files": {
     "rsi6/environments/knapsack.py": "8b6f71b548a87a7d710170fff7b8c8ca4d351b0ba9518f10323fbff325103132",
-    "rsi6/environments/regression.py": "68bd8e652e963e2d840f4eb4ca94e4b9664e2bd46b703cf619fccb6cefa6f096",
-    "rsi6/kernel/run.py": "99186b95b8303121823d6653ddc7221726677e5b8524bbb55a2abd0f1eaa7dc5",
+    "rsi6/environments/regression.py": "8b077626cd0040b73776c93656ab4b5b3ddfce8bc6dea12d9fdaec641fd268b2",
+    "rsi6/kernel/run.py": "484325c7070dfa4f677fd2a7d3f27dd8c45f2eb79d42bd7414a3f8a7deecc48b",
+    "rsi6/tests/test_kernel.py": "8df4ea813be4a80667adfe8215272517b6a1d1815fec69e74b22a957d58b3164",
     "rsi6/learner/learner.py": "a30b3c28d38357d1297efb36e04d1a83b5bf0010386100171ba9f4a0cd20683b",
     "rsi6/learner/version.py": "96764716cedea50c2f0844644948790f6b373c3c2c47db74c8017beb57f0cdfa",
     "rsi6/kernel/problem.py": "1b74f1af5bab5a20caac0b1d2a5fc21f07d074bd702a86f8e6c47d4943ab28c5"
    },
-   "independent_audit": null
+   "independent_audit": {
+    "reports": "rsi6/audit/layout_correction_20261112/ (the diff as audited, and the auditors' reports)",
+    "auditor_a": {
+     "scope": "exactness and information of the two adapters, completeness of the layout check, the written record",
+     "verdict": "pass_with_findings",
+     "findings": "1 major, 3 minor, 6 notes; no blocking finding",
+     "established": "with its own parsers and evaluators: all 180 knapsack problems and all 118 laws are presented exactly; nothing but the published instance is exposed; one layout per environment over 3,196 problems; 38 recorded runs repeat identically under the corrected kernel; the ledger chain is intact and holds no run on knapsack or regression"
+    },
+    "after_the_audit": [
+     "major finding fixed: layout() now also records whether an option can be taken more than once, and the test compares the learner's descriptor names",
+     "minor findings fixed: the test of zero columns now runs at the registered budget and asserts that learning rounds happened; 'one to eight' input variables; fresh problems are checked before the learner is called",
+     "after these fixes: 26 of 26 tests pass, and 15 recorded runs (5 environments, 5 versions; search, gate and confirmation runs) repeat identically with the final code"
+    ],
+    "auditor_b": "scope: no recorded result changed, degrees of freedom of the choice, the written record. Still repeating the recorded runs when the registered run was resumed; its report is added to the same directory when it ends",
+    "resumed_utc": "2026-11-12T14:38:07Z",
+    "machine_note": "the gate and confirmation runs of round 2 were measured while the second auditor's two processes were repeating recorded runs on the same four-core machine; scores do not depend on load, measured CPU-seconds may"
+   },
+   "limits_of_the_correction": [
+    "the zero columns are exact for the problem; for the learner they are inert under the descriptor scales minmax and z, and not under the scale rank, which turns a constant column into a ramp over the index (generation 0 and every nominee recorded so far use minmax)",
+    "found by the audit, not caused by the correction, and not changed (the learner is frozen): the learner's test for a constant target is absolute (standard deviation below 1e-12). Five of the 24 fresh laws of regression have observed targets below it (one in the deciding half, four in the confirming half; none of the 16 training laws); on such a law a fitted predictor answers at the wrong magnitude and scores 0, while the untrained answer is unaffected. The regression numbers of round 2 have to be read with this.",
+    "one law of regression (medium, iii.17.37) has its value equal to its first input in almost every row; it is in neither the training nor the fresh set of the registered split"
+   ]
   }
  ]
 }

@@ -11,7 +11,7 @@ queries, cut to [0, 1]. Threshold anchor: the data set's own criterion for a rec
 a coefficient of determination above 0.999.
 
 Every problem of an environment must have the same generic layout. The laws have between one
-and nine input variables, so every law is presented with as many input columns as the law with
+and eight input variables, so every law is presented with as many input columns as the law with
 the most variables has, and a law with fewer variables has zero in the others. This is exact:
 the law does not depend on them. (At first a law had as many columns as it had variables; the
 kernel now refuses such an environment before the learner is called.)
