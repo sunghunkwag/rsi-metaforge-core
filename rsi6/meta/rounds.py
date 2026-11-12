@@ -129,6 +129,7 @@ def gate(incumbent: dict, nominee: dict, envs, seeds, budget: dict, cache: Cache
         "per_env": {e: {"gain_change": float(d_gain[idx].mean()), "acquired_change": float(d_acq[idx].mean())}
                     for e, idx in by_env.items()},
         "conditions": conditions, "adopted": bool(all(conditions.values())),
+        "cpu": {"incumbent": cpu_of(base), "nominee": cpu_of(other)},
     }
 
 
@@ -144,4 +145,4 @@ def confirm(incumbent: dict, nominee: dict, envs, seeds, budget: dict, cache: Ca
     return {"type": "confirm", "tag": tag, "incumbent": versions.digest(incumbent), "nominee": versions.digest(nominee),
             "envs": list(envs), "seeds": list(seeds), "mean_gain_change": float(d_gain.mean()),
             "mean_acquired_change": float(d_acq.mean()), "mean_min": float(paired(base, other).mean()),
-            "runs": len(base)}
+            "runs": len(base), "cpu": {"incumbent": cpu_of(base), "nominee": cpu_of(other)}}

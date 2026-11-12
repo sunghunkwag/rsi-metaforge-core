@@ -1,0 +1,142 @@
+{
+ "what": "RSI-6: registered numbers for the rounds of self-modification and the test on the sealed target categories",
+ "registered_utc": "2026-11-12T10:53:29Z",
+ "freeze_L0": {
+  "rsi6/learner/learner.py": "e7744665e3a08cbf130e3e4f3a4539f88f92d6d81278b11e566ed2387161b8a3",
+  "rsi6/learner/version.py": "96764716cedea50c2f0844644948790f6b373c3c2c47db74c8017beb57f0cdfa",
+  "rsi6/kernel/problem.py": "13fd05d2761a9d1e38e993691bd78bccc4bfcef34b95b0feb038a98de3c752fa"
+ },
+ "roles_commit": "355fc090d390c29933e481777d8d2a2353cf5ff4",
+ "rounds_planned": 2,
+ "rounds_note": "the draw provides three adoption sets; two rounds are run because of the time and usage limits of the session, and the third set stays unused and sealed; the number was fixed here, before any round",
+ "budgets": {
+  "run": {
+   "train": 40.0,
+   "test_c": 2.0,
+   "test_e": 1.0,
+   "n_train": 16,
+   "n_fresh": 24
+  },
+  "search": {
+   "train": 40.0,
+   "test_c": 2.0,
+   "test_e": 1.0,
+   "n_train": 12,
+   "n_fresh": 24,
+   "part": "A"
+  }
+ },
+ "seeds": {
+  "search": [
+   11,
+   12
+  ],
+  "gate": [
+   101,
+   102,
+   103,
+   104,
+   105,
+   106
+  ],
+  "confirm": [
+   201,
+   202,
+   203,
+   204,
+   205,
+   206
+  ],
+  "target": [
+   301,
+   302,
+   303,
+   304,
+   305,
+   306,
+   307,
+   308
+  ]
+ },
+ "search_cpu_limit": 1500.0,
+ "rules": {
+  "margin": 0.005,
+  "cpu_ratio": 1.15,
+  "search_cpu_ratio": 1.25,
+  "bootstrap": 2000,
+  "level": 0.9
+ },
+ "primary_endpoint": "on the target categories, runs with empty memory: mean over categories of the paired per-seed value min(change in acquired, change in gain) between the final version of the self lineage and the generation-0 version; claimed only if it is at least 0.01 and its 95% bootstrap interval, resampling categories and seeds, excludes zero",
+ "controls": [
+  "generation 0 (frozen original)",
+  "generation 0 with memory of its own earlier acquisitions (skills only)",
+  "final self version with accumulated memory",
+  "final self version with empty memory (state reset; the primary)",
+  "generation 0 given at least the measured CPU-seconds the self lineage spent per target on rounds and gates (more compute)",
+  "generation 0 with no learning and its test-time budget raised to the same CPU (plain search)",
+  "final version of the fixed lineage",
+  "final version of the random lineage"
+ ],
+ "recursion_test": "rounds >= 2: nominees found from the self lineage's version by the self version, by generation 0 and by the random proposer, at equal search CPU, compared on source-pool improvement and on the gate; with one such round this can refute but cannot establish that the improved improver matters",
+ "predictions": [
+  {
+   "id": "R1",
+   "text": "round 1: the self search finds a version that improves the source pool",
+   "criterion": "best_cost <= -0.005",
+   "expected": "yes"
+  },
+  {
+   "id": "R2",
+   "text": "round 1: the self nominee is not adopted",
+   "criterion": "gate.adopted is false",
+   "expected": "yes: improvements found on the source pool are expected not to carry to quadratic assignment and p-median"
+  },
+  {
+   "id": "R3",
+   "text": "over both rounds the self lineage adopts at most one version",
+   "criterion": "count of adopt records with lineage self <= 1",
+   "expected": "yes"
+  },
+  {
+   "id": "R4",
+   "text": "the random proposer does at least as well as the learner at improving the learner",
+   "criterion": "in at least one round, best_cost of the random search <= best_cost of the self search",
+   "expected": "yes: generation 0 spends part of its changes on exchanges between fields, which cannot help"
+  },
+  {
+   "id": "R5",
+   "text": "the primary endpoint is not met",
+   "criterion": "primary value < 0.01 or its interval includes zero",
+   "expected": "yes"
+  },
+  {
+   "id": "R6",
+   "text": "memory of earlier acquisitions does not help on the targets",
+   "criterion": "skills-only minus frozen original, mean acquired on targets, < 0.005",
+   "expected": "yes"
+  },
+  {
+   "id": "R7",
+   "text": "generation 0 reaches the threshold in at least one target category and misses it in at least one",
+   "criterion": "count of target categories with acquired >= threshold is between 1 and 3",
+   "expected": "yes"
+  },
+  {
+   "id": "R8",
+   "text": "what generation 0 learns on targets is positive on average",
+   "criterion": "mean gain of generation 0 over target categories > 0 with a 95% interval excluding zero",
+   "expected": "yes"
+  }
+ ],
+ "failure_conditions": [
+  "no version adopted by the self lineage: no generation exists to compare, and the result is 'no modification passed independent validation'",
+  "primary endpoint below 0.01 or interval including zero: 'no improvement of acquisition on unseen categories established'",
+  "self nominees not better than the random proposer's: 'the mechanism does not acquire the capability of improving itself'",
+  "any comparison in which the control received less measured CPU than the arm it is compared with is void"
+ ],
+ "not_claimed": [
+  "anything about categories outside assignment-form optimisation and prediction",
+  "that a capability outside the learner's own descriptors and methods was acquired",
+  "open-ended or general improvement"
+ ]
+}
