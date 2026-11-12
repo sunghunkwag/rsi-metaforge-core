@@ -292,3 +292,20 @@ The revised research direction is substantially closer to the objective. However
 
 The decisive research target remains recursive improvement of the general capability-acquisition mechanism itself. Do not downgrade this objective to isolated benchmark optimization.
 Proceed with independent design reviews and correct the research protocol before implementing experiments.
+
+### 7
+
+Stop planning and start implementing the actual general-purpose recursive capability-acquisition mechanism.
+
+The four architectural requirements have already been defined. Do not repeatedly restart the planning process.
+
+Implement the learner L, its self-modification mechanism, independent evaluation infrastructure, and multi-generation experiments.
+
+Run the permitted experiments, examine failures, improve the implementation, and report measured results.
+
+Do not substitute toy puzzles or additional planning documents for executable research
+
+(Received in the session on 2026-11-12, after the draft work order WO-5 had been presented
+with an empty approval line and the Owner had been told that execution was waiting for it.
+Implementation started on this instruction. The approval line of WO-5 was not filled by the
+session and stays the Owner's to fill.)

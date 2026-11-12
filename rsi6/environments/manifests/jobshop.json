@@ -1,0 +1,824 @@
+{
+ "name": "jobshop",
+ "category": "jobshop",
+ "source": "JSPLIB (github.com/tamy0612/JSPLIB), job-shop scheduling instances collected from the literature",
+ "terms": "the repository carries no licence file. Fetched by hash, not redistributed here.",
+ "reference": "optimum, or the best known upper bound, of each instance in instances.json (kernel only)",
+ "files": [
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances.json",
+   "path": "instances.json",
+   "sha256": "4abd54035bc7762ec96b81527f49ca372031466911408d66ff12762fe7882c97"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/abz5",
+   "path": "instances/abz5",
+   "sha256": "bd8afe85d188fc3ae5c2be6a328d175a5eb4f020deab786931f18460a10849f4"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/abz6",
+   "path": "instances/abz6",
+   "sha256": "4e2970ed04f293fa1b47b06d4cf30c23b3704c08cc06b0c23a5c35163eb6afcf"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/abz7",
+   "path": "instances/abz7",
+   "sha256": "d505e23d798712c160a0dd1c9fb0e4a22d0c9fd12d2c97c6ad6880582e757531"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/abz8",
+   "path": "instances/abz8",
+   "sha256": "ad39a42c94ac17f81f7f0a29c2632a5add1271feeb05ccd297b2186f415bf3e7"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/abz9",
+   "path": "instances/abz9",
+   "sha256": "449d8eaae622aeb3afaee23deb49747a21c45b28cea18bdac778d4f054a2bcf2"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ft06",
+   "path": "instances/ft06",
+   "sha256": "fee212360082ab31d7a6f375e352dad79973e17e70da40d14fcce5400a721a1c"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ft10",
+   "path": "instances/ft10",
+   "sha256": "eff0a40841b2160661f64bfc94c77a3d02d3dcfdfab9c02bf39f7da1153891b7"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ft20",
+   "path": "instances/ft20",
+   "sha256": "5702cbc10318b52ad728ee94ed6fb862387008246cebb5d9cf9661f41f3ca7a9"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la01",
+   "path": "instances/la01",
+   "sha256": "37a1de180c912680b8a6ea4c7c86f5e273c79b47ba55720c824b1fd93d3457bc"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la02",
+   "path": "instances/la02",
+   "sha256": "dc608b07a2ce9f3e1991532d219461733c40a9265579f2d5207f232dfd7c3080"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la03",
+   "path": "instances/la03",
+   "sha256": "80d0b6b1fd833ed52999ad3cc530730fe47c3ee5b6ed1639b3b20ba0b1141190"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la04",
+   "path": "instances/la04",
+   "sha256": "7e012cda44a4f546eeffa975eefb03ca84e759a1098d6afc79aeda56ef5976df"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la05",
+   "path": "instances/la05",
+   "sha256": "e5c6b7dd42a07743704f700985d7ab214649a67455305145e0acfbda63ab4695"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la06",
+   "path": "instances/la06",
+   "sha256": "5b717141d149fe65a1957c7c7637eb486e54ee52faf5a4487ae08bdcf4398c7b"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la07",
+   "path": "instances/la07",
+   "sha256": "38ccd5252f16aada8d4aa6d987e7d042282c538cc88aa7960f6072fb3b4cf39c"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la08",
+   "path": "instances/la08",
+   "sha256": "e3a7d29d328cdfa2d7b256f8f6b3d9e4934848b389c0437d5b029920dc3cff75"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la09",
+   "path": "instances/la09",
+   "sha256": "0c1730baa9e9480efff7d062d5af5758f056a5889326d877bc7d5b43d71a2cc4"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la10",
+   "path": "instances/la10",
+   "sha256": "52b5fb10389ca6f5aecc968354febf934ef13178df145eeccc1a200a73779de6"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la11",
+   "path": "instances/la11",
+   "sha256": "9cc1593347a2b69fc0936089b4442cd9702f81d8e833968177fe050f19a5c97f"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la12",
+   "path": "instances/la12",
+   "sha256": "09ee87443279a807d3967d877b72188a4749c25f1cb41c593b512ecea6532799"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la13",
+   "path": "instances/la13",
+   "sha256": "c1f9eb832d4b83d9d9360f2e50ba760568bfe763af2dbf7fd4de5db8da6e2f0d"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la14",
+   "path": "instances/la14",
+   "sha256": "53e7a9aa056953a6b85c875e43550c2a201f161d71b2fec1299468024b550e77"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la15",
+   "path": "instances/la15",
+   "sha256": "296fa0658d6bfe622576bda15ea92ed05374c135bc4152e2a3ede2161d690e3c"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la16",
+   "path": "instances/la16",
+   "sha256": "30b4c4ef875c9847ea29bd6c42a2ba58f7e7bda58c3d7736a6efd4df58669483"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la17",
+   "path": "instances/la17",
+   "sha256": "a7f95f12b59e4613b9c7153254cd4a51670c66ffcd1cbf0e39e8cbd57b68f891"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la18",
+   "path": "instances/la18",
+   "sha256": "9a76ed95d087eb8a219ed4ffdb6318f0e4ec898500452bbe2f61b1e1ba4f53e6"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la19",
+   "path": "instances/la19",
+   "sha256": "63c37ac8da8f9a2a5cd8df8033e947a50155b860426b9e1612223ab2dbe1648d"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la20",
+   "path": "instances/la20",
+   "sha256": "13bf9bf4668e7bff2dcc1caa095d9280a3607a1b4004d25514110192ffba18eb"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la21",
+   "path": "instances/la21",
+   "sha256": "28b9ed55089bb38b58d7d936c96f599ebd234a4952cd2d18437d64f2341a179a"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la22",
+   "path": "instances/la22",
+   "sha256": "ff7ea727ceb0d2563b64344d46bcb96d57c46611547154221975fbd8f55cd853"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la23",
+   "path": "instances/la23",
+   "sha256": "339cea1fc17840276b3ad0c0f04792aff069b2e777866cd9f38743b3ca5548fa"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la24",
+   "path": "instances/la24",
+   "sha256": "aa5987de71a1bb1ccf40bded273daab81a7062ab82c1dbb01a6902289c726137"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la25",
+   "path": "instances/la25",
+   "sha256": "3bd1a572abc68ba6d3d2cd777d0770cb7b3222af5693f5f75ecde0bb4cf7214d"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la26",
+   "path": "instances/la26",
+   "sha256": "71c06a72926fc88949d020d724ca234ae4a6221e6457f068e85010ff3a8ef592"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la27",
+   "path": "instances/la27",
+   "sha256": "1666c4a09bb0be1d6d861479f17ef8bae3e474bd7ad39a87386fa6873b9aae27"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la28",
+   "path": "instances/la28",
+   "sha256": "e596e912d515e02c2be02aebe21745194bf4415a1156db2ab4b67155df1dc800"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la29",
+   "path": "instances/la29",
+   "sha256": "1f6abb7689bb4f419bdf47812ccbc9749db1c02fc95bd2421bcd6988f5e80a82"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la30",
+   "path": "instances/la30",
+   "sha256": "acfa4668e9ea4041e8b569606ed81d1f2a45d6c5e05a3ef9bf6407b6bd7208ed"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la31",
+   "path": "instances/la31",
+   "sha256": "e5d8ab714f5ade645c21b004ebd8597f4221c467dee20825c9d48d971d3ce1cc"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la32",
+   "path": "instances/la32",
+   "sha256": "6e7c007d26028ab2effa3a76d038d824cfa1b4156cc2d5b418084466b606cbdb"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la33",
+   "path": "instances/la33",
+   "sha256": "9fd53dc7b4402a9bd026a74e750d0f4abdeac80a8040109baccac364a93a6b68"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la34",
+   "path": "instances/la34",
+   "sha256": "990c62b07b8697a52de34f6f059005b610a4a84905ca180bad582d48ed0c37aa"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la35",
+   "path": "instances/la35",
+   "sha256": "02887d4c5dc6255efe1b281ab05061996142c2c63bf0c2b7d2d760f3985088a4"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la36",
+   "path": "instances/la36",
+   "sha256": "3a92cd1f3eeba20c01da2958627049d5ab33d6d6c99381689627cc4cbb8a70b3"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la37",
+   "path": "instances/la37",
+   "sha256": "0401f0435b1fb1734dd668209adfc418b1c4ae756b985c1ac1c0f51cb42880d7"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la38",
+   "path": "instances/la38",
+   "sha256": "84468a8f9acc17d86d017a1844a685b66eb43d985fb0855e0afbf722358e2e3f"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la39",
+   "path": "instances/la39",
+   "sha256": "00d5de9ebafb6e4f18cd68f9baa94c803b390211693b0ed5d270a4baf53f01f9"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/la40",
+   "path": "instances/la40",
+   "sha256": "3a7b0b1266cb42ee611275124ba2f68f2baf37b2a7d2074e7a9eb677247ae22b"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/orb01",
+   "path": "instances/orb01",
+   "sha256": "a8cdf6a752554df23a0da2eb4f408e2811e12ec3978647499142e268b3117340"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/orb02",
+   "path": "instances/orb02",
+   "sha256": "387d046eb6d935dc9e72c0f2ffc1fa3952c984360761189bf66288842fee3f60"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/orb03",
+   "path": "instances/orb03",
+   "sha256": "825a13cf078a4e899e0a46ea041a150a91235d5e1904102b9784f9476f1debb8"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/orb04",
+   "path": "instances/orb04",
+   "sha256": "de3cba2ce94c5eb93dceae9930f4e8d163f38d6884680c473d91872aab29344c"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/orb05",
+   "path": "instances/orb05",
+   "sha256": "2f525b9fcb087569dcc74b57ec86ec39bb4aa5ea2c3e93b480a8a764736235a4"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/orb06",
+   "path": "instances/orb06",
+   "sha256": "1b5c223ec622a0a0f1b64ed65af1dc937ed95d60faf014ad4193ed506ed78b18"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/orb07",
+   "path": "instances/orb07",
+   "sha256": "838a5e55fb4249d34ad050d1d83476a7cde76c2da03432c88e0769df19cac93c"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/orb08",
+   "path": "instances/orb08",
+   "sha256": "dd830328b698769eef9ddb13283c476094d54b6ce3dca02c23f4e495d88f1df0"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/orb09",
+   "path": "instances/orb09",
+   "sha256": "061de9c5c1c13bf271aabd94d5b5e2695a8e5c919fecebb5972679db7e7a605b"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/orb10",
+   "path": "instances/orb10",
+   "sha256": "ef297ca089876dd9ca92d0b217e00eb97453a2a74dd64f851351ea055eb49303"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/swv01",
+   "path": "instances/swv01",
+   "sha256": "1bacbe31b1b2469b61904624041107b1caa2ed66d5dec66600fb8020cec5a4d3"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/swv02",
+   "path": "instances/swv02",
+   "sha256": "6936f81ed08eaffbe29ef4d7267d1dac202d6d8513e5b02415f2648501e35f30"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/swv03",
+   "path": "instances/swv03",
+   "sha256": "e6cf1e86c079e5f57051fc1a3fb09547b364c2a7d66bfae5eb9a4e850459c560"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/swv04",
+   "path": "instances/swv04",
+   "sha256": "7d1f692a8064c003c467fdae8a3d639b67131a6248a8531364bc931131f8cad2"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/swv05",
+   "path": "instances/swv05",
+   "sha256": "cfff5e75cf60d44b56ef1f3dc9eea285a1868a0ffe74df1ec9767fee4e67317f"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/swv06",
+   "path": "instances/swv06",
+   "sha256": "426632cea44c5c713980ffe69d230555c2fa96be23d23506494fd9d718c7de00"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/swv07",
+   "path": "instances/swv07",
+   "sha256": "a7470fbad9d56cd17f28783189b122acfaf5a1882177f4583424d81c8e7588c1"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/swv08",
+   "path": "instances/swv08",
+   "sha256": "cde50387ad947ec6f14b39ef0b28d9a339318197fba2eaf7a946318ce8ab9636"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/swv09",
+   "path": "instances/swv09",
+   "sha256": "95ff3a8a119a29947aaa6d0920d3b6452fa5a286473c7cd1201d6d65660e9073"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/swv10",
+   "path": "instances/swv10",
+   "sha256": "37580b927a47f2bf13b6bcf350ab4746148082b5de91b4fbe344d6ed9e07e25a"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/swv11",
+   "path": "instances/swv11",
+   "sha256": "65c67c897d7c17e5c41ec4ec9e14689cab6e465a35c1fd88af2e934a56f1bdbf"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/swv12",
+   "path": "instances/swv12",
+   "sha256": "4d80990e70e678b8fd7d3784546e4a4666c9265a0911dfbfc0dd977b768c2581"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/swv13",
+   "path": "instances/swv13",
+   "sha256": "1c5930e1c09c139d3b9d7315e02c7d9c0cc9642a727a3d8a6547a816fc4eea7f"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/swv14",
+   "path": "instances/swv14",
+   "sha256": "c8a4244770ccb4e452c45fde675866a38ff774e6881349249c77d45e57531d1c"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/swv15",
+   "path": "instances/swv15",
+   "sha256": "187911d174712ea9ce066916fa25bf3e8e2c7ab68e47065f6ebd29a8faa6a098"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/swv16",
+   "path": "instances/swv16",
+   "sha256": "fa861824dcb6c80f74aab5480ca042e03d19d58ea8580e3afe906898a3a5c320"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/swv17",
+   "path": "instances/swv17",
+   "sha256": "205baa7ee30233a2b41247825b711040e4e964515a390b608d389a191e787158"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/swv18",
+   "path": "instances/swv18",
+   "sha256": "3ccd73eee52f138d981445bfd3b00cf1a8704e87650f5ac3ea7cc5999add7007"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/swv19",
+   "path": "instances/swv19",
+   "sha256": "42e2b4eba0df436225bff8a9a5439e66cc1830ae230f5bdc1d39a0eec7c03e4c"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/swv20",
+   "path": "instances/swv20",
+   "sha256": "fc1ce74f799793856c9c8d6aa9634997d2e59de7e28a80a7b5b0332211c8492c"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/yn1",
+   "path": "instances/yn1",
+   "sha256": "425ea308aa084d01a8e3d9fea62ca4fdb002c3a05ec963c6b4ee06212ad2dc1a"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/yn2",
+   "path": "instances/yn2",
+   "sha256": "275ab62557e37c0537255f832818967675857c827c9ae0f15480bc49325e46ce"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/yn3",
+   "path": "instances/yn3",
+   "sha256": "428e7bb652137fdbf098571891a270e5e33b632f0085d998ac2faf5e05f10891"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/yn4",
+   "path": "instances/yn4",
+   "sha256": "050c9cae00aa9463a09f08b8a73247013a82ca36200af2e8c57fbc349321f903"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta01",
+   "path": "instances/ta01",
+   "sha256": "eb6efca2f3b22f29609abbbc15acc3ec33cac91eb2b75097aad343fc6930623d"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta02",
+   "path": "instances/ta02",
+   "sha256": "fbaa2020bd8e67526dbdc46670fac4a77bf8d183a4dc61b45759a0c61fdd90bc"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta03",
+   "path": "instances/ta03",
+   "sha256": "c78693f564896fe33485c4f71bc16ad768dc3dfa738e5e62c35bb1ab4c42e131"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta04",
+   "path": "instances/ta04",
+   "sha256": "222e4f080ebaa120f1279b2b434e3afe70a2eb92d13747fbc115e39b702207b3"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta05",
+   "path": "instances/ta05",
+   "sha256": "d816516c19ede6ba15db25e44ef160f2fdb964f078ffda92a5a2f25ca6f456fb"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta06",
+   "path": "instances/ta06",
+   "sha256": "616bd9ee51e375fe39dbf8c33bc5896a4c2750a7e439b523c632e452ef263447"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta07",
+   "path": "instances/ta07",
+   "sha256": "ade2f5698540eec124b3a230f711167d01ac6ab0f2995f1a625b27c10c2d906f"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta08",
+   "path": "instances/ta08",
+   "sha256": "96ffe26579f0eb865ac3da96ad67c4083f1df6434d07961514324d6e57c74e19"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta09",
+   "path": "instances/ta09",
+   "sha256": "8a25ea98bb24ac37f350df332ce6188c84f22f3ffe2993d64f86371c44211ebc"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta10",
+   "path": "instances/ta10",
+   "sha256": "f720a68f44474a77c6b71122bcd07fc2fc2a0bb4a87a74f5bf569b3a2e61cd96"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta11",
+   "path": "instances/ta11",
+   "sha256": "1e55a9039437d95715a7f7d0f419585732e6a0fbc707bbdf3e5a554e30357072"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta12",
+   "path": "instances/ta12",
+   "sha256": "fda8719335ca2d1374400a4934ab2410f59d8ac1db651421d793ad3eba70f9f7"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta13",
+   "path": "instances/ta13",
+   "sha256": "28495d17354a1c4c093b78dc9d2097ca8feed70caea2f47c02516b76c8799351"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta14",
+   "path": "instances/ta14",
+   "sha256": "f294ea711d1332ef332c116d359c9e33c362bb9bf445256b4376d4a4edc7cb81"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta15",
+   "path": "instances/ta15",
+   "sha256": "c9043e956dadef3dacf1af7abdd5d359e3f18e5831c73cffb542877a58e3b170"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta16",
+   "path": "instances/ta16",
+   "sha256": "2593fabae1a8d6da82d3f39e30aac3f38d29dbf1d1871674a6bb128bd8fccaa1"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta17",
+   "path": "instances/ta17",
+   "sha256": "51685600e9a157800d899d70bd95a41b2430e452272895559542d6fbd5adcf0e"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta18",
+   "path": "instances/ta18",
+   "sha256": "3eb4ca89eb680fa852a9d98d0ced10489d1a37685d504e588864e350758429a6"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta19",
+   "path": "instances/ta19",
+   "sha256": "60ffa166caca075f0ecb21be1ba0b9219091c78dc778322f0631cc24ec3461ec"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta20",
+   "path": "instances/ta20",
+   "sha256": "01623ea01ed502de1cecbfef4fc51af421aa5b3726f3847edeec9d91a7de4a2e"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta21",
+   "path": "instances/ta21",
+   "sha256": "7b3c36912f04636a01991787fd7cf29262fe2c3e46d2272cfc25e102677e6488"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta22",
+   "path": "instances/ta22",
+   "sha256": "6790f54095b75a11c412a9be3f2dc3c84ab47aee1c9c900be5200ed0575610c2"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta23",
+   "path": "instances/ta23",
+   "sha256": "5596949f7ee05e7b7c71ac5cfa2d56335b7a7d2f4a5ca57c11612c419db78063"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta24",
+   "path": "instances/ta24",
+   "sha256": "8836e4edf0fe0cbb357b2de318af3a02eb75c5a5d9a14bd62938689935b7b3c2"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta25",
+   "path": "instances/ta25",
+   "sha256": "12ecc99e2c7bf40b3dc255b15d006aa9811b8b1a8869be597575ada66767a588"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta26",
+   "path": "instances/ta26",
+   "sha256": "9e829603d5a78368539b7a8563bd2c09b8f592331c432fd3f8d443286c06886e"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta27",
+   "path": "instances/ta27",
+   "sha256": "b1288da71713d3ed32f446c30c73a5c841c99d47234fa409b783066633ba04cc"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta28",
+   "path": "instances/ta28",
+   "sha256": "813a4fafd8d425199bd434f55ddc2f4662f1f16f2d2840aba664609e83b3e642"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta29",
+   "path": "instances/ta29",
+   "sha256": "c026a17068a374e4b504517904b0e6109905f5dc7c6c648f3aa15ff3df73b1ad"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta30",
+   "path": "instances/ta30",
+   "sha256": "b5ebe1120411a1fa6b562f25dc5a23418700cdbfe93d000149236e3d54d14fa6"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta31",
+   "path": "instances/ta31",
+   "sha256": "5080c536668a2069096860a19e431ba2a07719f4f21ae0ad4f39effaea2eca65"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta32",
+   "path": "instances/ta32",
+   "sha256": "5c4fdf2428cee41ea90cc06ba4bbd166227eec892d24019e945ad5002c0e3462"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta33",
+   "path": "instances/ta33",
+   "sha256": "e2736ecb96ca80559ec94f7c9bbc724d6abf2a090e23c57dc284e20ee9e14f25"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta34",
+   "path": "instances/ta34",
+   "sha256": "ed08be8ec884e4efd0452489d5f998652857f44f541cd24bfc2a4995dea14984"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta35",
+   "path": "instances/ta35",
+   "sha256": "8552923d25b1755b1d449dcd4fabdaf3e86a6f872578a759861b6f5c5bedeec2"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta36",
+   "path": "instances/ta36",
+   "sha256": "294bb611004ee131f1e0f69a4654da43410d200b574e5d5f672130d9165f1a4f"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta37",
+   "path": "instances/ta37",
+   "sha256": "140ed6e2367a5c6fd33a80dd27f2abc4dc27093fa74a0f66955fc2576bea8a23"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta38",
+   "path": "instances/ta38",
+   "sha256": "60883ce61bd1670fb03cafc2c5bfcbd044c61df69f0731219750022908bd901e"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta39",
+   "path": "instances/ta39",
+   "sha256": "59d8138ee7a2b27cd9a52a04354d05ce713de8c01ada79290bb2dd8ac1cbe4df"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta40",
+   "path": "instances/ta40",
+   "sha256": "1b71da0bbbab761121d3df73e4c8f7e91bc4c17f46dd9f3606109704e35b4986"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta41",
+   "path": "instances/ta41",
+   "sha256": "b8491f6f3f598e387b995d4deecd672d659db38c9c8eae645560a616cd1657a0"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta42",
+   "path": "instances/ta42",
+   "sha256": "3a57630ad165a449c4716ce6891bf3a1065bbe72f2d5720895a38a71cc618eb5"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta43",
+   "path": "instances/ta43",
+   "sha256": "f9fa89d962b6031e9b9d165c08306d13f17d63abc02a2c8fa3d74199b8c8d2a1"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta44",
+   "path": "instances/ta44",
+   "sha256": "8a29ebb48ca456835732f71f8e0d9e2b447b688937cec021b83d4144bb28fa99"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta45",
+   "path": "instances/ta45",
+   "sha256": "2f7e9303f5cdf68b198eec511a5706c29bd08915048c60744f32f828a4a5362a"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta46",
+   "path": "instances/ta46",
+   "sha256": "80d82ca8f08a1057291e40f72027822533e59ecc9440f428060b87961a11da9e"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta47",
+   "path": "instances/ta47",
+   "sha256": "12109cde4dc79bc98cc1bdb504b4881ca383e41b0480113898c46383dac54922"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta48",
+   "path": "instances/ta48",
+   "sha256": "1e18dcfbd542fa999a213fb0da21c8bc22f993d6a1e2ae4a253e355a31b00666"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta49",
+   "path": "instances/ta49",
+   "sha256": "41532f7b04fe95dea6d7650f5dc7ff72752bc2f32a10050968bf496bbb1a1ebc"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta50",
+   "path": "instances/ta50",
+   "sha256": "9cd52e689ae2305ede04b18c4f4d12b1e72360f1eb92e8260946ae3406a119f2"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta51",
+   "path": "instances/ta51",
+   "sha256": "80be589030a44dbd2bd317e30478559a866394d34526b81d54d4bf62026e7c01"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta52",
+   "path": "instances/ta52",
+   "sha256": "a4e3f57615a48de12f297005178efa6b61fefc6e27bd21541c2ac08019ebbd3e"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta53",
+   "path": "instances/ta53",
+   "sha256": "b137905e15bf977eebf1c60500bc0ac679c958eb1631fe8c173714f0339a0aa5"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta54",
+   "path": "instances/ta54",
+   "sha256": "d7723c9f983686089ece41c2a3ffa6790eb0fdbfb6c05d23d5d4dd573054eb45"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta55",
+   "path": "instances/ta55",
+   "sha256": "c26cea1ac0aaa72f99f0da73e88f15f0bd6390f5a851d6f8dbd029e3cec349e5"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta56",
+   "path": "instances/ta56",
+   "sha256": "04a8d9b0823b2f997a93277e8aab4ad2d54374d6a445609166aba40ea1b302a2"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta57",
+   "path": "instances/ta57",
+   "sha256": "5eefc7c6b0c5b38e0591c8e71a73d1c56ffc5607f024ddae535852d6864dbcd4"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta58",
+   "path": "instances/ta58",
+   "sha256": "ba9fcede7448afaff1078d4f9df8c970ceac23a2a375736e34a42c6cf15c8eee"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta59",
+   "path": "instances/ta59",
+   "sha256": "778487a44de4ddf396be0b00d3b0108f9c9c3b2126ab6cfac1db6df5a7570c2d"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta60",
+   "path": "instances/ta60",
+   "sha256": "b507b7aaa51496b99f8b8088b399dedfdd506855dd54cda40a3f7485c33d18cd"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta61",
+   "path": "instances/ta61",
+   "sha256": "834465e271c5f4909436a37fa8572d61805be2780321b7f752110ebf364c182a"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta62",
+   "path": "instances/ta62",
+   "sha256": "ae8d14978c6dd15bbad2d8fd4430ad8e7819d9969bec6467c365c32754d1c9de"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta63",
+   "path": "instances/ta63",
+   "sha256": "c7ea364896db073a5a50eee474efdc554532e0c59545373122fcf0d89d8b03b9"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta64",
+   "path": "instances/ta64",
+   "sha256": "6e61f9f50e422ee9a6dd2f6b348ef92966b7e07fa94f0c13e1dc6e66e1960180"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta65",
+   "path": "instances/ta65",
+   "sha256": "5b879afbc3d7826ecf9699f9e3c5824b57024f4141fb88fbc29f6efb351e48e9"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta66",
+   "path": "instances/ta66",
+   "sha256": "2fc49c4f86d46bd1c71463cb626288140d9a3c078e61d4b02fde7ef41d74b1d1"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta67",
+   "path": "instances/ta67",
+   "sha256": "c6de835a32fbb19bc958aaca60ea95974a6ebd5a844d91b70f7e6804f43f3e73"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta68",
+   "path": "instances/ta68",
+   "sha256": "ec5df67b694a43d67587dca26255223da328b14f40afcec582b9afdb8b55eac2"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta69",
+   "path": "instances/ta69",
+   "sha256": "8b17542bfd3adbeb0a51cfd2dfd3b0f336ad987aa37f406db2fd4f943dd854b2"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta70",
+   "path": "instances/ta70",
+   "sha256": "a3cc4138411812811d46d01ff125044171aa0ddf93b3566d5f3b1b04ac97be50"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta71",
+   "path": "instances/ta71",
+   "sha256": "2df26386c3c4acb8729d99cb0fd3d9de59eb08c4966f8653ca310d0208418914"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta72",
+   "path": "instances/ta72",
+   "sha256": "5f291f9d6c4da476b3fec04edfa44628b5ba689f87d8657581ebf9dd202d0cc0"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta73",
+   "path": "instances/ta73",
+   "sha256": "8771e1d528795485b464ca4f947f57519f26f9b057136c9f4c20ba186f9fe369"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta74",
+   "path": "instances/ta74",
+   "sha256": "1347bbf5a326f5b2f31d5817b0733826cf201431b8b77eb2ca164dd504c6c316"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta75",
+   "path": "instances/ta75",
+   "sha256": "98162fb6f96201937933aeb82cedfc1eb2965ed05ff60d8c9a3d2407f2771ca7"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta76",
+   "path": "instances/ta76",
+   "sha256": "687e8d2edc8523350d85f601b570d26ae3fac0fab9370c4dddcc31992cda893f"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta77",
+   "path": "instances/ta77",
+   "sha256": "dc321a12c4f32e2a20edd7c65dce70c488afeb21d305f9f08c49475f72f27001"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta78",
+   "path": "instances/ta78",
+   "sha256": "85b8c6492537a8ab5cb65d8581f9b058f7e4d24de3789e16b3a6196b393b3a39"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta79",
+   "path": "instances/ta79",
+   "sha256": "54cba4b032262fd2219307f3982cff4868fb6fceb955b90550beb2f829f0199d"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances/ta80",
+   "path": "instances/ta80",
+   "sha256": "f7640874c73ef663a1af2e4dba09285c0bf9477d35468511940f7591a0d7a2c0"
+  }
+ ]
+}

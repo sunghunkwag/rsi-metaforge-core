@@ -1,0 +1,40 @@
+{
+ "phrase": "rsi6 roles",
+ "commit": "355fc090d390c29933e481777d8d2a2353cf5ff4",
+ "order": [
+  "forecasting",
+  "jobshop",
+  "binpacking",
+  "quadassign",
+  "pmedian",
+  "knapsack",
+  "regression",
+  "setcover",
+  "partitioning",
+  "satisfiability",
+  "routing",
+  "flowshop",
+  "facility",
+  "tour",
+  "colouring",
+  "genassign"
+ ],
+ "roles": {
+  "forecasting": "source",
+  "jobshop": "source",
+  "binpacking": "source",
+  "quadassign": "adoption:1",
+  "pmedian": "adoption:1",
+  "knapsack": "adoption:2",
+  "regression": "adoption:2",
+  "setcover": "adoption:3",
+  "partitioning": "adoption:3",
+  "satisfiability": "target",
+  "routing": "target",
+  "flowshop": "target",
+  "facility": "target",
+  "tour": "reserve",
+  "colouring": "reserve",
+  "genassign": "reserve"
+ }
+}

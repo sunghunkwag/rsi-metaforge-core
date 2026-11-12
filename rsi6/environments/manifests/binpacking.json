@@ -1,0 +1,24 @@
+{
+ "name": "binpacking",
+ "category": "binpacking",
+ "source": "OR-Library (J. E. Beasley), one-dimensional bin packing, files binpack1 to binpack4 (Falkenauer's uniform class)",
+ "terms": "OR-Library states that its test data are publicly available; no licence text accompanies the files. Fetched by hash, not redistributed here.",
+ "reference": "the best known number of bins printed in each problem's header line (kernel only)",
+ "files": [
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/binpack1.txt",
+   "path": "binpack1.txt",
+   "sha256": "891fe4b3be86371b120ccaf37ce4525b5b0a2fc249d38725cd3216fbaa42b172"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/binpack2.txt",
+   "path": "binpack2.txt",
+   "sha256": "86fd8c3d3007047b2ed2e6d2d09924c04d286070968804643d20fd56f9123331"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/binpack3.txt",
+   "path": "binpack3.txt",
+   "sha256": "24ef075e7f6f26f55dddba907d2d4fc117b04ac543e0a35d595b3635435e1e02"
+  }
+ ]
+}
