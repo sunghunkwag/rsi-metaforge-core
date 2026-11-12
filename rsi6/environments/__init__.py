@@ -11,6 +11,7 @@ REGISTRY = {
     "pmedian": ("rsi6.environments.pmedian", "PMedian"),
     "knapsack": ("rsi6.environments.knapsack", "Knapsack"),
     "regression": ("rsi6.environments.regression", "Regression"),
+    "partitioning": ("rsi6.environments.partitioning", "Partitioning"),
 }
 _CACHE = {}
 

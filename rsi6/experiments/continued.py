@@ -88,14 +88,6 @@ def main() -> int:
         else:
             adoption = sorted(reg["gates"][str(g)]["environments"])
             role = reg["gates"][str(g)]["role"]
-            missing = [n for n in adoption if n not in environments.REGISTRY]
-            if missing:
-                raise SystemExit(f"round {label}: no adapter for {missing}")
-            for n in adoption:                       # reserves that amendment 2 turns into this round's gate
-                if reg["gates"][str(g)].get("from") == "reserve" and roles.effective_role(n, ledger) == "reserve":
-                    ledger.append({"type": "reassign", "category": n, "role": role, "round": label, "amendment": 2})
-            if any(roles.effective_role(environments.load(n).category, ledger) != role for n in adoption):
-                raise SystemExit(f"round {label}: its gate environments do not all have the role {role}")
         say(f"round {label}: source pool {source}; adoption set {adoption}")
         plan = [("self", "learner", lineage["self"], lineage["self"]), ("fixed", "learner", v0, lineage["fixed"]),
                 ("random", "random", None, lineage["random"])]
@@ -115,6 +107,17 @@ def main() -> int:
             found[name] = (record, start)
             say(f"  {tag}: evaluated {record['evaluated']}, improving {record['improving']}, best {record['best_cost']},",
                 "nominee changes", sorted(record["nominee_changes"]) if record["nominee_changes"] else None)
+        if not args.dev:
+            # the searches need the source pool only; the adapters of the gate are required from here on
+            missing = [n for n in adoption if n not in environments.REGISTRY]
+            if missing:
+                raise SystemExit(f"round {label}: the searches are recorded; no adapter yet for {missing}; start again when it is admitted")
+            for n in adoption:                       # reserves that amendment 2 turns into this round's gate
+                if reg["gates"][str(g)].get("from") == "reserve" and roles.effective_role(n, ledger) == "reserve":
+                    ledger.append({"type": "reassign", "category": n, "role": role, "round": label, "amendment": 2})
+            if find(ledger, type="release", role=role) is None and any(
+                    roles.effective_role(environments.load(n).category, ledger) != role for n in adoption):
+                raise SystemExit(f"round {label}: its gate environments do not all have the role {role}")
         if not args.dev and find(ledger, type="unlock", role=role) is None:
             ledger.append({"type": "unlock", "role": role, "round": label})
         for name, (record, start) in found.items():
