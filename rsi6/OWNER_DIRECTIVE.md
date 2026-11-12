@@ -309,3 +309,24 @@ Do not substitute toy puzzles or additional planning documents for executable re
 with an empty approval line and the Owner had been told that execution was waiting for it.
 Implementation started on this instruction. The approval line of WO-5 was not filled by the
 session and stays the Owner's to fill.)
+
+## Instruction 8 (2026-11-12, about 18:30 and 23:25 UTC), verbatim
+
+> 현재 작업 중이냐?
+
+> 그래서 작업 완료 했냐? rsi 성공 했냐?
+
+Answered at the time: the work was not complete and no recursive self-improvement had been
+observed (three rounds, six nominees, no adoption).
+
+## Instruction 9 (2026-11-12, about 23:26 UTC), verbatim
+
+> 성공할떄 까지 여러 기법 번갈아서 시도해서 성공 시켜라
+
+How it is carried out (amendment 3): several techniques of self-modification are tried in
+turn, generation after generation. What it does not license, under the directive and
+instructions 1 to 7, which stay in force: counting a result on categories that were used to
+find or to select a modification, lowering a registered rule, opening the sealed targets before
+the process is frozen, or reporting as success anything the final test on unseen categories
+does not show. A technique is judged on categories its search did not see; success is decided
+once, on the reserve categories and the sealed targets.

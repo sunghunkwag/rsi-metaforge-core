@@ -1,0 +1,95 @@
+{
+ "buildable": true,
+ "reason_if_not": "",
+ "source": "SATLIB (H. Hoos and T. Stuetzle), Uniform Random-3-SAT, phase transition region, unforced filtered: the nine satisfiable sets uf50-218, uf75-325, uf100-430, uf125-538, uf150-645, uf175-753, uf200-860, uf225-960, uf250-1065, one tar.gz archive each from https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/RND3SAT/<set>.tar.gz. All nine were fetched by \"python3 -m rsi6.fetch satisfiability\" and pinned by SHA-256 in the manifest; a second independent download into WORK/dl gave the same nine hashes. The archives are read in memory with tarfile and never unpacked. Terms: neither the benchmark page nor the sets' description page (descr.html) carries a licence or terms of use; the manifest says so (fetched by hash, not redistributed).",
+ "answer_form": "AssignProblem, exact. n_vars = the formula's variables, n_opts = 2 (option 0 = false, 1 = true), capacity None (an option may be taken by any number of variables), ordered False, no domain, no start answer. Every truth assignment is an answer of the form, so every valid published answer is. Exposed arrays, all computed from the clause lines only: var_opt[0][v,o] = number of clauses containing the literal of v that option o makes true (column 1: +v, column 0: -v); var_var[0..2][v,w] = number of clauses containing (+v,+w), (+v,-w), (-v,-w), diagonals zero. No var_attr or opt_attr columns. The clause list is a three-variable relation with no generic field: it acts in full only through the hard group (the precedent is knapsack's limits). Relabelling: a random permutation of the variables plus a random negation of each variable (options of that variable exchanged); decode undoes both. Layout of all 108 instances: ('assign', False, True, True, (True,), (False,), 0, 0, 3, 0, 1, 0, True, True).",
+ "groups": "One term group: [0] the number of falsified clauses, hard. A clause counts 1 when all its variables are assigned and every literal is false. On a complete answer it is zero exactly when the formula is satisfied (the published validity). There is no soft group because the published problem has no objective. group(instance_id) is the published set, which is also the size class: 9 groups of 12 instances. split(env, 16, 24) gives training 16 from uf50-218 (3), uf75-325 (2), uf100-430 (3), uf125-538 (1), uf150-645 (2), uf200-860 (2), uf225-960 (3); fresh 24 = uf175-753 (12) + uf250-1065 (12); the halves of the fresh side are one whole set each.",
+ "reference": "A status proved by the source, not a bound: every instance is satisfiable (the source separated satisfiable from unsatisfiable formulae with a complete algorithm and lists the sets as \"all satisfiable\"). No satisfying assignment is published. reference(i) returns m, the number of clauses, which a satisfying assignment satisfies. Attainability was confirmed instance by instance in my checks: my own WalkSAT (WORK/models.py, outside the adapter, not the learner) found a satisfying assignment for all 108 used instances, verified by the independent evaluator.",
+ "score_scale": "All or nothing: 1.0 if the answer is a 0/1 vector of length n that satisfies every clause, otherwise 0.0. Reason: the published validity is \"every clause satisfied\", so an assignment that falsifies a clause is an invalid answer, and R2 gives an invalid answer 0. The share of satisfied clauses was rejected: it would credit invalid answers, a uniformly random assignment sits at 7/8 on it (measured 0.874 with the independent evaluator), and a threshold on it could be met without one satisfying assignment. Every valid answer reaches the reference, so there is no range of valid values and the random-valid-answer rescaling of R2 has nothing to rescale. The mean score is the share of instances solved.",
+ "threshold_and_anchor": "threshold = 0.90. Anchor: an operating point, not an external fact: a satisfying assignment for nine in ten of the fresh instances (an instance scores 1 when every clause is satisfied and 0 otherwise; every instance is satisfiable, so a mean of 1 is attainable). On the 24 fresh instances this means at least 22 solved.",
+ "instances_used": 108,
+ "instances_left_out": "Rule fixed in the module text before anything was scored: of each set, the instances numbered 1 to 12 (archive members uf<n>-01.cnf to uf<n>-012.cnf) are used. Left out by that rule alone: instances 13 and above, i.e. 988 each of uf50-218 and uf100-430 and 88 each of the seven other sets (2,592 in all). Nothing is left out for size: the largest instance has 250 variables, n_vars*n_opts = 500, 751 construction units. Not part of this category's benchmark as the work order defines it: uf20-91 and the unsatisfiable uuf sets (an unsatisfiable formula has no valid answer).",
+ "hosts_used": [
+  "www.cs.ubc.ca"
+ ],
+ "learner_run_on_benchmark_instances": false,
+ "files_written": [
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/repo/rsi6/environments/satisfiability.py",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/repo/rsi6/environments/manifests/satisfiability.json",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/repo/rsi6/environments/__init__.py",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/repo/rsi6/data/satisfiability/ (nine archives fetched by rsi6.fetch)",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/work/checks.py",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/work/checks.out",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/work/indep.py",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/work/models.py",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/work/models.json",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/work/models.out",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/work/inspect_dl.py",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/work/inspect2.py",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/work/dl/ (second download of the nine archives, benchm.html, descr.html)"
+ ],
+ "checks": [
+  {
+   "id": "0 data",
+   "n": "108 instances, 9 groups",
+   "result": "PASS. The independent reader finds the same 108 ids as the adapter, one (n, m) per group from (50, 218) to (250, 1065), and 3 distinct variables in every clause. A uniformly random assignment satisfies 0.874 of the clauses (540 draws)."
+  },
+  {
+   "id": "a fast evaluation equals the specification",
+   "n": "54 instances (6 per group), 6464 candidate rows, 8100 running totals",
+   "result": "PASS, exact equality. Candidate rows at random partial states equal AssignProblem._rows (also for an already assigned variable, beyond the contract); totals after every assign equal partial_totals; final totals equal evaluate and the independent count. 0 mismatches."
+  },
+  {
+   "id": "b independent evaluator against score through decode",
+   "n": "108 instances: 432 random assignments, 108 satisfying, 648 one-variable changes, 864 malformed",
+   "result": "PASS, 0 mismatches. A pure-Python reader and evaluator (WORK/indep.py, no shared code) agrees with the hard total of the relabelled problem and with score on decoded answers. Of the one-variable changes, 45 still satisfy and score 1, the rest score 0. Malformed answers (wrong length, float, value 2 or -1, wrong shape, None) score 0. var_opt and var_var of 18 instances were recomputed by loops from the file and are equal."
+  },
+  {
+   "id": "c reference answers",
+   "n": "108 of 108",
+   "result": "The source publishes no satisfying assignment, so there is no published reference answer to score. Substitute: assignments found by my own WalkSAT for all 108 instances score exactly 1.0, and 108 corrupted ones score 0.0. PASS."
+  },
+  {
+   "id": "d one layout",
+   "n": "108 instances, training and fresh form",
+   "result": "PASS, one layout: ('assign', False, True, True, (True,), (False,), 0, 0, 3, 0, 1, 0, True, True). No padding was needed."
+  },
+  {
+   "id": "e two relabellings",
+   "n": "72 answers on 36 instances",
+   "result": "PASS. The same own-label answer written under two seeds gives different label vectors, the same hard total and the same score; the same seed gives a byte-identical problem."
+  },
+  {
+   "id": "f split",
+   "n": "16 training, 24 fresh",
+   "result": "PASS, groups disjoint. Training: uf100-430 3, uf125-538 1, uf150-645 2, uf200-860 2, uf225-960 3, uf50-218 3, uf75-325 2. Fresh: uf175-753 12, uf250-1065 12. Construction units 151 to 751; one full construction on uf250-1065/01 that looks at every free variable at every step takes 0.02 s."
+  },
+  {
+   "id": "g interface with the learner as a black box, made-up formulae only",
+   "n": "designs a and b; 8 made-up formulae (14 variables, 30 clauses) for acquire, 2 for apply",
+   "result": "PASS for both designs: benchmark layout, acquire within the registered budget, apply without and with the capability returns well-formed answers whose hard total equals the independent count. My first run failed this check because of my own assertion that meter.used <= limit; the kernel's meter charges the call that crosses the limit before refusing it (283 against 282). I corrected the check, not the adapter. How well the learner did on the made-up formulae was not printed."
+  },
+  {
+   "id": "h scan for the reference",
+   "n": "19116 arrays plus all scalars of problem objects, views and start states, 108 instances",
+   "result": "PASS: m appears nowhere, and no string or other object is in them. This scan is weak here by nature: the reference is a status that the form itself states (a hard group must be 0), not a hidden number."
+  },
+  {
+   "id": "i view",
+   "n": "16 problems",
+   "result": "PASS: the view holds generic fields only, arrays are read-only, states hold a, used, tot, n only; scores seen are 0.0 and 1.0 only; the registry gives the category the role target."
+  }
+ ],
+ "open_issues": [
+  "Main judgement call, for the auditor to confirm: the score is all or nothing (1 for a satisfying assignment, else 0). I read the work order's own definition (valid when every clause is satisfied) together with R2 (0 for an invalid answer) as ruling out partial credit. If the experiment wants a graded scale, that is the MAX-SAT reading: one soft group, score = 1 - falsified/(m/8), the share of the way from a random assignment to all clauses satisfied. That is a different problem from the published one, and I did not build it.",
+  "Because the score is all or nothing, the mean over the 24 fresh instances moves in steps of 1/24, and a learner that satisfies nearly all clauses but not all scores 0. A floor (0 untrained and 0 acquired) is a possible honest outcome at the phase transition under the small test budget. I did not measure anything about it.",
+  "The threshold 0.90 is an operating point of my choosing (the class default), not an external fact. The only external fact is that 1.0 is attainable.",
+  "The fresh side fixed by the kernel's split is uf175-753 and uf250-1065; no training instance has 175 or 250 variables.",
+  "This is, as far as I read (jobshop, binpacking, pmedian were not opened), the first adapter whose only group is hard. Both learner designs returned well-formed answers on made-up formulae of this layout, but nothing else is known about how they handle it.",
+  "The exposed arrays are the one-variable and two-variable projections of the clause list (var_opt, three var_var relations). They do not determine the formula; the full three-variable clause structure reaches the learner only through candidates/evaluate. This is exact but is a design choice: (+v,+w), (+v,-w), (-v,-w) rather than a same-sign/opposite-sign pair.",
+  "reference(i) returns m as a float so that the kernel has a number; the true reference is the status satisfiable. If the kernel's test_problem_carries_no_reference were applied to this category it would pass (m is in no array or scalar), but it reads source categories only.",
+  "I did not run rsi6/tests/test_kernel.py or single tests from it: importing the module loads every registered environment (which would fetch data from other hosts), and test_layout_is_the_same_for_every_instance builds the learner's Layout on benchmark instances. The logic of test_fast_evaluation_equals_the_specification and test_view_hides_the_adapter is reproduced for this adapter in checks (a) and (i).",
+  "Terms of use: the source pages state none. The manifest records that; whether that is acceptable for the package is not mine to decide.",
+  "The work order names the nine sets from 50 to 250 variables; uf20-91 on the same page is excluded by that definition, not by a size rule. Say so if it should be added (it would give a tenth group, 20 variables, 91 clauses)."
+ ]
+}

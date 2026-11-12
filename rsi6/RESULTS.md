@@ -182,6 +182,23 @@ It acquires a large part of both capabilities and reaches neither threshold. Thi
 yet about the first design on these categories, nor about equal measured CPU; the registered
 comparison of the designs is on the sealed targets.
 
+**Post hoc, not registered: the first design on the same two categories.** After the round its
+gate categories joined the source pool. Generation 0 of the first design was then run on them
+with the budgets and seeds of the gate and of the confirmation (`experiments/posthoc.py`;
+recorded in the ledger as post hoc):
+
+| category, half | first design: acquired (CPU-s per run) | second design: acquired (CPU-s per run) |
+|---|---|---|
+| graph partitioning, deciding half | 0.8652 (148) | 0.8734 (188) |
+| graph partitioning, confirming half | 0.8446 (27) | 0.8601 (58) |
+| set covering, deciding half | 0.7641 (92) | 0.7723 (262) |
+| set covering, confirming half | 0.6765 (75) | 0.6422 (286) |
+
+At equal counted units the two designs acquire the same on these categories (differences
++0.008, +0.016, +0.008, −0.034), and the second spends 1.3 to 3.8 times the CPU. The redesign
+bought nothing here that can be seen. The large gains on these two categories belong to both
+designs.
+
 **Across the three rounds** the picture is the same: six nominees, none adopted; the two that
 came closest were single-field changes proposed at random; every nominee the learner found by
 following its own measurements on the pool lost on the new categories.
