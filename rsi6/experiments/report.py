@@ -131,6 +131,18 @@ def search_section(ledger) -> dict:
             entry.update({"correlation_between_seeds": float(np.corrcoef(first, second)[0, 1]),
                           "sd_between_candidates": float(np.std(both)), "sd_of_seed_difference": float(np.std(first - second)),
                           "share_of_candidates_measured_better": float(np.mean(both > 0))})
+        if len(complete) > 2:
+            # does a modification that helps acquisition in one category help in the others?
+            change = np.array([[np.mean([table[d][(e, s)]["acquired"] - base[(e, s)]["acquired"] for s in seeds]) for e in envs]
+                               for d in complete])
+            moved = [j for j in range(len(envs)) if change[:, j].std() > 1e-9]
+            between = np.corrcoef(change[:, moved].T)[np.triu_indices(len(moved), 1)] if len(moved) > 1 else np.array([])
+            better, worse = (change > 0.005).sum(axis=1), (change < -0.005).sum(axis=1)
+            entry["per_category"] = {e: {"mean_change": float(change[:, j].mean()), "share_better": float(np.mean(change[:, j] > 0.005)),
+                                         "share_worse": float(np.mean(change[:, j] < -0.005))} for j, e in enumerate(envs)}
+            entry["mean_correlation_between_categories"] = float(between.mean()) if len(between) else None
+            entry["candidates_by_categories_improved"] = {int(k): int((better == k).sum()) for k in range(len(envs) + 1)}
+            entry["candidates_improving_two_or_more_and_harming_none"] = int(((better >= 2) & (worse == 0)).sum())
         entry["nominee_on_source_pool"] = None if record["best_cost"] is None else -record["best_cost"]
         gate = ledger.select(type="gate", tag=tag.replace("search", "gate"))
         confirm = ledger.select(type="confirm", tag=tag.replace("search", "confirm"))
@@ -271,6 +283,12 @@ def main() -> int:
               f"measured better {number(e.get('share_of_candidates_measured_better'))} | nominee: source pool "
               f"{number(e['nominee_on_source_pool'])}, adoption set {number(e['nominee_on_adoption_set'])}, "
               f"confirmation half {number(e['nominee_on_confirmation_half'])}")
+        if "per_category" in e:
+            print("      change of the acquired score per category over the candidates (mean; share better by 0.005; share worse):",
+                  "; ".join(f"{name} {v['mean_change']:+.4f} {v['share_better']:.2f} {v['share_worse']:.2f}" for name, v in e["per_category"].items()))
+            print(f"      mean correlation between categories {number(e['mean_correlation_between_categories'])}; candidates by number of "
+                  f"categories improved {e['candidates_by_categories_improved']}; improving two or more and harming none "
+                  f"{e['candidates_improving_two_or_more_and_harming_none']}")
     if targets:
         print(f"\nTARGETS {targets['targets']}, seeds {targets['seeds']}; primary arm {targets['primary_arm']}")
         for arm, t in targets["arms"].items():
