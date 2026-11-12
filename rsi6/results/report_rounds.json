@@ -1,6 +1,6 @@
 {
- "ledger_head": "4faf19ab567f2f99a9fe7d201045c07c524c3b006492f4fd27b32ea4eabb6d28",
- "records": 1297,
+ "ledger_head": "7bce4cd25e2996b7099310d102d178a6c9a69103e3dcc1eefe1237fced0fd39d",
+ "records": 1299,
  "runs": 1264,
  "cpu_seconds": 6257.5,
  "predictions": [
@@ -634,6 +634,80 @@
    "nominee_on_source_pool": 0.015437465807253165,
    "nominee_on_adoption_set": 0.0,
    "nominee_on_confirmation_half": 0.0
+  }
+ },
+ "generation0": {
+  "a": {
+   "binpacking": {
+    "runs": 2,
+    "untrained": 0.9282824042765926,
+    "acquired": 0.9835606689838663,
+    "gain": 0.055278264707273705,
+    "threshold": 0.98,
+    "share_of_runs_that_kept_what_was_learned": 1.0,
+    "rounds_of_learning": 1.0,
+    "cpu_per_run": 10.2705
+   },
+   "forecasting": {
+    "runs": 2,
+    "untrained": 0.9378290314634756,
+    "acquired": 0.9378290314634756,
+    "gain": 0.0,
+    "threshold": 0.9381133333333334,
+    "share_of_runs_that_kept_what_was_learned": 0.0,
+    "rounds_of_learning": 1.0,
+    "cpu_per_run": 0.028
+   },
+   "jobshop": {
+    "runs": 2,
+    "untrained": 0.813028494103368,
+    "acquired": 0.8487687155373338,
+    "gain": 0.03574022143396588,
+    "threshold": 0.85,
+    "share_of_runs_that_kept_what_was_learned": 0.5,
+    "rounds_of_learning": 8.0,
+    "cpu_per_run": 7.877000000000001
+   },
+   "knapsack": {
+    "runs": 12,
+    "untrained": 0.8411432815886662,
+    "acquired": 0.8411432815886662,
+    "gain": 0.0,
+    "threshold": 0.9700000000000002,
+    "share_of_runs_that_kept_what_was_learned": 0.0,
+    "rounds_of_learning": 2.75,
+    "cpu_per_run": 17.580000000000002
+   },
+   "pmedian": {
+    "runs": 14,
+    "untrained": 0.6882679566436766,
+    "acquired": 0.690019726502867,
+    "gain": 0.0017517698591904076,
+    "threshold": 0.9499999999999996,
+    "share_of_runs_that_kept_what_was_learned": 0.5,
+    "rounds_of_learning": 1.1428571428571428,
+    "cpu_per_run": 2.8814285714285712
+   },
+   "quadassign": {
+    "runs": 14,
+    "untrained": 0.3599149991057718,
+    "acquired": 0.42428903254766726,
+    "gain": 0.06437403344189538,
+    "threshold": 0.9000000000000001,
+    "share_of_runs_that_kept_what_was_learned": 0.7142857142857143,
+    "rounds_of_learning": 1.9285714285714286,
+    "cpu_per_run": 0.7231428571428571
+   },
+   "regression": {
+    "runs": 12,
+    "untrained": 0.40847197686661424,
+    "acquired": 0.41011876874772213,
+    "gain": 0.0016467918811078665,
+    "threshold": 0.9990000000000001,
+    "share_of_runs_that_kept_what_was_learned": 0.08333333333333333,
+    "rounds_of_learning": 1.0,
+    "cpu_per_run": 0.1605
+   }
   }
  },
  "targets": null

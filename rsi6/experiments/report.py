@@ -17,6 +17,7 @@ import sys
 import numpy as np
 
 from rsi6.kernel import ledger as ledgers
+from rsi6.learner import designs
 from rsi6.learner import version as versions
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -149,6 +150,29 @@ def search_section(ledger) -> dict:
         entry["nominee_on_adoption_set"] = gate[-1]["mean_min"] if gate else None
         entry["nominee_on_confirmation_half"] = confirm[-1]["mean_min"] if confirm else None
         out[tag] = entry
+    return out
+
+
+def generation0_section(ledger) -> dict:
+    """What generation 0 of each design did on every category it was run on, over all its recorded
+    runs outside the target test: scores on fresh instances, how often its own check accepted what
+    it had learned, and how many rounds of learning (or tests) fitted in the budget."""
+    out = {}
+    for design in ("a", "b"):
+        digest = designs.digest(designs.default(design))
+        rows = [r for r in ledger.records if r.get("type") == "run" and r["version"] == digest
+                and not r["purpose"].startswith(("target", "memory")) and r.get("memory_in", 0) == 0]
+        table = {}
+        for env in sorted({r["env"] for r in rows}):
+            sel = [r for r in rows if r["env"] == env]
+            table[env] = {"runs": len(sel), "untrained": float(np.mean([r["untrained"] for r in sel])),
+                          "acquired": float(np.mean([r["acquired"] for r in sel])), "gain": float(np.mean([r["gain"] for r in sel])),
+                          "threshold": float(np.mean([r["threshold"] for r in sel])),
+                          "share_of_runs_that_kept_what_was_learned": float(np.mean([bool(r["report"].get("learned")) for r in sel])),
+                          "rounds_of_learning": float(np.mean([r["report"].get("iterations", 0) for r in sel])),
+                          "cpu_per_run": float(np.mean([r["cpu"]["acquire"] + r["cpu"]["apply"] for r in sel]))}
+        if table:
+            out[design] = table
     return out
 
 
@@ -310,7 +334,8 @@ def main() -> int:
     runs = [r for r in ledger.records if r.get("type") == "run"]
     report = {"ledger_head": ledger.head(), "records": len(ledger.records), "runs": len(runs),
               "cpu_seconds": round(float(sum(r["cpu"]["acquire"] + r["cpu"]["apply"] for r in runs)), 1),
-              "predictions": predictions, **rounds, "searches": searches, "targets": targets}
+              "predictions": predictions, **rounds, "searches": searches, "generation0": generation0_section(ledger),
+              "targets": targets}
     if args.json:
         json.dump(report, open(args.json, "w"), indent=1)
     print(f"ledger: {len(ledger.records)} records, {len(runs)} runs, {report['cpu_seconds']} CPU-seconds, head {ledger.head()[:16]}")
@@ -332,6 +357,12 @@ def main() -> int:
             print(f"  confirm {name:11s} min-change {c['mean_min']:+.4f} gain {c['mean_gain_change']:+.4f} acquired {c['mean_acquired_change']:+.4f} ({c['runs']} runs)")
         for name, a in entry["adopted"].items():
             print(f"  ADOPTED by {name}: {a['changes']}")
+    for design, table in report["generation0"].items():
+        print(f"\nGENERATION 0 of design {design}: every recorded run outside the target test (fresh instances)")
+        for env, e in table.items():
+            print(f"  {env:13s} runs {e['runs']:3d} untrained {e['untrained']:.4f} acquired {e['acquired']:.4f} gain {e['gain']:+.4f} "
+                  f"threshold {e['threshold']:.3f} | kept what was learned in {e['share_of_runs_that_kept_what_was_learned']:.2f} of runs | "
+                  f"rounds of learning {e['rounds_of_learning']:.1f} | cpu/run {e['cpu_per_run']:.1f}")
     print("\nSEARCHES: reliability between the two seeds, and what the nominee did where the search never looked")
     for tag, e in searches.items():
         number = lambda x: "none" if x is None else f"{x:+.4f}"
