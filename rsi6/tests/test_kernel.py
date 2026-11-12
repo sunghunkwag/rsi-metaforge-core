@@ -480,6 +480,42 @@ def test_second_design_keeps_the_contract():
                     assert any(name == f"opt:{expr}" or expr in name for name in capability["weights"]), expr
 
 
+class _Parts(AssignProblem):
+    """Plumbing fixture with a relation between variables: a made-up graph whose vertices go into
+    parts of limited size; the cost is the number of edges between parts."""
+
+    def __init__(self, n, k, seed, meter):
+        rng = np.random.default_rng(seed)
+        upper = np.triu((rng.random((n, n)) < 0.2).astype(float), 1)
+        self.w = upper + upper.T
+        super().__init__(n, k, hard=[False], ordered=False, capacity=np.full(k, n // k), var_var=(self.w,), meter=meter)
+
+    def partial_totals(self, a):
+        placed = a >= 0
+        cut = self.w * placed[:, None] * placed[None, :] * (a[:, None] != a[None, :])
+        return np.array([cut.sum() / 2.0])
+
+
+def test_second_design_uses_relations_between_variables():
+    """On a made-up problem with a relation between variables the second design has the
+    aggregate over an option's members among its descriptors, learns within the budget and
+    answers with a well-formed partition."""
+    from rsi6.learner import designs
+    from rsi6.learner.design_b import ExtLayout
+    meter = Meter(0.0)
+    problems = [_Parts(24, 4, seed, meter) for seed in range(8)]
+    meter.limit = 40.0 * sum(P.construction_units() for P in problems)
+    version = designs.default("b")
+    assert "opt:mem[0]" in ExtLayout(view(problems[0]), version).names
+    learner = designs.make(version)
+    capability, _, report = learner.acquire([view(P) for P in problems], np.random.default_rng(1))
+    assert report["tests"] >= 8 and meter.used <= meter.limit, report
+    test = _Parts(24, 4, 77, Meter(float("inf")))
+    test.meter.limit = 2.0 * test.construction_units() + 24 * 24
+    answer = learner.apply(capability, view(test), np.random.default_rng(2))
+    assert test.well_formed(answer) and np.all(np.bincount(answer, minlength=4) <= 6)
+
+
 def test_first_design_is_untouched_by_the_dispatch():
     """Versions of the first design go through the frozen modules: same digest, same learner class."""
     from rsi6.learner import designs

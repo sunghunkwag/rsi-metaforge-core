@@ -75,6 +75,8 @@ def effective_role(category: str, ledger) -> str:
             role = record["role"]
         if record.get("type") == "replace" and record["replaced"] == category:
             role = "dropped"
+        if record.get("type") == "reassign" and record["category"] == category:
+            role = record["role"]                    # an amendment gave a reserve another role (recorded before any use)
         if record.get("type") == "release" and role == record["role"]:
             role = "source"
     return role

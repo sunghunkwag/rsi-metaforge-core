@@ -44,6 +44,20 @@ def improvement(base, other) -> float:
     return min(changes(base, other))
 
 
+def breadth(base, other) -> float:
+    """The improvement of a version as the continued process counts it (amendment 2). The change
+    in each environment is cut to [breadth_floor, breadth_cap] before the mean over environments
+    is taken, for the acquired score and for the gain, and the smaller of the two means is
+    returned. A gain in one environment cannot make up for none in the others (the nominees of
+    the first two rounds were carried by one category and failed their gates), and a loss
+    weighs up to three times as much as a gain."""
+    envs = sorted({r["env"] for r in base})
+    low, high = RULES.get("breadth_floor", -0.03), RULES.get("breadth_cap", 0.01)
+    acquired = [np.mean([o["acquired"] - b["acquired"] for b, o in zip(base, other) if b["env"] == e]) for e in envs]
+    gain = [np.mean([o["gain"] - b["gain"] for b, o in zip(base, other) if b["env"] == e]) for e in envs]
+    return float(min(np.mean(np.clip(acquired, low, high)), np.mean(np.clip(gain, low, high))))
+
+
 def pool(ledger) -> list:
     """Environments whose category is in the source pool now."""
     return sorted(name for name in environments.REGISTRY
@@ -55,7 +69,7 @@ def jobs_for(version: dict, envs, seeds, budget: dict, purpose: str) -> list:
 
 
 def search(improver: str, improver_version, start: dict, envs, seeds, budget: dict, cpu_limit: float, cache: Cache,
-           tag: str, seed: int, edit_stats=None) -> dict:
+           tag: str, seed: int, edit_stats=None, objective=None) -> dict:
     """One improver looks for a better version than ``start`` on the source pool, within
     ``cpu_limit`` measured CPU-seconds. ``improver`` is "learner" (a version of L working on the
     space of versions) or "random" (single-field changes of the start, no use of feedback)."""
@@ -67,7 +81,7 @@ def search(improver: str, improver_version, start: dict, envs, seeds, budget: di
         cpu = cpu_of(records)
         if cpu > RULES["search_cpu_ratio"] * base_cpu:
             return 1.0, cpu
-        return -improvement(base, records), cpu
+        return -(objective or improvement)(base, records), cpu
 
     meter = Meter(cpu_limit)
     problem = space.VersionProblem(start, cost, meter)

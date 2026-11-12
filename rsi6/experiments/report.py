@@ -186,18 +186,36 @@ def targets_section(ledger, reg) -> dict | None:
         comparisons[name] = {"min_change": both_interval(acquired, gain, rng), "acquired_change": blocked_interval(acquired, rng),
                              "gain_change": blocked_interval(gain, rng)}
 
-    for arm in arms:
-        if arm != "frozen":
+    for arm in arms:                                   # every arm against generation 0 of its own design
+        if arm.startswith("b:"):
+            if arm != "b:frozen":
+                compare(f"{arm} minus b:frozen", arms[arm], arms["b:frozen"])
+        elif arm not in ("frozen", "compute@b"):
             compare(f"{arm} minus frozen", arms[arm])
     primary = done["primary_arm"]
     for arm in ("fixed", "random", "skills", "compute", "search"):
         if arm in arms and primary in arms and primary != "frozen":
             compare(f"{primary} minus {arm}", arms[primary], arms[arm])
+    primary_b = done.get("primary_arm_b")
+    if primary_b:
+        for arm in ("b:fixed", "b:random", "b:skills", "b:compute", "b:search"):
+            if arm in arms and primary_b != "b:frozen":
+                compare(f"{primary_b} minus {arm}", arms[primary_b], arms[arm])
+        compare("b:frozen minus frozen", arms["b:frozen"])                     # the two designs at equal counted units
+        if "compute@b" in arms:
+            compare("b:frozen minus compute@b", arms["b:frozen"], arms["compute@b"])     # and at equal measured CPU
+            if primary_b != "b:frozen":
+                compare(f"{primary_b} minus compute@b", arms[primary_b], arms["compute@b"])
     gen0 = {env: np.array([r["gain"] for r in base if r["env"] == env]) for env in sorted({r["env"] for r in base})}
     matched = {r["arm"]: {"share_per_run": r["share_per_run"], "reached": int(sum(r["reached"])), "of": len(r["reached"])}
                for r in ledger.select(type="matched")}
-    return {"arms": table, "comparisons": comparisons, "primary_arm": primary, "generation0_gain": blocked_interval(gen0, rng),
-            "matched": matched, "targets": done["targets"], "seeds": done["seeds"]}
+    out = {"arms": table, "comparisons": comparisons, "primary_arm": primary, "generation0_gain": blocked_interval(gen0, rng),
+           "matched": matched, "targets": done["targets"], "seeds": done["seeds"], "primary_arm_b": primary_b}
+    if primary_b:
+        base_b = arms["b:frozen"]
+        out["generation0_gain_b"] = blocked_interval({env: np.array([r["gain"] for r in base_b if r["env"] == env])
+                                                      for env in sorted({r["env"] for r in base_b})}, rng)
+    return out
 
 
 def score_predictions(reg, rounds, targets, ledger) -> list:
@@ -213,11 +231,13 @@ def score_predictions(reg, rounds, targets, ledger) -> list:
         add("R1", None if s is None else bool(s["best_cost"] is not None and s["best_cost"] <= -0.005), s and s["best_cost"])
         g = by_round[1]["gates"].get("self")
         add("R2", (s is not None and s["nominee"] is None) or (g is not None and not g["adopted"]), g and g["mean_min"])
-    if len(by_round) >= reg["rounds_planned"]:
+    if sum(1 for g in by_round if isinstance(g, int)) >= reg["rounds_planned"]:
         count = len(ledger.select(type="adopt", lineage="self"))
         add("R3", count <= 1, count)
         seen = []
         for g, entry in by_round.items():
+            if not isinstance(g, int):               # rounds of the continued process have their own predictions
+                continue
             a, b = entry["searches"].get("self"), entry["searches"].get("random")
             if a and b and a["best_cost"] is not None and b["best_cost"] is not None:
                 seen.append(b["best_cost"] <= a["best_cost"])
@@ -239,6 +259,39 @@ def score_predictions(reg, rounds, targets, ledger) -> list:
     return out
 
 
+def score_predictions_b(reg_b, rounds, searches, targets) -> list:
+    out = []
+    by_round = {r["round"]: r for r in rounds["rounds"]}
+
+    def add(pid, outcome, detail):
+        text = next(p for p in reg_b["predictions"] if p["id"] == pid)
+        out.append({"id": pid, "text": text["text"], "criterion": text["criterion"], "holds": outcome, "detail": detail})
+
+    first = by_round.get("b1")
+    if first:
+        s = first["searches"].get("self")
+        g = first["gates"].get("self")
+        add("B1", None if s is None else bool(s["best_cost"] is not None and s["best_cost"] < 0), s and s["best_cost"])
+        add("B2", (s is not None and s["nominee"] is None) or (g is not None and not g["adopted"]), g and g["mean_min"])
+        r = searches.get("search:b1:self", {}).get("correlation_between_seeds")
+        add("B3", None if r is None else bool(r >= 0.3), r)
+    if targets and targets.get("primary_arm_b"):
+        c = targets["comparisons"]
+        add("B4", bool(c["b:frozen minus frozen"]["acquired_change"][0] > 0), c["b:frozen minus frozen"]["acquired_change"])
+        if "b:frozen minus compute@b" in c:
+            point, low, high = c["b:frozen minus compute@b"]["acquired_change"]
+            add("B5", bool(low <= 0.0), [point, low, high])
+        if "b:skills minus b:frozen" in c:
+            add("B6", bool(c["b:skills minus b:frozen"]["acquired_change"][0] < 0.005), c["b:skills minus b:frozen"]["acquired_change"][0])
+        primary = c.get(f"{targets['primary_arm_b']} minus b:frozen")
+        if primary:
+            point, low, high = primary["min_change"]
+            add("B7", bool(point < 0.01 or low <= 0.0), [point, low, high])
+        else:
+            add("B7", True, "no version was adopted by the b:self lineage, so there is nothing to compare")
+    return out
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--ledger", default=LEDGER)
@@ -251,6 +304,9 @@ def main() -> int:
     targets = targets_section(ledger, reg)
     predictions = score_predictions(reg, rounds, targets, ledger)
     searches = search_section(ledger)
+    registered_b = ledger.select(type="registration_b")
+    if registered_b:
+        predictions += score_predictions_b(registered_b[-1]["registration"], rounds, searches, targets)
     runs = [r for r in ledger.records if r.get("type") == "run"]
     report = {"ledger_head": ledger.head(), "records": len(ledger.records), "runs": len(runs),
               "cpu_seconds": round(float(sum(r["cpu"]["acquire"] + r["cpu"]["apply"] for r in runs)), 1),
@@ -302,6 +358,8 @@ def main() -> int:
                   f"acquired {c['acquired_change'][0]:+.4f} [{c['acquired_change'][1]:+.4f}, {c['acquired_change'][2]:+.4f}] "
                   f"gain {c['gain_change'][0]:+.4f} [{c['gain_change'][1]:+.4f}, {c['gain_change'][2]:+.4f}]")
         print("  generation 0 gain on targets: %+.4f [%+.4f, %+.4f]" % tuple(targets["generation0_gain"]))
+        if targets.get("generation0_gain_b"):
+            print("  generation 0 of the second design, gain on targets: %+.4f [%+.4f, %+.4f]" % tuple(targets["generation0_gain_b"]))
         print("  compute matching:", targets["matched"])
     return 0
 
