@@ -1,8 +1,8 @@
 {
  "name": "binpacking",
  "category": "binpacking",
- "source": "OR-Library (J. E. Beasley), one-dimensional bin packing, files binpack1 to binpack4 (Falkenauer's uniform class)",
- "terms": "OR-Library states that its test data are publicly available; no licence text accompanies the files. Fetched by hash, not redistributed here.",
+ "source": "OR-Library (J. E. Beasley), one-dimensional bin packing, files binpack1 to binpack3 (Falkenauer's uniform class, 120, 250 and 500 items)",
+ "terms": "OR-Library's legal page: 'All of the material available from OR-Library is freely available for use. As such the MIT licence, reproduced below, applies: Copyright (c) (2010) (J E Beasley) ...'. Fetched by hash, not committed.",
  "reference": "the best known number of bins printed in each problem's header line (kernel only)",
  "files": [
   {

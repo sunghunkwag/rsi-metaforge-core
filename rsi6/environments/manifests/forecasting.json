@@ -2,7 +2,7 @@
  "name": "forecasting",
  "category": "forecasting",
  "source": "M4 competition data (github.com/Mcompetitions/M4-methods), hourly, weekly, yearly and quarterly series; the monthly and daily files are left out for their size",
- "terms": "published by the competition organisers for research use; fetched by hash, not redistributed here.",
+ "terms": "no licence file or licence wording was found in the repository. Fetched by hash, not committed.",
  "reference": "the real continuation of each series (the competition's test files; kernel only)",
  "files": [
   {

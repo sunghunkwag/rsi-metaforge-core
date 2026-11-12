@@ -36,8 +36,8 @@ records = []
 for i, cid in enumerate(order):
     c = calls[cid]
     r = results.get(cid, {"output": None, "is_error": None, "time": None})
-    records.append({"seq": i, "time": c["time"], "tool": c["tool"], "input": c["input"], "output": r["output"],
-                    "is_error": r["is_error"]})
+    records.append({"seq": i, "time": c["time"], "reply_time": r["time"], "tool": c["tool"], "input": c["input"],
+                    "output": r["output"], "is_error": r["is_error"]})
 path = os.path.join(out_dir, f"{label}_tool_calls.jsonl")
 with open(path, "w") as handle:
     for rec in records:

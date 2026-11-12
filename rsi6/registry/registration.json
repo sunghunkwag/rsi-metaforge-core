@@ -144,7 +144,13 @@
    "utc": "2026-11-12T11:05:43Z",
    "before_any_registered_round": true,
    "what": "the improvement of a version over another is the smaller of the two MEAN changes (acquired, gain), not the mean of per-run minima: a development round on the source categories showed that the mean of minima is pulled below zero by seed noise alone, which made neutral changes look harmful. This matches the wording of the rule ('improve acquired and gain by this much, on average'). No number was changed."
+  },
+  {
+   "utc": "2026-11-12T12:48:45Z",
+   "before_any_registered_round": true,
+   "what": "fixes required by the independent audit of the seven adapters and of the kernel, none of them a registered number: bin packing keeps only problems that share no stretch of the one stream its files are cut from; quadratic assignment is scored by the share of the way from a random permutation to the published value (threshold 0.90); the deciding and confirming halves of the fresh instances are whole published groups; every instance has its own relabelling; a malformed answer scores 0 and is never repaired; assignment is metered; the learner receives a generic view of a problem; two physical laws with a degenerate or repeated reference are left out; the forecasting threshold is taken over the series scored; anchors of thresholds are worded as what they are (most are operating points, not external facts)."
   }
  ],
- "development_round": "one round on the source categories only (development ledger, not committed, not evidence): the learner as improver found no improving version in 16 evaluations; the random proposer found one (a setting that spends spare test-time budget on sampled constructions), which the gate refused for using 1.26 times the measured CPU"
+ "development_round": "one round on the source categories only (development ledger, not committed, not evidence): the learner as improver found no improving version in 16 evaluations; the random proposer found one (a setting that spends spare test-time budget on sampled constructions), which the gate refused for using 1.26 times the measured CPU",
+ "thresholds_note": "the thresholds of job shop, bin packing, quadratic assignment, p-median and knapsack are operating points chosen before any run, not external facts; prediction R7 depends on them and is scored as registered, with this caveat"
 }

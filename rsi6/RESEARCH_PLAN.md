@@ -378,9 +378,13 @@ The record of the external verifier code that was executed on 2026-11-11 is pres
 audited in `rsi6/audit/external_code_execution_20261111/`: the one command of the
 orchestrating session that was denied, every command and output of the two sub-agents that had
 been started two minutes earlier and that executed development-split verifiers natively until
-they were stopped, a classification of each command, and the side effects (one out-of-memory
-kill; one unrequested probe of system calls inside a sandbox, with no damage found). No number
-from those runs is used.
+they were stopped, as returned to the agents (one output is a preview), a classification of each
+command, and the side effects (one out-of-memory kill; unrequested blind probes of system calls
+and of builtins, run as root, partly inside the agent's sandbox and partly outside it; 4,766
+empty directories left in /tmp; one kill of processes by pattern over the whole machine; no
+damage found, the canary file was intact, and what the 205 calls that returned did is not
+recorded). An independent audit of the record is in the same directory. No number from those
+runs is used.
 
 The restricted interpreter (`set_aside_p3/interp.py`) has not been run on any external
 verifier and does not preserve the verifiers' semantics: it is a partial re-implementation

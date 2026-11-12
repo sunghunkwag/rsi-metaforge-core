@@ -10,7 +10,7 @@ import numpy as np
 
 from rsi6 import environments
 from rsi6.kernel import roles
-from rsi6.kernel.problem import BudgetExhausted, Meter
+from rsi6.kernel.problem import BudgetExhausted, Meter, view
 from rsi6.kernel.run import Cache
 from rsi6.learner import version as versions
 from rsi6.learner.learner import Learner
@@ -77,7 +77,7 @@ def search(improver: str, improver_version, start: dict, envs, seeds, budget: di
     if improver == "learner":
         learner = Learner(improver_version)
         capability = {"kind": "assign", "weights": {}, "edit_stats": edit_stats} if edit_stats else None
-        learner.apply(capability, problem, rng)
+        learner.apply(capability, view(problem), rng)
         trace = learner.trace
     else:
         first = problem.start_answer

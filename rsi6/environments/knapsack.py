@@ -8,7 +8,8 @@ library's file mkcbres), which are best known values, not proven optima.
 
 Answer form: every item takes option 0 (left) or 1 (taken). Groups: [0] minus the profit of the
 taken items (soft, a cost); [1] the total amount by which limits are exceeded (hard). The
-profits and the constraint coefficients of an item are exposed as its attributes.
+profits and the constraint coefficients of an item are exposed as its attributes. The limits
+b(i) are in no exposed array: they act only through the hard group.
 """
 from __future__ import annotations
 
@@ -70,6 +71,7 @@ class KnapsackProblem(AssignProblem):
         out[:, 1, 0] = -self.profit[variables]
         after = s["load"][:, None] + self.use[:, variables]
         out[:, 1, 1] = (np.maximum(after - self.limit[:, None], 0.0) - np.maximum(s["load"] - self.limit, 0.0)[:, None]).sum(axis=0)
+        out[s["a"][variables] >= 0] = 0.0                      # an item that is already decided changes nothing
         return out
 
     def _push(self, s, v, o):
@@ -84,7 +86,8 @@ class Knapsack(Environment):
     name = category = "knapsack"
     form = "assign"
     threshold = 0.97
-    anchor = "a value of at least 0.97 of the best known value of Chu and Beasley, on average"
+    anchor = ("an operating point, not an external fact: a mean ratio of the value reached to the best known value of "
+              "Chu and Beasley of 0.97; an invalid selection counts 0")
 
     def __init__(self):
         fetch.fetch("knapsack", quiet=True)

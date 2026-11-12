@@ -17,12 +17,14 @@ import numpy as np
 from rsi6 import environments
 from rsi6.kernel import ledger as ledgers
 from rsi6.kernel import roles, run
-from rsi6.kernel.problem import AssignProblem, BudgetExhausted, Meter, PredictProblem
+from rsi6.kernel.problem import AssignProblem, BudgetExhausted, Meter, PredictProblem, view
 from rsi6.learner import version as versions
 from rsi6.learner.learner import Learner
 
 ASSIGN_ENVIRONMENTS = [name for name in environments.REGISTRY if environments.load(name).form == "assign"
                        and roles.role_of(name) == "source"]
+# every adapter that exists, for checks that involve no learner
+ALL_ASSIGN = [name for name in environments.REGISTRY if environments.load(name).form == "assign"]
 
 
 class _Fixture(AssignProblem):
@@ -117,20 +119,103 @@ def test_draw_is_reproducible_and_complete():
 
 
 def test_fast_evaluation_equals_the_specification():
+    """For every adapter: the fast rows equal the difference of the specified partial totals,
+    for every option (rows of options that are not allowed are zero in both)."""
     rng = np.random.default_rng(0)
-    for name in ASSIGN_ENVIRONMENTS:
+    for name in ALL_ASSIGN:
         env = environments.load(name)
-        for iid in env.instance_ids()[:4]:
+        for iid in env.instance_ids()[:3]:
             problem, _ = env.problem(iid, Meter(float("inf")), 11, True)
             state = problem.start()
-            for _ in range(min(problem.n_vars, 30)):
+            for _ in range(min(problem.n_vars, 20)):
                 variables = problem.unassigned(state)[:3]
                 allowed = np.flatnonzero(problem.allowed(state))
                 fast = problem.candidates(state, variables)
                 slow = AssignProblem._rows(problem, state, variables)
-                assert np.allclose(fast[:, allowed], slow[:, allowed]), name
+                assert fast.shape == slow.shape and np.allclose(fast, slow), name
                 problem.assign(state, int(variables[0]), int(rng.choice(allowed)))
                 assert np.allclose(problem.totals(state), problem.partial_totals(state["a"])), name
+            assert problem.candidates(state, []).shape[0] == 0, name
+
+
+def test_view_hides_the_adapter():
+    """What the learner is handed is a generic view: no adapter class, no adapter attribute, no
+    working table of a state, and arrays it cannot write to."""
+    for name in environments.REGISTRY:
+        env = environments.load(name)
+        problem, _ = env.problem(env.instance_ids()[0], Meter(float("inf")), 3, True)
+        seen = view(problem)
+        assert type(seen).__name__ in ("AssignView", "PredictView")
+        public = {k for k in vars(seen) if not k.startswith("_")}
+        if env.form == "assign":
+            assert public <= {"n_vars", "n_opts", "n_groups", "ordered", "hard", "detail", "capacity", "var_attr",
+                              "opt_attr", "var_var", "opt_opt", "var_opt", "occ_attr", "domain", "start_answer",
+                              "start_totals", "meter"}, (name, public)
+            state = seen.start()
+            assert set(state) == {"a", "used", "tot", "n"}, (name, set(state))
+            try:
+                seen.var_attr[...] = 0
+            except ValueError:
+                pass
+            else:
+                assert seen.var_attr.size == 0, name
+        else:
+            assert public <= {"ctx_x", "ctx_y", "qry_x", "ordered", "meter"}, (name, public)
+            try:
+                seen.ctx_y[0] = 0.0
+            except ValueError:
+                continue
+            raise AssertionError(f"{name}: the learner could write to the observed targets")
+
+
+def test_assignment_is_metered():
+    meter = Meter(float("inf"))
+    problem = _Fixture(8, 5, 0, meter, ordered=True)
+    state = problem.start()
+    before = meter.used
+    for v in range(8):
+        problem.assign(state, v, v % 5)
+    assert meter.used - before >= 8
+
+
+def test_malformed_answers_are_not_repaired():
+    """An answer that is not a well-formed answer of the problem is not scored."""
+    for name in ALL_ASSIGN:
+        env = environments.load(name)
+        problem, _ = env.problem(env.instance_ids()[0], Meter(float("inf")), 3, False)
+        n = problem.n_vars
+        for bad in (np.full(n, -1), np.full(n, problem.n_opts), np.zeros(n), np.zeros(n - 1, dtype=np.int64),
+                    np.full(n, np.nan), list(range(n)), None):
+            assert not run._valid(problem, bad), (name, bad if bad is None else type(bad))
+    env = environments.load("forecasting")
+    problem, _ = env.problem(env.instance_ids()[0], Meter(float("inf")), 3, False)
+    for bad in (np.zeros(problem.n_queries + 1), np.full(problem.n_queries, np.nan), np.zeros(problem.n_queries, dtype=np.int64)):
+        assert not run._valid(problem, bad)
+
+
+def test_every_instance_has_its_own_relabelling():
+    """Two instances of the same size are relabelled differently under one run seed."""
+    env = environments.load("binpacking")
+    a, b = [i for i in env.instance_ids() if i.startswith("u120")][:2]
+    pa, da = env.problem(a, Meter(float("inf")), run._seed(1, env.name, a, "relabel"), False)
+    pb, db = env.problem(b, Meter(float("inf")), run._seed(1, env.name, b, "relabel"), False)
+    identity = np.arange(pa.n_vars)
+    assert not np.array_equal(da(identity), db(identity))
+
+
+def test_binpacking_training_and_fresh_share_no_stretch():
+    """The library's files are cuts of one stream of sizes; no run of six consecutive sizes may
+    be common to a training and a fresh problem."""
+    env = environments.load("binpacking")
+    train, fresh = run.split(env, 16, 24)
+
+    def runs(i):
+        sizes = env.instances[i]["sizes"].tolist()
+        return {tuple(sizes[k:k + 6]) for k in range(len(sizes) - 5)}
+
+    seen = set().union(*(runs(i) for i in train))
+    for i in fresh:
+        assert not runs(i) & seen, i
 
 
 def test_relabelling_does_not_change_the_score():
@@ -236,9 +321,14 @@ def test_audit_record_is_intact():
     import hashlib
     root = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "audit",
                         "external_code_execution_20261111")
+    listed = set()
     for line in open(os.path.join(root, "MANIFEST.sha256")):
         sha, name = line.split(None, 1)
+        listed.add(os.path.normpath(name.strip()))
         assert hashlib.sha256(open(os.path.join(root, name.strip()), "rb").read()).hexdigest() == sha, name
+    present = {os.path.normpath(os.path.relpath(os.path.join(folder, name), root))
+               for folder, _, files in os.walk(root) for name in files if "__pycache__" not in folder}
+    assert present - listed == {"MANIFEST.sha256"}, sorted(present - listed)
 
 
 def test_version_schema():

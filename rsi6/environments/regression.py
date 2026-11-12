@@ -12,6 +12,13 @@ a coefficient of determination above 0.999.
 
 The benchmark was made for symbolic regression; here only its samples are used, and no
 expression is searched for. Supplementary files that state the laws are not fetched.
+
+Two rules applied at load, both from an independent audit. A law whose query targets have
+fewer than 100 distinct values is refused: for one law (medium, iii.15.12) most published
+targets are exactly 0, rounding residue of a difference below double precision. Queries whose
+inputs equal an observed input are dropped: one law (easy, iii.12.43) has integer inputs and
+repeats them. The 0.999 criterion of the data set is a criterion per law; here it is applied to
+the mean over laws, which is stricter.
 """
 from __future__ import annotations
 
@@ -31,7 +38,8 @@ class Regression(Environment):
     name = category = "regression"
     form = "predict"
     threshold = 0.999
-    anchor = "the data set's criterion for a recovered law: a coefficient of determination above 0.999"
+    anchor = ("the data set's criterion for one recovered law (a coefficient of determination above 0.999), "
+              "applied here to the mean over the fresh laws, which is stricter than the criterion")
 
     def __init__(self):
         manifest = fetch.fetch("regression", quiet=True)
@@ -41,6 +49,9 @@ class Regression(Environment):
             if part == "test":
                 self.laws[f"{tier}/{name[:-4]}"] = (tier, name)
         self._loaded = {}
+        self.refused = sorted(i for i in self.laws if len(np.unique(self._load(i)[3])) < 100)
+        for i in self.refused:
+            del self.laws[i]
 
     def instance_ids(self):
         return sorted(self.laws)
@@ -49,7 +60,9 @@ class Regression(Environment):
         if instance_id not in self._loaded:
             tier, name = self.laws[instance_id]
             observed = np.loadtxt(fetch.path("regression", os.path.join(tier, "val", name)))[:N_OBSERVED]
-            queries = np.loadtxt(fetch.path("regression", os.path.join(tier, "test", name)))[:N_QUERIES]
+            queries = np.loadtxt(fetch.path("regression", os.path.join(tier, "test", name)))
+            seen = {tuple(row) for row in observed[:, :-1].tolist()}
+            queries = queries[[tuple(row) not in seen for row in queries[:, :-1].tolist()]][:N_QUERIES]
             self._loaded[instance_id] = (observed[:, :-1], observed[:, -1], queries[:, :-1], queries[:, -1])
         return self._loaded[instance_id]
 

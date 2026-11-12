@@ -71,7 +71,7 @@ class PMedian(Environment):
     name = category = "pmedian"
     form = "assign"
     threshold = 0.95
-    anchor = "a cost within 1/0.95 of the published optimal value, on average"
+    anchor = "an operating point, not an external fact: a mean ratio of the published optimal value to the cost of 0.95"
 
     def __init__(self):
         fetch.fetch("pmedian", quiet=True)

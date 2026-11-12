@@ -426,7 +426,7 @@ class Learner:
     # ---- the assignment form -----------------------------------------------------------------
     def _cost(self, P, shortlist: int) -> float:
         factor = shortlist if not P.ordered else 1
-        return float(factor * P.n_vars * P.n_opts + 1)
+        return float(factor * P.n_vars * P.n_opts + P.n_vars + 1)
 
     def _rollouts(self, problems, layouts, thetas, rng, shortlist, meter):
         """Keys ``(hard, soft)`` of each policy on each problem; ``None`` if the budget ended."""

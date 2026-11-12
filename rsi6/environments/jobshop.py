@@ -16,6 +16,13 @@ one, so there is no hard group.
 
 Groups: [0] the makespan of the operations placed so far (soft); [1] the sum of the finishing
 times of the operations placed so far (detail: the terms whose largest is the makespan).
+
+What these choices give the learner, said plainly. The answer form is a decision of this
+adapter, not of the benchmark: by placing every operation as early as the sequence allows it
+does part of the scheduling, and it makes every answer valid. The detail group tells, for every
+job, when its next operation would finish; a published instance does not say that, the
+evaluator does. The processing times are exposed per job and step; which machine a step needs
+is in no exposed array and acts only through the evaluation.
 """
 from __future__ import annotations
 
@@ -87,6 +94,11 @@ class JobShopProblem(AssignProblem):
         return s
 
     def _rows(self, s, variables):
+        variables = np.asarray(variables)
+        if len(variables) == 0:
+            return np.zeros((0, self.n_opts, 2))
+        if len(variables) != 1 or variables[0] != s["n"]:
+            raise ValueError("variables of this problem are assigned in index order")
         k = np.minimum(s["used"], self.duration.shape[1] - 1)
         jobs = np.arange(self.n_opts)
         m = self.machine[jobs, k]
@@ -94,6 +106,7 @@ class JobShopProblem(AssignProblem):
         out = np.empty((1, self.n_opts, 2))
         out[0, :, 0] = np.maximum(finish - s["tot"][0], 0.0)
         out[0, :, 1] = finish
+        out[0, s["used"] >= self.duration.shape[1]] = 0.0        # a job with no operation left
         return out
 
     def _push(self, s, v, o):
@@ -109,7 +122,8 @@ class JobShop(Environment):
     name = category = "jobshop"
     form = "assign"
     threshold = 0.85
-    anchor = "a makespan within 1/0.85 of the published proven optimum, on average"
+    anchor = ("an operating point, not an external fact: a mean ratio of the proven optimum to the makespan of 0.85. "
+              "Simple dispatching rules from the textbooks reach it on some families")
 
     def __init__(self):
         fetch.fetch("jobshop", quiet=True)

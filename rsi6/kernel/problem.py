@@ -141,6 +141,7 @@ class AssignProblem:
         if not 0 <= o < self.n_opts or (self.capacity is not None and s["used"][o] >= self.capacity[o]) \
                 or (self.domain is not None and not self.domain[v, o]):
             raise ValueError("option not available")
+        self.meter.charge(1)
         self._push(s, v, o)
         s["used"][o] += 1
         s["n"] += 1
@@ -173,7 +174,7 @@ class AssignProblem:
 
     def construction_units(self) -> float:
         """Units of one construction that looks at every option of one variable per step."""
-        return float(self.n_vars * self.n_opts + 1)
+        return float(self.n_vars * (self.n_opts + 1) + 1)
 
 
 class PredictProblem:
@@ -216,3 +217,113 @@ class PredictProblem:
 
     def construction_units(self) -> float:
         return float(len(self.ctx_y) + len(self.qry_x))
+
+
+def _frozen(array):
+    out = np.array(array)
+    out.setflags(write=False)
+    return out
+
+
+class AssignView:
+    """What the learner is handed for an assignment problem: the generic fields (as read-only
+    copies) and the generic calls, and nothing else. The adapter's object, its class name, its
+    own attributes and the working tables of its states stay behind this view."""
+
+    kind = "assign"
+
+    def __init__(self, problem: AssignProblem):
+        self._problem = problem
+        self._states = {}
+        self.n_vars, self.n_opts, self.n_groups = problem.n_vars, problem.n_opts, problem.n_groups
+        self.ordered = problem.ordered
+        self.hard, self.detail = _frozen(problem.hard), _frozen(problem.detail)
+        self.capacity = None if problem.capacity is None else _frozen(problem.capacity)
+        self.var_attr, self.opt_attr = _frozen(problem.var_attr), _frozen(problem.opt_attr)
+        self.var_var = tuple(_frozen(m) for m in problem.var_var)
+        self.opt_opt = tuple(_frozen(m) for m in problem.opt_opt)
+        self.var_opt = tuple(_frozen(m) for m in problem.var_opt)
+        self.occ_attr = tuple(_frozen(m) for m in problem.occ_attr)
+        self.domain = None if problem.domain is None else _frozen(problem.domain)
+        self.start_answer = None if problem.start_answer is None else _frozen(problem.start_answer)
+        self.start_totals = None if problem.start_totals is None else _frozen(problem.start_totals)
+        self.meter = problem.meter
+
+    def _inner(self, s: dict) -> dict:
+        return self._states[id(s)]
+
+    def _sync(self, s: dict) -> None:
+        inner = self._inner(s)
+        s["tot"], s["n"] = np.array(inner["tot"], dtype=float), inner["n"]
+
+    def start(self) -> dict:
+        inner = self._problem.start()
+        s = {"a": inner["a"], "used": inner["used"], "tot": np.array(inner["tot"], dtype=float), "n": inner["n"]}
+        self._states[id(s)] = inner
+        return s
+
+    def unassigned(self, s):
+        return self._problem.unassigned(self._inner(s))
+
+    def allowed(self, s):
+        return self._problem.allowed(self._inner(s))
+
+    def candidates(self, s, variables):
+        return self._problem.candidates(self._inner(s), variables)
+
+    def assign(self, s, v, o) -> None:
+        self._problem.assign(self._inner(s), v, o)
+        self._sync(s)
+
+    def totals(self, s):
+        return self._problem.totals(self._inner(s))
+
+    def assignment(self, s):
+        return self._problem.assignment(self._inner(s))
+
+    def complete(self, s) -> bool:
+        return self._problem.complete(self._inner(s))
+
+    def well_formed(self, answer) -> bool:
+        return self._problem.well_formed(answer)
+
+    def evaluate(self, answer):
+        return self._problem.evaluate(answer)
+
+    def construction_units(self) -> float:
+        return self._problem.construction_units()
+
+
+class PredictView:
+    """What the learner is handed for a prediction problem: copies of the observed entities and
+    of the queries, and the targets of the queries only on a training instance."""
+
+    kind = "predict"
+
+    def __init__(self, problem: PredictProblem):
+        self._problem = problem
+        self.ctx_x, self.ctx_y, self.qry_x = _frozen(problem.ctx_x), _frozen(problem.ctx_y), _frozen(problem.qry_x)
+        self.ordered = problem.ordered
+        self.meter = problem.meter
+
+    @property
+    def n_queries(self) -> int:
+        return self._problem.n_queries
+
+    @property
+    def qry_y(self):
+        return self._problem.qry_y
+
+    def has_feedback(self) -> bool:
+        return self._problem.has_feedback()
+
+    def feedback(self, prediction):
+        return self._problem.feedback(prediction)
+
+    def construction_units(self) -> float:
+        return self._problem.construction_units()
+
+
+def view(problem):
+    """The object the learner receives in place of an adapter's problem."""
+    return PredictView(problem) if problem.kind == "predict" else AssignView(problem)

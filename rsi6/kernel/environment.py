@@ -23,8 +23,8 @@ class Environment:
     name = ""                 # kernel only
     category = ""             # kernel only
     form = "assign"           # "assign" or "predict"
-    threshold = 0.9           # score on fresh instances at which the capability counts as held
-    anchor = ""               # where the threshold comes from (an external fact)
+    threshold = 0.9           # mean score on fresh instances at which the capability counts as held
+    anchor = ""               # what the threshold is, said plainly; most are operating points, not external facts
 
     def instance_ids(self) -> list:
         """Usable instances, in a fixed order."""
@@ -43,6 +43,10 @@ class Environment:
     def reference(self, instance_id: str):
         """The external reference value of an instance (for reports and audits)."""
         raise NotImplementedError
+
+    def threshold_for(self, instance_ids) -> float:
+        """The threshold for the mean score over exactly these instances."""
+        return self.threshold
 
     def group(self, instance_id: str) -> str:
         """The published group an instance belongs to (its family, generator class or size

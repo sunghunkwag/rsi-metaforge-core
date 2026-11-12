@@ -3,7 +3,7 @@
  "category": "jobshop",
  "source": "JSPLIB (github.com/tamy0612/JSPLIB), job-shop scheduling instances collected from the literature",
  "terms": "the repository carries no licence file. Fetched by hash, not redistributed here.",
- "reference": "optimum, or the best known upper bound, of each instance in instances.json (kernel only)",
+ "reference": "the proven optimum of each instance in instances.json (kernel only); instances without a proven optimum there are not used",
  "files": [
   {
    "url": "https://raw.githubusercontent.com/tamy0612/JSPLIB/master/instances.json",

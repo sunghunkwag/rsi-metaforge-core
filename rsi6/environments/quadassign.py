@@ -4,6 +4,12 @@ Published form: two n-by-n matrices A and B. An answer is a permutation p; its c
 over all i, j of A[i][j] * B[p(i)][p(j)]. Reference: the value printed in the first line of
 each instance's solution file (optimal or best known), with a permutation that reaches it.
 
+Score: the share of the way from the expected cost of a uniformly random permutation to the
+published value that an answer covers, cut to [0, 1]. (The plain ratio of published value to
+cost is above 0.9 for random permutations on several families, as an independent audit showed.)
+Families share matrices (one distance matrix serves several instances), so families are kept
+whole on one side of every split.
+
 Answer form: variable i takes option p(i); every option is used once. One group: the cost of
 the pairs already assigned (soft). The two matrices are exposed as they are published: A as a
 relation between variables, B as a relation between options.
@@ -39,6 +45,12 @@ def parse_solution(text: str):
     return value, np.array([int(x) for x in tokens[2:2 + n]]) - 1
 
 
+def random_cost(A: np.ndarray, B: np.ndarray) -> float:
+    """The expected cost of a uniformly random permutation (exact)."""
+    n = len(A)
+    return float((A.sum() - np.trace(A)) * (B.sum() - np.trace(B)) / (n * (n - 1)) + np.trace(A) * np.trace(B) / n)
+
+
 def cost(A: np.ndarray, B: np.ndarray, p) -> float:
     p = np.asarray(p)
     return float((A * B[np.ix_(p, p)]).sum())
@@ -62,7 +74,9 @@ class QuadAssignProblem(AssignProblem):
         return s
 
     def _rows(self, s, variables):
-        return s["G"][variables][:, :, None].copy()
+        rows = s["G"][np.asarray(variables, dtype=np.int64)][:, :, None].copy()
+        rows[:, s["used"] >= self.capacity] = 0.0             # an option that is already taken
+        return rows
 
     def _push(self, s, v, o):
         s["tot"] = s["tot"] + s["G"][v, o]
@@ -73,8 +87,9 @@ class QuadAssignProblem(AssignProblem):
 class QuadAssign(Environment):
     name = category = "quadassign"
     form = "assign"
-    threshold = 0.95
-    anchor = "a cost within 1/0.95 of the published optimal or best known value, on average"
+    threshold = 0.90
+    anchor = ("an operating point, not an external fact: on average nine tenths of the way from the expected cost of a "
+              "random permutation to the published optimal or best known value")
 
     def __init__(self):
         manifest = fetch.fetch("quadassign", quiet=True)
@@ -124,5 +139,7 @@ class QuadAssign(Environment):
         a = np.asarray(answer)
         if a.shape != (n,) or sorted(a.tolist()) != list(range(n)):
             return 0.0
-        value = cost(inst["A"], inst["B"], a)
-        return float(min(1.0, inst["value"] / value)) if value > 0 else 0.0
+        value, chance = cost(inst["A"], inst["B"], a), random_cost(inst["A"], inst["B"])
+        if chance <= inst["value"]:
+            return 0.0
+        return float(min(1.0, max(0.0, (chance - value) / (chance - inst["value"]))))

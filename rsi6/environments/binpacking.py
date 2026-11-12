@@ -5,6 +5,12 @@ holds more than its capacity; its cost is the number of bins used. Reference: th
 number of bins, printed in the header line of each problem. That number is read by the scorer
 only and is not part of the problem the learner receives.
 
+The three files are cuts of one stream of item sizes (an independent audit found that every
+120-item problem is a stretch of a 500-item problem, and every 250-item one too). Only problems
+that share no stretch are used: all twenty 120-item problems, and the second ten of the 250-
+and of the 500-item problems. They occupy disjoint parts of the stream. On four of the problems
+the published best known value is one bin above the volume bound; the score is cut at 1.
+
 Answer form: a bin index for every item. There are as many bins to choose from as items, which
 is always enough.
 
@@ -73,13 +79,16 @@ class BinPacking(Environment):
     name = category = "binpacking"
     form = "assign"
     threshold = 0.98
-    anchor = "about one bin above the best known number of bins for the 120-item problems, on average"
+    anchor = ("an operating point, not an external fact: a mean ratio of best known to used bins of 0.98, which is "
+              "about one bin too many on a 120-item problem and two on a 250-item one")
 
     def __init__(self):
         fetch.fetch("binpacking", quiet=True)
         self.instances = {}
         for name in FILES:
             self.instances.update(parse(open(fetch.path("binpacking", name)).read()))
+        self.instances = {name: inst for name, inst in self.instances.items()
+                          if name.startswith("u120") or int(name.split("_")[1]) >= 10}
 
     def instance_ids(self):
         return sorted(self.instances)

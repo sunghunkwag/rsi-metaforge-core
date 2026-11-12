@@ -27,7 +27,7 @@ PER_FREQUENCY = 48
 MAX_HISTORY = 240
 # sMAPE of the organisers' Naive 2 benchmark per frequency, as published in the competition's
 # "Evaluation and Ranks" table (read as data by an independent check on 2026-11-12).
-NAIVE2 = {"Yearly": 16.34, "Quarterly": 11.01, "Weekly": 9.161, "Hourly": 18.38}
+NAIVE2 = {"Yearly": 16.342, "Quarterly": 11.012, "Weekly": 9.161, "Hourly": 18.383}
 
 
 def smape(forecast: np.ndarray, actual: np.ndarray) -> float:
@@ -47,7 +47,9 @@ def _rows(path: str) -> dict:
 class Forecasting(Environment):
     name = category = "forecasting"
     form = "predict"
-    anchor = "the published sMAPE of the competition's Naive 2 benchmark for the frequencies used"
+    anchor = ("the sMAPE the organisers published for their Naive 2 benchmark, averaged over all series of a "
+              "frequency; it is not the Naive 2 score of the series scored here, and Naive 2 uses the seasonal "
+              "period, which the learner is not given")
 
     def __init__(self):
         fetch.fetch("forecasting", quiet=True)
@@ -65,6 +67,9 @@ class Forecasting(Environment):
 
     def instance_ids(self):
         return sorted(self.series)
+
+    def threshold_for(self, instance_ids):
+        return float(np.mean([1.0 - NAIVE2[self.series[i][0]] / 200.0 for i in instance_ids]))
 
     def reference(self, instance_id):
         return self.series[instance_id][2].tolist()
