@@ -1,0 +1,67 @@
+{
+  "additional_categories_required": 3,
+  "audit_tasks_read": 0,
+  "candidate_evaluations": 0,
+  "classification": "non_audit_non_performance_static_review",
+  "cpu_cap_seconds": 2,
+  "inference": "not_applicable_exact_arithmetic_not_a_statistical_test",
+  "inputs": {
+    "adoption_categories_per_round": 2,
+    "draft_pilot_seed_ceiling": 10,
+    "minimum_reserve_categories": 1,
+    "named_candidate_categories": 7,
+    "requested_paired_seed_trajectories": 40,
+    "required_rounds": 2,
+    "source_categories": 2,
+    "target_categories": 3
+  },
+  "interpreter_calls": 0,
+  "measured_process_cpu_seconds": 0.000008892999999954299,
+  "minimum_categories_for_two_rounds": 10,
+  "pilot_seed_ceiling_shortfall": 30,
+  "predictions": {
+    "P1_seven_categories_zero_rounds": true,
+    "P2_eight_nine_one_ten_two": true,
+    "P3_minimum_ten_deficit_three": true,
+    "P4_seed_ceiling_shortfall_thirty": true,
+    "P5_inference_not_applicable": true
+  },
+  "preregistered_checks_passed": true,
+  "rows": [
+    {
+      "categories": 7,
+      "rounds": 0
+    },
+    {
+      "categories": 8,
+      "rounds": 1
+    },
+    {
+      "categories": 9,
+      "rounds": 1
+    },
+    {
+      "categories": 10,
+      "rounds": 2
+    },
+    {
+      "categories": 11,
+      "rounds": 2
+    },
+    {
+      "categories": 12,
+      "rounds": 3
+    }
+  ],
+  "rsi_success_claim": false,
+  "source_pins": {
+    "constitution_blob": "1257eb27993d0489311354690132d1e6e62bf674",
+    "main": "c4f0a8627a1c9f37dd3aa6291b0eee0c78648210",
+    "owner_directive_blob": "1f478f2db1c52d57bd7d47db390ade6bef0ec9c5",
+    "protocol_blob": "7949aa76dd0b8c821c0389bb8d14301508273c65",
+    "reviewed_pr58_head": "355fc090d390c29933e481777d8d2a2353cf5ff4",
+    "work_order_blob": "4fc6770e136278eb7f5cb652bbc7ed49556c258c"
+  },
+  "study": "static_protocol_feasibility_20261112",
+  "work_order_approved": false
+}
