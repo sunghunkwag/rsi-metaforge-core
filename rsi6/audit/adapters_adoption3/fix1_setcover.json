@@ -1,0 +1,104 @@
+{
+ "buildable": true,
+ "files_written": [
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/setcover/repo/rsi6/environments/setcover.py (module text and anchor reworded only; no code, value, threshold or instance changed)",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/setcover/repo/rsi6/environments/manifests/setcover.json (fields \"reference\" and \"source\" reworded; reference_values and the 41 pinned hashes unchanged)",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/setcover/work/refcheck.py (new checker: exhibits a cover at each reference value and proves that none is cheaper; imports nothing of the package)",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/setcover/work/refcheck_selftest.py (new: tests the branch and bound of refcheck.py against brute force on made-up tables)",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/setcover/work/ref/<instance>.json (40 records: the cover as the file's own column numbers, its cost, proof status; these are answers and must stay out of the package)",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/setcover/work/ref_run1.log and ref_run2.log (output of the two refcheck.py runs)",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/setcover/work/checks.py (new section (r): re-evaluates every stored cover with the independent evaluator and with the adapter)",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/setcover/work/checks.out (new full run; the run before the audit is kept as checks_before_audit1.out)",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/setcover/work/make_manifest.py (the two reworded strings, so that it agrees with the manifest; not re-run)"
+ ],
+ "checks": [
+  {
+   "id": "r1 cover at the reference value (finding 1)",
+   "n": "40 of 40 instances",
+   "result": "refcheck.py found, from the pinned files alone, a set of columns that covers every row and costs exactly the recorded value for every instance (all by its depth-first branch and bound, 5 to 12,544 nodes). checks.py (r) re-evaluates each stored cover: independent evaluator gives value == reference and 0 uncovered rows; Environment.score == 1.0; problem.evaluate through decode gives [reference, 0]; the cover with one more column scores below 1. No cover cheaper than a reference."
+  },
+  {
+   "id": "r2 optimality (finding 1)",
+   "n": "40 of 40 instances",
+   "result": "Proven by refcheck.py: 12 by a Lagrangian lower bound that rounded up equals the value (scp41-45, 47, 410, scp53, 55, 56, 59, 510); 28 by a branch and bound over all covers of cost <= value - 1 that ends empty (34 to 61,878 nodes; longest scpb4 21 s, scpb2 12 s). This is more than the audit proved (31): scp61, scpa1-3 and scpb1-5 are proven here only, and the module text says so."
+  },
+  {
+   "id": "r3 soundness of the branch and bound",
+   "n": "1,620 cases on 360 made-up tables",
+   "result": "0 wrong. 300 small tables against enumeration of all subsets (T = optimum-2, -1, 0, +1, +3) and 60 larger tables (12-25 rows, 30-69 columns, unit and weighted costs) against a plain search without bounds (T = optimum-1 and optimum): 'none' exactly below the optimum, a valid cover of cost <= T otherwise."
+  },
+  {
+   "id": "c plain algorithms and bracket (unchanged)",
+   "n": "40 instances",
+   "result": "Lagrangian bound <= reference <= cost of covers for all; mean scores greedy 0.8968, greedy+prune 0.9560 (fresh side 0.9501; halves {5} 0.9535, {6,E} 0.9466), Lagrangian heuristic 0.9932. Same as before the audit."
+  },
+  {
+   "id": "a fast evaluation equals partial_totals",
+   "n": "960 states, 18,798 option rows, 6 groups",
+   "result": "agree"
+  },
+  {
+   "id": "b independent evaluator against score and evaluate",
+   "n": "319 valid, 281 uncovering, 280 malformed answers on 40 instances",
+   "result": "all agree; 213 distinct scores"
+  },
+  {
+   "id": "scale of the score",
+   "n": "40 instances",
+   "result": "plain ratio kept: a uniformly random cover scores 0.001 to 0.02 on average per group, never above 0.03 (far below 0.5)"
+  },
+  {
+   "id": "d one layout",
+   "n": "40 instances x 2 seeds",
+   "result": "1 layout: ('assign', False, True, True, (False, True), (False, False), 2, 0, 1, 0, 0, 0, True, True); no padding"
+  },
+  {
+   "id": "e relabelling",
+   "n": "160 answers on 40 instances",
+   "result": "equal totals, scores, arrays and candidate rows under two seeds"
+  },
+  {
+   "id": "f split",
+   "n": "split(env, 16, 24)",
+   "result": "training 16 {4: 9, A: 3, B: 4}; fresh 20 {5: 10, 6: 5, E: 5}; halves {5} and {6, E}"
+  },
+  {
+   "id": "h leak scan",
+   "n": "160 arrays on 40 instances",
+   "result": "no array holds the reference beyond coincidences that occur equally in the arrays rebuilt from the file; no text, no extra attribute"
+  },
+  {
+   "id": "g interface, learner as a black box on made-up tables only",
+   "n": "2 made-up problems",
+   "result": "well-formed answers, totals as recomputed; the learner was not run on any benchmark instance"
+  },
+  {
+   "id": "scope of the change",
+   "n": "REPO files by modification time",
+   "result": "only rsi6/environments/setcover.py and rsi6/environments/manifests/setcover.json changed in this correction (19:46); nothing under rsi6/kernel or rsi6/learner was touched (still 18:32:45 as the auditor saw); environment loads, threshold 0.95, 40 instances, all 41 hashes present. FAILED CHECKS: 0"
+  }
+ ],
+ "open_issues": [
+  "Finding 1 (major, provenance and status of the reference): corrected. No value changed. Module text, anchor and manifest now say the values were recorded from memory of the literature and that no document stating them could be fetched, then state what is verified from the pinned files. One point for audit 2: my new check proves optimality for all 40, i.e. also for scp61, scpa1-3 and scpb1-5, which the first audit could not prove. The text states that these nine proofs are the builder's alone and not independently reproduced. Audit 2 should examine WORK/refcheck.py (reduce, exhaust) and its self-test rather than take the 40/40 on trust.",
+  "Finding 2 (minor, Grossman-Wool files): reworded as a precondition of R7 (the page names a source of optimal values for sets 4 to E and none for scpclr/scpcyc). The exclusion itself is kept and is still not a size rule; the orchestrator must accept this deviation explicitly or require these eight files with best-known, unproven values. I did not decide that for the orchestrator.",
+  "Finding 3 (minor, threshold): text corrected, number not moved (0.95). Module text and anchor now say that on unit-cost group E the score takes only the values 5/k, that 'about 5 per cent dearer' applies to the cost-weighted groups only, that the threshold equals the fresh-side mean of the greedy+prune baseline, and that its prior fixing is the builder's statement. That prior fixing remains unverifiable; this cannot be repaired after the fact.",
+  "Note on ten files under rsi6/kernel, rsi6/learner, rsi6/meta and rsi6/tests with modification time 18:32:45: not corrected and not mine to correct. I changed none of them and cannot compare them with the original tree (outside my directories). Recommendation unchanged: merge only setcover.py, manifests/setcover.json and the one registry line in rsi6/environments/__init__.py.",
+  "Note on the lossy presentation (costs, column sizes, pairwise overlap counts; rows are not entities): no change, as the auditor required none. Known property of this category.",
+  "Note on size (sets 5, A, B have 2,000 and 3,000 variables; about 1.1 GB per run process): no change, as the auditor required none.",
+  "WORK/ref holds optimal covers of all 40 instances. They are answers: they must never be copied into REPO or shown to the learner.",
+  "Small inconsistency left in the old check (c): its 400-step subgradient gives 'bound equals reference' for 11 instances, refcheck.py with 3,000 steps gives 12 (scp59 in addition). The registered text uses the refcheck.py figure (12 + 28).",
+  "The anchor is one sentence but long (657 characters), because the finding asked for provenance, verification status, the group-E scale and the threshold statement to be in it. Shorten if the kernel prints it.",
+  "No network was used in this correction: the 41 pinned files were already in rsi6/data/setcover and passed their hashes.",
+  "\uc0ac\uc6a9\uc790 \uc9c8\ubb38 '\ud604\uc7ac \uc791\uc5c5 \uc911\uc774\ub0d0?'\uc5d0 \ub300\ud55c \ub2f5: \ub124, \uc791\uc5c5 \uc911\uc774\uc5c8\uace0 \uc774 \ub2e8\uacc4(setcover \uc5b4\ub311\ud130\uc758 \uac10\uc0ac \uc9c0\uc801 \uc218\uc815)\ub294 \ubc29\uae08 \ub05d\ub0ac\uc2b5\ub2c8\ub2e4. \uac80\uc0ac \uc2e4\ud328 0\uac74, \ud559\uc2b5\uae30\ub294 \ubca4\uce58\ub9c8\ud06c \uc778\uc2a4\ud134\uc2a4\uc5d0\uc11c \uc2e4\ud589\ud558\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4."
+ ],
+ "learner_run_on_benchmark_instances": false,
+ "answer_form": "AssignProblem, unchanged: one variable per column, option 0 (left out) or 1 (taken); options not limited in use; group [0] soft = sum of the costs of the taken columns, group [1] hard = number of uncovered rows. Exact: every set of columns is one answer and the totals of a complete answer are the published value and feasibility.",
+ "groups": "Published problem sets: 4 (10 instances, 200 x 1,000), 5 (10, 200 x 2,000), 6 (5, 200 x 1,000), A (5, 300 x 3,000), B (5, 300 x 3,000), E (5, 50 x 500, unit costs). Unchanged.",
+ "instances_used": 40,
+ "instances_left_out": "By the size rule (more than 3,000 columns): scpc1-5, scpd1-5, scpnre/f/g/h 1-5, scpcyc10, scpcyc11, rail507 to rail4872. Not by a size rule, now worded as a precondition of R7 and flagged for the orchestrator's explicit acceptance: scpclr10-13 and scpcyc06-09 (the page names no source of optimal or best known values for them).",
+ "score_scale": "Plain ratio reference / cost of the cover, cut at 1; 0 for an answer that is not a 0/1 vector over the columns or leaves a row uncovered. Kept because a uniformly random cover scores at most 0.03. On group E the score takes only the values 5/k (1, 0.833, 0.714, ...).",
+ "reference": "40 values in the manifest, unchanged, recorded from memory of the literature (Beasley 1987, as tabulated e.g. by Beasley and Chu 1996); the library page prints none and no document stating them could be fetched. Verified from the pinned files by WORK/refcheck.py and WORK/checks.py (r): each is attained by an exhibited cover (40 of 40) and no cover is cheaper (40 of 40: 12 by Lagrangian bound, 28 by complete branch and bound). The first audit confirmed 40 covers and 31 proofs by its own code; for scp61, scpa1-3 and scpb1-5 the proof is the builder's alone.",
+ "threshold_and_anchor": "0.95, not moved. An operating point, not an external fact. The anchor now states the provenance and verification status of the references, that on unit-cost group E the score takes only the values 5/k, and that the fixing of the threshold before any baseline was measured is the builder's statement (it equals the fresh-side mean of greedy+prune, 0.9501).",
+ "source": "OR-Library (J. E. Beasley), set covering, sets 4, 5, 6, A, B, E; 40 instance files and scpinfo.html pinned by SHA-256 in rsi6/environments/manifests/setcover.json. Hashes unchanged.",
+ "hosts_used": []
+}

@@ -1,0 +1,148 @@
+{
+ "verdict": "admit",
+ "summary": "Audit 2 of the \"setcover\" adapter: no blocking or major finding; two minor findings and several notes. (On the relayed user question \"\ud604\uc7ac \uc791\uc5c5 \uc911\uc774\ub0d0?\": yes, this audit step was running and is now finished.)\n\nWhat I did, with my own code only (WORK = /tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/setcover/audit2, scripts in WORK/scripts: own.py parser/evaluator, a1..a5.py, bb.py, bb_selftest.py, hashes.py):\n- Data: downloaded scpinfo.html and the 40 instance files again from people.brunel.ac.uk; all 41 SHA-256 equal the pinned ones and the files in REPO. The description page really prints no optimal values (builder's statement confirmed).\n- Form (R1): one variable per column, options 0/1, group 0 = cost of taken columns (soft), group 1 = rows with all covering columns decided and none taken (hard). Exact: my evaluator agrees with Environment.score, evaluate, partial_totals and the step path start/candidates/assign/totals through the learner's view on all 40 instances (0 disagreements).\n- Reference (R7): attained and optimal for 40 of 40, now independently. The builder's 40 covers evaluate, by my evaluator, to exactly the recorded value with 0 uncovered rows; my own branch and bound (written without reading the builder's, self-tested against brute force on 120 made-up cases, 0 wrong) proves that no cover of cost <= value-1 exists for all 40 (10 by Lagrangian bound, 30 by exhaustive search, longest scpb4 29 s), including the nine (scp61, scpa1-3, scpb1-5) that audit 1 could not prove.\n- No hidden solver, no privileged information (observables byte-identical with random reference values in an altered copy), one layout and one descriptor list for all instances, relabelling isomorphic, no leak, no trace of a learner run on benchmark instances in the builder's scratch, kernel and learner files unchanged.\n- Split: training 16 {4: 9, A: 3, B: 4}; fresh 20 (not 24) {5: 10, 6: 5, E: 5}; halves {5} and {6, E}, 10 each; no group on both sides.\n- Cost: largest instance 3,000 columns (9,001 units per construction); on made-up tables of the same sizes the learner's acquire took 85 CPU-seconds and apply about 1 s per instance; peak memory 1.4 GB per run process.\n\nMinor findings (for the orchestrator to accept, no code defect): (1) the eight unicost files scpclr10-13 and scpcyc06-09 are left out although within the size limit, i.e. not by a size rule (disclosed in the module text); (2) the threshold 0.95 coincides with the fresh-side mean of textbook greedy plus redundancy removal (0.9501, reproduced by my own code), and the claim that it was fixed before that baseline was measured cannot be verified (disclosed in the anchor).\n\nI did not run the learner on any benchmark instance, did not open rsi6/learner/learner.py, and changed no source or data file under REPO (running Python there refreshed __pycache__ only).",
+ "checks": [
+  {
+   "id": "0 data integrity",
+   "n": "41 files",
+   "what_was_run": "curl -A research-data-check/1.0 of scpinfo.html and scp*.txt from https://people.brunel.ac.uk/~mastjjb/jeb/orlib/ into WORK/dl; python3 -I scripts/hashes.py WORK/dl REPO",
+   "result": "PASS. Printed 'files 41 mismatches 0': fresh download == REPO/rsi6/data/setcover == manifest sha256 for all 41. The page text states 'the value of the optimal solution for each of these data files is given in the paper' and prints no values; the builder's provenance statement is accurate."
+  },
+  {
+   "id": "1 no hidden solver or heuristic",
+   "n": "1 source file, 229 lines",
+   "what_was_run": "Read rsi6/environments/setcover.py in full",
+   "result": "PASS. Imports numpy, rsi6.fetch, kernel only. parse() tokenises; SetCoverProblem holds cost, cover, rows_of and computes cover.T @ cover; partial_totals/_new/_rows/_push are plain counts; score is a ratio. No search, no ordering or pruning by the objective, no optimisation call. Only tables beyond the instance: SETS (file counts per published set) and MAX_COLUMNS=3000 (size rule; no loaded file exceeds it)."
+  },
+  {
+   "id": "2 no privileged information",
+   "n": "40 instances x 2 (training True/False)",
+   "what_was_run": "Copy of REPO in WORK/repo_alt with manifest reference_values replaced by random integers 1..5000; scripts/a3.py run on both: sha256 over all generic view fields, start/candidates/assign/totals on a fixed panel (up to 400 steps plus one complete uncovering path), evaluate on 3 answers, meter counts, attribute names; cmp obs_real.txt obs_alt.txt",
+   "result": "PASS. 'IDENTICAL'; both totals 9e5d8b53ae80e73c...; the copies really differ in references (429.0, 514.0, ... versus 2653.0, 476.0, ...). Two separate processes, so problem() is also deterministic across processes."
+  },
+  {
+   "id": "3 traceability",
+   "n": "40 instances x 2 seeds",
+   "what_was_run": "scripts/a1.py: every exposed array rebuilt from my own parse of the downloaded files and compared after undoing the relabelling",
+   "result": "PASS, FAILED 0. var_attr[:,0] = cost line of the file; var_attr[:,1] = number of rows whose list names the column; var_var[0][j,k] = number of rows naming both j and k; opt_attr (2,0), no opt_opt/var_opt/occ_attr/capacity/domain/start_answer. Named as not being file fields: var_attr[:,1] and var_var[0] are counts derived from the row lists (objective-free; see note)."
+  },
+  {
+   "id": "4 order and names",
+   "n": "40 instances, 2 seeds each, 120 answers",
+   "what_was_run": "scripts/a1.py: permutation recovered from decode(arange); arrays compared under it; the same own-label answer evaluated under both seeds; decode round trip",
+   "result": "PASS. Relabelling is never the identity and differs between seeds; arrays isomorphic; evaluate equal under both seeds and equal to my evaluator; decode returns the own-label answer. Rows are not exposed and A^T A is invariant to their order. The files list columns in the file's own order; nothing of it survives. Options 0/1 keep their meaning (same convention as knapsack.py)."
+  },
+  {
+   "id": "5a evaluator agreement: score and evaluate",
+   "n": "40 instances (all groups, >= 5 each): 410 valid, 110 uncovering, 360 malformed answers, 1,970 single removals from reference covers, 373 distinct scores",
+   "what_was_run": "scripts/a1.py against own.py (integer parser, numpy and pure-Python cover tests)",
+   "result": "PASS, FAILED 0. Environment.score == my score exactly; evaluate == partial_totals == [my value, my uncovered count]; malformed answers (float, bool, object dtype, wrong length, value 2 or -1, 2-D, empty set) score 0; run._valid rejects them; all-columns answer scores ref / sum of costs."
+  },
+  {
+   "id": "5b evaluator agreement: step-by-step path",
+   "n": "40 instances, 100 complete paths, 14,237 states, 110,522 candidate rows (11,153 with a change of the hard group), 2,014 comparisons with the kernel's slow default",
+   "what_was_run": "scripts/a2.py through view(problem): start/unassigned/candidates/assign/totals/assignment/evaluate with take-probabilities 0.5, 1/mean row degree and 0, against my own partial evaluator recomputed from scratch",
+   "result": "PASS, FAILED 0. Totals, candidate rows, final totals, decode and final score all equal; the meter charges 2 per variable examined; re-assigning raises. Registered tests restricted to this adapter (test_fast_evaluation_equals_the_specification, test_view_hides_the_adapter, test_layout_is_the_same_for_every_instance) passed."
+  },
+  {
+   "id": "5c reference attainable and optimal",
+   "n": "40 of 40 instances; self-test 120 made-up cases",
+   "what_was_run": "a1.py: builder's covers (work/ref/*.json) evaluated by my evaluator and by Environment.score, each single removal, one addition. bb.py: my own Lagrangian bound, reduced-cost elimination and depth-first search for a cover of cost <= reference-1; bb_selftest.py against enumeration of all subsets",
+   "result": "PASS. All 40 covers: 0 uncovered rows, cost == reference, score 1.0; every single removal uncovers a row (score 0); one more column scores < 1. bb.py: 10 'bound' (scp41, 42, 43, 45, 47, 410, 53, 55, 56, 510), 30 'exhaustive', 0 refuted, 0 timeouts (scpb4 78,550 nodes 29.3 s, scpb2 40,661 nodes 14.8 s, scp61 577 nodes). Self-test: 'cases 120 wrong 0'. The reference is the proven optimal value for all 40, including the nine audit 1 left open."
+  },
+  {
+   "id": "6 leak scan of the task files",
+   "n": "40 files",
+   "what_was_run": "own.py parse_scp: digits-only tokens, exact token count; a3.py attribute names of the problem object",
+   "result": "PASS. Every file is exactly m, n, n costs and m row lists with no token left over: no optimum or bound in any file. The problem object has only the generic fields plus cost, cover, rows_of (behind the view); no name, group or reference. Manifest keys: name, category, source, terms, reference, reference_values, files; no covers stored in the package."
+  },
+  {
+   "id": "7 one layout",
+   "n": "40 instances x 2 seeds",
+   "what_was_run": "a1.py: run.layout(P) and tuple(Layout(view(P), versions.default()).names)",
+   "result": "PASS. 1 layout: ('assign', False, True, True, (False, True), (False, False), 2, 0, 1, 0, 0, 0, True, True); 1 descriptor name list (13 names); no padding; no public view field beyond the generic set."
+  },
+  {
+   "id": "8 split",
+   "n": "split(env, 16, 24) and halves()",
+   "what_was_run": "a1.py",
+   "result": "Training 16 {4: 9, A: 3, B: 4}; fresh 20 {5: 10, 6: 5, E: 5}; halves {5: 10} and {6: 5, E: 5}; no shared group or instance. Fresh is 20, not 24: split() stops at half of the 40 instances. Usable but small: each half is 10 instances, and group E scores only 5/k. roles.json gives setcover the role adoption:3, so the registered assertion len(fresh) >= 24 (source roles only) does not apply."
+  },
+  {
+   "id": "9 instances left out; traces of learner runs",
+   "n": "builder scratch: 6 scripts and logs, dl with 9 files",
+   "what_was_run": "Read module text; grep for learner/acquire/apply/measure in work/*.py, *.out, *.log; find of files changed in REPO; search for ledger files",
+   "result": "Size rule stated (> 3,000 columns out) and consistent: 4,5,6,A,B,E = 40 files within it; C, D, NRE-NRH, cyc10-11, rail outside. Deviation: scpclr10-13 and scpcyc06-09 are within the limit and left out for lack of a stated reference (minor finding). The learner appears only in checks.py section (g), on six made-up random tables. No ledger file; nothing under rsi6/kernel or rsi6/learner newer than 18:32:45; builder's dl holds no clr/cyc file."
+  },
+  {
+   "id": "10 threshold and anchor",
+   "n": "40 instances",
+   "what_was_run": "scripts/a5.py: my own Chvatal greedy and greedy plus removal of redundant columns; score of uniformly random covers",
+   "result": "Anchor is worded as an operating point and discloses the E lattice and the unverifiable ordering claim. My baselines reproduce the builder's exactly: greedy 0.8968 (fresh 0.9034); greedy+prune 0.9560, fresh 0.9501, halves 0.9535 and 0.9466. The threshold equals the fresh-side greedy+prune mean (minor finding). Plain ratio scale is right: random covers score 0.001 to 0.020 per group, max 0.026; at least 98.4 per cent of random subsets cover (text says at least 96)."
+  },
+  {
+   "id": "11 cost",
+   "n": "16 made-up training tables at the split's sizes, 8 made-up test tables",
+   "what_was_run": "scripts/a4.py: random tables only (9 of 200x1000, 3 and 4 of 300x3000; tests 50x500, 200x1000, 200x2000, 300x3000), Learner(versions.default()) as a black box with the kernel's budgets",
+   "result": "Largest instance 300 x 3,000: 9,001 units per construction, var_var 72 MB. Training limit 3,600,640 units. acquire 85.3 CPU-s (3,021,800 units used, 192 constructions); apply 0.2 to 1.1 CPU-s per instance; all answers well formed. Peak RSS 1,213 MB before acquire, 1,375 MB at the end: about 5.5 GB with the default 4 workers. problem() takes at most 0.10 s. Not unreasonably slow."
+  }
+ ],
+ "findings": [
+  {
+   "severity": "minor",
+   "where": "rsi6/environments/setcover.py, module text lines 89-97 (instances left out); requirement R6",
+   "what": "Eight published instances within the size limit are left out by a rule that is not a size rule: scpclr10..13 (210 to 715 columns) and scpcyc06..09 (192 to 2,304 columns). The reason given is that the source names no table of optimal values for them. The deviation is disclosed and offered to the orchestrator; it is not outcome-driven as far as can be seen.",
+   "evidence": "Module text: 'Left out although within the size rule, and NOT by a size rule (a deviation ...)'. scpinfo.html (my download, same hash as pinned) lists '10 of these data files are unicost problems ... scpcyc06, ..., scpcyc11 ... scpclr10, ..., scpclr13'. Manifest lists 41 files, none of them clr/cyc; the builder's work/dl holds only scp41, scp51, scp61, scpe1, scpinfo.html, an index and two rail heads, so these files were never fetched or scored.",
+   "suggested_fix": "Orchestrator decision. Either accept the stated exclusion (the 40 used instances in 6 groups already meet R6), or include the eight files as two further groups with best-known values declared as not proven (R7 allows that if said plainly). No code defect."
+  },
+  {
+   "severity": "minor",
+   "where": "rsi6/environments/setcover.py: threshold = 0.95, anchor, module text 'Threshold' paragraph; requirement R8",
+   "what": "The threshold coincides with the fresh-side mean of a textbook heuristic that the builder measured (greedy plus removal of unneeded columns): 0.9501 against 0.95. Whether the threshold was fixed before that baseline was seen cannot be verified from any file. Both facts are disclosed in the module text and the anchor, and the anchor calls the threshold an operating point; no learner score was involved.",
+   "evidence": "python3 -I scripts/a5.py printed: 'greedy: all 0.8968 fresh 0.9034 | greedy+prune: all 0.9560 fresh 0.9501 half{5} 0.9535 half{6,E} 0.9466' (my own implementation; identical to the builder's checks.out). Anchor: '... the fixing of the threshold before any baseline was measured is the builder's statement'.",
+   "suggested_fix": "None required for admission. Whoever reads results should know that 'capability held' here means about the level of greedy with redundancy removal, and that a mean of 10 instances per half around 0.95 is a knife-edge decision."
+  },
+  {
+   "severity": "note",
+   "where": "Kernel split for this environment (rsi6.kernel.environment.split, run.halves)",
+   "what": "The fresh side has 20 instances, not the 24 of the budget, because split() stops at half of the 40 instances. Halves are {5} (10) and {6, E} (10). On group E every cost is 1 and the optimum is 5, so scores are 1, 0.833, 0.714, ...; the module text explains the consequence for the confirming half. All six sets come from the same random generator family with different size and density.",
+   "evidence": "a1.py: 'H split train 16 {'4': 9, 'A': 3, 'B': 4} fresh 20 {'5': 10, '6': 5, 'E': 5} halves {'5': 10} {'6': 5, 'E': 5} overlap groups set()'. rsi6/tests/test_kernel.py test_split_keeps_groups_apart asserts len(fresh) >= 24 for categories whose drawn role is 'source'; roles.json gives 'setcover': 'adoption:3', so the assertion is skipped for it.",
+   "suggested_fix": "None in the adapter. If the category ever enters a check that demands 24 fresh instances, it will have 20."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/environments/setcover.py, SetCoverProblem.__init__ (var_attr[:, 1], var_var[0])",
+   "what": "Two exposed arrays are not fields of the file but counts derived from the row lists: the number of rows a column covers, and the number of rows two columns share (A^T A). They involve no cost and no objective, and the module text says how they are counted. The exposure is lossy: rows are not entities of the generic form, so overlaps of three or more columns are visible only through evaluation feedback. Evaluation itself is exact.",
+   "evidence": "a1.py rebuilt both arrays from my own parse for 40 instances x 2 seeds, 0 differences ('var_attr'/'var_var' checks, FAILED 0). The alternative form (a variable per row) cannot write covers with redundant columns and has 200 x 1,000 options or more, as the module text says; I agree with that reasoning.",
+   "suggested_fix": "None. Recorded so that the choice of derived relations is known to be the builder's."
+  },
+  {
+   "severity": "note",
+   "where": "Module text lines 23-27, anchor, manifest field 'reference'",
+   "what": "The text says that for scp61, scpa1..3 and scpb1..5 optimality 'has not been reproduced independently'. This audit reproduced it for all 40 with its own code, so the statement is now out of date (it understates what is verified). The provenance 'recorded from memory of the literature' no longer carries weight: every value is established from the pinned files by computation.",
+   "evidence": "WORK/bb.out: 40 lines, 30 'exhaustive', 10 'bound', 0 'REFUTED', 0 'timeout'; e.g. scpb4 ref 79, 78,550 nodes, 29.3 s; scpa1 ref 253, 4,140 nodes; scp61 ref 138, 577 nodes. bb_selftest.py: 'cases 120 wrong 0'. Builder's covers evaluate to exactly the reference by my evaluator (a1.py 'refcover': 40, FAILED 0).",
+   "suggested_fix": "Optional wording update (text only, no value or code): 'audit 2 proved optimality for 40 of 40 by its own branch and bound'. If the files are edited, only these sentences should change."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/environments/setcover.py line 160 (_rows)",
+   "what": "For a column that is already decided, the fast candidates rows are zero, whereas the kernel's slow default would return the change of a re-assignment. This is outside the registered property (it is tested on unassigned variables only) and outside any legal move (assign refuses a decided variable).",
+   "evidence": "Printed: 'candidates of an already taken column: fast [[[0.0, 0.0], [0.0, 0.0]]] slow default [[[-1.0, 0.0], [0.0, 0.0]]] cost 1.0'. On unassigned variables: 2,014 comparisons with the slow default, 0 differences.",
+   "suggested_fix": "None."
+  },
+  {
+   "severity": "note",
+   "where": "Cost of a run (rsi6.kernel.run.measure with this environment)",
+   "what": "Memory rather than time is the thing to watch: the 16 training problems hold 576 MB of var_var and the learner's view a second copy; one run process peaked at 1.4 GB on made-up tables of the same sizes, so the default pool of 4 workers needs about 5.5 GB. Time is modest.",
+   "evidence": "cost.out: 'training side ... limit 3600640.0 units; peak RSS MB 1213', 'acquire cpu s 85.3 units used 3021800.0 report {'iterations': 3, 'constructions': 192}', apply 0.2 to 1.1 CPU-s per instance, 'peak RSS MB 1375'. Made-up random tables only; no benchmark file was read by that script.",
+   "suggested_fix": "None; the machine here has 15 GB."
+  },
+  {
+   "severity": "note",
+   "where": "REPO, side effect of this audit",
+   "what": "Running Python from REPO as instructed refreshed __pycache__ directories there. No source, manifest or data file was changed.",
+   "evidence": "find for files newer than 19:47 outside __pycache__ printed nothing; sha256 of setcover.py begins 44810e45d6d92174, of setcover.json 345280247cb18e8f; both files still dated 19:46:11.",
+   "suggested_fix": "None."
+  }
+ ]
+}

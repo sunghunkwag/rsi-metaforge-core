@@ -1,0 +1,91 @@
+{
+ "buildable": true,
+ "files_written": [
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/partitioning/repo/rsi6/environments/partitioning.py",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/partitioning/repo/rsi6/environments/manifests/partitioning.json",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/partitioning/repo/rsi6/environments/__init__.py",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/partitioning/repo/rsi6/data/partitioning/ (25 fetched files: 24 graph files and arxiv-2205.06788v2.tar.gz, written by python3 -m rsi6.fetch partitioning)",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/partitioning/work/checks.py",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/partitioning/work/checks.out",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/partitioning/work/s2/ (helper scripts: look.py, mem.py, rows.py, graphs.py, mkmanifest.py, patch.py, patch2.py)",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/partitioning/work/dl2/ (re-downloads used to verify the earlier attempt's files and the arXiv version)"
+ ],
+ "source": "Instances: the 24 graph files G124.{02,04,08,16}, G250.{01,02,04,08}, G500.{005,01,02,04}, G1000.{0025,005,01,02}, U500.{05,10,20,40}, U1000.{05,10,20,40} of D. S. Johnson's own directory https://archive.dimacs.rutgers.edu/pub/dsj/partition/ of the DIMACS archive (primary source for the Johnson-Aragon-McGeoch-Schevon 1989 graphs; files dated 1991-12-19 in the index). The earlier attempt's files in WORK/dl/dimacs were checked: the index page is byte-identical to that address and all 24 files are byte-identical to what rsi6.fetch downloaded now. Reference values: the table data files inside the source archive of arXiv:2205.06788v2 (de Meijer, Sotirov, Wiegele, Zhao, 'Partitioning through projections: strong SDP bounds for large graph partition problems'), https://arxiv.org/e-print/2205.06788v2 (v2 is the latest version; v3 returns 404; the unversioned address gives the same bytes). All 25 files are pinned by SHA-256 in the manifest. The Johnson 1989 / Bui-Moon 1996 tables of best known bisection widths were not fetched (no open address for them was tried beyond what the earlier attempt left), so they are not used. Walshaw's archive was not used (its smallest graphs exceed the size guidance).",
+ "hosts_used": [
+  "archive.dimacs.rutgers.edu",
+  "arxiv.org",
+  "dimacs.rutgers.edu (tried once, 404, not used)"
+ ],
+ "answer_form": "AssignProblem. Variable i = vertex i, option j = part j, capacity[j] = m_j (the published part sizes; they add up to n, so every well-formed complete answer has exactly the published sizes and every valid published answer is expressible). One term group, soft: the number of edges whose two ends are both assigned and lie in different parts; for a complete answer this is exactly the published cut. No hard group (balance is the capacity). Exposed arrays: var_var[0] = 0/1 adjacency matrix from the neighbour lists of the graph file; capacity = size vector from the table row (k equal parts of n/k for k in {2,4,5}, or (m1, n-m1)). Nothing else; the per-vertex coordinates printed in the files (all zero for G graphs) are deliberately not exposed, since the published problem is a function of the graph alone. Layout identical for all 78 instances: ('assign', False, False, True, (False,), (False,), 0, 0, 1, 0, 0, 0, True, True); n_opts varies (2, 4, 5) but is not part of the layout.",
+ "reference": "The column UB of the paper's tables (Hager_datafile1/2, largeGraphSparse5n_datafile1/2/3, hagerBisection_datafile1, spinglass2pmBisection_datafile1): an upper bound on the minimum cut that the source says was 'obtained by heuristics or the optimal solution from the literature'. It is a value attained by a partition the authors had (so attainable in the answer form), but the source publishes no partition and it is not a proven optimum except on 4 instances where the same table's lower bound equals it (G124.02-k2, G124.04-m87, G250.01-k2, U500.05-k2). For some graphs (the G1000 bisections) I believe the older literature reports slightly smaller cuts; that is recollection only and was not used. A score of 1 means 'the source's upper bound reached or beaten'. This is said plainly in the module text, the manifest and the anchor.",
+ "score_scale": "Share of the way from the exact expected cut of a uniformly random valid answer, E = |E| * (1 - sum_j m_j(m_j-1) / (n(n-1))), to the reference: (E - cut) / (E - UB), cut to [0, 1]; 0 for an invalid answer (wrong shape, non-integer dtype, label out of range, part sizes not exactly the published ones). Chosen instead of the plain ratio UB/cut because a random valid answer would score above 0.5 on the plain ratio on 28 of the 78 instances (largest 0.749 in group G124; about 0.73 in G250, G500, G1000), and the plain ratio is undefined at a cut of 0. Random valid answers score 0.013 on average on the chosen scale (max 0.153 over 234 draws).",
+ "threshold_and_anchor": "threshold = 0.90. Anchor: \"an operating point, not an external fact: on average nine tenths of the way from the expected cut of a uniformly random valid partition to the upper bound printed in the tables of arXiv:2205.06788v2, which is a published upper bound (attained by its authors' partition, which is not published), not a proven optimum\". Chosen without any measurement of the learner; same value and scale as quadassign.",
+ "groups": "Six groups = the published family and size of the graph: G124 (12 instances), G250 (12), G500 (15), G1000 (15), U500 (12), U1000 (12). All instances on one graph (different k or m1) are in one group, so no graph is on both sides of a split. rsi6.kernel.run.split(env, 16, 24): training 16 from G124 (3), G250 (5), U1000 (5), U500 (3); fresh 24 from G1000 (14) and G500 (10); halves: 14 from G1000, 10 from G500. No group and no graph on both sides.",
+ "instances_used": 78,
+ "instances_left_out": "By the size rule (n <= 1000 and n*k <= 30000, fixed in the module before anything was scored): none. Not instances of this benchmark (not a size rule, stated in the module text): the file G.sub.500 of the DIMACS directory, for which the tables give no value; the rows of the paper's tables for graphs that are not in the DIMACS directory (meshes, KKT, spin glass, planar graphs); the appendix table largeGraphSparse3n_datafile1.tex, which repeats the 16 k=2 rows of the large graphs with the same UB (verified equal).",
+ "checks": [
+  {
+   "id": "a",
+   "n": "48 instances (all 12 of G124 and of G250, 6 each of G500, G1000, U500, U1000), 432 random partial states",
+   "result": "PASS: candidates() equals AssignProblem._rows (exact equality), totals equal partial_totals at every checked state, final totals equal evaluate() and the independent cut of the decoded answer"
+  },
+  {
+   "id": "b",
+   "n": "78 instances, 234 random valid answers, 1680 invalid answers",
+   "result": "PASS: env.score equals an independent evaluator (own line-based graph parser, own csv reading of the e-print, own cut and expected-cut formula; no shared code); largest difference 6.1e-16; all invalid answers (sizes wrong, label out of range, -1, wrong length, float dtype, all zeros, unequal parts exchanged) score 0 on both. Expected random cut confirmed by simulation on two instances (z = -1.39, -0.69)."
+  },
+  {
+   "id": "c",
+   "n": "78 instances (own exchange search), 24 small instances (own search with locking)",
+   "result": "Cannot be done as specified: the source publishes no partition. Substitute: own searches in checks.py only (not the learner, not the adapter). No cut found is below the lower bound printed in the same tables on any of the 78 instances (graph files and tables are consistent); the UB is reached exactly on 5 of the 24 small instances (G124.02-m75, G124.08-k2, G124.08-m81, G124.16-k2, G124.16-m75) and never beaten; answers at UB score exactly 1.0, their corrupted copies score less, unbalanced copies 0. For the other 73 instances attainability rests on the source's statement."
+  },
+  {
+   "id": "d",
+   "n": "78 instances, training and fresh",
+   "result": "PASS: one layout"
+  },
+  {
+   "id": "e",
+   "n": "78 instances, two seeds each",
+   "result": "PASS: the same own-label answer, encoded for two relabellings by probing decode only, has the same total and the same score; the encoded answers differ; problem() is deterministic in the seed"
+  },
+  {
+   "id": "f",
+   "n": "split(env, 16, 24)",
+   "result": "PASS: training 16 from {G124: 3, G250: 5, U1000: 5, U500: 3}; fresh 24 from {G1000: 14, G500: 10}; no group or graph shared; construction units of the training instances min 373, max 5001, sum 36378"
+  },
+  {
+   "id": "g",
+   "n": "6 made-up random graphs (30 to 40 vertices; 2, 4, 5 equal parts and two unequal parts)",
+   "result": "PASS: Learner.acquire ran under the registered 40x budget and Learner.apply returned well-formed answers with the stated sizes; totals as specified. The learner was not run on any benchmark instance and rsi6/learner/learner.py was not opened."
+  },
+  {
+   "id": "h",
+   "n": "78 instances, every field of the problem object and of a new state",
+   "result": "No field derives from the reference. Two unavoidable coincidences: U1000.05-k2 has reference 1, which equals entries of the 0/1 adjacency matrix (and n_groups); U500.05-k2 has reference 2, which equals n_opts. No string fields."
+  },
+  {
+   "id": "i",
+   "n": "78 instances",
+   "result": "PASS (replication of the learner-free kernel tests for this environment only): the view exposes only generic fields and read-only arrays, the problem is rebuilt byte-identically, malformed answers are refused by run._valid"
+  },
+  {
+   "id": "fetch",
+   "n": "25 files",
+   "result": "python3 -m rsi6.fetch partitioning fetched all files and pinned 25 SHA-256 hashes; none missing; graph files parse with n = 124/250/500/1000, symmetric, no loops, no repeated edges"
+  }
+ ],
+ "open_issues": [
+  "The reference is not the Johnson 1989 / Bui-Moon 1996 table of best known bisection widths named first in the task: no fetchable copy of that table was obtained, so the reference is the UB column of arXiv:2205.06788v2. An auditor should decide whether this substitution is acceptable.",
+  "Only 24 of the 78 instances are the original benchmark's problem (equal bisection of the 24 graphs). The other 54 (k = 4 or 5 equal parts: 40; two unequal parts: 14) exist only in the 2022 paper, whose upper bounds for them come from its authors' heuristics. Restricting to k = 2 would leave 24 instances in 6 groups of 4, below the 40 asked for.",
+  "The source publishes no partitions, so check (c) could not be done as written; attainability of the reference was reproduced by own search on 5 small instances only and otherwise rests on the source's statement. The reference was never beaten by my simple searches.",
+  "The seeded split puts both large random-graph groups (G500, G1000) on the fresh side and all geometric graphs (U500, U1000) on the training side: fresh instances contain no geometric graph, and they are the largest instances (dense 1000x1000 float adjacency, 8 MB per problem plus the view's copy).",
+  "The per-vertex coordinates in the graph files are not exposed (my decision: the published problem is a function of the graph alone, and they are zero for the G family). An auditor may disagree.",
+  "Reference-value coincidences that cannot be removed: reference 1 (U1000.05-k2) equals entries of the 0/1 adjacency matrix; reference 2 (U500.05-k2) equals n_opts. The kernel test test_problem_carries_no_reference looks only at the first instance (G1000.0025-k2, reference 102) and would pass; applied to every instance it would flag U1000.05-k2.",
+  "I did not run rsi6/tests/test_kernel.py or any of its tests: importing it loads every registered environment, which would fetch data of other environments from hosts outside this task. The learner-free tests were replicated for this environment in WORK/checks.py instead.",
+  "The arXiv e-print is pinned by hash; if arXiv regenerates the source package the fetch will stop with a hash mismatch. Terms: the DIMACS index carries no licence text; the arXiv licence of the e-print was not read (stated so in the manifest).",
+  "The threshold 0.90 is an operating point chosen with no learner measurement; on this scale a weak exchange search already gets most of the way on sparse graphs because the random baseline is far from the reference.",
+  "The relayed user request was only a status question (in Korean: 'are you working now?'); this step did the assigned adapter build and changed nothing outside REPO and WORK."
+ ],
+ "learner_run_on_benchmark_instances": false
+}

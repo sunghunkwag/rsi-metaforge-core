@@ -12,6 +12,7 @@ REGISTRY = {
     "knapsack": ("rsi6.environments.knapsack", "Knapsack"),
     "regression": ("rsi6.environments.regression", "Regression"),
     "partitioning": ("rsi6.environments.partitioning", "Partitioning"),
+    "setcover": ("rsi6.environments.setcover", "SetCover"),
 }
 _CACHE = {}
 

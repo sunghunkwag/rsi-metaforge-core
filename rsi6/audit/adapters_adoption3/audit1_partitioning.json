@@ -1,0 +1,129 @@
+{
+ "verdict": "admit",
+ "summary": "(\uc0ac\uc6a9\uc790 \uc9c8\ubb38 \"\ud604\uc7ac \uc791\uc5c5 \uc911\uc774\ub0d0?\"\uc5d0 \ub300\ud55c \ub2f5: \uc608 \u2014 \uc774 \ub2e8\uacc4\ub294 partitioning \uc5b4\ub311\ud130\uc758 \ub3c5\ub9bd \uac10\uc0ac 1\ud68c\ucc28\uc600\uace0, \uc9c0\uae08 \uc644\ub8cc\ub418\uc5c8\uc2b5\ub2c8\ub2e4.)\n\nAudit 1 of the \"partitioning\" adapter: no blocking or major finding; three minor findings (all wording/disclosure, no code change needed for exactness) and four notes. Verdict: admit, with the text corrections below recommended before registration.\n\nWhat I did (all scripts and outputs are in /tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/partitioning/audit1 ; own parser/evaluator in audit1/s/mine.py, shares no code with the adapter; nothing under REPO was modified; the learner was run only on made-up random graphs; rsi6/learner/learner.py was not opened).\n\nConfirmed:\n- Data provenance: re-downloaded the DIMACS index, G500.02, U1000.05 and https://arxiv.org/e-print/2205.06788v2 with curl -A research-data-check/1.0; SHA-256 identical to the manifest and to the earlier attempt's files. All 25 manifest hashes match the files on disk. archive.dimacs.rutgers.edu/pub/dsj/partition is D. S. Johnson's own directory (primary). The typeset tables of the paper \\input the very data files the adapter reads.\n- Published form matches the answer form exactly: the paper defines the GPP with given sizes m_1..m_k summing to n, k-equipartition (n/k each) and bisection (m1 = ceil(np), n-m1); capacities sum to n, one soft group = number of cut edges. AssignProblem is exact here (R1).\n- Own parser gives the same 24 adjacency matrices, the same 78 instances, sizes and references as the adapter (94 table rows, 16 duplicates with identical UB).\n- Evaluator agreement on ALL 78 instances (not only 5 per group): 1014 states and 8960 candidate entries along the start/candidates/assign/totals path, partial_totals on random partial answers, evaluate, Environment.score: largest absolute difference to my evaluator 0.0; 546 invalid answers all score 0; own answers that reach/beat the reference score exactly 1.0, a worsened copy less, an unbalanced copy 0.\n- Relabelling: var_var and capacity are exactly isomorphic to my graph under the decode map; different seeds give different arrays; the answer in file order scores 0.017 on average (max 0.122), so the published order carries nothing.\n- No leak: with all 78 references replaced by random numbers at load time the instance ids, the split and the SHA-256 fingerprints of every public view field and of a fixed feedback panel are identical on 156 problems; the problem object has only the generic fields.\n- One layout for all 78; one tuple of learner descriptor names (7 names).\n- Scale: plain ratio UB/E[random] exceeds 0.5 on 28 of 78 (max 0.749), so the chance-corrected scale is the right choice under R2; random valid answers score 0.021 mean.\n- No learner run on benchmark instances in the builder's scratch (its only Learner use is on six made-up 30-40 vertex graphs); no choice traceable to scores.\n\nMain reservation (minor 1): the reference is looser than the module text suggests. My own plain tabu swap search (8 s per instance, not the learner) beats the published UB on 22 of 78 instances and reaches it on 16 more, never going below the tables' lower bounds; 8 of the 24 fresh instances are beaten (by at most 4% of the scale's span, G1000.02-k5 5816 vs 5904) and on the training-side U graphs by up to 43% (U1000.10-k5: 125 vs 220). The builder's report said \"beaten on 0\". This does not break R7 (the value is an attainable upper bound and is declared as such) but the text and anchor should say it. Calibration of the scale by own code: one naive greedy construction scores 0.444 on the fresh groups, the 8 s tabu 0.972 on the 24 fresh instances, so the 0.90 operating point lies between and is not vacuous at a glance; the learner's test budget (about 1.0e6 units at n=1000) is far below what my tabu spent.\n\nFresh set: 24 instances, but only 8 distinct graphs, all Erdos-Renyi G graphs (G1000: 14 instances/4 graphs = deciding half; G500: 10 instances/4 graphs = confirming half); training 16 instances on 12 graphs from G124, G250, U500, U1000. It means something, but as 8 clusters of one family, not 24 independent samples (minor 3).\n\nCost: largest instance n=1000, k=5: 6001 units per construction, n*k=5000. On made-up random graphs of the same sizes the learner's acquire took 18 CPU-s for the full training budget (1,455,120 units) and apply took about 1 s at n=500 and about 6 s at n=1000; a full run is roughly 5 to 6 CPU-minutes. Not unreasonably slow.",
+ "checks": [
+  {
+   "id": "1 no hidden solver or heuristic",
+   "result": "pass",
+   "what_was_run": "Read all 220 lines of rsi6/environments/partitioning.py. It parses (parse_graph, parse_tables), builds the adjacency matrix and capacities, evaluates (partial_totals, _new/_rows/_push, cut) and scores with a closed-form expected random cut. No search, ordering or pruning by the objective, no optimisation call. Constants: GRAPHS (24 file names), TABLES (7 member names), size rule 1000 / 30000.",
+   "n": "1 module"
+  },
+  {
+   "id": "2 no privileged information",
+   "result": "pass",
+   "what_was_run": "audit1/s/audit.py section E: rebuilt the environment with parse_tables wrapped so that all 78 UB values are random integers; compared instance ids, split(env,16,24) and SHA-256 fingerprints of every public field of view(problem) plus a fixed panel (candidates/totals/allowed at 6 points of a fixed random path, evaluate, decode) for both training flags. Printed: 'references replaced by random numbers on 78 of 78 | ids equal True | split equal True | observable fingerprints identical: True ( 156 problems )'. Public view fields: capacity, detail, domain, hard, n_groups, n_opts, n_vars, occ_attr, opt_attr, opt_opt, ordered, start_answer, start_totals, var_attr, var_opt, var_var; state keys a, n, tot, used.",
+   "n": "156 problems"
+  },
+  {
+   "id": "3 traceability",
+   "result": "pass",
+   "what_was_run": "var_var[0] = 0/1 adjacency from the neighbour lists of the DIMACS files (equal to my parser's on 24 graphs); capacity = (n/k)*k or (m1, n-m1) from columns n and k / m1 of the table rows, which is the paper's definition (main.tex: sizes m_1>=...>=m_k summing to n; k-EP: n/k each; bisection m1 = ceil(np), p in {0.6,0.65,0.7}; checked 75,87,81 for n=124 etc.). Nothing else is exposed (var_attr, opt_attr have 0 columns). The per-vertex coordinates of the files are not exposed (see note).",
+   "n": "78 instances"
+  },
+  {
+   "id": "4 no information in order or names",
+   "result": "pass",
+   "what_was_run": "audit.py section C: recovered the vertex and part permutations from decode alone and checked var_var[np.ix_(code,code)] == own adjacency and capacity[j] == sizes[op[j]] on all 78: 'relabelling: var_var and capacity isomorphic to own graph under decode: True | different seed gives different arrays: True'. Section G: the file-order answer scores mean 0.0172, max 0.122 (G250.01-m175).",
+   "n": "78 instances"
+  },
+  {
+   "id": "5 evaluator agreement and attainability",
+   "result": "pass (the source publishes no reference answers; attainability shown by own search on 38 of 78, declared as a bound for the rest)",
+   "what_was_run": "audit.py section C on all 78 instances: 'step path on all 78 instances: 1014 states, 8960 candidate entries, largest |difference| to own evaluator: 0.0'; 78 random valid complete answers scored identically by Environment.score and my evaluator; '546 invalid answers all 0' (sizes off by one, label k, label -1, float dtype, short, all zero, bool). Default AssignProblem._rows equals the fast rows. audit1/s/search2.py (own tabu, 8 s per instance): 'instances 78 | beats 22 reaches 16 above 40 | below LB 0'. audit1/s/atref.py: G124.02-k2 own cut 13 = reference 13 scores 1.0, evaluate in problem labels 13.0, worsened copy (cut 16) 0.9517, unbalanced copy 0.0; G124.02-m75 cut 11 < 12 scores 1.0; G124.16-k4 cut 723 vs 720 scores 0.98755.",
+   "n": "78 instances, all 6 groups"
+  },
+  {
+   "id": "6 leak scan of the task files",
+   "result": "pass",
+   "what_was_run": "Graph files: lines 'index (x,y) degree neighbours'; no optimum or bound printed. The e-print archive holds UB and lower bounds (round_cuts_lb, round_DNN_lb); the adapter reads only columns graph, n, k/m1, UB, and UB goes to Environment.reference/score only (check 2 shows no observable depends on it). The DIMACS index lists only the 25 graph files, no result file.",
+   "n": "25 files"
+  },
+  {
+   "id": "7 one layout",
+   "result": "pass",
+   "what_was_run": "audit.py section D over all 78: layouts = {('assign', False, False, True, (False,), (False,), 0, 0, 1, 0, 0, 0, True, True)}; 'learner descriptor name tuples over all instances: 1 | count of names [7]' (Layout(view(P), version.default()).names). No padding is used; n_opts is 2, 4 or 5 and is not part of the layout.",
+   "n": "78 instances"
+  },
+  {
+   "id": "8 the split",
+   "result": "pass with a limitation (see minor finding 3)",
+   "what_was_run": "audit.py section F: 'train 16 {G124: 3, G250: 5, U1000: 5, U500: 3} graphs 12 | fresh 24 {G1000: 14, G500: 10} graphs 8'; 'halves: 14 {G1000: 14} 4 graphs | 10 {G500: 10} 4 graphs | group overlap train/fresh: [] | graph overlap: []'; fresh by kind: k2 7, k4 7, k5 5, unequal 5. The fresh set is 24 instances on 8 distinct graphs of one family.",
+   "n": "16 train / 24 fresh"
+  },
+  {
+   "id": "9 instances left out; traces of learner runs",
+   "result": "pass",
+   "what_was_run": "Nothing is left out by size (max n 1000, max n*k 5000). G.sub.500 has no table row; non-DIMACS graphs of the paper are not instances of this benchmark. grep -n -i 'acquire|.apply|measure|run.run|ledger|learner' over work/checks.py, work/s2/*.py, work/scripts/*.py: the only Learner use is checks.py lines 452-471 on six made-up random graphs (30-40 vertices). The builder's own exchange search on benchmark graphs is not the learner. No ledger, no measure/run call.",
+   "n": "builder scratch: 15 scripts"
+  },
+  {
+   "id": "10 the threshold's anchor",
+   "result": "pass with wording corrections (minor findings 1 and 2)",
+   "what_was_run": "env.threshold = 0.9; anchor printed by audit1/s/extra.py: 'an operating point, not an external fact: ... the upper bound printed in the tables of arXiv:2205.06788v2, which is a published upper bound (attained by its authors' partition, which is not published), not a proven optimum'. It is worded as an operating point and as a bound. Calibration by own code: naive greedy construction scores 0.444 on the fresh groups (audit1/s/greedy.py); own 8 s tabu scores 0.972 mean on the 24 fresh instances (min 0.882 G1000.0025-k4).",
+   "n": "1 anchor"
+  },
+  {
+   "id": "11 cost",
+   "result": "pass",
+   "what_was_run": "Largest instance n_vars 1000, n_opts 5: 6001 units per construction, n*k 5000. Training limit 40*sum = 1,455,120 units; test limit per fresh instance 253,002 to 1,012,002 units (sum over fresh 16.66e6). audit1/s/timing.py on MADE-UP random graphs of the training sizes: 'acquire cpu s 18.0 units used 1372996.0'; apply at n=500: 0.8-1.1 CPU-s, at n=1000: 5.3-6.1 CPU-s, all answers valid. Estimated full run about 5-6 CPU-minutes; each problem holds one n x n float matrix (8 MB at n=1000).",
+   "n": "16 made-up training graphs, 10 applies"
+  },
+  {
+   "id": "provenance and pinning",
+   "result": "pass",
+   "what_was_run": "curl -sS -L --fail -A research-data-check/1.0 of https://archive.dimacs.rutgers.edu/pub/dsj/partition/ (index), .../G500.02, .../U1000.05 and https://arxiv.org/e-print/2205.06788v2 : sha256 7b0013c7... (index, identical to work/dl/dimacs_partition_index.html), be002266... , 178a3936... , 97700111... all equal to the files under rsi6/data/partitioning and to the manifest. audit1/s/peek.py: '25 files; hash mismatches: 0'.",
+   "n": "4 re-downloads, 25 hashes"
+  }
+ ],
+ "findings": [
+  {
+   "severity": "minor",
+   "where": "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/partitioning/repo/rsi6/environments/partitioning.py lines 18-24 (Reference paragraph) and 164-166 (anchor); manifests/partitioning.json field 'reference'",
+   "what": "The reference is looser than the text conveys. A plain swap tabu search written for this audit (8 s per instance, own code, not the learner) beats the published upper bound on 22 of the 78 instances and reaches it on 16 more. The builder reported 'beaten on 0'. A score of 1 is therefore weaker than 'best known' on at least 22 instances, 8 of them among the 24 fresh ones.",
+   "evidence": "cd WORK/.. && python3 -I audit1/s/search2.py repo/rsi6/data/partitioning 8 > audit1/search2.out ; python3 -I audit1/s/summ.py audit1/search2.out printed: 'instances 78 | beats 22 reaches 16 above 40 | below LB 0'; beaten (found, UB): G1000.005-k5 852/854, G1000.01-k4 2209/2219, G1000.01-k5 2422/2449, G1000.01-m600 1303/1304, G1000.02-k4 5386/5422, G1000.02-k5 5816/5904, G1000.02-m700 2798/2844, G124.02-m75 11/12, G124.08-m81 158/159, G250.01-m175 18/20, G250.02-m163 98/101, G250.04-m150 337/343, G500.01-m350 171/173, G500.04-k5 2985/2987, G500.04-m300 1672/1682, U1000.10-k4 130/182, U1000.10-k5 125/220, U1000.20-k4 522/735, U1000.20-k5 672/716, U1000.40-k4 1581/1596, U500.05-k4 18/22, U500.10-k4 73/115. audit1/s/fresh.py: 'fresh 24: beaten [G1000.005-k5, G1000.01-k4, G1000.01-m600, G1000.02-k4, G1000.02-k5, G1000.02-m700, G500.01-m350, G500.04-k5] ... largest unclipped (1.04, G1000.02-k5)'. Answers were verified with my own cut function and exact part sizes; atref.py confirms Environment.score gives 1.0 for two of them.",
+   "suggested_fix": "No change of the scale or the reference is needed (R7 is met: an attainable upper bound, declared as such). Add to the Reference paragraph and to the manifest: 'an independent plain exchange search (audit 1) beat this bound on 22 of the 78 instances (8 of the 24 fresh ones, by at most 4% of the distance from the random expectation to the bound; by up to 43% on U1000.10 in five parts) and reached it on 16 more; a score of 1 is not a best-known cut'. Shorten the same into the anchor, e.g. '... a published upper bound, not a best-known value and not a proven optimum (a plain exchange search beats it on some instances)'."
+  },
+  {
+   "severity": "minor",
+   "where": "partitioning.py lines 19-21 ('It is the cut of a partition the source's authors had') and the anchor ('attained by its authors' partition, which is not published')",
+   "what": "The statement that the authors held a partition attaining every UB is an inference, not what the source says. The source says the upper bounds are 'obtained by heuristics or the optimal solution from the literature' (k-equipartition tables) and 'the numbers we obtained by heuristics' (bisection tables); some values are thus copied from other papers.",
+   "evidence": "python3 -I audit1/s/tex.py repo 'heuristic|...' printed from main.tex: '@94375: As an upper bound we input the values we obtained by heuristics or the optimal solution given in the literature.' ; '@99242: The upper bounds are obtained by heuristics or the optimal solution from the literature.' ; '@104251: As an upper bound we input the numbers we obtained by heuristics.' No partition file exists in the archive (members listed by audit1/s/peek.py: 22 .tex files, main.bbl, mybib.bib).",
+   "suggested_fix": "Reword to what is known: 'the source says the value was obtained by heuristics or taken from the literature; no partition is published; an independent search reached or beat it on 38 of the 78 instances (audit 1), for the other 40 attainability rests on the source'. Use the same wording in the anchor."
+  },
+  {
+   "severity": "minor",
+   "where": "partitioning.py lines 49-50 (Groups paragraph); effect seen in rsi6.kernel.environment.split / rsi6.kernel.run.halves",
+   "what": "The 78 instances stand on 24 graphs. With the kernel's fixed split the 24 fresh instances are on only 8 distinct graphs, all Erdos-Renyi G graphs (n = 500 and 1000); the deciding half is G1000 (14 instances, 4 graphs) and the confirming half G500 (10 instances, 4 graphs). No geometric graph is ever fresh. The mean over 24 fresh instances is a mean over 8 clusters of one family, not 24 independent samples. The module says that instances on one graph share a group, but not how few graphs the fresh side has.",
+   "evidence": "audit1/s/audit.py section F printed: 'train 16 {G124: 3, G250: 5, U1000: 5, U500: 3} graphs 12 | fresh 24 {G1000: 14, G500: 10} graphs 8 [G1000.0025, G1000.005, G1000.01, G1000.02, G500.005, G500.01, G500.02, G500.04]' and 'halves: 14 {G1000: 14} 4 graphs | 10 {G500: 10} 4 graphs'.",
+   "suggested_fix": "Not a defect the adapter can remove (the benchmark has 24 graphs and the split belongs to the kernel). State it in the module text: 'with the kernel's split the fresh instances are 24 rows on 8 random graphs (G500, G1000); the training instances come from G124, G250, U500, U1000', so that any report reads the fresh mean accordingly."
+  },
+  {
+   "severity": "note",
+   "where": "REPO/rsi6/kernel/run.py, REPO/rsi6/learner/*.py, REPO/rsi6/meta/*.py, REPO/rsi6/tests/test_kernel.py",
+   "what": "These files carry a modification time of 18:32, later than the rest of the copy (14:48) and one minute before the builder's first script of the second attempt (18:33). No builder script writes to them, and the pattern (ten files in one minute, before the builder started) looks like a refresh of the copy by the orchestrator, but I cannot verify that from inside REPO and WORK.",
+   "evidence": "find repo/rsi6 -type f -not -name '*.pyc' -newermt '2026-11-12 14:49' -not -path '*/data/partitioning/*' printed: 18:32 rsi6/kernel/run.py, 18:32 rsi6/learner/{__init__,design_b,designs,learner,version}.py, 18:32 rsi6/meta/{__init__,rounds,space}.py, 18:32 rsi6/tests/test_kernel.py, 18:37 manifests/partitioning.json, 18:38 environments/__init__.py, 18:46 environments/partitioning.py. grep of 'open(' in work/s2 and work/scripts shows writes only to checks.py, the manifest and partitioning.py.",
+   "suggested_fix": "When adopting, take only the three adapter files (partitioning.py, manifests/partitioning.json, the one registry line in environments/__init__.py) from this copy, or diff rsi6/kernel and rsi6/learner against the frozen tree first."
+  },
+  {
+   "severity": "note",
+   "where": "partitioning.py lines 32-37 (Exposed arrays)",
+   "what": "The coordinate pair printed for every vertex in the graph files is not exposed (all zero in the G files, the generator's points in the U files). This is defensible: the published problem and its value are functions of the graph alone, the reference source works on the adjacency matrix, and the coordinates would mark the family. It has no effect on the registered test, since all fresh instances are G graphs whose coordinates are all zero.",
+   "evidence": "audit1/s/peek.py printed the first lines: G124.02 '1 (0.000000,0.000000) 1 87', U500.05 '1 (0.502987,0.528829) 8 28 102 ...'. View fields var_attr and opt_attr have 0 columns.",
+   "suggested_fix": "None required; keep the sentence in the module text."
+  },
+  {
+   "severity": "note",
+   "where": "manifests/partitioning.json field 'terms' and the arXiv entry",
+   "what": "The terms say the arXiv licence was 'not read here'. The reference file is the e-print's source package; arXiv can regenerate such packages, in which case rsi6.fetch fails with a hash mismatch (a safe failure). Three downloads today (14:57, 18:36 and this audit) gave identical bytes; v2 is the pinned version.",
+   "evidence": "sha256 of audit1/dl/2205.06788v2 = 97700111457cf60517d644640ca08ca550421dba025d315a41cbd770602048b9 = manifest = work/dl/lit/cand_2205.06788.eprint.",
+   "suggested_fix": "Record the licence shown on the abstract page of arXiv:2205.06788 in the manifest when convenient."
+  },
+  {
+   "severity": "note",
+   "where": "Environment.threshold = 0.90 and its anchor",
+   "what": "Calibration of the operating point by the auditor's own code (no learner): a single naive greedy construction scores 0.444 on the fresh groups; a plain 8 s tabu scores 0.972 on the 24 fresh instances (21 of 24 at or above 0.9; minimum 0.882 on G1000.0025-k4). The threshold therefore separates a naive construction from a competent local search, but a competent generic search with ample compute exceeds it without any learning; whether that is possible inside the test budget (253,002 to 1,012,002 units per fresh instance, about 42 to 168 constructions) is for the registered test to show. The anchor's 'operating point, not an external fact' is accurate.",
+   "evidence": "python3 -I audit1/s/greedy.py repo/rsi6/data/partitioning printed 'G500 greedy construction, mean score 0.422', 'G1000 ... 0.467', 'fresh groups: 0.444'. audit1/s/fresh.py printed 'fresh 24: mean clipped score of the auditor's 8 s search 0.972 | largest unclipped (1.04, G1000.02-k5) | smallest (0.882, G1000.0025-k4)'.",
+   "suggested_fix": "None; information for whoever reads the result."
+  }
+ ]
+}
