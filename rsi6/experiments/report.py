@@ -90,6 +90,56 @@ def rounds_section(ledger) -> dict:
     return out
 
 
+def search_section(ledger) -> dict:
+    """Two diagnostics of every search, from its runs in the ledger.
+
+    Reliability: every candidate was measured with two seeds; the improvement over the starting
+    version is computed from each seed alone, and the two are correlated over the candidates. A
+    low value means the search ranked noise.
+
+    Transfer: what the search measured for its nominee on the source pool, beside what the gate
+    and the confirmation measured for the same version on categories the search never saw."""
+    runs = [r for r in ledger.records if r.get("type") == "run"]
+    out = {}
+    for record in ledger.select(type="search"):
+        tag, envs, seeds = record["tag"], record["envs"], record["seeds"]
+        if any(other["tag"] != tag and other["nominee"] == record["nominee"] and other["start"] == record["start"]
+               and other["round"] == record["round"] and other["tag"] in out for other in ledger.select(type="search")):
+            continue                                  # the same search under another name (lineages that had not diverged)
+        table = {}
+        for r in runs:
+            if r["budget"] == ledger.select(type="registration")[0]["registration"]["budgets"]["search"] and r["env"] in envs \
+                    and r["seed"] in seeds:
+                table.setdefault(r["version"], {})[(r["env"], r["seed"])] = r
+        candidates = []
+        for r in runs:
+            if r["purpose"] == tag and r["version"] != record["start"] and r["version"] not in candidates:
+                candidates.append(r["version"])
+        base = table.get(record["start"], {})
+
+        def improvement(digest, use):
+            a = np.mean([table[digest][(e, s)]["acquired"] - base[(e, s)]["acquired"] for e in envs for s in use])
+            g = np.mean([table[digest][(e, s)]["gain"] - base[(e, s)]["gain"] for e in envs for s in use])
+            return float(min(a, g))
+
+        complete = [d for d in candidates if all((e, s) in table[d] and (e, s) in base for e in envs for s in seeds)]
+        entry = {"candidates": len(complete)}
+        if len(complete) > 2 and len(seeds) == 2:
+            first = np.array([improvement(d, seeds[:1]) for d in complete])
+            second = np.array([improvement(d, seeds[1:]) for d in complete])
+            both = np.array([improvement(d, seeds) for d in complete])
+            entry.update({"correlation_between_seeds": float(np.corrcoef(first, second)[0, 1]),
+                          "sd_between_candidates": float(np.std(both)), "sd_of_seed_difference": float(np.std(first - second)),
+                          "share_of_candidates_measured_better": float(np.mean(both > 0))})
+        entry["nominee_on_source_pool"] = None if record["best_cost"] is None else -record["best_cost"]
+        gate = ledger.select(type="gate", tag=tag.replace("search", "gate"))
+        confirm = ledger.select(type="confirm", tag=tag.replace("search", "confirm"))
+        entry["nominee_on_adoption_set"] = gate[-1]["mean_min"] if gate else None
+        entry["nominee_on_confirmation_half"] = confirm[-1]["mean_min"] if confirm else None
+        out[tag] = entry
+    return out
+
+
 def targets_section(ledger, reg) -> dict | None:
     done = ledger.select(type="target_done")
     if not done:
@@ -188,10 +238,11 @@ def main() -> int:
     rounds = rounds_section(ledger)
     targets = targets_section(ledger, reg)
     predictions = score_predictions(reg, rounds, targets, ledger)
+    searches = search_section(ledger)
     runs = [r for r in ledger.records if r.get("type") == "run"]
     report = {"ledger_head": ledger.head(), "records": len(ledger.records), "runs": len(runs),
               "cpu_seconds": round(float(sum(r["cpu"]["acquire"] + r["cpu"]["apply"] for r in runs)), 1),
-              "predictions": predictions, **rounds, "targets": targets}
+              "predictions": predictions, **rounds, "searches": searches, "targets": targets}
     if args.json:
         json.dump(report, open(args.json, "w"), indent=1)
     print(f"ledger: {len(ledger.records)} records, {len(runs)} runs, {report['cpu_seconds']} CPU-seconds, head {ledger.head()[:16]}")
@@ -213,6 +264,13 @@ def main() -> int:
             print(f"  confirm {name:11s} min-change {c['mean_min']:+.4f} gain {c['mean_gain_change']:+.4f} acquired {c['mean_acquired_change']:+.4f} ({c['runs']} runs)")
         for name, a in entry["adopted"].items():
             print(f"  ADOPTED by {name}: {a['changes']}")
+    print("\nSEARCHES: reliability between the two seeds, and what the nominee did where the search never looked")
+    for tag, e in searches.items():
+        number = lambda x: "none" if x is None else f"{x:+.4f}"
+        print(f"  {tag:16s} candidates {e['candidates']:3d} correlation between seeds {number(e.get('correlation_between_seeds'))} "
+              f"measured better {number(e.get('share_of_candidates_measured_better'))} | nominee: source pool "
+              f"{number(e['nominee_on_source_pool'])}, adoption set {number(e['nominee_on_adoption_set'])}, "
+              f"confirmation half {number(e['nominee_on_confirmation_half'])}")
     if targets:
         print(f"\nTARGETS {targets['targets']}, seeds {targets['seeds']}; primary arm {targets['primary_arm']}")
         for arm, t in targets["arms"].items():
