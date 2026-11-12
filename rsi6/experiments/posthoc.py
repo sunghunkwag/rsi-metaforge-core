@@ -40,7 +40,7 @@ def main() -> int:
     for part, seeds in (("A", reg["seeds"]["gate"]), ("B", reg["seeds"]["confirm"])):
         budget = dict(reg["budgets"]["run"], part=part)
         for design in ("a", "b"):
-            rows = cache.get(rounds.jobs_for(designs.default(design), envs, seeds, budget, f"posthoc:{design}:adoption3"))
+            rows = cache.get(rounds.jobs_for(designs.default(design), envs, seeds, budget, f"posthoc:{design}:adoption3"), workers=2)
             for env in envs:
                 sel = [r for r in rows if r["env"] == env]
                 out.setdefault(env, {}).setdefault(design, {})[part] = {
