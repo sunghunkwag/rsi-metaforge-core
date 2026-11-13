@@ -3,10 +3,11 @@
     python -m rsi6.experiments.targets [--ledger PATH]
 
 It refuses to start unless the ledger holds the record that freezes the lineages of the two
-registered rounds and, if the continued process of amendment 2 was registered, the record that
-freezes its lineages too; and unless ``registry/targets.json`` lists the target adapters that
-passed their audit. It then unlocks the target role and measures, on every target environment
-and every registered seed, the arms of both processes.
+registered rounds; if the continued process of amendment 2 was registered, the record that
+freezes its lineages too; if process c of amendment 3 was registered, its freeze record and
+the record of its external gate; and unless ``registry/targets.json`` lists the target adapters
+that passed their audit. It then unlocks the target role and measures, on every target
+environment and every registered seed, the arms of every process.
 
 Arms of the two registered rounds (first design of the learner):
 
@@ -27,6 +28,19 @@ designs: ``compute@b``, generation 0 of the first design with its training budge
 its measured CPU-seconds reach those of the primary arm of the continued process plus an equal
 share of what that process spent on its rounds.
 
+Arms of process c (first design; amendment 3), named with the prefix ``c:``: ``c:frozen`` and
+``c:skills`` are the arms ``frozen`` and ``skills`` above (the same version, the same runs);
+``c:self`` is the final version of process c with empty memory, ``c:memory`` the same with the
+memory of its own acquisitions; ``c:compute`` and ``c:search`` are generation 0 with its
+training budget, or its test-time budget and no training, raised until its measured CPU-seconds
+reach those of ``c:self`` plus an equal share of everything process c ran in its generations
+(every search, gate and confirmation of every technique).
+
+A budget is raised level by level: doubled at first, then by the factor that the measured
+CPU-seconds of the last two levels say is needed (at least 2, at most 64 per level; at most
+twelve levels). Runs are recorded in small batches so that a driver that is started again
+repeats little.
+
 Statistics are computed by ``report.py`` from the ledger.
 """
 from __future__ import annotations
@@ -34,6 +48,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import time
 
@@ -79,9 +94,17 @@ def cpu(record) -> float:
     return record["cpu"]["acquire"] + record["cpu"]["apply"]
 
 
+def in_batches(cache, jobs, size: int = 4) -> list:
+    """The records of the jobs, run and written to the ledger a few at a time."""
+    out = []
+    for k in range(0, len(jobs), size):
+        out += cache.get(jobs[k:k + size])
+    return out
+
+
 def matched(arm, version, field, want, targets, seeds, budget, cache, ledger, spent, share) -> list:
     """Generation 0 with one budget raised, pair by pair, until its measured CPU reaches ``want``."""
-    value, last = {pair: budget[field] for pair in want}, {}
+    value, last, seen = {pair: budget[field] for pair in want}, {}, {pair: [] for pair in want}
     pending = list(want)
     for _ in range(12):
         if not pending:
@@ -92,9 +115,15 @@ def matched(arm, version, field, want, targets, seeds, budget, cache, ledger, sp
             if field == "test_e":
                 this["train"] = 0.0
             jobs.append({"env": name, "version": version, "seed": seed, "budget": this, "purpose": f"target:{arm}"})
-        for pair, record in zip(pending, cache.get(jobs)):
+        for pair, record in zip(pending, in_batches(cache, jobs)):
             last[pair] = record
-            value[pair] *= 2.0
+            seen[pair].append((value[pair], cpu(record)))
+            factor = 2.0
+            if len(seen[pair]) >= 2:                         # what the last two levels say is needed, with a tenth to spare
+                (v1, c1), (v2, c2) = seen[pair][-2:]
+                slope = (c2 - c1) / (v2 - v1)
+                factor = 8.0 if slope <= 0 else min(64.0, max(2.0, (v2 + (1.1 * want[pair] - c2) / slope) / v2))
+            value[pair] *= factor
         pending = [pair for pair in pending if cpu(last[pair]) < want[pair]]
         say(arm, "level done;", len(pending), "pairs below the matched CPU")
     rows = [dict(last[pair], matched_cpu=want[pair], reached=cpu(last[pair]) >= want[pair]) for pair in want]
@@ -137,6 +166,14 @@ def spent_by(ledger, names) -> float:
     return float(total)
 
 
+def spent_by_process_c(ledger) -> float:
+    """Measured CPU of every run of the generations of process c: the searches of all its
+    techniques, its gates and its confirmations. The external gate is a test of the outcome and
+    is not counted."""
+    mine = re.compile(r"^(search|gate|confirm):c\d+:")
+    return float(sum(cpu(r) for r in ledger.records if r.get("type") == "run" and mine.match(r.get("purpose", ""))))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--ledger", default=LEDGER)
@@ -145,14 +182,25 @@ def main() -> int:
     args = parser.parse_args()
     reg = json.load(open(os.path.join(REGISTRY, "registration.json")))
     ledger = ledgers.Ledger(args.ledger)
-    frozen_a = [r for r in ledger.select(type="freeze") if r.get("process") != "b"]
+    ledger.verify()
+    frozen_a = [r for r in ledger.select(type="freeze") if not r.get("process")]
     frozen_b = ledger.select(type="freeze", process="b")
+    frozen_c = ledger.select(type="freeze", process="c")
     if not frozen_a:
         raise SystemExit("the lineages are not frozen: no target run before that")
     if ledger.select(type="registration_b") and not frozen_b:
         raise SystemExit("the continued process is registered and not frozen: no target run before that")
-    admitted = json.load(open(args.targets))["admitted"]
-    targets = sorted(admitted)
+    if ledger.select(type="registration_c") and not (frozen_c and ledger.select(type="external_gate", process="c")):
+        raise SystemExit("process c is registered and not finished (freeze record and external gate): no target run before that")
+    listed = json.load(open(args.targets))
+    targets = sorted(listed["admitted"])
+    for change in listed.get("replacements", []):      # a reserve takes the role of a target that could not be built
+        if not ledger.select(type="replace", replaced=change["replaced"]):
+            ledger.append({"type": "replace", "replaced": change["replaced"], "reserve": change["reserve"], "role": "target",
+                           "why": change["why"]})
+    wrong = [n for n in targets if roles.effective_role(environments.load(n).category, ledger) != "target"]
+    if wrong or len(targets) != roles.N_TARGET:
+        raise SystemExit(f"the admitted list must be the {roles.N_TARGET} categories with the role target; not so: {wrong or targets}")
     if not ledger.select(type="unlock", role="target"):
         ledger.append({"type": "unlock", "role": "target", "targets": targets})
     cache = run.Cache(ledger)
@@ -175,6 +223,23 @@ def main() -> int:
         results["compute@b"] = matched("compute@b", designs.default("a"), "train", want_b, targets, seeds, budget, cache, ledger,
                                        spent_by(ledger, names_b), share_b)
         done["primary_arm_b"] = primary_b
+    # ---- process c
+    if frozen_c:
+        v0, final = designs.default("a"), frozen_c[-1]["version"]
+        adopted_c = bool(frozen_c[-1]["adoptions"])
+        results["c:frozen"], results["c:skills"] = results["frozen"], results["skills"]
+        results["c:self"] = cache.get(rounds.jobs_for(final, targets, seeds, budget, "target:c:self"))
+        say("c:self", designs.digest(final)[:12], "acquired %.4f gain %+.4f" % (mean(results["c:self"], "acquired"), mean(results["c:self"], "gain")))
+        memory = memory_of(final, earlier, budget, cache, "memory:c:memory")
+        results["c:memory"] = cache.get([dict(job, memory=memory) for job in rounds.jobs_for(final, targets, seeds, budget, "target:c:memory")])
+        say("c:memory", "entries in memory", len(memory["entries"]),
+            "acquired %.4f gain %+.4f" % (mean(results["c:memory"], "acquired"), mean(results["c:memory"], "gain")))
+        spent_c = spent_by_process_c(ledger)
+        share_c = spent_c / (len(targets) * len(seeds))
+        want_c = {(r["env"], r["seed"]): cpu(r) + share_c for r in results["c:self"]}
+        for arm, field in (("c:compute", "train"), ("c:search", "test_e")):
+            results[arm] = matched(arm, v0, field, want_c, targets, seeds, budget, cache, ledger, spent_c, share_c)
+        done["primary_arm_c"] = "c:self" if adopted_c else "c:frozen"
     ledger.append(dict(done, arms={arm: [r["key"] for r in rows] for arm, rows in results.items()}))
     return 0
 

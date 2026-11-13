@@ -1,0 +1,29 @@
+{
+ "amendment": 4,
+ "utc": "2026-11-13T01:22:03Z",
+ "after": "generation 1 of process c (the climb's nominee adopted provisionally: gate +0.0176 with lower bound +0.0066, confirmation +0.0035); during generation 2, before its climb has run; before any learner run on a reserve or a target",
+ "ledger_note": "the driver of process c is writing the working ledger while this is registered, so the record of this amendment is appended when that driver has ended; the commit of this file is its time stamp",
+ "decisions": [
+  "Recursion check (rsi6/experiments/recursion.py), run after process c is frozen; it adopts nothing and changes no lineage. For every generation g >= 2 of process c that started from a version other than generation 0, two more searches are run from the same start, on the same three light categories, with the same seeds, budget, objective and CPU limit as the climb of that generation: one whose improver is generation 0 of the first design (search seed 3000+g, as the climb), one by the random proposer (search seed 4000+g). Each nominee is put through that generation's gate and confirmation (same set-aside categories, same seeds, same bootstrap seed). The runs carry purposes that begin with 'recursion:' and are not counted as compute of process c.",
+  "What the check is for: an adoption shows a modified learner; it does not show that the modified learner is a better improver of the learner. The climb's improver is the current version itself. If its nominees are no better at the gate than those of generation 0 as improver from the same start, the process is repeated improvement by an improver that did not improve, and is reported as that.",
+  "Statistic of the check: D_g = (value at the gate of the climb's nominee) minus (value at the gate of the nominee of generation 0 as improver), a missing nominee counting as 0; the same against the random proposer. With at most five generations this can refute, and cannot establish, that the improved improver matters; it is reported as counts and values, without a test of significance.",
+  "Target set. Flow shop cannot be built: the host of its reference values does not answer (audit/adapters_targets/README.md). By the registered reserve rule the remaining reserve, generalised assignment (genassign), takes its role, if its adapter is admitted by an independent audit. If it is not admitted, no reserve is left and the target test runs on the three admitted targets, which is then stated with the result. Facility is admitted with the size rule its fixer restated (three fresh instances); satisfiability stays although its auditor expects a score of 0 for every arm.",
+  "Readings fixed now, before any run on a reserve or a target. (a) The external gate of process c counts as passed if the gate's three conditions hold and the confirmation is above zero (the rule by which process c adopts). (b) 'What process c spent' is the measured CPU of every run of its generations: the searches of all four techniques, the gates and the confirmations; the external gate and the recursion check are not counted. (c) 'Not behind the compute-matched arm' means: the smaller of the mean changes of the acquired score and of the gain of c:self against c:compute is not negative. (d) A matched budget is raised level by level: doubled at first, then by the factor that the measured CPU of the last two levels says is needed, at least 2 and at most 64 per level, at most twelve levels."
+ ],
+ "predictions": [
+  {
+   "id": "C5",
+   "text": "the adopted improver's nominees are not better at the gate than those of generation 0 as improver",
+   "criterion": "D_g > 0 in at most half of the generations compared (no generation compared: not scored)"
+  },
+  {
+   "id": "C6",
+   "text": "generalised assignment is admitted and the target test runs on four categories",
+   "criterion": "targets.json lists four admitted categories"
+  }
+ ],
+ "not_claimed": [
+  "that a positive recursion check establishes recursive self-improvement: with at most five generations it cannot",
+  "anything about artificial general intelligence"
+ ]
+}
