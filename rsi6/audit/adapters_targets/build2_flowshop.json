@@ -1,0 +1,87 @@
+{
+ "buildable": false,
+ "reason_if_not": "Not a problem of form: the permutation flow shop fits the generic assignment form exactly (see answer_form). The block is data access only. The named reference source, Taillard's page on mistic.heig-vd.ch, could not be reached from this network: about 35 requests over 40 minutes (http and https, the page and the file tai20_5.txt, client name research-data-check/1.0) all ended in HTTP 503 from the network gateway with the body \"upstream connect error or disconnect/reset before headers ... connection timeout\" (https: connection reset after CONNECT). That is a host that does not answer, not a policy refusal; I did not go to any address that was not named (no mirror, no web archive) and typed no value from memory. The only other named official address, OR-Library's flowshop2.txt, is reachable but holds no upper or lower bound. Without Taillard's files there is no reference value, so score cannot be defined on real data, the manifest has no hashes, and the environment cannot be loaded; I therefore did NOT add the REGISTRY entry (rsi6/tests/test_kernel.py loads every registered environment at import, so an entry that cannot fetch would break the package's tests). Everything else is written and checked: the adapter for the described file layout, the manifest with the nine URLs (sha256 null, pinned at first fetch), and checks that run in a labelled STAND-IN mode now (times regenerated from OR-Library's seeds and generator, a machine lower bound in the place of the bounds) and switch by themselves to the real files once the fetch succeeds. To finish when the host answers: from REPO run \"python3 -m rsi6.fetch flowshop\", run WORK/checks.py (REAL mode), write the page's terms into the manifest, add \"flowshop\": (\"rsi6.environments.flowshop\", \"FlowShop\") to REGISTRY, and delete the STATUS paragraph of the module text.",
+ "files_written": [
+  "<scratch>/targets/flowshop/repo/rsi6/environments/flowshop.py",
+  "<scratch>/targets/flowshop/repo/rsi6/environments/manifests/flowshop.json",
+  "<scratch>/targets/flowshop/work/checks.py",
+  "<scratch>/targets/flowshop/work/checks.out"
+ ],
+ "checks": [
+  {
+   "id": "0-source",
+   "n": "90 instances (regenerated), 0 real files",
+   "result": "STAND-IN MODE. Taillard's files not fetched (host unreachable). OR-Library flowshop2.txt sha256 616fa752...2e73d7b; its seed table has 120 instances. On texts laid out as the work order describes Taillard's files: adapter's parser == my own line-by-line parser on all 90; seeds and sizes == OR-Library's table; times == OR-Library's generator; times within 1..99; mean makespan of the fixed 10,000-order sample, adapter vs my own code: difference 0.0 on all 90. The comparison of the REAL files with the generator is written but could not run."
+  },
+  {
+   "id": "a-fast-equals-specification",
+   "n": "255 random partial states, 5 instances in each of 9 groups",
+   "result": "PASS: candidates == AssignProblem._rows derived from partial_totals, totals == partial_totals after every assignment, complete states == evaluate. Independent of the reference, so valid as it stands."
+  },
+  {
+   "id": "b-independent-evaluator",
+   "n": "360 valid + 810 invalid answers on 90 instances",
+   "result": "PASS in mechanics: score == my own score and makespan == my own evaluator for random valid answers given in the problem's labels through decode; a job twice, too short, too long, out of range, negative, non-integer, two-dimensional all score 0. The reference used was the stand-in, so this does not yet check score against the real upper bounds."
+  },
+  {
+   "id": "c-reference-answers",
+   "n": "0 real",
+   "result": "NOT RUN on the reference. As described, the source states values (two bounds) and no order of the jobs, so there is no published reference answer; the check is written to find orders with my own NEH + iterated greedy (in checks only, not in the adapter), assert that none is below the file's lower bound, that those reaching the upper bound score exactly 1.0, 0 with a job twice and below 1 after a worsening exchange. Mechanics now: with the stand-in set to an order's makespan that order scores 1.0, reversed 0.0, one job twice 0.0."
+  },
+  {
+   "id": "d-layout",
+   "n": "90 instances x 2 seeds, training and fresh",
+   "result": "PASS: one layout ('assign', ordered True, capacity present, no option more than once, hard (False, False), detail (False, True), 0 var columns, 20 opt columns, no relations, no occ_attr, no domain, no start answer). ta001 (5 machines): columns 5..19 zero, columns 0..4 the file's times. Zero machines appended after the last leave the makespan unchanged in 200 made-up cases."
+  },
+  {
+   "id": "e-relabelling",
+   "n": "27 instances (3 per group), 2 seeds",
+   "result": "PASS: the same answer in own labels, written under two different job permutations, has the same totals and the same score; decode returns the own-label answer."
+  },
+  {
+   "id": "f-split",
+   "n": "split(env, 16, 24)",
+   "result": "training 16: {100x10: 2, 100x5: 3, 20x10: 4, 20x20: 2, 50x20: 2, 50x5: 3}; fresh 24: {100x20: 7, 20x5: 8, 50x10: 9}; groups disjoint True, instances disjoint True; halves of the fresh side {50x10: 9} | {100x20: 7, 20x5: 8}. Depends only on names and groups, so it will be the same with the real files. Two (training, fresh) pairs share an initial seed: (ta072, ta043) and (ta058, ta086), with different numbers of jobs (same stream of numbers, different layout; no identical job). Training budget of this split: 2,631,440 units; largest construction 10,101 units."
+  },
+  {
+   "id": "g-interface-learner-made-up",
+   "n": "6 made-up training + 4 made-up test problems per design",
+   "result": "PASS for designs a and b (designs.make(designs.default('a')) and ('b')) on random times 1..99 with 5, 10, 20 machines and 10-12 jobs: acquire used 28,380 (a) and 31,696 (b) of 32,160 units and built a capability; all 4 answers per design well formed with makespan equal to my own evaluator; test meter charged 1.03 of its limit each time (the meter stopped the learner, which still answered). No benchmark instance reached the learner."
+  },
+  {
+   "id": "h-scan",
+   "n": "90 instances",
+   "result": "PASS in stand-in mode: no array or number of the problem object or of the learner's view equals the (stand-in) bounds, the initial seed, the instance number or the mean random makespan; the object is byte-identical when the bounds are changed; no text field; largest number anywhere 100 (times 1..99, sizes up to 100) while the smallest bound is above 1,000. problem() reads only the times, so the result does not depend on which bound values are in the header."
+  },
+  {
+   "id": "scale",
+   "n": "90 instances",
+   "result": "Machine lower bound / mean makespan of a random order is 0.659 to 0.885 on every instance; any reference is at least that bound, so a random order would score above 0.5 on the plain ratio on every instance: the share-of-the-way scale is used. Standard error of the sample mean at most 1.61 time units, at most 0.0025 of the (stand-in) scale. Mean score of 1,800 new random orders 0.061 (cut at 0 from below)."
+  }
+ ],
+ "open_issues": [
+  "BLOCKER: mistic.heig-vd.ch unreachable from this network (gateway 503, upstream connection timeout, ~35 requests over 40 minutes). No reference values, no hashes in the manifest, environment not registered. Options for whoever decides: retry later from here; fetch from a network that reaches the host; or name another address (for example an archived copy of the same page) as an allowed source - I did not use any unnamed host.",
+  "The layout of Taillard's files in the module text is the work order's description, unverified against the files; parse() raises on any deviation (not five header numbers, a count of times other than jobs*machines, a file that is not ten instances of its class). Row = machine is confirmed only once the times are compared with OR-Library's generator in REAL mode (checks.py section 0 does this).",
+  "Manifest field 'terms' says NOT READ YET: the page's own terms could not be read and were not guessed.",
+  "Checks b, c, h and the scale ran with a stand-in in the place of the bounds; they must be re-run on the real files (checks.py switches to REAL mode by itself when the fetch succeeds). The REAL-mode branches of checks.py (upper >= lower, orders reaching the upper bound score 1.0, NEH placement on the scale) have never executed.",
+  "The expected makespan of a random order has no closed form: the score uses the mean over a fixed, deterministic sample of 10,000 orders (splitmix64 keys, no library generator). It is an estimate, standard error about 1 to 1.6 time units.",
+  "Taillard reused initial seeds across size classes (14 pairs among the 90). Groups are size classes, so such pairs can fall on both sides of the split; in the split (16, 24) two pairs do (ta072/ta043, ta058/ta086), with different numbers of jobs, i.e. the same number stream laid out differently, not identical jobs. No training/fresh pair has identical times.",
+  "The reference (upper bound) is a best known value, not always optimal; the source publishes no order reaching it. Stated in the module text and the anchor.",
+  "Threshold 0.90 is an operating point fixed before anything was scored, not an external fact; it could not be compared with any textbook heuristic because no reference is in hand.",
+  "Detail group [1] sums finishing times over the instance's real machines only; the padded zero machines are not counted (stated in the module text).",
+  "WORK still holds the earlier attempt's flowshop_draft.py and flowshop.manifest.draft.json; they are superseded and used by nothing."
+ ],
+ "learner_run_on_benchmark_instances": false,
+ "answer_form": "AssignProblem, ordered: variable k = place k in the order (assigned in index order), option = job, capacity 1 per job; n_vars = n_opts = J. Every permutation is a valid schedule and every published answer is a permutation, so no hard group. Groups: [0] makespan of the jobs placed so far (soft; equals the published objective for a complete answer), [1] sum of the finishing times of the placed jobs on the instance's machines (detail). Exposed: opt_attr (J, 20), column m = time of the job on machine m+1, zero columns after the real machines (exact: a zero-time machine appended after the last changes no makespan). Jobs are relabelled by the seed; machines are not (their order is the route).",
+ "groups": "9 size classes \"<J>x<M>\": 20x5, 20x10, 20x20, 50x5, 50x10, 50x20, 100x5, 100x10, 100x20, ten instances each",
+ "instances_used": 90,
+ "instances_left_out": "30: ta091..ta120, the classes 200x10, 200x20 and 500x20 (files tai200_10, tai200_20, tai500_20, not fetched), by the size rule n_vars*n_opts = J*J <= 30,000 fixed before anything was scored",
+ "reference": "Intended: the upper bound in the header line of each instance in Taillard's files - a best known makespan, attainable by an order, not always a proven optimum. NOT OBTAINED: the host was unreachable, and no value was typed from memory.",
+ "score_scale": "Share of the way from the mean makespan of a uniformly random order (mean over a fixed sample of 10,000 orders) to the reference, cut to [0, 1]; 0 for an invalid answer. Chosen because a random order is above 0.5 on the plain ratio on every instance (already the machine lower bound is 0.66 to 0.89 of the random mean).",
+ "threshold_and_anchor": "threshold = 0.90; anchor: \"an operating point, not an external fact: on average nine tenths of the way from the makespan of a random order of the jobs to the upper bound in Taillard's file, a best known makespan that is not always optimal\". Fixed before anything was scored; not calibrated against any method.",
+ "source": "Taillard's page http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/ordonnancement.html , files flowshop.dir/tai{20_5,20_10,20_20,50_5,50_10,50_20,100_5,100_10,100_20}.txt (in the manifest, not yet fetched); cross-check source OR-Library flowshop2.txt (fetched earlier, sha256 616fa752381d9f4757a07abe0662b699fa6b69fefd1b354724825525c2e73d7b)",
+ "hosts_used": [
+  "mistic.heig-vd.ch (every request failed: 503 / connection timeout)",
+  "people.brunel.ac.uk (one status request for flowshop2.txt: 200)"
+ ]
+}

@@ -1,0 +1,79 @@
+agent	seq	time_utc	reply_time_utc	tool	class	basis
+verifier_inversion	0	22:19:17	22:19:17	Bash	reads, edits or summarises files	
+verifier_inversion	1	22:19:21	22:19:21	Bash	reads, edits or summarises files	
+verifier_inversion	2	22:19:22	22:19:22	Bash	reads, edits or summarises files	
+verifier_inversion	3	22:19:30	22:19:30	Bash	reads, edits or summarises files	
+verifier_inversion	4	22:19:36	22:19:36	Bash	reads, edits or summarises files	
+verifier_inversion	5	22:20:36	22:20:37	Write	writes a file in the work directory	inv0.py
+verifier_inversion	6	22:20:44	22:20:46	Bash	EXECUTES VERIFIER TEXT	python3 inv0.py
+verifier_inversion	7	22:20:51	22:22:53	Bash	EXECUTES VERIFIER TEXT	python3 inv0.py
+verifier_inversion	8	22:23:30	22:23:30	Bash	refused by the harness, not executed	the harness's rule against sleeping before a command
+verifier_inversion	9	22:23:52	22:23:52	Read	other tool (Read)	
+verifier_inversion	10	22:24:56	22:24:56	Write	writes a file in the work directory	inv1.py
+verifier_inversion	11	22:25:09	22:25:11	Bash	reads, edits or summarises files	
+verifier_inversion	12	22:25:16	22:25:40	Bash	EXECUTES VERIFIER TEXT	python3 inv1.py
+verifier_inversion	13	22:25:49	22:27:50	Bash	EXECUTES VERIFIER TEXT	python3 inv1.py
+verifier_inversion	14	22:28:01	22:28:01	TaskStop	other tool (TaskStop)	
+verifier_inversion	15	22:28:05	22:29:56	Bash	EXECUTES VERIFIER TEXT	python3 prof1.py
+verifier_inversion	16	22:30:09	22:30:14	Bash	EXECUTES VERIFIER TEXT	python3 prof2.py
+verifier_inversion	17	22:30:26	22:30:28	Bash	EXECUTES VERIFIER TEXT	python3 prof2.py
+verifier_inversion	18	22:30:38	22:30:42	Bash	EXECUTES VERIFIER TEXT	python3 prof3.py
+verifier_inversion	19	22:30:47	22:31:21	Bash	EXECUTES VERIFIER TEXT	python3 inv1.py
+verifier_inversion	20	22:31:31	22:33:32	Bash	EXECUTES VERIFIER TEXT	python3 inv1.py
+verifier_inversion	21	22:33:56	22:34:25	Bash	EXECUTES VERIFIER TEXT	python3 lift2.py
+verifier_inversion	22	22:34:36	22:35:06	Bash	EXECUTES VERIFIER TEXT	python3 lift2.py
+verifier_inversion	23	22:35:12	22:35:14	Bash	reads, edits or summarises files	
+verifier_inversion	24	22:35:21	22:35:22	Bash	EXECUTES VERIFIER TEXT	python3 -u inv1.py
+verifier_inversion	25	22:35:53	22:35:57	Bash	runs the agent's own sandbox or discovery code (no verifier text)	invdisc3.py: the agent's own search, no verifier source loaded
+verifier_inversion	26	22:36:19	22:36:28	Bash	runs the agent's own sandbox or discovery code (no verifier text)	invdisc4.py: the agent's own search, no verifier source loaded
+verifier_inversion	27	22:36:38	22:36:38	Bash	reads, edits or summarises files	
+verifier_inversion	28	22:36:45	22:36:46	Bash	EXECUTES VERIFIER TEXT	python3 -u inv1.py
+verifier_inversion	29	22:37:07	22:37:44	Bash	EXECUTES VERIFIER TEXT	python3 -u topdown5.py
+verifier_inversion	30	22:37:51	22:37:52	Bash	reads, edits or summarises files	
+verifier_inversion	31	22:37:59	22:38:10	Bash	EXECUTES VERIFIER TEXT	python3 -u inv1.py
+verifier_inversion	32	22:39:35	22:39:35	Grep	other tool (Grep)	
+verifier_inversion	33	22:39:38	22:39:38	Read	other tool (Read)	
+verifier_inversion	34	22:40:02	22:40:15	Bash	EXECUTES VERIFIER TEXT	python3 -u relax6.py
+verifier_inversion	35	22:40:22	22:40:35	Bash	EXECUTES VERIFIER TEXT	python3 -u relax6.py
+verifier_inversion	36	22:40:49	22:41:13	Bash	EXECUTES VERIFIER TEXT	python3 -u relax6b.py
+verifier_inversion	37	22:41:17	22:41:30	Bash	EXECUTES VERIFIER TEXT	python3 -u relax6b.py
+open_world_tools	0	22:19:22	22:19:22	Bash	reads, edits or summarises files	
+open_world_tools	1	22:19:25	22:19:25	Bash	reads, edits or summarises files	
+open_world_tools	2	22:19:26	22:19:26	Bash	reads, edits or summarises files	
+open_world_tools	3	22:19:31	22:19:31	Bash	reads, edits or summarises files	
+open_world_tools	4	22:19:36	22:19:36	Bash	reads, edits or summarises files	
+open_world_tools	5	22:20:55	22:21:02	Bash	runs the agent's own sandbox or discovery code (no verifier text)	sys.addaudithook
+open_world_tools	6	22:21:16	22:21:16	Write	writes a file in the work directory	sandbox.py
+open_world_tools	7	22:21:31	22:21:31	Write	writes a file in the work directory	test_sandbox.py
+open_world_tools	8	22:21:31	22:21:51	Bash	runs the agent's own sandbox or discovery code (no verifier text)	test_sandbox.py
+open_world_tools	9	22:22:04	22:22:26	Bash	runs the agent's own sandbox or discovery code (no verifier text)	test_sandbox.py
+open_world_tools	10	22:23:31	22:23:31	Write	writes a file in the work directory	owt.py
+open_world_tools	11	22:23:45	22:23:49	Bash	runs the agent's own sandbox or discovery code (no verifier text)	disc_test.py
+open_world_tools	12	22:24:00	22:24:03	Bash	runs the agent's own sandbox or discovery code (no verifier text)	disc_test.py
+open_world_tools	13	22:24:28	22:24:31	Bash	EXECUTES VERIFIER TEXT	python3 exp1.py
+open_world_tools	14	22:24:36	22:24:38	Bash	runs the agent's own sandbox or discovery code (no verifier text)	exp1.py failed before any verifier was compiled
+open_world_tools	15	22:24:44	22:24:44	Bash	reads, edits or summarises files	
+open_world_tools	16	22:24:47	22:24:48	Bash	reads, edits or summarises files	
+open_world_tools	17	22:24:55	22:24:58	Bash	EXECUTES VERIFIER TEXT	python3 exp1.py
+open_world_tools	18	22:25:04	22:27:05	Bash	EXECUTES VERIFIER TEXT	python3 exp1.py
+open_world_tools	19	22:27:13	22:27:13	ToolSearch	other tool (ToolSearch)	
+open_world_tools	20	22:27:18	22:30:14	Bash	reads, edits or summarises files	
+open_world_tools	21	22:30:22	22:30:22	Bash	reads, edits or summarises files	
+open_world_tools	22	22:30:37	22:32:42	Bash	EXECUTES VERIFIER TEXT	python3 exp1.py
+open_world_tools	23	22:32:50	22:33:09	Bash	reads, edits or summarises files	
+open_world_tools	24	22:33:19	22:33:23	Bash	EXECUTES VERIFIER TEXT	python3 exp1.py
+open_world_tools	25	22:33:35	22:33:38	Bash	runs the agent's own sandbox or discovery code (no verifier text)	owt.run_confined
+open_world_tools	26	22:33:44	22:35:16	Bash	reads, edits or summarises files	
+open_world_tools	27	22:35:25	22:35:28	Bash	EXECUTES VERIFIER TEXT	python3 exp1.py
+open_world_tools	28	22:35:35	22:35:36	Bash	reads, edits or summarises files	
+open_world_tools	29	22:35:42	22:37:14	Bash	reads, edits or summarises files	
+open_world_tools	30	22:37:22	22:37:23	Bash	reads, edits or summarises files	
+open_world_tools	31	22:37:45	22:37:49	Bash	runs the agent's own sandbox or discovery code (no verifier text)	analyse.py: owt._discover_child outside the sandbox
+open_world_tools	32	22:38:19	22:38:22	Bash	runs the agent's own sandbox or discovery code (no verifier text)	owt.run_confined
+open_world_tools	33	22:38:32	22:38:35	Bash	runs the agent's own sandbox or discovery code (no verifier text)	owt.run_confined
+open_world_tools	34	22:38:51	22:38:55	Bash	runs the agent's own sandbox or discovery code (no verifier text)	owt.run_confined
+open_world_tools	35	22:39:09	22:39:13	Bash	runs the agent's own sandbox or discovery code (no verifier text)	owt.run_confined
+open_world_tools	36	22:39:20	22:39:24	Bash	EXECUTES VERIFIER TEXT	python3 exp1.py
+open_world_tools	37	22:40:15	22:42:23	Bash	reads, edits or summarises files	
+open_world_tools	38	22:42:34	22:42:35	Bash	reads, edits or summarises files	
+open_world_tools	39	22:42:49	22:42:50	Bash	reads, edits or summarises files	

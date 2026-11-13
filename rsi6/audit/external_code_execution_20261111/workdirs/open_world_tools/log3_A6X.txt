@@ -1,0 +1,2 @@
+admitted types ['bytearray', 'bytes', 'range', 'frozenset', 'list', 'set']
+arm A6X B 300 E 5000 baselib 122 solved 137 / 336 families 37 /97 {'study.py': '2/30', 'basic.py': '43/115', 'trivial_inverse.py': '91/186', 'tutorial.py': '1/5'} mean_calls_solved 23.4 151s denied 0

@@ -1,0 +1,81 @@
+name: RSI-5 runs
+
+# Registered RSI-5 runs on GitHub-hosted runners, modelled on rsi3-runs.yml.
+# Triggered by pushes to branches named rsi5/run-<name> (the run plan is
+# rsi5/runs/<name>.json on that branch) or by hand (workflow_dispatch) with a
+# plan name. One job per (vocabulary, partition) of the plan; every job runs
+# the unit tests first, then rsi5.phase1 on its slice and uploads the result
+# file with its digest. Nothing here reads TEST or J's pools.
+on:
+  push:
+    branches:
+      - 'rsi5/run-*'
+  workflow_dispatch:
+    inputs:
+      plan:
+        description: 'plan name (rsi5/runs/<name>.json)'
+        required: true
+        default: 'p1'
+
+permissions:
+  contents: read
+
+env:
+  OPENBLAS_NUM_THREADS: '1'
+  OMP_NUM_THREADS: '1'
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      name: ${{ steps.plan.outputs.name }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: plan
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            name="${{ github.event.inputs.plan }}"
+          else
+            name="${GITHUB_REF_NAME#rsi5/run-}"
+          fi
+          python3 - "$name" <<'PY'
+          import json, os, sys
+          name = sys.argv[1]
+          plan = json.load(open(f"rsi5/runs/{name}.json"))
+          matrix = {"include": [{"vocabulary": v, "partition": p}
+                                for v in plan["vocabularies"] for p in plan["partitions"]]}
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write(f"matrix={json.dumps(matrix)}\n")
+              out.write(f"name={name}\n")
+          print(json.dumps(plan, indent=1))
+          PY
+
+  run:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.plan.outputs.matrix) }}
+    env:
+      NAME: ${{ needs.plan.outputs.name }}
+      VOCABULARY: ${{ matrix.vocabulary }}
+      PARTITION: ${{ matrix.partition }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install numpy
+      - name: Unit tests
+        run: python -m unittest discover -s rsi5/tests -t .
+      - name: Registered run (one vocabulary, one partition)
+        run: python -m rsi5.phase1 --plan "rsi5/runs/$NAME.json" --output out --vocabulary "$VOCABULARY" --partition "$PARTITION" --workers 4
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ needs.plan.outputs.name }}-${{ matrix.vocabulary }}-${{ matrix.partition }}
+          path: out
+          if-no-files-found: warn

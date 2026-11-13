@@ -1,0 +1,2 @@
+registered restored at 240000 {'train': 23, 'near': 71, 'validation': 7, 'far': 8, 'far2': 18, 'fresh1': 10, 'fresh2': 28, 'compose24': 2} total 167
+SCf   {'train': 23, 'near': 72, 'validation': 8, 'far': 8, 'far2': 18, 'fresh1': 19, 'fresh2': 34, 'compose24': 1} total 183 | held-out 88 | learn 95 | routes {'filter+search': 10, 'search': 103, 'map+search': 66, 'map+fused': 4} | rejected 18 | 1026 s

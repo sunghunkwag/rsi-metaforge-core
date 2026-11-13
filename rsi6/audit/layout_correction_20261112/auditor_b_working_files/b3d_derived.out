@@ -1,0 +1,18 @@
+idx   259 search:1:self          fields compared 19, runs asked of the ledger 258: IDENTICAL
+idx   260 search:1:fixed         fields compared 19, runs asked of the ledger 258: IDENTICAL
+idx   501 search:1:random        fields compared 19, runs asked of the ledger 252: IDENTICAL
+idx   527 gate:1:self            fields compared 15, runs asked of the ledger 24: IDENTICAL
+idx   552 confirm:1:self         fields compared 11, runs asked of the ledger 24: IDENTICAL
+idx   553 gate:1:fixed           fields compared 15, runs asked of the ledger 24: IDENTICAL
+idx   554 confirm:1:fixed        fields compared 11, runs asked of the ledger 24: IDENTICAL
+idx   567 gate:1:random          fields compared 15, runs asked of the ledger 24: IDENTICAL
+idx   580 confirm:1:random       fields compared 11, runs asked of the ledger 24: IDENTICAL
+idx   951 search:2:self          fields compared 19, runs asked of the ledger 380: IDENTICAL
+idx   952 search:2:fixed         fields compared 19, runs asked of the ledger 380: IDENTICAL
+idx  1207 search:2:random        fields compared 19, runs asked of the ledger 360: IDENTICAL
+idx  1208 search:2:fixed@self    fields compared 19, runs asked of the ledger 380: IDENTICAL
+idx  1209 search:2:random@self   fields compared 19, runs asked of the ledger 360: IDENTICAL
+every search, gate and confirm record follows from the recorded runs under the present code: True
+source pool now: ['binpacking', 'forecasting', 'jobshop', 'pmedian', 'quadassign'] | role check now: knapsack -> adoption:2 | regression -> adoption:2
+adoption decisions recorded: [('gate:1:self', False, {'cpu': True, 'gain_interval': True, 'improvement': False}), ('gate:1:fixed', False, {'cpu': True, 'gain_interval': True, 'improvement': False}), ('gate:1:random', False, {'cpu': True, 'gain_interval': False, 'improvement': True})]
+adopt records: 0

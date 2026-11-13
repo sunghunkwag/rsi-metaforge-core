@@ -1,0 +1,97 @@
+{
+ "buildable": true,
+ "files_written": [
+  "<scratch>/targets/routing/repo/rsi6/environments/manifests/routing.json",
+  "<scratch>/targets/routing/repo/rsi6/environments/routing.py",
+  "<scratch>/targets/routing/repo/rsi6/environments/__init__.py",
+  "<scratch>/targets/routing/repo/rsi6/data/routing/ (148 fetched files: 74 .vrp and 74 .sol, pinned by SHA-256 in the manifest)",
+  "<scratch>/targets/routing/work/checks.py",
+  "<scratch>/targets/routing/work/checks.out",
+  "<scratch>/targets/routing/work/survey.py",
+  "<scratch>/targets/routing/work/scale.py",
+  "<scratch>/targets/routing/work/rows.json",
+  "<scratch>/targets/routing/work/dl/terms/terms.html"
+ ],
+ "checks": [
+  {
+   "id": "0 instances and vehicle convention",
+   "n": "74 instances",
+   "result": "PASS. All 74 fetched instances are used (A 27, B 23, P 24). All 74 published solutions have exactly K non-empty routes, K being the 'No of trucks' of the COMMENT field and the k of the name. The source's page states 'Number of Routes: Fixed' for these sets. Only P-n55-k8 has a total demand that would fit K-1 vehicles."
+  },
+  {
+   "id": "a fast evaluation equals the specification",
+   "n": "18 instances (6 per group), 966 partial states, every option at each",
+   "result": "PASS. Rows from _rows and totals after _push are exactly equal (array_equal) to the differences of partial_totals, at every step of a random construction to the end; final totals equal evaluate()."
+  },
+  {
+   "id": "b independent evaluator agrees with score through decode",
+   "n": "444 random valid answers, 444 random orders of all entities, 3996 invalid answers",
+   "result": "PASS. Largest score difference 0.0 on valid answers and on random orders. All invalid answers (overloaded route, empty route first/last/inside, customer twice, too short, out of range, negative, float dtype) score 0 and are rejected by the independent evaluator. The three group totals of evaluate() equal the independent length, load above capacity and count of empty routes on every sequence, valid or not."
+  },
+  {
+   "id": "c published solutions score exactly 1",
+   "n": "74 solutions; 1480 corrupted",
+   "result": "PASS. All 74 .sol files score exactly 1.0, and the independent length equals the printed cost and env.reference. With two stops exchanged: 498 score between 0 and 1, 958 score 0 (invalid), 24 still score 1 (ties in length), 0 are valid and shorter than the reference."
+  },
+  {
+   "id": "d one layout",
+   "n": "74 instances x 2 seeds x training/fresh",
+   "result": "PASS. Single layout ('assign', True, False, False, (False, True, True), (False, False, False), 0, 5, 0, 1, 0, 0, True, True). No padded columns were needed."
+  },
+  {
+   "id": "e relabelling",
+   "n": "74 instances x 3 seeds",
+   "result": "PASS. The same own-label answer under three different entity orders gives the same totals and the same score; the same seed gives the same relabelling."
+  },
+  {
+   "id": "f split",
+   "n": "split(env, 16, 24)",
+   "result": "PASS. Training: P 16. Fresh: A 13, B 11. No group on both sides; halves of the fresh instances are 13 (A) and 11 (B). threshold_for(fresh) = 0.9453."
+  },
+  {
+   "id": "g interface with the learner on made-up instances",
+   "n": "designs a and b; 6 made-up training problems and 2 made-up test problems each",
+   "result": "PASS for both designs. Made-up problems (random coordinates, demands, 10-18 customers, 2-4 vehicles) have the benchmark's layout; acquire ran within the 40-construction training budget; apply without and with the capability returned well-formed answers whose totals equal a plain evaluation. No lengths or feasibility of these answers were printed."
+  },
+  {
+   "id": "h leak scan",
+   "n": "74 instances, every attribute of the problem object and the start totals",
+   "result": "PASS. No element equals the reference value; no text attribute. Malformed answers are rejected by run._valid, and the learner's view is a read-only AssignView with generic fields only."
+  },
+  {
+   "id": "scale",
+   "n": "74 instances; Monte Carlo of 20000 on 3 instances",
+   "result": "PASS. The adapter's expected random length equals an independent closed form (difference 0.0) and Monte Carlo means (A-n32-k5 2127.4 vs 2127.4, P-n16-k8 555.9 vs 556.0, B-n45-k5 2525.6 vs 2524.9). It is above the reference on every instance. Plain ratio reference/random: mean 0.373, above 0.5 on P-n16-k8 (0.809), P-n23-k8 (0.74), P-n22-k8 (0.65), P-n55-k15 (0.523). Random capacity-respecting answers made by random fit (440, not uniform) score 0.035 on average, max 0.66."
+  }
+ ],
+ "open_issues": [
+  "The low end of the score scale is the exact expected length of a uniformly random answer with exactly K non-empty routes, capacity not looked at. R2 asks for the expectation over valid answers; that has no closed form and I did not approximate it inside the adapter. The only evidence that the two are close is my non-uniform random-fit sample (mean score 0.035).",
+  "The plain ratio would have been admissible on the fresh side alone (sets A and B, max ratio 0.485). The share-of-the-way scale is used for the whole environment because four P instances exceed 0.5; P is the training side of split(env, 16, 24).",
+  "The threshold (answers 10% longer than the optimum, 0.9453 on the fresh instances via threshold_for, 0.9331 over all 74) is my choice of operating point. It was not calibrated against any heuristic or the learner, and I could not check literature figures offline.",
+  "The threshold depends on the instance set through threshold_for, as forecasting.py does. On instances where random routes are close to the optimum the scale is compressed (a 10% longer answer scores 0.575 on P-n16-k8).",
+  "'Fixed' number of routes is read as exactly K non-empty routes, enforced by hard group [2]. This matters only on P-n55-k8; if the source meant 'at most K', the reference there would not be optimal for the form. The source labels other sets 'At most K' separately, which supports my reading.",
+  "The answer form is an ordered sequence, so the learner constructs routes stop by stop and group [0] grows by the arc from the previous stop; the last stop also adds the return to the depot. This is the literal arc decomposition; I did not shape it.",
+  "K is taken as instance data and shows as the number of depot-copy options. The COMMENT field's optimal value is never read by the adapter.",
+  "Data come from galgos.inf.puc-rio.br/cvrplib, where both named addresses redirect (301). Files are served by numeric download links (download/instance/<id>, download/bks/<id>) taken from the site's 'All Instances' page; the old media/com_vrp paths return 404. The TSPLIB95 mirror returned 503 through the proxy and was not used.",
+  "The terms text in the manifest was read from the site's Terms of Use page, one extra page fetch from the same host beyond the instance files.",
+  "Coordinates repeat within 28 instances (several customers at one place, mostly in set B). This is published data and is left as it is.",
+  "I did not run rsi6/tests/test_kernel.py or any single test from it, because its tests load every registered environment and could fetch other environments' data. The equivalent properties for routing are in WORK/checks.py.",
+  "A copy of the 'All Instances' page left by the earlier attempt (WORK/dl/index.html) was reused, after checking, as the source of the download links and of the per-set conventions."
+ ],
+ "learner_run_on_benchmark_instances": false,
+ "answer_form": "AssignProblem, ordered=True. A sequence of n+K-2 stops (n-1 customers plus K-1 copies of the depot), each entity placed exactly once (capacity 1 per option, n_vars = n_opts). The vehicle leaves the depot before the first stop and returns after the last; a depot copy ends one route and starts the next. Depot copies are separate options rather than one option taken K-1 times, so that K=2 instances have the same layout. Groups: [0] length (soft), [1] load above capacity summed over routes (hard), [2] routes without a customer (hard). A complete sequence is a valid published answer exactly when [1] and [2] are zero, and [0] is then the published value. Exposed: opt_attr = demand, vehicle capacity, x, y, depot flag; opt_opt[0] = rounded Euclidean distance. Own labels: customer number as in the .sol files, 0 for a depot copy. Entities are relabelled with the seed; stops are not, their order is the answer.",
+ "groups": "The published sets: A (27 instances, random placement), B (23, clustered customers), P (24, modified literature instances). split(env, 16, 24) gives training P 16 and fresh A 13 + B 11.",
+ "hosts_used": [
+  "galgos.inf.puc-rio.br",
+  "vrp.galgos.inf.puc-rio.br (redirect only)",
+  "vrp.atd-lab.inf.puc-rio.br (redirect only)",
+  "comopt.ifi.uni-heidelberg.de (probe only, 503)"
+ ],
+ "instances_left_out": "None. The size rule (more than 1,000 stops, or more than 30,000 stop-entity pairs) leaves all 74 in; the largest, P-n101-k4, has 103 stops and 10,609 pairs. The integrity rule (published routes must be valid and reproduce the published cost) also excludes none.",
+ "instances_used": 74,
+ "reason_if_not": "",
+ "reference": "The cost printed in each instance's .sol file, with its routes. The source's table marks all 74 as optimal. It is attained: the published routes, written in the answer form, are valid and reproduce the printed cost on all 74 under both the adapter and the independent evaluator. It is not a bound.",
+ "score_scale": "Share of the way from the expected length of a random answer to the reference, cut to [0, 1]; 0 for an invalid answer; 1 when the reference is reached or beaten. Chosen over the plain ratio because a random answer would score above 0.5 on the ratio on four P instances (0.81 on P-n16-k8). The random answer is uniform over answers with exactly K non-empty routes, capacity not looked at: 2K x mean depot-customer distance + (n-1-K) x mean customer-customer distance (exact).",
+ "source": "CVRPLIB at https://galgos.inf.puc-rio.br/cvrplib (the current home of both named addresses), sets A, B and P of Augerat et al. (1995): 74 instance files and 74 solution files. Terms as the source states them (Terms of Use, December 2025, section 6): 'CVRPLib instances, datasets, and challenge materials are provided for research use. Redistribution may be subject to additional terms specified in the dataset documentation.'",
+ "threshold_and_anchor": "An operating point, not an external fact: the mean score that answers 10% longer than the published optimum on every scored instance would get. Computed by threshold_for on the instances scored: 0.9453 on the 24 fresh instances, 0.9331 over all 74 (the class value). The 10% figure is the adapter's choice, fixed before anything was scored."
+}

@@ -1,0 +1,17 @@
+{
+ "what": "the target categories of the sealed test, after the audits of their adapters (amendment 4)",
+ "admitted": [
+  "facility",
+  "genassign",
+  "routing",
+  "satisfiability"
+ ],
+ "replacements": [
+  {
+   "replaced": "flowshop",
+   "reserve": "genassign",
+   "why": "the adapter of flow shop cannot be built: the host that publishes its reference values does not answer from here (audit/adapters_targets/README.md); by the registered reserve rule the remaining reserve takes its role"
+  }
+ ],
+ "audits": "rsi6/audit/adapters_targets"
+}

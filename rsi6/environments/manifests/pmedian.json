@@ -1,0 +1,114 @@
+{
+ "name": "pmedian",
+ "category": "pmedian",
+ "source": "OR-Library (J. E. Beasley), uncapacitated p-median, files pmed1 to pmed20 (up to 400 vertices; the larger ones are left out for run time)",
+ "terms": "OR-Library: 'All of the material available from OR-Library is freely available for use. As such the MIT licence ... applies: Copyright (c) (2010) (J E Beasley)'. Fetched by hash.",
+ "reference": "the optimal values in pmedopt.txt (kernel only)",
+ "files": [
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/pmedopt.txt",
+   "path": "pmedopt.txt",
+   "sha256": "ad5a13a266bf932a551b7fd323f8c5e831b855cdc532b092657d24ee9d0c315c"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/pmed1.txt",
+   "path": "pmed1.txt",
+   "sha256": "31d18cd12703580dad2429ab91ba640f6197e3af0fac366240884e76b33edf3a"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/pmed2.txt",
+   "path": "pmed2.txt",
+   "sha256": "cf3327037f8f60d2207275a20c094d3ccd0d0bda92b918494e205f3857e55c26"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/pmed3.txt",
+   "path": "pmed3.txt",
+   "sha256": "e2aaee0b5a9814baeee2946d4e52ca49f285fad1535e5b9b5b7f48876a5f2930"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/pmed4.txt",
+   "path": "pmed4.txt",
+   "sha256": "1fc970b17b52c5abd6d7f393ed7e7fa8d5f5f01dd49d3cb1770ee21e41821e18"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/pmed5.txt",
+   "path": "pmed5.txt",
+   "sha256": "e97fb7dca5f9cff2662746f7931f99a1ae1dc59b74d622019eaef61ff644fc2d"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/pmed6.txt",
+   "path": "pmed6.txt",
+   "sha256": "f0a2e1b40b21f43bf34eaf7b400c6d6f89be50214d9c51d30720e92fc14ea308"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/pmed7.txt",
+   "path": "pmed7.txt",
+   "sha256": "29211d102978f8458564fa9104f93035d39fccd4baa8626ffe16aac98e45cf73"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/pmed8.txt",
+   "path": "pmed8.txt",
+   "sha256": "f1c2d7fffae2854b95d7c9a8248d188fa113ccb6ca10847b8e3eea770bf2470f"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/pmed9.txt",
+   "path": "pmed9.txt",
+   "sha256": "6525a70e683c5b18844112f1ebafd3d112f58b6a2e034647f29c78791f8aed3c"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/pmed10.txt",
+   "path": "pmed10.txt",
+   "sha256": "d4e04cf8c8130647eb172cafc85eca3d3dcb2dcc391a56e09a0b9f7f12fb8595"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/pmed11.txt",
+   "path": "pmed11.txt",
+   "sha256": "3e6b3a68bab766f2905594141aad1aaf6e677098a7883f45724e2ace27ca09f3"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/pmed12.txt",
+   "path": "pmed12.txt",
+   "sha256": "a615bb53ebcd5349caae85691ef5fde2df18d0dcfa5e042cd01e9dcdc1434cf1"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/pmed13.txt",
+   "path": "pmed13.txt",
+   "sha256": "aeb09dc827f0df5912b43c58df780322b59ef0517d831050bbc1e58762b28ce4"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/pmed14.txt",
+   "path": "pmed14.txt",
+   "sha256": "1b8555432c5358bde35fa1bb059993d83a8533807783481ac2ad0ae106fe2c63"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/pmed15.txt",
+   "path": "pmed15.txt",
+   "sha256": "18d7deeabe27d0ec9246283379ac01654b3419136d59bf0dcdc2b016d4e96724"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/pmed16.txt",
+   "path": "pmed16.txt",
+   "sha256": "02b00e39f042dd282f5ff290e09b612811d536e5dacaa131d17284126a3e85c4"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/pmed17.txt",
+   "path": "pmed17.txt",
+   "sha256": "6f7f1255371888e0722e6bbb7ae08bdaa592c15304cf2dfc1b371f5cf04bab6c"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/pmed18.txt",
+   "path": "pmed18.txt",
+   "sha256": "40a34f9a66782f28451f4f2db418f79164aa621f0d319085a02ebe556c5bab3f"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/pmed19.txt",
+   "path": "pmed19.txt",
+   "sha256": "4a4007d8e468499312350da2c1c1bfb9b100e9f42d78a93ae5e3427373895d1b"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/pmed20.txt",
+   "path": "pmed20.txt",
+   "sha256": "ddf30dbad6a390469d15bd05717c5e21f159f98851f664dbe9f0ec78504cf035"
+  }
+ ]
+}

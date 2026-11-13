@@ -1,0 +1,54 @@
+{
+ "name": "forecasting",
+ "category": "forecasting",
+ "source": "M4 competition data (github.com/Mcompetitions/M4-methods), hourly, weekly, yearly and quarterly series; the monthly and daily files are left out for their size",
+ "terms": "no licence file or licence wording was found in the repository. Fetched by hash, not committed.",
+ "reference": "the real continuation of each series (the competition's test files; kernel only)",
+ "files": [
+  {
+   "url": "https://raw.githubusercontent.com/Mcompetitions/M4-methods/master/Dataset/M4-info.csv",
+   "path": "M4-info.csv",
+   "sha256": "26a75cc9b9f65e351b39b0bdbb7e3464ac837df0baf541ab55abdd2ba1a14c88"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/Mcompetitions/M4-methods/master/Dataset/Train/Hourly-train.csv",
+   "path": "Hourly-train.csv",
+   "sha256": "ea59b7783573c49077a835ab6465c7d66f1474783360f310988a9a737fbca62f"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/Mcompetitions/M4-methods/master/Dataset/Test/Hourly-test.csv",
+   "path": "Hourly-test.csv",
+   "sha256": "71a57fccb15e534d973626ada4fb87febf789e9317715b7cc6dd3b5f90db6f42"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/Mcompetitions/M4-methods/master/Dataset/Train/Weekly-train.csv",
+   "path": "Weekly-train.csv",
+   "sha256": "d478d3f6ed673e6ed3c2cb0fbed5425f72eedd51318ebebeb0b5ecfcefc37714"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/Mcompetitions/M4-methods/master/Dataset/Test/Weekly-test.csv",
+   "path": "Weekly-test.csv",
+   "sha256": "3b2bc4be8e636e802260dcd843ca3c5da40536a1fbe1ecb3229a97dae4f44688"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/Mcompetitions/M4-methods/master/Dataset/Train/Yearly-train.csv",
+   "path": "Yearly-train.csv",
+   "sha256": "6aa668d4f04654c0bf5f07b266a51c556f0df2faf4709f852653755396a249e4"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/Mcompetitions/M4-methods/master/Dataset/Test/Yearly-test.csv",
+   "path": "Yearly-test.csv",
+   "sha256": "6dc2dd45b3af320389e2d3735cb4b3cdf320b63cbcda15d1a17193ab99702306"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/Mcompetitions/M4-methods/master/Dataset/Train/Quarterly-train.csv",
+   "path": "Quarterly-train.csv",
+   "sha256": "4450678cd493aa965c14bde984a5b62a66d8c3b2f7af1e53779bc91ff008ccdc"
+  },
+  {
+   "url": "https://raw.githubusercontent.com/Mcompetitions/M4-methods/master/Dataset/Test/Quarterly-test.csv",
+   "path": "Quarterly-test.csv",
+   "sha256": "bf1cab3b969a744c220cdc148e3829803eaa5da2754270fc4f376e775cd7d0ae"
+  }
+ ]
+}

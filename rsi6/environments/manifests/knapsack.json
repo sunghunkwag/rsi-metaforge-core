@@ -1,0 +1,44 @@
+{
+ "name": "knapsack",
+ "category": "knapsack",
+ "source": "OR-Library (J. E. Beasley), multidimensional knapsack, the Chu and Beasley problems with 100 and 250 variables (files mknapcb1, 2, 4, 5, 7, 8); the 500-variable files are left out for run time",
+ "terms": "OR-Library: 'All of the material available from OR-Library is freely available for use. As such the MIT licence ... applies: Copyright (c) (2010) (J E Beasley)'. Fetched by hash.",
+ "reference": "the best feasible solution values of Chu and Beasley in mkcbres.txt (best known, not proven optimal; kernel only)",
+ "files": [
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/mkcbres.txt",
+   "path": "mkcbres.txt",
+   "sha256": "b7965362550910ce93220f0522a0f5dbd7e6e3ea30640576ba1359a4ddfe9607"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/mknapcb1.txt",
+   "path": "mknapcb1.txt",
+   "sha256": "53011406c49617c8fe0bd783cf4bd3f0552657a70d56529c926304f750d995c3"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/mknapcb2.txt",
+   "path": "mknapcb2.txt",
+   "sha256": "3a90938318e989d8706c5415df3716ea547806761a58bf282f899cfecf08ad90"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/mknapcb4.txt",
+   "path": "mknapcb4.txt",
+   "sha256": "291183198f7842f52a40979283fac2f42e5cccbca500dada05d51fa36797a039"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/mknapcb5.txt",
+   "path": "mknapcb5.txt",
+   "sha256": "2b415ee9234415c2fe79af0cd0c445bed143e48982a995a6a1c020bb17810dbf"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/mknapcb7.txt",
+   "path": "mknapcb7.txt",
+   "sha256": "22442d9a0d32874c4fabb886ab8586e5b85bdf9d0a4d6624720d069b1591427d"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/mknapcb8.txt",
+   "path": "mknapcb8.txt",
+   "sha256": "2cd2e805dc7e7e3a2aff41e9bf3e527ca68682c6d877bddc6618efae82d944d2"
+  }
+ ]
+}

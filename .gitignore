@@ -21,3 +21,7 @@ skills_archive.json
 fileworld/
 reports/
 *.log
+rsi6/data/
+rsi6/ledger/dev.jsonl
+rsi6/ledger/dev_b.jsonl
+rsi6/ledger/live.jsonl

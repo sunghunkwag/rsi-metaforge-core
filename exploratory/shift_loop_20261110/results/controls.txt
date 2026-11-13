@@ -1,0 +1,11 @@
+A_best                             budget  10000 learn  97 held-out  56 {'train': 24, 'near': 73, 'validation': 8, 'far': 4, 'far2': 13, 'fresh1': 18, 'fresh2': 13, 'compose24': 0}
+A_drop_s4_1                        budget  10000 learn  94 held-out  56 {'train': 22, 'near': 72, 'validation': 8, 'far': 4, 'far2': 13, 'fresh1': 18, 'fresh2': 13, 'compose24': 0}
+A_drop_s3_1_s4_1                   budget  10000 learn  80 held-out  51 {'train': 19, 'near': 61, 'validation': 7, 'far': 4, 'far2': 10, 'fresh1': 18, 'fresh2': 12, 'compose24': 0}
+A_cut_only                         budget  10000 learn  84 held-out  53 {'train': 20, 'near': 64, 'validation': 7, 'far': 3, 'far2': 13, 'fresh1': 18, 'fresh2': 12, 'compose24': 0}
+A_library_only                     budget  10000 learn  90 held-out  62 {'train': 21, 'near': 69, 'validation': 8, 'far': 5, 'far2': 11, 'fresh1': 19, 'fresh2': 19, 'compose24': 0}
+B_best                             budget  10000 learn 127 held-out  26 {'train': 20, 'near': 64, 'validation': 7, 'far': 6, 'far2': 10, 'fresh1': 20, 'fresh2': 26, 'compose24': 0}
+B_cut_only                         budget  10000 learn 123 held-out  19 {'train': 19, 'near': 62, 'validation': 7, 'far': 5, 'far2': 11, 'fresh1': 19, 'fresh2': 18, 'compose24': 1}
+B_library_only                     budget  10000 learn 123 held-out  24 {'train': 20, 'near': 63, 'validation': 7, 'far': 5, 'far2': 9, 'fresh1': 19, 'fresh2': 24, 'compose24': 0}
+A_best_1e5                         budget 100000 learn  97 held-out  60 {'train': 24, 'near': 73, 'validation': 8, 'far': 5, 'far2': 13, 'fresh1': 18, 'fresh2': 16, 'compose24': 0}
+B_best_1e5                         budget 100000 learn 131 held-out  35 {'train': 21, 'near': 65, 'validation': 7, 'far': 6, 'far2': 11, 'fresh1': 21, 'fresh2': 28, 'compose24': 7}
+controls done

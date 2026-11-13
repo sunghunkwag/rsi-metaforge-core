@@ -1,0 +1,14 @@
+{
+ "amendment": 2,
+ "utc": "2026-11-12T19:39:26Z",
+ "after": "amendment 1; before any round of the continued process, and before any run of any learner on a category of the third adoption set, a target or a reserve",
+ "decisions": [
+  "The continued process is registered in rsi6/registry/registration_b.json: generation 0 is the default version of the second design of the learner (rsi6/learner/design_b.py), frozen by the hashes recorded there; its rounds are run by rsi6/experiments/continued.py on the same ledger, with the same gate, confirmation and adoption rule as the two registered rounds.",
+  "The searches of the continued process count improvement by breadth (each category's change cut to [-0.03, +0.01] before the mean), because the nominees of the two registered rounds were carried by one category and failed their gates.",
+  "Round b1 is gated on the third adoption set of the draw (partitioning, setcover). Round b2 is run only if the self lineage adopts a version in round b1; its gate would be the first two reserves of the draw's order (tour, colouring), which this amendment gives the role adoption:4 for that case. One reserve (genassign) remains.",
+  "The target test covers both processes (rsi6/experiments/targets.py): the eight registered arms of the first design, the same eight for the second design, and the first design at the measured CPU of the second (compute@b)."
+ ],
+ "what_is_and_is_not_tested": "The second design was written by the experimenter from the records of the two rounds; its comparison with the first design is a comparison of designs, not of generations. The test of recursion in this process is whether versions the system finds for itself pass the gate on categories it has not seen and improve acquisition on the sealed targets.",
+ "registration_b_sha256": "bbbd7b415d66b2b8594f812a1a4f9293b209cd3cacceb25a5ad217a186105ee5",
+ "generation_0_digest": "baa1974496845ac36539b1d029079999a3bf7a4a734140e7e65cf5da1b267318"
+}

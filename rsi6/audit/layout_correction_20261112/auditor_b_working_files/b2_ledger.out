@@ -1,0 +1,68 @@
+(1) rsi6.kernel.ledger.Ledger(path).verify(): no exception; 1211 records; head 3c99edbd9242e443278f82c035e2bc6b2ede9df54f7a1694f6a35952c65b2852
+(2) file: bytes 2137466 | ends with newline: True | blank lines inside: 0
+    independent chain check: 1211 records; NO PROBLEM
+    head (independent): 3c99edbd9242e443278f82c035e2bc6b2ede9df54f7a1694f6a35952c65b2852 | equals package head: True
+    records parsed by the package equal mine: True
+(3) records by type: {'registration': 1, 'run': 1192, 'search': 8, 'unlock': 2, 'gate': 3, 'confirm': 3, 'release': 1, 'round_done': 1}
+    run records by env: {'binpacking': 276, 'forecasting': 276, 'jobshop': 276, 'pmedian': 182, 'quadassign': 182}
+    run records by category: {'binpacking': 276, 'forecasting': 276, 'jobshop': 276, 'pmedian': 182, 'quadassign': 182}
+    run records by role: {'source': 1120, 'adoption:1': 72}
+    run records by purpose:
+        confirm:1:random:nominee 12
+        confirm:1:self:incumbent 12
+        confirm:1:self:nominee 12
+        gate:1:random:nominee 12
+        gate:1:self:incumbent 12
+        gate:1:self:nominee 12
+        search:1:random 240
+        search:1:self 252
+        search:1:self:start 6
+        search:2:random 254
+        search:2:self 364
+        search:2:self:start 4
+    run records by budget:
+        {"n_fresh":24,"n_train":12,"part":"A","test_c":2.0,"test_e":1.0,"train":40.0} 1120
+        {"n_fresh":24,"n_train":16,"part":"A","test_c":2.0,"test_e":1.0,"train":40.0} 36
+        {"n_fresh":24,"n_train":16,"part":"B","test_c":2.0,"test_e":1.0,"train":40.0} 36
+    run records by (env, budget part): {('binpacking', 'A', 12): 276, ('forecasting', 'A', 12): 276, ('jobshop', 'A', 12): 276, ('pmedian', 'A', 12): 146, ('pmedian', 'A', 16): 18, ('pmedian', 'B', 16): 18, ('quadassign', 'A', 12): 146, ('quadassign', 'A', 16): 18, ('quadassign', 'B', 16): 18}
+    run records by seed: {11: 560, 12: 560, 101: 6, 102: 6, 103: 6, 104: 6, 105: 6, 106: 6, 201: 6, 202: 6, 203: 6, 204: 6, 205: 6, 206: 6}
+    distinct version digests in run records: 138
+    run records with memory_in != 0: 0
+    run records without key: 0 | duplicate keys: 0
+    fields of a run record: ['acquired', 'budget', 'capability', 'category', 'cpu', 'env', 'fresh_acquired', 'fresh_groups', 'fresh_ids', 'fresh_untrained', 'gain', 'h', 'idx', 'key', 'memory_in', 'n_fresh', 'n_train', 'prev', 'purpose', 'report', 'role', 'seed', 'threshold', 'train_acquired', 'train_groups', 'train_untrained', 'type', 'units', 'untrained', 'version']
+    records that name knapsack or regression anywhere (keys or values):
+        idx 0 type registration names ['knapsack'] in fields ['registration']
+    total such records: 1
+    run records with env or category knapsack/regression: 0
+    raw text search of the file: 'knapsack' occurs 1 times; 'regression' 0 times; 'adoption:2' 1 times
+    non-run records, in order:
+        idx 0 {"digest": "b438c1a6dba06d9ae3348d5847ef961b0bc563f7e5da59cd6f9a4eff230173ee", "type": "registration"}
+        idx 259 {"best_cost": -0.022401716946648664, "cpu_used": 1499.277, "envs": ["binpacking", "forecasting", "jobshop"], "evaluated": 42, "improver": "learner", "improver_version": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a", "improving": 25, "name": "self", "nominee": "464ea7440b21117b9c8233c97553902046ec6064551549a125ceb7bc804e8bbb", "round": 1, "seeds": [11, 12], "start": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a", "tag": "search:1:self", "type": "search"}
+        idx 260 {"best_cost": -0.022401716946648664, "cpu_used": 1499.277, "envs": ["binpacking", "forecasting", "jobshop"], "evaluated": 42, "improver": "learner", "improver_version": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a", "improving": 25, "name": "fixed", "nominee": "464ea7440b21117b9c8233c97553902046ec6064551549a125ceb7bc804e8bbb", "round": 1, "seeds": [11, 12], "start": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a", "tag": "search:1:fixed", "type": "search"}
+        idx 501 {"best_cost": -0.016189827092994657, "cpu_used": 1492.618, "envs": ["binpacking", "forecasting", "jobshop"], "evaluated": 41, "improver": "random", "improver_version": null, "improving": 8, "name": "random", "nominee": "cd349a06ef6dc000800245318b00902f56fceda5b92a70c6fa0722c14fbfb7cf", "round": 1, "seeds": [11, 12], "start": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a", "tag": "search:1:random", "type": "search"}
+        idx 502 {"role": "adoption:1", "round": 1, "type": "unlock"}
+        idx 527 {"adopted": false, "envs": ["pmedian", "quadassign"], "incumbent": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a", "mean_min": -0.0023077347682965614, "name": "self", "nominee": "464ea7440b21117b9c8233c97553902046ec6064551549a125ceb7bc804e8bbb", "round": 1, "seeds": [101, 102, 103, 104, 105, 106], "tag": "gate:1:self", "type": "gate"}
+        idx 552 {"envs": ["pmedian", "quadassign"], "incumbent": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a", "mean_min": -0.1366628287412704, "name": "self", "nominee": "464ea7440b21117b9c8233c97553902046ec6064551549a125ceb7bc804e8bbb", "round": 1, "seeds": [201, 202, 203, 204, 205, 206], "tag": "confirm:1:self", "type": "confirm"}
+        idx 553 {"adopted": false, "envs": ["pmedian", "quadassign"], "incumbent": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a", "mean_min": -0.0023077347682965614, "name": "fixed", "nominee": "464ea7440b21117b9c8233c97553902046ec6064551549a125ceb7bc804e8bbb", "round": 1, "seeds": [101, 102, 103, 104, 105, 106], "tag": "gate:1:fixed", "type": "gate"}
+        idx 554 {"envs": ["pmedian", "quadassign"], "incumbent": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a", "mean_min": -0.1366628287412704, "name": "fixed", "nominee": "464ea7440b21117b9c8233c97553902046ec6064551549a125ceb7bc804e8bbb", "round": 1, "seeds": [201, 202, 203, 204, 205, 206], "tag": "confirm:1:fixed", "type": "confirm"}
+        idx 567 {"adopted": false, "envs": ["pmedian", "quadassign"], "incumbent": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a", "mean_min": 0.009839516620092945, "name": "random", "nominee": "cd349a06ef6dc000800245318b00902f56fceda5b92a70c6fa0722c14fbfb7cf", "round": 1, "seeds": [101, 102, 103, 104, 105, 106], "tag": "gate:1:random", "type": "gate"}
+        idx 580 {"envs": ["pmedian", "quadassign"], "incumbent": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a", "mean_min": 0.012939566545925289, "name": "random", "nominee": "cd349a06ef6dc000800245318b00902f56fceda5b92a70c6fa0722c14fbfb7cf", "round": 1, "seeds": [201, 202, 203, 204, 205, 206], "tag": "confirm:1:random", "type": "confirm"}
+        idx 581 {"role": "adoption:1", "round": 1, "type": "release"}
+        idx 582 {"lineages": {"fixed": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a", "random": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a", "self": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a"}, "round": 1, "type": "round_done"}
+        idx 951 {"best_cost": -0.024576641899026853, "cpu_used": 1542.371, "envs": ["binpacking", "forecasting", "jobshop", "pmedian", "quadassign"], "evaluated": 37, "improver": "learner", "improver_version": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a", "improving": 27, "name": "self", "nominee": "3a5b3ee1350bec8840ce153943aabe2e7333fc81cae3d9565e27cf20d41779a1", "round": 2, "seeds": [11, 12], "start": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a", "tag": "search:2:self", "type": "search"}
+        idx 952 {"best_cost": -0.024576641899026853, "cpu_used": 1542.371, "envs": ["binpacking", "forecasting", "jobshop", "pmedian", "quadassign"], "evaluated": 37, "improver": "learner", "improver_version": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a", "improving": 27, "name": "fixed", "nominee": "3a5b3ee1350bec8840ce153943aabe2e7333fc81cae3d9565e27cf20d41779a1", "round": 2, "seeds": [11, 12], "start": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a", "tag": "search:2:fixed", "type": "search"}
+        idx 1207 {"best_cost": -0.015437465807253165, "cpu_used": 1494.055, "envs": ["binpacking", "forecasting", "jobshop", "pmedian", "quadassign"], "evaluated": 35, "improver": "random", "improver_version": null, "improving": 13, "name": "random", "nominee": "b108b1ce65144e466bfa6f6d5bf34df108e85501c810e2aa5cfa898fb886160f", "round": 2, "seeds": [11, 12], "start": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a", "tag": "search:2:random", "type": "search"}
+        idx 1208 {"best_cost": -0.024576641899026853, "cpu_used": 1542.371, "envs": ["binpacking", "forecasting", "jobshop", "pmedian", "quadassign"], "evaluated": 37, "improver": "learner", "improver_version": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a", "improving": 27, "name": "fixed@self", "nominee": "3a5b3ee1350bec8840ce153943aabe2e7333fc81cae3d9565e27cf20d41779a1", "round": 2, "seeds": [11, 12], "start": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a", "tag": "search:2:fixed@self", "type": "search"}
+        idx 1209 {"best_cost": -0.015437465807253165, "cpu_used": 1494.055, "envs": ["binpacking", "forecasting", "jobshop", "pmedian", "quadassign"], "evaluated": 35, "improver": "random", "improver_version": null, "improving": 13, "name": "random@self", "nominee": "b108b1ce65144e466bfa6f6d5bf34df108e85501c810e2aa5cfa898fb886160f", "round": 2, "seeds": [11, 12], "start": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a", "tag": "search:2:random@self", "type": "search"}
+        idx 1210 {"role": "adoption:2", "round": 2, "type": "unlock"}
+    LAST record: idx 1210 {"h": "3c99edbd9242e443278f82c035e2bc6b2ede9df54f7a1694f6a35952c65b2852", "idx": 1210, "prev": "f5f4ab69f1006ab4b232b910ba8bc2f55970ceba03a4f2af3fee51ff1cbea290", "role": "adoption:2", "round": 2, "type": "unlock"}
+    unlock records: [(502, 'adoption:1', 1), (1210, 'adoption:2', 2)]
+    records after the unlock of adoption:2: 0 []
+    release records: [(581, 'adoption:1', 1)]
+    round_done records: [(582, 1)]
+(4) registration records: [0]
+    recorded digest:         b438c1a6dba06d9ae3348d5847ef961b0bc563f7e5da59cd6f9a4eff230173ee
+    digest of the file now:  b438c1a6dba06d9ae3348d5847ef961b0bc563f7e5da59cd6f9a4eff230173ee (package digest: b438c1a6dba06d9ae3348d5847ef961b0bc563f7e5da59cd6f9a4eff230173ee)
+    digest of the recorded registration body: b438c1a6dba06d9ae3348d5847ef961b0bc563f7e5da59cd6f9a4eff230173ee
+    recorded digest == file digest: True | recorded body == file content: True
+    ledger untouched by this script: True

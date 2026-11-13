@@ -1,0 +1,54 @@
+{
+ "name": "satisfiability",
+ "category": "satisfiability",
+ "source": "SATLIB - The Satisfiability Library (H. H. Hoos and T. Stuetzle), benchmark page https://www.cs.ubc.ca/~hoos/SATLIB/benchm.html : Uniform Random-3-SAT, phase transition region, unforced filtered; the nine satisfiable sets uf50-218 to uf250-1065, each one tar archive of DIMACS .cnf files. Of each set the instances numbered 1 to 12 are used (members uf<n>-01.cnf to uf<n>-012.cnf); the archives are read in memory and never unpacked",
+ "terms": "the benchmark page and the description page of the sets (Benchmarks/SAT/RND3SAT/descr.html) carry no licence and no terms of use; the page only asks for contributions of benchmark problems. Fetched by hash, not redistributed here.",
+ "reference": "every instance is satisfiable: the source separated satisfiable from unsatisfiable formulae with a complete algorithm and lists these sets as 'all satisfiable'. A proved status, not a bound; no satisfying assignment is published (kernel only: an answer scores 1 when it satisfies every clause, 0 otherwise)",
+ "files": [
+  {
+   "url": "https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/RND3SAT/uf50-218.tar.gz",
+   "path": "uf50-218.tar.gz",
+   "sha256": "a40862e52dfdce78620b037254579a02dbda8182d2879433658a4c15cb00327c"
+  },
+  {
+   "url": "https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/RND3SAT/uf75-325.tar.gz",
+   "path": "uf75-325.tar.gz",
+   "sha256": "f879d4f619e8cd4b24be6c70b86b1bc1ed851cf0c5cc0ee97cd750e0cadb5ff5"
+  },
+  {
+   "url": "https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/RND3SAT/uf100-430.tar.gz",
+   "path": "uf100-430.tar.gz",
+   "sha256": "7f691acb8c45790ef8178dd01bb362cf50da608d478be9965599131f0a763e59"
+  },
+  {
+   "url": "https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/RND3SAT/uf125-538.tar.gz",
+   "path": "uf125-538.tar.gz",
+   "sha256": "06cc67208284af896df2eb7f7fd46d0636681fba2b531968790f71d3de1f020e"
+  },
+  {
+   "url": "https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/RND3SAT/uf150-645.tar.gz",
+   "path": "uf150-645.tar.gz",
+   "sha256": "4db94fd110acdae8ade1abd1fb0d484e88e4cff21e94ab7db96c7d29860e6080"
+  },
+  {
+   "url": "https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/RND3SAT/uf175-753.tar.gz",
+   "path": "uf175-753.tar.gz",
+   "sha256": "035cd9bd2496ff1111f7be9be27b773d4b8a79dcaa2bececc876e765595970a3"
+  },
+  {
+   "url": "https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/RND3SAT/uf200-860.tar.gz",
+   "path": "uf200-860.tar.gz",
+   "sha256": "e9555c366352154b892db52bc40a78b0f9d9cafba014375e77a7f3e7768ed72f"
+  },
+  {
+   "url": "https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/RND3SAT/uf225-960.tar.gz",
+   "path": "uf225-960.tar.gz",
+   "sha256": "ea4122a5c0bb0d4721d4fddb82436698e3892dbacb374ab10688aedbbe178cf6"
+  },
+  {
+   "url": "https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/RND3SAT/uf250-1065.tar.gz",
+   "path": "uf250-1065.tar.gz",
+   "sha256": "ebe9b90d674bfd4d3cc76ed048f144e2728b1758cb8aac157c7ce38bb1d1931d"
+  }
+ ]
+}

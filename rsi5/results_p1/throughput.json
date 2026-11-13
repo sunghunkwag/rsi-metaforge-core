@@ -1,0 +1,11 @@
+{
+ "candidates": 40000,
+ "wall_seconds": 1.2330653150002036,
+ "candidates_per_second": 32439.48192638392,
+ "vocabulary": "restored",
+ "completed_size": 6,
+ "pool_size": 14105,
+ "purpose": "Throughput only, independent of external task results",
+ "python": "3.13.18",
+ "machine": "x86_64"
+}

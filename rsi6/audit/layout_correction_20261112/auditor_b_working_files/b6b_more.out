@@ -1,0 +1,16 @@
+(a) instances that differ only in the largest capacity of an option
+   capacities all 2: distinct kernel layouts 1, distinct learner descriptor lists 1 (sizes [8]); run.measure: no exception; report: iterations 1, learned True, failed None
+   capacities 1 and 2 mixed: distinct kernel layouts 1, distinct learner descriptor lists 2 (sizes [6, 8]); run.measure: ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 1 is different from 3) (raised in learner.py:312 construct)
+(b) prediction form: 3 real columns shown in 3, 4, 5, 7, 8 and 9 columns
+   width 3: learned True, coefficients 20, coefficients of the zero columns []
+   width 4: learned True, coefficients 21, coefficients of the zero columns [0.0]
+   width 5: learned True, coefficients 22, coefficients of the zero columns [0.0, 0.0]
+   width 7: learned True, coefficients 24, coefficients of the zero columns [0.0, 0.0, 0.0, 0.0]
+   width 8: learned True, coefficients 25, coefficients of the zero columns [0.0, 0.0, 0.0, 0.0, 0.0]
+   width 9: learned True, coefficients 26, coefficients of the zero columns [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+   width 4 against width 3: predictions identical bit for bit False, largest absolute difference 1.776e-15; largest difference of the fitted coefficients 3.443426099813962e-15
+   width 5 against width 3: predictions identical bit for bit False, largest absolute difference 2.665e-15; largest difference of the fitted coefficients 3.2421981766006525e-15
+   width 7 against width 3: predictions identical bit for bit False, largest absolute difference 8.882e-15; largest difference of the fitted coefficients 5.124373148035488e-15
+   width 8 against width 3: predictions identical bit for bit False, largest absolute difference 8.882e-15; largest difference of the fitted coefficients 5.2735593669694936e-15
+   width 9 against width 3: predictions identical bit for bit False, largest absolute difference 7.105e-15; largest difference of the fitted coefficients 3.901393097471839e-15
+   (7 is the largest number of variables among the regression training and fresh laws of the registered split, 8 the width the adapter uses, 9 the number the correction record states)

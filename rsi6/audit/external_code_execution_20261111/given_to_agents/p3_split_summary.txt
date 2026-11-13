@@ -1,0 +1,27 @@
+External task suite: Python Programming Puzzles (P3), github.com/microsoft/PythonProgrammingPuzzles, puzzles/puzzles.json, MIT licence.
+A puzzle is a Python function sat(answer, **parameters) -> bool: the verifier is the task. An instance fixes the parameters (the defaults of sat). 397 puzzles (families), 1,715 instances, 18 modules.
+The reference solutions and the English docstrings of the suite are NOT used and are not stored.
+Split by a seeded rule, fixed before any puzzle was read (seed 'rsi6:p3:split:20261111'): four modules named by the author as development modules; the other 14 dealt at random into validation (one third of the puzzles) and test (two thirds).
+Only the development modules may be read by people or agents who design or develop the system. The contents of the validation and test modules are sealed until the registered runs; only their names and counts are given here.
+
+DEVELOPMENT: 97 puzzles, 336 instances
+  tutorial.py                  puzzles   5 instances    5 answer types {'str': 2, 'List[int]': 1, 'List[str]': 1, 'int': 1}
+  study.py                     puzzles  30 instances   30 answer types {'List[int]': 15, 'str': 7, 'List[str]': 5, 'int': 2, 'float': 1}
+  trivial_inverse.py           puzzles  39 instances  186 answer types {'int': 75, 'str': 61, 'List[int]': 30, 'List[str]': 10, 'float': 10}
+  basic.py                     puzzles  23 instances  115 answer types {'str': 50, 'List[int]': 35, 'int': 20, 'float': 5, 'List[str]': 5}
+VALIDATION: 170 puzzles, 825 instances
+  IMO.py                       puzzles   6 instances   30 answer types {'List[int]': 20, 'List[List[int]]': 5, 'List[bool]': 5}
+  human_eval.py                puzzles 164 instances  795 answer types {'List[int]': 299, 'str': 170, 'int': 130, 'List[str]': 100, 'List[List[int]]': 31}
+TEST: 130 puzzles, 554 instances
+  ICPC.py                      puzzles   4 instances   20 answer types {'List[List[int]]': 10, 'List[int]': 5, 'int': 5}
+  algebra.py                   puzzles   4 instances   20 answer types {'float': 10, 'List[float]': 10}
+  chess.py                     puzzles   5 instances   24 answer types {'List[List[int]]': 24}
+  classic_puzzles.py           puzzles  23 instances   73 answer types {'List[int]': 35, 'List[List[int]]': 16, 'str': 14, 'int': 7, 'List[List[List[int]]]': 1}
+  codeforces.py                puzzles  47 instances  233 answer types {'int': 70, 'List[int]': 65, 'str': 59, 'List[List[int]]': 19, 'List[str]': 10}
+  compression.py               puzzles   2 instances   10 answer types {'List[int]': 5, 'List[str]': 5}
+  conways_game_of_life.py      puzzles   3 instances   13 answer types {'List[List[int]]': 13}
+  games.py                     puzzles   7 instances   21 answer types {'List[List[float]]': 10, 'List[List[int]]': 5, 'List[str]': 5, 'List[float]': 1}
+  graphs.py                    puzzles  12 instances   50 answer types {'List[int]': 46, 'List[List[int]]': 4}
+  lattices.py                  puzzles   2 instances   10 answer types {'List[int]': 10}
+  number_theory.py             puzzles  16 instances   57 answer types {'int': 42, 'List[int]': 15}
+  probability.py               puzzles   5 instances   23 answer types {'List[int]': 10, 'int': 8, 'float': 5}

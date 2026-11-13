@@ -1,0 +1,95 @@
+{
+ "buildable": true,
+ "reason_if_not": "Buildable only as the UNCAPACITATED problem, and only with 12 instances in 3 groups (the benchmark has no more that are distinct and within the size rule). The capacitated problem is not buildable exactly: in 13 of its files (cap41-44, cap51, cap81-84, cap111-114) one or two customers have a demand above every warehouse's capacity (12,912 against 5,000 in cap41), so its published answers divide demand, and capopt is only a lower bound for one-warehouse-per-customer answers. An exact divided form would need one variable per unit of demand (58,268 per file).",
+ "source": "OR-Library (J. E. Beasley), uncapacitated warehouse location (page uncapinfo.html): cap71-74, cap101-104, cap131-134 (problem sets VII, X, XIII), with uncapopt.txt. 13 files in the manifest, all pinned by SHA-256. An independent second download was byte-identical, and \"python3 -m rsi6.fetch facility\" runs clean. The earlier attempt's adapter, manifest and registry entry were checked and kept; I only extended the module text with the evidence from the data (why the capacitated problem is not presented, and that the 25 capacitated-only files repeat the 12).",
+ "hosts_used": [
+  "people.brunel.ac.uk"
+ ],
+ "answer_form": "AssignProblem. Variable = customer (n_vars = 50), option = warehouse (n_opts = 16, 25 or 50). No capacity, so an option may be taken any number of times; not ordered; no domain; no start answer. A warehouse is open exactly when at least one customer takes it (the same convention as pmedian.py). One soft group: allocation costs of the assigned customers plus fixed costs of the warehouses in use, which for a complete answer is exactly the published value. No hard group: every complete assignment is valid. Exposed: var_opt[0][j,i] = cost of allocating all of customer j's demand to warehouse i; opt_attr[i,0] = fixed cost of warehouse i. Capacities and demands are parsed and not exposed (the page says to ignore them). Layout for all 12 instances: ('assign', False, True, True, (False,), (False,), 0, 1, 0, 0, 1, 0, True, True). No zero-padding was needed.",
+ "reference": "Optimal values of the uncapacitated problem in uncapopt.txt, read by score() and reference() only. Attainable, not a bound: my checks exhibit an answer with the published value for all 12 instances. For sets VII and X complete enumeration of the open sets (2^16, 2^25) shows none is cheaper; for set XIII optimality rests on the source (attainment found by my own local search in WORK, not in the package). The file prints 3 decimals (796648.437 for a true 796648.4375), so a value within 0.001 of the reference counts as reaching it. The source publishes no optimal answers.",
+ "score_scale": "Plain ratio reference / value, cut at 1; exactly 1 when the value is within 0.001 of the reference or below it; 0 for an answer that is not n integers in 0..m-1. The plain ratio is kept because a uniformly random valid answer scores at most 0.414 on it (mean over 2,000 answers per instance; reference / expected value at most 0.407), below the 0.5 that would call for the random-to-reference scale.",
+ "threshold_and_anchor": "threshold = 0.95. Anchor: \"an operating point, not an external fact: a mean ratio of the published optimal value of the uncapacitated problem (attainable, not a bound) to the cost of the answer of 0.95\". It is the same operating point as pmedian.py; no published result fixes it.",
+ "groups": "Published problem set: VII (16 warehouses: cap71-74), X (25: cap101-104), XIII (50: cap131-134); 50 customers each, 4 instances per group. rsi6.kernel.run.split(env, 16, 24) gives 4 training instances, all from X (cap101, cap103, cap102, cap104), and 8 fresh from VII and XIII (cap71, cap133, cap134, cap73, cap72, cap74, cap132, cap131). Halves of the fresh side: XIII | VII.",
+ "instances_used": 12,
+ "instances_left_out": "By the size rule, fixed before anything was scored (at most 1,000 customers and at most 30,000 customer-warehouse pairs): capa, capb, capc (100 warehouses x 1,000 customers = 100,000 pairs), not fetched. Not instances of the presented problem: the 25 files on the capacitated page only (cap41-64, cap81-94, cap111-124). With capacities ignored each is number for number one of the 12 (cap41 = cap71, cap51 = cap73, and so on; checked for all 25), and uncapopt gives no value under their names.",
+ "learner_run_on_benchmark_instances": false,
+ "files_written": [
+  "<scratch>/targets/facility/repo/rsi6/environments/facility.py",
+  "<scratch>/targets/facility/repo/rsi6/environments/manifests/facility.json",
+  "<scratch>/targets/facility/repo/rsi6/environments/__init__.py",
+  "<scratch>/targets/facility/work/checks.py",
+  "<scratch>/targets/facility/work/checks.out"
+ ],
+ "checks": [
+  {
+   "id": "a",
+   "n": "920 partial states; 12 paths per group (all 4 instances of each group x 3 relabellings; no group has 5 instances)",
+   "result": "PASS: fast _new/_rows/_push equal partial_totals; largest difference 2.1e-09"
+  },
+  {
+   "id": "b",
+   "n": "516 valid answers through decode, 96 invalid",
+   "result": "PASS: independent evaluator (own parser, own value, shares no code with the adapter) equals score; largest difference 3.9e-16; every invalid answer scores 0 in both"
+  },
+  {
+   "id": "c",
+   "n": "12 instances",
+   "result": "PASS: the source publishes no optimal answers; an answer with the published value is exhibited for every instance (enumeration for VII and X, own local search for XIII) and scores exactly 1.0; one customer moved to its dearest warehouse scores 0.38-0.47; an out-of-range answer scores 0"
+  },
+  {
+   "id": "d",
+   "n": "12 instances x 2 seeds x training/fresh",
+   "result": "PASS: one layout"
+  },
+  {
+   "id": "e",
+   "n": "12 instances x 10 answers",
+   "result": "PASS: the same answer under two relabellings scores the same (largest difference 9.3e-10); the exposed arrays equal the file's fields under the permutations recovered through decode"
+  },
+  {
+   "id": "f",
+   "n": "split(env, 16, 24)",
+   "result": "PASS, but small: 4 training in group X, 8 fresh in groups VII and XIII; no group or instance on both sides. The kernel asks for 16 and 24."
+  },
+  {
+   "id": "g",
+   "n": "designs a and b, 4 made-up sets each (random numbers in FacilityProblem's layout)",
+   "result": "PASS for the interface: acquire and apply ran and every answer was well-formed and exactly evaluated. Design a made no learning round on 2 of the 4 made-up sets, including the one shaped like the real training side (4 instances of 50 x 25): 'the budget did not allow one round of learning'. Design b learned on that shape."
+  },
+  {
+   "id": "h",
+   "n": "408 arrays and scalars of problem objects, views and a state",
+   "result": "PASS: 0 values within 1.0 of the reference; 0 strings naming the instance or set; the instance files print no optimum"
+  },
+  {
+   "id": "i",
+   "n": "12 instances",
+   "result": "PASS: malformed answers are not valid; the view shows generic fields only; the same seed gives the same problem; the problem object holds only the cost matrix and the fixed costs of its own"
+  },
+  {
+   "id": "cap",
+   "n": "25 capacitated-only files, downloaded as data to WORK/dl2",
+   "result": "PASS: 13 of them admit no one-warehouse-per-customer answer (a demand exceeds every capacity) although capopt prints optima for them; all 25 repeat one of the 12 uncapacitated instances; a second download of the 13 manifest files is byte-identical"
+  },
+  {
+   "id": "scale",
+   "n": "2,000 random answers per instance",
+   "result": "PASS: largest mean plain-ratio score 0.414, below 0.5, so the plain ratio is kept"
+  },
+  {
+   "id": "fetch",
+   "n": "13 files",
+   "result": "PASS: python3 -m rsi6.fetch facility reproduces every pinned hash"
+  }
+ ],
+ "open_issues": [
+  "R6 is not met in numbers: the benchmark has only 12 distinct usable instances in 3 groups, so the kernel's split gives 4 training and 8 fresh instances instead of 16 and 24. No exact way to get more exists in this benchmark.",
+  "The groups are not independent data. The 4 files of a set share one cost matrix and differ only in the fixed cost (7,500 / 12,500 / 17,500 / 25,000). All sets have the same 50 customers; set VII is the first 16 warehouses of X, and all 25 cost columns of X occur in XIII. cap104 (training) and cap134 (fresh) have the same published optimum, 928941.750. Fresh instances are therefore close relatives of the training ones; the module text says so.",
+  "With only 4 training instances the training budget is 40 x 4 x 1,301 = 208,160 units. On made-up instances of exactly that shape, design a did no learning round at all ('the budget did not allow one round of learning'); design b did. Design a's acquired score may therefore equal its untrained score on this category for a structural reason. I did not change the adapter or the instance rule because of this.",
+  "A published answer that opens a warehouse and gives it no customer cannot be written in the answer form when that warehouse has a positive fixed cost. Such answers are strictly dominated (written as the same supplies without the idle warehouse, never dearer), and the optimum is unchanged. This is the convention of pmedian.py and is stated in the module text, but it is a strict-reading gap in R1's 'every valid published answer'.",
+  "Terms of use: the manifest repeats the OR-Library wording recorded in the package's pmedian.json. The library's legal page is not among the addresses allowed for this task and was not fetched; the manifest says so.",
+  "Optimality of the four set XIII references rests on the source; attainment is shown, and optimality is independently confirmed only for sets VII and X.",
+  "The statement that the capacitated formulation of Beasley (1988) divides demand is from knowledge of the literature (the paper was not fetched); the evidence from the data, which is checked, stands on its own.",
+  "A score of 1 is given within 0.001 of the reference because uncapopt truncates to 3 decimals. Whether any non-optimal answer could fall inside that window was not checked."
+ ]
+}

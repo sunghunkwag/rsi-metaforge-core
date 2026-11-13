@@ -1,0 +1,21 @@
+the replay reproduces the recorded proposals of 6 cycles
+cycle 2: accepted symbols ['(lambda x0: list[int]. (tail (tail (tail x0))))', '(lambda x0: int. (lambda x1: list[int]. ((filter (lambda x2: int. ((gt', '((add -1) -1)']
+   corpus then 152 programs; frozen one cycle earlier 134 programs; 2 of 3 symbols are proposed from the older corpus too
+   only with the newer programs: (lambda x0: list[int]. (tail (tail (tail x0))))  (tasks 10, of them 7 with a program the older corpus does not hold)
+   proposed from the older corpus too: (lambda x0: int. (lambda x1: list[int]. ((filter (lambda x2: int. ((gt ((mod x2) x0)) 0))) x1)))  (tasks 3, of them 0 with a program the older corpus does not hold)
+   proposed from the older corpus too: ((add -1) -1)  (tasks 4, of them 0 with a program the older corpus does not hold)
+cycle 3: accepted symbols ['(lambda x0: bool. (lambda x1: int. (((if x0) x1) 0)))', '(lambda x0: int. ((mul x0) 5))', '(lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. x0)) x1']
+   corpus then 155 programs; frozen one cycle earlier 152 programs; 3 of 3 symbols are proposed from the older corpus too
+   proposed from the older corpus too: (lambda x0: bool. (lambda x1: int. (((if x0) x1) 0)))  (tasks 8, of them 0 with a program the older corpus does not hold)
+   proposed from the older corpus too: (lambda x0: int. ((mul x0) 5))  (tasks 7, of them 0 with a program the older corpus does not hold)
+   proposed from the older corpus too: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. x0)) x1)))  (tasks 7, of them 0 with a program the older corpus does not hold)
+cycle 4: accepted symbols ['(lambda x0: int. ((cons x0) nil))', '(lambda x0: list[int]. ((c1_2 x0) 3))', '(lambda x0: list[int]. ((c1_2 x0) 4))']
+   corpus then 155 programs; frozen one cycle earlier 155 programs; 3 of 3 symbols are proposed from the older corpus too
+   proposed from the older corpus too: (lambda x0: int. ((cons x0) nil))  (tasks 6, of them 0 with a program the older corpus does not hold)
+   proposed from the older corpus too: (lambda x0: list[int]. ((c1_2 x0) 3))  (tasks 6, of them 0 with a program the older corpus does not hold)
+   proposed from the older corpus too: (lambda x0: list[int]. ((c1_2 x0) 4))  (tasks 6, of them 0 with a program the older corpus does not hold)
+cycle 5: accepted symbols ['(lambda x0: int. (lambda x1: list[int]. (((c1_1 -1) x0) x1)))', '(lambda x0: int. ((mod x0) 5))', '(lambda x0: int. (is_empty (range x0)))']
+   corpus then 156 programs; frozen one cycle earlier 155 programs; 3 of 3 symbols are proposed from the older corpus too
+   proposed from the older corpus too: (lambda x0: int. (lambda x1: list[int]. (((c1_1 -1) x0) x1)))  (tasks 6, of them 0 with a program the older corpus does not hold)
+   proposed from the older corpus too: (lambda x0: int. ((mod x0) 5))  (tasks 5, of them 0 with a program the older corpus does not hold)
+   proposed from the older corpus too: (lambda x0: int. (is_empty (range x0)))  (tasks 5, of them 0 with a program the older corpus does not hold)
