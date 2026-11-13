@@ -85,8 +85,11 @@ def rounds_section(ledger) -> dict:
                                                                     "mean_acquired_change", "gain_lower_bound", "cpu_ratio", "per_env")}
         for record in ledger.select(type="confirm", round=g):
             entry["confirmations"][record["name"]] = {k: record[k] for k in ("mean_min", "mean_gain_change", "mean_acquired_change", "runs")}
-        for record in ledger.select(type="adopt", round=g):
-            entry["adopted"][record["lineage"]] = {"digest": record["digest"], "changes": changes_by_function(record["changes"])}
+        # an adoption carries the number of its round and, outside the two registered rounds, the name of its process
+        process, number = (None, g) if isinstance(g, int) else (g[0], int(g[1:]))
+        for record in ledger.select(type="adopt", round=number):
+            if record.get("process") == process:
+                entry["adopted"][record["lineage"]] = {"digest": record["digest"], "changes": changes_by_function(record["changes"])}
         out["rounds"].append(entry)
     return out
 
@@ -365,7 +368,7 @@ def score_predictions(reg, rounds, targets, ledger) -> list:
         g = by_round[1]["gates"].get("self")
         add("R2", (s is not None and s["nominee"] is None) or (g is not None and not g["adopted"]), g and g["mean_min"])
     if sum(1 for g in by_round if isinstance(g, int)) >= reg["rounds_planned"]:
-        count = len(ledger.select(type="adopt", lineage="self"))
+        count = len([r for r in ledger.select(type="adopt", lineage="self") if not r.get("process")])
         add("R3", count <= 1, count)
         seen = []
         for g, entry in by_round.items():
