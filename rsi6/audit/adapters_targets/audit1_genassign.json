@@ -1,0 +1,137 @@
+{
+ "verdict": "admit",
+ "summary": "Audit 1 of the \"genassign\" adapter: no blocking or major finding, so the verdict is admit. There are two minor findings and five notes.\n\nAll work is under <scratch>/targets/genassign/audit1 (scripts in src/, outputs in out/, fresh downloads in dl/, altered-reference copy in copy/). Nothing under REPO was modified, and the learner was never run on a benchmark instance.\n\n- **Data:** all 13 files downloaded afresh from people.brunel.ac.uk match the manifest and the repo data by full SHA-256. My own parser and my own regex reading of the page give the same 60 instances and 60 reference values as the adapter.\n- **Form (R1):** AssignProblem is exact. Jobs are variables, agents are options; group 0 is minus the sum of c (soft), group 1 is the total overflow (hard). The published value is exactly minus total 0, and an answer is valid exactly when total 1 is zero. This is the same convention knapsack.py uses for a maximisation.\n- **Evaluator (R2):** on all 60 instances under 3 relabellings, my evaluator agreed with `Environment.score`, `partial_totals`, `evaluate` and the step-by-step path with 0 failures. Malformed and overloaded answers score 0.\n- **Reference (R7):** the listed values are attainable and optimal for all 60: proved 60, only reached 0. My own branch and bound exhausted the tree above the listed value for 60 of 60 and found a valid assignment of the listed value for 59. For c848-4 I used the builder's stored assignment, which my evaluator confirms is valid with value 1117. All 60 optimal assignments score exactly 1.0.\n- **Score scale:** chance-corrected, which is justified because a random valid assignment is worth 0.733 to 0.914 of the optimum. The chance value does not depend on the reference (identical digest with altered references).\n- **Chance value accuracy:** against exact means from my own dynamic programme it is off by at most 0.0154 of the scale on c515 and 0.0038 on c520. Against my own chains on all 60 it is off by at most 0.0174, and 0.0075 outside c515. That moves a score of 0.90 by at most 0.0017.\n- **No leak (R5):** everything the learner can observe is byte-identical with the true references and with all 60 replaced by other values.\n- **Layout, relabelling, split (R3, R4, R6):** one layout and one set of descriptor names for all 60. Relabelling gives permuted arrays and equal evaluation. The split is 16 training and 24 fresh instances with no shared group; halves are 14 and 10.\n- **Instances:** none of the 60 is left out. gapa to gapd are left out because the page gives no values for them, which the page text confirms.\n- **Threshold (R8):** 0.90, worded as an operating point. The builder's scratch directory shows no learner run on benchmark instances.\n- **Interface and cost:** both learner designs run on made-up instances of the registered sizes and return well-formed answers. Acquire took 0.9 s (design a) and 3.9 s (design b) of CPU; the largest instance costs 661 units per construction.\n\nThe main thing for the owner to accept knowingly is that the adapter contains a sampler (`chance_value`) for the zero point of the score. It is a random walk guided by capacity violation only, never by the objective, and nothing from it reaches the problem object, but it is a fifth activity beyond the four an adapter is allowed.\n\nTwo deviations from my own rules: three of my processes overlapped for under two minutes (a timed-out trial run was still alive), and my first three runs from REPO did not set PYTHONDONTWRITEBYTECODE (a later check found no file in REPO newer than my start).",
+ "checks": [
+  {
+   "id": "0 data and pinning",
+   "what_was_run": "curl -A research-data-check/1.0 of gapinfo.html and gap1..gap12.txt from https://people.brunel.ac.uk/~mastjjb/jeb/orlib/ into audit1/dl; src/a_data.py (own parser alib.py); sha256 comparison of manifest, repo data and my download",
+   "n": "13 files, 60 instances",
+   "result": "PASS. Full SHA-256 equal for all 13 (manifest = repo data = my download). 60 instances, 60 page values, same keys. c in [10,25], a in [5,25], b in [27,81]; all integers; no trailing tokens; no pair with a > b. Sizes (5,15) to (10,60). Adapter's value/use/limit/best/group equal my parse for all 60 (differing: [])."
+  },
+  {
+   "id": "1 no hidden solver",
+   "what_was_run": "Read rsi6/environments/genassign.py in full; grep for sort/argsort/argmin/argmax/heapq/scipy/optimize",
+   "n": "300 lines",
+   "result": "PASS with one finding. Imports are re, numpy, fetch, Environment/relabel, AssignProblem. The only sort is sorted(self.instances) for the id order. No search, ranking or pruning by the objective and no optimisation routine in the problem path. Exception: chance_value, a random walk that keeps a move when the capacity overflow does not grow; it reads c only to average, is used only in score(), and is disclosed in the module text (finding 1)."
+  },
+  {
+   "id": "2 no privileged information",
+   "what_was_run": "src/g_alter.py replaced all 60 values in a copy of gapinfo.html (audit1/copy, manifest hash updated); src/g_digest.py run in REPO and in the copy: sha256 over the public fields of view(problem), vars(problem), and the feedback of start/candidates/allowed/assign/totals/evaluate/well_formed on a fixed panel, 60 instances x 3 (seed, training) settings",
+   "n": "180 problems",
+   "result": "PASS. Observable digest identical in both: de8bda0ac587dd739dbd56244445e4b2691053885d06c2d119cc947c3f8d4061. Reference sum 48359 in REPO vs 48480 in the copy, so the alteration took effect. Chance-value digest also identical (d9c7f492...), so the chance value does not depend on the reference. Reference or chance value found among the problem's numbers: 0."
+  },
+  {
+   "id": "3 traceability",
+   "what_was_run": "src/c_adapter.py: exposed arrays compared with my parse under the permutations recovered from decode",
+   "n": "60 instances x 3 seeds",
+   "result": "PASS. var_opt[0][j,i] = c(i,j), var_opt[1][j,i] = a(i,j), opt_attr[i,0] = b(i), exactly. var_attr has 0 columns; no var_var, opt_opt or occ_attr; capacity, domain, start_answer, start_totals are None; hard = [False, True]; detail all False. Problem object attributes: the generic ones plus value, use, limit (hidden behind the view). Nothing exposed that is not a field of the instance file."
+  },
+  {
+   "id": "4 relabelling",
+   "what_was_run": "src/c_adapter.py: job and agent permutations recovered through decode for seeds 3, 77, 2024; the same own-label answer evaluated and scored under each seed",
+   "n": "60 instances x 3 seeds",
+   "result": "PASS. Both permutations are true permutations, differ between seeds and are not the identity. Arrays equal the file's fields permuted. partial_totals and Environment.score of the same own-label answer are equal under every seed (0 failures)."
+  },
+  {
+   "id": "5 evaluator agreement and attainability",
+   "what_was_run": "src/c_adapter.py (own evaluator alib.value / alib.groups_spec against Environment.score, partial_totals, evaluate, and the view's start/candidates/assign/totals; candidates also compared with AssignProblem._rows, including rows of already assigned jobs); src/i_opt.py for the optimal assignments, in REPO and in the altered copy",
+   "n": "all 60 instances (5 per group): 720 valid + 1080 invalid complete answers, 1080 partial answers, 6210 assign steps, 29970 candidate rows, 540 corrupted answers, 60 optimal assignments, 1200 one-job corruptions",
+   "result": "PASS, failures 0. Invalid answers score 0, valid ones score exactly my formula. Wrong length, float or bool dtype, agent out of range, -1, None, 2-D and everything-on-one-agent all score 0.0. The source publishes no assignments; my own search found assignments of the listed value for 59 instances and I checked the builder's stored one for c848-4. All 60 score exactly 1.0. In the altered copy, the 28 instances whose reference fell below the optimum are cut to 1.0 and the 32 whose reference rose score strictly between 0 and 1. Of 1200 one-job corruptions of optimal assignments, 1172 are invalid and score 0, and none scores above 1."
+  },
+  {
+   "id": "5b optimality of the listed values",
+   "what_was_run": "Own branch and bound over jobs with a Lagrangian bound (capacities relaxed, subgradient multipliers, regret budget, unused-capacity term): src/bb.py and src/bb2.py with caps of 90 and 150 s, src/bb_long.py with a 1500 s cap for the open ones, src/bb3.py (multipliers improved at nodes) for reaching c1060-2",
+   "n": "60",
+   "result": "Proved 60, only reached 0. No valid assignment above the listed value: tree exhausted for 60 of 60 (58 in the capped passes; c1040-2 in 202 s with 3.66M nodes; c848-4 in 919 s with 17.4M nodes). A valid assignment of the listed value: found by my own search for 59; for c848-4 my searches timed out, and the builder's stored assignment is valid with value 1117 by my evaluator. No instance had a better value than listed. The builder's stored assignments for all 60 are valid and of the listed value by my evaluator."
+  },
+  {
+   "id": "5c score scale and chance value",
+   "what_was_run": "src/e_exact.py and src/e_exact2.py: exact count and mean over ALL valid assignments by my own dynamic programme over load vectors (c515-1..5, c520-1..5). src/f_mcmc.py: my own chains started at valid assignments, numpy generator, 256 chains x 600 sweeps, all 60",
+   "n": "10 exact, 60 sampled",
+   "result": "PASS. The chance-corrected scale is justified: chance/best is 0.733 to 0.914, and best minus chance is 28.1 to 314.0. Exact valid counts for c515 are 55996, 4118, 86943, 35328, 167801, identical to the builder's enumeration. Adapter minus exact as a share of the scale: c515 -0.0154, +0.0153, +0.0120, 0.0000, +0.0028; c520 -0.0004, +0.0037, +0.0016, +0.0038, -0.0032 (75M to 702M valid assignments). Adapter minus my chains over all 60: max 0.0174 (c515-1), max outside c515 0.0075 (c530-4), mean +0.0001. Largest resulting shift of a score of 0.90: 0.0017. A score of 0.90 equals 0.9733 to 0.9914 of the optimum, mean 0.9836, as the module text says."
+  },
+  {
+   "id": "6 leak scan of the task files",
+   "what_was_run": "Read gapinfo.html and the head of gap1.txt as text; regex check that the data files hold only digits and whitespace; scan of problem numbers in src/g_digest.py",
+   "n": "13 files",
+   "result": "PASS. The data files contain only m, n, c, a, b. The optimal values exist only on the page and go only into instances[id]['best'], read by score() and reference(). No reference or chance value appears among the problem's numbers, and there are no string attributes."
+  },
+  {
+   "id": "7 one layout",
+   "what_was_run": "src/c_adapter.py: run.layout over 60 instances x 2 seeds x training/fresh; Layout(view(problem), version.default()).names for all 60",
+   "n": "240 layouts, 60 descriptor sets",
+   "result": "PASS. One layout: ('assign', False, True, True, (False, True), (False, False), 0, 1, 0, 0, 2, 0, True, True). One set of 10 descriptor names: opt:dsoft, opt:viol, opt:dhard, opt:usage, opt:vo[0], opt:vo[1], opt:oa[0], var2:feasible, var2:best, var2:regret. Nothing is padded."
+  },
+  {
+   "id": "8 split",
+   "what_was_run": "src/c_adapter.py: split(env, 16, 24) and run.halves",
+   "n": "60 instances, 12 groups",
+   "result": "PASS. Training 16: c1030 2, c1040 3, c1060 2, c530 1, c832 2, c840 4, c848 2. Fresh 24: c1050 5, c515 4, c520 5, c525 5, c824 5. No group and no id on both sides. Halves: 14 (c1050, c515, c824) and 10 (c520, c525). 24 fresh instances in 5 size classes is enough for a mean to be meaningful; one unit of value is 0.003 to 0.036 of a score. The fresh side is mostly the smallest classes and the training side mostly the larger ones, which is the kernel's seeded split, not the adapter's choice."
+  },
+  {
+   "id": "9 instances left out and the builder's scratch",
+   "what_was_run": "Size rule in the module text against my parse; page text for gapa-gapd; ls and grep of the builder's work directory for acquire/apply/measure/learner/designs/ledger/greedy/heuristic/threshold; read tune.py, smoke.py and the learner part of checks.py",
+   "n": "builder's scripts and logs",
+   "result": "PASS. Rule (n <= 1000, n*m <= 30000) is stated in the module and all 60 satisfy it (max n*m = 600), so none is left out. gapa-gapd are left out; the page gives no values for them and says only that they are minimisation problems. The only learner calls in the builder's scratch are in checks.py section (g), on made-up random instances built with GenAssignProblem, with quality deliberately not printed. tune.py compares the sampler with independent chains and uses no learner or heuristic score. No trace of a threshold chosen with knowledge of scores."
+  },
+  {
+   "id": "10 anchor",
+   "what_was_run": "Read Environment.threshold and anchor",
+   "n": "1",
+   "result": "PASS. threshold = 0.90. The anchor is one sentence and says it is an operating point, not an external fact; that the lower end is an estimated expected value of a uniformly random valid assignment; that the upper end is the published optimal value, attained and not a bound; and that an invalid assignment counts 0. The words 'not a bound' are supported by my own exhaustion of all 60 trees."
+  },
+  {
+   "id": "11 cost and interface",
+   "what_was_run": "src/h_learner.py with designs.make(designs.default('a')) and ('b') on MADE-UP instances only (random c in [10,25], a in [5,25], b = floor(0.8*sum(a)/m)) at the 16 registered training sizes, then apply on 6 made-up sizes untrained and acquired; src/i_opt.py for the load time",
+   "n": "2 designs, 16 made-up training problems, 12 apply calls each",
+   "result": "PASS. Largest instance is c1060 (60 jobs, 10 agents): 661 units per construction; training budget 40 x sum = 255,040 units. Design a: acquire used 188,252 units, 0.9 s CPU; design b: 249,098 units, 3.9 s CPU. Apply: 12 of 12 answers are integer arrays of length n and well-formed, in 0.1 s; totals equal my own evaluation. All 12 apply calls ended with meter.used above the limit, because the kernel's Meter adds before it raises; this is not an adapter matter. Quality and validity of the answers were deliberately not computed. A run cannot be unreasonably slow. The one fixed cost is constructing the environment, 20 to 23 s CPU per process for the sampler (on a machine that was also running other jobs)."
+  }
+ ],
+ "findings": [
+  {
+   "severity": "minor",
+   "where": "rsi6/environments/genassign.py, chance_value (lines 144-193) and its call in GenAssign.__init__ (line 259)",
+   "what": "The adapter does a fifth thing besides parse, state the form, expose and evaluate: a sampler that estimates the zero point of the score. It is a random walk over assignments that keeps a move exactly when the total capacity overflow does not grow. That is a stochastic descent on the hard group (a feasibility search), not a search by the objective. It never reaches the problem object. The module text discloses it. The owner should accept this exception knowingly.",
+   "evidence": "Source reading: `keep = (p != q) & (over(lp + dp, p) + over(lq + dq, q) <= over(lp, p) + over(lq, q))`; c is read only in `total += int(C[x[valid], cols].sum())`; the reference is not an argument. src/g_digest.py in REPO and in the altered-reference copy printed the same 'chance digest d9c7f4922ff58b38f1fb56e6f3e5be9f' and the same observable digest, and 'reference/chance value found among the problem's numbers: 0'.",
+   "suggested_fix": "None required for exactness. R2 asks for the expected value of a uniformly random valid answer, which has no closed form here, and a pinned table would break the 'no table beyond the instance' rule. Record the exception in the admission record."
+  },
+  {
+   "severity": "minor",
+   "where": "rsi6/environments/genassign.py, module text lines 57-60 (accuracy of the chance value)",
+   "what": "On the smallest class the sampler's error is a systematic bias, not sampling noise: about 0.6 units (0.015 of the scale) on c515-1 and c515-2, in opposite directions. The module text gives 0.016 against enumeration, which is correct, but its 'at most 0.014 against independent chains on all 60' is slightly optimistic. The effect on scores is negligible.",
+   "evidence": "src/e_exact.py: c515-1 exact 297.140 vs adapter 296.541 (-0.0154 of scale); c515-2 exact 298.468 vs 298.903 (+0.0153); c515-3 +0.0120. src/f_mcmc.py over all 60: 'max |dev| of scale 0.0174 at c515-1 (units -0.67), mean dev 0.0001, max se 0.18, max |z| 7.9'; 'max |dev| outside c515: 0.0075'; 'max shift of a score of 0.90 from the adapter's deviation: 0.0017'. Four of the 24 fresh instances are c515.",
+   "suggested_fix": "Optional wording change: say the estimate is within about 0.02 of the scale and that on c515 the error is a bias from weakly connected valid sets (4,118 to 167,801 valid assignments). No code change needed."
+  },
+  {
+   "severity": "note",
+   "where": "GenAssign.__init__",
+   "what": "Constructing the environment costs 20 to 23 s CPU per process, all of it the sampler over 60 instances. It is outside the kernel's timed sections for acquire and apply, and forked workers inherit the cached environment, but the test file loads every environment at import.",
+   "evidence": "src/i_opt.py printed 'load cpu 23.5 s' in REPO and 'load cpu 20.6 s' in the copy; the builder's checks.out says 'load cpu seconds 16.2'.",
+   "suggested_fix": "None needed. Keep it eager: env.score is called inside the kernel's timed apply section, so a lazy computation would pollute the measured CPU."
+  },
+  {
+   "severity": "note",
+   "where": "reference / optimality proof",
+   "what": "For c848-4 my own searches did not find an assignment of the listed value within their caps (250 to 300 s). I used the builder's stored assignment, checked by my evaluator, for the 'reached' half of that proof. The 'none above' half is my own for all 60.",
+   "evidence": "out/bb.json: c848-4 ('timeout', 'timeout'); out/bb_long.log: \"c848-4 {'listed': 1117, 'above': 'none', 'nodes_above': 17395897, 'sec': 919.2}\"; src/i_opt.py: 'optimal assignments: 60 (own search 59, builder's file 1), all valid and of the listed value by my evaluator'."
+  },
+  {
+   "severity": "note",
+   "where": "GenAssignProblem.partial_totals, group 1 (hard)",
+   "what": "The overflow of an agent counts as soon as its partial load exceeds the capacity, not only when every job is assigned. This is the knapsack.py convention and it is exact for complete answers. It is never misleading for partial ones, because every a(i,j) is at least 5, so overflow can only grow.",
+   "evidence": "src/a_data.py: 'a range 5 25'; src/c_adapter.py: 1080 partial answers and 6210 steps equal my specification, failures 0."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/environments/manifests/genassign.json, field 'terms'",
+   "what": "The terms quoted are the OR-Library's general wording as carried by the other manifests. The generalised assignment page itself states no terms, which the manifest says. I did not fetch the library's legal page, because my network permission covered only the benchmark data.",
+   "evidence": "The text of gapinfo.html in audit1/dl contains no licence or terms statement."
+  },
+  {
+   "severity": "note",
+   "where": "audit procedure",
+   "what": "Two deviations from my own rules. First, three of my processes overlapped for under two minutes: a trial run of my sampler under 'timeout 100' was still alive when I started the next one. No learner process was involved. Second, my first three runs from REPO (c_adapter.py, g_digest.py, the first h_learner.py) did not set PYTHONDONTWRITEBYTECODE; a later check found no file under REPO newer than my start.",
+   "evidence": "pgrep output showed 'timeout 100 python3 -I f_mcmc.py' beside the new f_mcmc.py run and bb.py; 'find REPO -newer audit1/dl/gapinfo.html -type f' printed nothing (0 pycache files, 0 others)."
+  }
+ ]
+}

@@ -49,6 +49,7 @@ os.environ.setdefault("OMP_NUM_THREADS", "1")
 
 import numpy as np
 
+from rsi6.experiments import guard
 from rsi6.kernel import ledger as ledgers
 from rsi6.kernel.run import Cache
 from rsi6.learner import designs
@@ -183,8 +184,12 @@ def main() -> int:
     reg = json.load(open(args.registration))
     if not os.path.exists(args.ledger):
         shutil.copy(MAIN, args.ledger)
+    guard.same_history(args.ledger)
+    guard.single_writer(args.ledger)                     # one writer: a second driver on this ledger stops here
     ledger = ledgers.Ledger(args.ledger)
     ledger.verify()
+    if find(ledger, type="freeze", process="c") is not None:
+        raise SystemExit("process c is frozen: no generation is run after its freeze record")
     cache = Cache(ledger)
     if find(ledger, type="registration_c") is None:
         ledger.append({"type": "registration_c", "digest": ledgers.digest(reg), "registration": reg})
@@ -192,10 +197,12 @@ def main() -> int:
         raise SystemExit("the registration file of process c differs from the one recorded in the ledger")
     rounds.RULES.update(reg["rules"])
     current = designs.default(reg["design"])
-    for record in ledger.select(type="adopt", process="c"):
-        current = record["version"]
-    last = args.generations or reg["generations_planned"]
+    last = min(args.generations or reg["generations_planned"], reg["generations_planned"])
     for g in range(1, last + 1):
+        # the version a generation starts from is the last one adopted in an EARLIER generation: a driver that was
+        # stopped between the adoption record of generation g and its closing record starts g again from the same version
+        earlier = [a for a in ledger.select(type="adopt", process="c") if a["round"] < g]
+        current = earlier[-1]["version"] if earlier else designs.default(reg["design"])
         if find(ledger, type="c_generation_done", generation=g):
             continue
         light, heavy, aside = split_of(g, reg)
@@ -232,9 +239,13 @@ def main() -> int:
         adopted = None
         if passed:
             _, technique, nominee = max(passed, key=lambda t: t[0])
-            ledger.append({"type": "adopt", "process": "c", "round": g, "lineage": "c", "technique": technique, "version": nominee,
-                           "digest": designs.digest(nominee), "changes": designs.differences(current, nominee),
-                           "provisional": "adopted on categories of the pool that this generation's search did not see"})
+            before = find(ledger, type="adopt", process="c", round=g)       # written by a start that was stopped right after it
+            if before is None:
+                ledger.append({"type": "adopt", "process": "c", "round": g, "lineage": "c", "technique": technique, "version": nominee,
+                               "digest": designs.digest(nominee), "changes": designs.differences(current, nominee),
+                               "provisional": "adopted on categories of the pool that this generation's search did not see"})
+            elif before["digest"] != designs.digest(nominee):
+                raise SystemExit(f"generation {g}: the recorded adoption is not the version the recorded gates select")
             current, adopted = nominee, technique
         ledger.append({"type": "c_generation_done", "process": "c", "generation": g, "searched": envs, "set_aside": aside,
                        "adopted_by": adopted, "version": designs.digest(current)})

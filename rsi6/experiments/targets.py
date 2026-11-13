@@ -36,10 +36,23 @@ training budget, or its test-time budget and no training, raised until its measu
 reach those of ``c:self`` plus an equal share of everything process c ran in its generations
 (every search, gate and confirmation of every technique).
 
-A budget is raised level by level: doubled at first, then by the factor that the measured
-CPU-seconds of the last two levels say is needed (at least 2, at most 64 per level; at most
-twelve levels). Runs are recorded in small batches so that a driver that is started again
-repeats little.
+A budget is raised level by level (amendment 4, reading d): doubled at first, then by the
+factor that the measured CPU-seconds of the last two levels say is needed, at least 2 and at
+most 64 per level, at most twelve levels. As implemented: the first of the twelve levels is the
+registered budget itself; the factor aims a tenth above the matched CPU, so that noise of the
+measurement does not cost another level; where the last two levels show no rise of CPU the
+factor is the largest allowed. A pair that is still below its matched CPU after the last level
+is recorded as not reached, and the report voids every comparison against that arm.
+
+The list of targets (``registry/targets.json``): ``admitted``, the categories whose adapters
+passed their audit; ``replacements``, reserves that take the role of a target that could not be
+built (``replaced``, ``reserve``, ``why``); ``missing``, targets left without an adapter when no
+reserve remains (``category``, ``why``). The list is checked against the roles in the ledger
+before anything is written: it must be exactly the categories that have the role of a target
+once the replacements are applied, less the missing ones. The test is run once: the list is
+recorded with the unlock, a later start must present the same list, and after the closing
+record nothing is measured again. Runs are recorded in small batches so that a driver that is
+stopped and started again repeats little.
 
 Statistics are computed by ``report.py`` from the ledger.
 """
@@ -56,6 +69,7 @@ os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
 os.environ.setdefault("OMP_NUM_THREADS", "1")
 
 from rsi6 import environments
+from rsi6.experiments import guard
 from rsi6.kernel import ledger as ledgers
 from rsi6.kernel import roles, run
 from rsi6.learner import designs
@@ -63,8 +77,6 @@ from rsi6.meta import rounds
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REGISTRY = os.path.join(os.path.dirname(HERE), "registry")
-LEDGER = os.path.join(os.path.dirname(HERE), "ledger", "main.jsonl")
-LIVE = os.path.join(os.path.dirname(HERE), "ledger", "live.jsonl")
 
 
 def say(*parts) -> None:
@@ -123,13 +135,17 @@ def matched(arm, version, field, want, targets, seeds, budget, cache, ledger, sp
             if len(seen[pair]) >= 2:                         # what the last two levels say is needed, with a tenth to spare
                 (v1, c1), (v2, c2) = seen[pair][-2:]
                 slope = (c2 - c1) / (v2 - v1)
-                factor = 8.0 if slope <= 0 else min(64.0, max(2.0, (v2 + (1.1 * want[pair] - c2) / slope) / v2))
+                factor = 64.0 if slope <= 0 else min(64.0, max(2.0, (v2 + (1.1 * want[pair] - c2) / slope) / v2))
             value[pair] *= factor
         pending = [pair for pair in pending if cpu(last[pair]) < want[pair]]
         say(arm, "level done;", len(pending), "pairs below the matched CPU")
     rows = [dict(last[pair], matched_cpu=want[pair], reached=cpu(last[pair]) >= want[pair]) for pair in want]
-    ledger.append({"type": "matched", "arm": arm, "share_per_run": share, "spent_by_self_lineage": spent,
-                   "keys": [r["key"] for r in rows], "reached": [bool(r["reached"]) for r in rows]})
+    keys = [r["key"] for r in rows]
+    if not [r for r in ledger.select(type="matched", arm=arm) if r["keys"] == keys]:      # once, also when the driver is started again
+        ledger.append({"type": "matched", "arm": arm, "field": field, "share_per_run": share, "spent": spent, "keys": keys,
+                       "pairs": [[name, seed] for name, seed in want], "matched_cpu": [want[pair] for pair in want],
+                       "cpu": [cpu(last[pair]) for pair in want], "levels": [len(seen[pair]) for pair in want],
+                       "budget": [seen[pair][-1][0] for pair in want], "reached": [bool(r["reached"]) for r in rows]})
     say(arm, "share per run %.0f CPU-s" % share, "acquired %.4f" % mean(rows, "acquired"),
         "reached the matched CPU in", sum(1 for r in rows if r["reached"]), "of", len(rows))
     return rows
@@ -162,6 +178,8 @@ def process_arms(prefix, v0, lineage, adopted, spent, targets, seeds, budget, ca
 def spent_by(ledger, names) -> float:
     """Measured CPU of the searches, gates and confirmations of the self lineage with these tags."""
     total = sum(r["cpu_used"] for r in ledger.select(type="search", name="self") if r["tag"] in names["search"])
+    starts = {tag + ":start" for tag in names["search"]}        # the runs that measured the version a search started from
+    total += sum(cpu(r) for r in ledger.records if r.get("type") == "run" and r.get("purpose") in starts)
     for kind in ("gate", "confirm"):
         total += sum(r["cpu"]["incumbent"] + r["cpu"]["nominee"] for r in ledger.select(type=kind, name="self") if r["tag"] in names[kind])
     return float(total)
@@ -175,16 +193,64 @@ def spent_by_process_c(ledger) -> float:
     return float(sum(cpu(r) for r in ledger.records if r.get("type") == "run" and mine.match(r.get("purpose", ""))))
 
 
+def check_list(listed: dict, ledger) -> list:
+    """Check the list of targets against the roles in the ledger, writing nothing. Returns the
+    replacements that are not in the ledger yet. Stops the driver if the list is not exactly
+    the categories with the role of a target once the replacements are applied, less the
+    categories the list states as missing."""
+    admitted, problems = list(listed["admitted"]), []
+    if not admitted or len(set(admitted)) != len(admitted):
+        problems.append("the admitted list is empty or names a category twice")
+    expected = {c for c in roles.CANDIDATES if roles.effective_role(c, ledger) == "target"}
+    pending = []
+    for change in listed.get("replacements", []):
+        old, new = change["replaced"], change["reserve"]
+        recorded = ledger.select(type="replace", replaced=old)
+        if recorded:
+            if recorded[-1]["reserve"] != new or recorded[-1]["role"] != "target":
+                problems.append(f"the ledger already replaces {old} by {recorded[-1]['reserve']}")
+            continue
+        if roles.role_of(old) != "target" or roles.effective_role(old, ledger) != "target":
+            problems.append(f"{old} does not have the role of a target")
+        if roles.role_of(new) != "reserve" or roles.effective_role(new, ledger) != "reserve":
+            problems.append(f"{new} is not an unused reserve")
+        if any(r.get("type") == "run" and r.get("category") == new for r in ledger.records):
+            problems.append(f"the ledger holds a run on {new}")
+        if not change.get("why"):
+            problems.append(f"the replacement of {old} states no reason")
+        expected = (expected - {old}) | {new}
+        pending.append(change)
+    for gone in listed.get("missing", []):
+        # only a target that has no adapter can be missing: a target with an admitted adapter is never left out
+        if gone["category"] not in expected or gone["category"] in admitted or gone["category"] in environments.REGISTRY \
+                or not gone.get("why"):
+            problems.append(f"{gone.get('category')} is stated as missing but is not a target without an adapter, or no reason is given")
+        expected = expected - {gone["category"]}
+    if set(admitted) != expected:
+        problems.append(f"the admitted list {sorted(admitted)} is not the set of target categories {sorted(expected)}")
+    if len(admitted) + len(listed.get("missing", [])) != roles.N_TARGET:
+        problems.append(f"admitted and missing categories together are not the {roles.N_TARGET} drawn")
+    problems += [f"no adapter is registered for {n}" for n in admitted if n not in environments.REGISTRY]
+    if problems:
+        raise SystemExit("the list of targets is refused, nothing was written: " + "; ".join(problems))
+    return pending
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--ledger", default=LEDGER)
+    parser.add_argument("--ledger", default=guard.working())
     parser.add_argument("--targets", default=os.path.join(REGISTRY, "targets.json"),
                         help="the list of admitted target adapters (another file only for a development run)")
     parser.add_argument("--dev", type=int, default=None,
                         help="development only: this many seeds, on a scratch ledger, with a list of source categories as targets")
     args = parser.parse_args()
-    if args.dev and os.path.abspath(args.ledger) in (os.path.abspath(LEDGER), os.path.abspath(LIVE)):
-        raise SystemExit("--dev needs a scratch ledger")
+    dev = args.dev is not None
+    if dev and (guard.is_registered(args.ledger) or args.dev < 1):
+        raise SystemExit("--dev needs a scratch ledger and at least one seed")
+    if not dev and not guard.is_registered(args.ledger):
+        raise SystemExit("outside the development mode the ledger is ledger/live.jsonl or ledger/main.jsonl")
+    guard.same_history(args.ledger)
+    guard.single_writer(args.ledger)
     reg = json.load(open(os.path.join(REGISTRY, "registration.json")))
     ledger = ledgers.Ledger(args.ledger)
     ledger.verify()
@@ -197,23 +263,33 @@ def main() -> int:
         raise SystemExit("the continued process is registered and not frozen: no target run before that")
     if ledger.select(type="registration_c") and not (frozen_c and ledger.select(type="external_gate", process="c")):
         raise SystemExit("process c is registered and not finished (freeze record and external gate): no target run before that")
+    if ledger.select(type="recursion_search") and not ledger.select(type="recursion_done"):
+        raise SystemExit("the recursion check has started and is not finished: no target run beside it")
+    if ledger.select(type="target_done"):
+        say("the target test is recorded: it is run once, nothing is measured again")
+        return 0
     listed = json.load(open(args.targets))
     targets = sorted(listed["admitted"])
-    for change in listed.get("replacements", []):      # a reserve takes the role of a target that could not be built
-        if not ledger.select(type="replace", replaced=change["replaced"]):
+    if not dev:
+        for number in (3, 4):                          # the amendments whose readings this driver applies
+            if ledger.select(type="registration_c") and not ledger.select(type="amendment", amendment=number):
+                raise SystemExit(f"amendment {number} is not recorded in this ledger")
+        pending = check_list(listed, ledger)
+        unlocked = ledger.select(type="unlock", role="target")
+        if unlocked and (unlocked[-1]["targets"] != targets or pending):
+            raise SystemExit(f"the target role was unlocked for {unlocked[-1]['targets']}: a later start must present the same list")
+        for change in pending:                         # a reserve takes the role of a target that could not be built
             ledger.append({"type": "replace", "replaced": change["replaced"], "reserve": change["reserve"], "role": "target",
                            "why": change["why"]})
-    wrong = [n for n in targets if roles.effective_role(environments.load(n).category, ledger) != "target"]
-    short = listed.get("fewer_than_drawn")             # stated in the list if a target has no replacement left
-    if not args.dev and (wrong or (len(targets) != roles.N_TARGET and not short)):
-        raise SystemExit(f"the admitted list must be the {roles.N_TARGET} categories with the role target; not so: {wrong or targets}")
-    if not args.dev and not ledger.select(type="unlock", role="target"):
-        ledger.append({"type": "unlock", "role": "target", "targets": targets})
+        if any(roles.effective_role(n, ledger) != "target" for n in targets):
+            raise SystemExit("after the replacements the admitted categories do not all have the role of a target")
+        if not unlocked:
+            ledger.append({"type": "unlock", "role": "target", "targets": targets, "missing": listed.get("missing", [])})
     cache = run.Cache(ledger)
     seeds, budget = reg["seeds"]["target"][:args.dev], reg["budgets"]["run"]
     earlier = [n for n in rounds.pool(ledger) if n not in targets]
     part = 1.0                                         # the share of a process's spending that the matched arms receive
-    if args.dev:                                       # development only: two environments in memory, a small share to match
+    if dev:                                            # development only: two environments in memory, a small share to match
         earlier, part = earlier[:2], 0.002
     # ---- the two registered rounds
     tags = lambda kind, label: {f"{kind}:{label}{g}:self" for g in range(1, 10)}
@@ -221,7 +297,7 @@ def main() -> int:
     adopted_a = [r for r in ledger.select(type="adopt", lineage="self") if r.get("process") != "b"]
     results, primary, _, _ = process_arms("", designs.default("a"), frozen_a[-1]["lineages"], adopted_a, part * spent_by(ledger, names_a),
                                           targets, seeds, budget, cache, ledger, earlier)
-    done = {"type": "target_done", "primary_arm": primary, "targets": targets, "seeds": seeds}
+    done = {"type": "target_done", "primary_arm": primary, "targets": targets, "seeds": seeds, "memory_from": earlier}
     # ---- the continued process
     if frozen_b:
         names_b = {kind: tags(kind, "b") for kind in ("search", "gate", "confirm")}

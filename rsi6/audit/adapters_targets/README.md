@@ -13,6 +13,7 @@ are written `<scratch>/`).
 | routing | target | `build_`, `audit1_` | admitted |
 | facility | target | `build_`, `audit1_` (fix and audit again), `fix1_`, `audit2_` | admitted after the fix |
 | flow shop | target | `build_` (first attempt), `build2_` (second) | **not buildable**: see below |
+| generalised assignment | reserve, takes the role of flow shop | `build_`, `audit1_` | admitted |
 | tour | reserve | `build_`, `audit1_` | admitted |
 | colouring | reserve | `build_`, `audit1_` (fix and audit again), `fix1_`, `audit2_` | admitted after the fix |
 
@@ -53,6 +54,19 @@ groups kept apart by the split, malformed answers not repaired).
   replaces flow shop as a target; tour and colouring are bound as the external gate of process
   c by amendment 3. The `replace` record is written to the ledger when the adapter of
   genassign is admitted and the driver of process c is not writing.
+* **Generalised assignment holds a sampler.** Its score runs from the value of a uniformly
+  random valid assignment to the published optimum, and that value has no closed form here (of
+  210 million uniformly random assignments 204 were valid). The adapter estimates it with a
+  random walk that looks at capacities only, never at the objective; the estimate feeds the
+  score alone and reaches no field of the problem object. The auditor confirmed this (nothing
+  the learner can observe changes when the references are replaced), measured the estimate's
+  error at no more than 0.018 of the scale, and left the exception to be accepted knowingly.
+  Accepted: the registered scale needs that zero point, and the alternative with a closed form
+  is the mean of another population. The auditor proved all 60 published values optimal with
+  its own exact search. Its first builder was cut off by the session's usage limit; the second
+  checked what the first had left before keeping it. `registry/targets.json` lists the four
+  targets with this replacement; the driver of the target test checks the list against the
+  roles in the ledger before it writes anything.
 * **Satisfiability will probably read 0 for every arm.** The score is all or nothing (an
   assignment that falsifies a clause is not a valid answer). The auditor measured, with its own
   local search and not the learner, that a satisfying assignment of a fresh instance takes

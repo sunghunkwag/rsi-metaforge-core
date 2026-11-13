@@ -18,6 +18,7 @@ REGISTRY = {
     "facility": ("rsi6.environments.facility", "Facility"),
     "tour": ("rsi6.environments.tour", "Tour"),
     "colouring": ("rsi6.environments.colouring", "Colouring"),
+    "genassign": ("rsi6.environments.genassign", "GenAssign"),
 }
 _CACHE = {}
 
