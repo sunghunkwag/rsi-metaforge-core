@@ -44,6 +44,7 @@ from rsi6.meta import rounds
 HERE = os.path.dirname(os.path.abspath(__file__))
 REGISTRATION = os.path.join(os.path.dirname(HERE), "registry", "registration_c.json")
 LIVE = os.path.join(os.path.dirname(HERE), "ledger", "live.jsonl")
+MAIN = os.path.join(os.path.dirname(HERE), "ledger", "main.jsonl")
 ENVIRONMENTS = ("colouring", "tour")
 ROLE = "adoption:4"
 GATE_SEEDS = [4001, 4002, 4003, 4004, 4005, 4006]
@@ -63,7 +64,12 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--ledger", default=LIVE)
     parser.add_argument("--registration", default=REGISTRATION)
+    parser.add_argument("--dev", action="store_true", help="development only: a scratch ledger, the generations recorded so far "
+                        "taken as the whole process, and two source categories in the place of the reserves")
     args = parser.parse_args()
+    if args.dev and os.path.abspath(args.ledger) in (os.path.abspath(LIVE), os.path.abspath(MAIN)):
+        raise SystemExit("--dev needs a scratch ledger")
+    names, role = (("binpacking", "jobshop"), "source") if args.dev else (ENVIRONMENTS, ROLE)
     reg = json.load(open(args.registration))
     ledger = ledgers.Ledger(args.ledger)
     ledger.verify()
@@ -71,7 +77,7 @@ def main() -> int:
     if recorded is None or recorded["digest"] != ledgers.digest(reg):
         raise SystemExit("process c is not registered in this ledger, or its registration file differs from the recorded one")
     missing = [g for g in range(1, reg["generations_planned"] + 1) if find(ledger, type="c_generation_done", generation=g) is None]
-    if missing:
+    if missing and not args.dev:
         raise SystemExit(f"process c has not finished: generations {missing} are not recorded")
     rounds.RULES.update(reg["rules"])
     v0 = designs.default(reg["design"])
@@ -90,18 +96,18 @@ def main() -> int:
                        "why": "process c adopted no version: its final version is generation 0 and there is nothing to test"})
         say("no version was adopted: the external gate has nothing to test")
         return 0
-    absent = [n for n in ENVIRONMENTS if n not in environments.REGISTRY]
+    absent = [n for n in names if n not in environments.REGISTRY]
     if absent:
         raise SystemExit(f"no admitted adapter for {absent}")
-    for n in ENVIRONMENTS:
+    for n in names:
         if roles.effective_role(environments.load(n).category, ledger) == "reserve":
-            ledger.append({"type": "reassign", "category": n, "role": ROLE, "round": "c:external", "amendment": 3})
-    if any(roles.effective_role(environments.load(n).category, ledger) != ROLE for n in ENVIRONMENTS):
-        raise SystemExit(f"the environments of the external gate do not all have the role {ROLE}")
-    if find(ledger, type="unlock", role=ROLE) is None:
-        ledger.append({"type": "unlock", "role": ROLE, "round": "c:external"})
+            ledger.append({"type": "reassign", "category": n, "role": role, "round": "c:external", "amendment": 3})
+    if any(roles.effective_role(environments.load(n).category, ledger) != role for n in names):
+        raise SystemExit(f"the environments of the external gate do not all have the role {role}")
+    if not args.dev and find(ledger, type="unlock", role=role) is None:
+        ledger.append({"type": "unlock", "role": role, "round": "c:external"})
     cache = Cache(ledger)
-    envs = sorted(ENVIRONMENTS)
+    envs = sorted(names)
     decision = find(ledger, type="gate", tag="gate:c:external")
     if decision is None:
         decision = ledger.append(dict(rounds.gate(v0, final, envs, GATE_SEEDS, reg["budgets"]["run"], cache, "gate:c:external", seed=300),
@@ -118,7 +124,8 @@ def main() -> int:
                    "gate_min_change": decision["mean_min"], "gate_lower_bound": decision["gain_lower_bound"],
                    "confirmation_min_change": check["mean_min"], "envs": envs, "final": designs.digest(final),
                    "rule": "the gate's three conditions and a confirmation above zero"})
-    ledger.append({"type": "release", "role": ROLE, "round": "c:external"})
+    if not args.dev:
+        ledger.append({"type": "release", "role": role, "round": "c:external"})
     say("external gate passed:", passed)
     return 0
 

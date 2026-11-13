@@ -214,7 +214,7 @@ def targets_section(ledger, reg) -> dict | None:
         if arm.startswith("b:"):
             if arm != "b:frozen":
                 compare(f"{arm} minus b:frozen", arms[arm], arms["b:frozen"])
-        elif arm not in ("frozen", "compute@b"):
+        elif arm not in ("frozen", "compute@b", "c:frozen", "c:skills"):       # the last two are the arms frozen and skills
             compare(f"{arm} minus frozen", arms[arm])
     primary = done["primary_arm"]
     for arm in ("fixed", "random", "skills", "compute", "search"):
@@ -230,15 +230,124 @@ def targets_section(ledger, reg) -> dict | None:
             compare("b:frozen minus compute@b", arms["b:frozen"], arms["compute@b"])     # and at equal measured CPU
             if primary_b != "b:frozen":
                 compare(f"{primary_b} minus compute@b", arms[primary_b], arms["compute@b"])
+    primary_c = done.get("primary_arm_c")
+    if primary_c and primary_c != "c:frozen":
+        for arm in ("skills", "c:memory", "c:compute", "c:search"):
+            if arm in arms:
+                compare(f"{primary_c} minus {arm}", arms[primary_c], arms[arm])
     gen0 = {env: np.array([r["gain"] for r in base if r["env"] == env]) for env in sorted({r["env"] for r in base})}
     matched = {r["arm"]: {"share_per_run": r["share_per_run"], "reached": int(sum(r["reached"])), "of": len(r["reached"])}
                for r in ledger.select(type="matched")}
     out = {"arms": table, "comparisons": comparisons, "primary_arm": primary, "generation0_gain": blocked_interval(gen0, rng),
-           "matched": matched, "targets": done["targets"], "seeds": done["seeds"], "primary_arm_b": primary_b}
+           "matched": matched, "targets": done["targets"], "seeds": done["seeds"], "primary_arm_b": primary_b,
+           "primary_arm_c": primary_c}
     if primary_b:
         base_b = arms["b:frozen"]
         out["generation0_gain_b"] = blocked_interval({env: np.array([r["gain"] for r in base_b if r["env"] == env])
                                                       for env in sorted({r["env"] for r in base_b})}, rng)
+    return out
+
+
+def process_c_section(ledger, targets) -> dict | None:
+    """Process c (amendment 3) from its records: what every technique named in every generation,
+    what the gate on the categories set aside decided, the adoptions, the external gate on the
+    reserves, the recursion check (amendment 4), and the three parts of the registered success
+    condition."""
+    registered = ledger.select(type="registration_c")
+    if not registered:
+        return None
+    reg = registered[-1]["registration"]
+    out = {"generations": [], "planned": reg["generations_planned"]}
+    for done in ledger.select(type="c_generation_done"):
+        g = done["generation"]
+        screen = ledger.select(type="c_screen", generation=g)
+        entry = {"generation": g, "searched": done["searched"], "set_aside": done["set_aside"], "adopted_by": done["adopted_by"],
+                 "version": done["version"], "techniques": {},
+                 "single_field_changes_measured": screen[-1]["candidates"] if screen else None,
+                 "positive_on_the_light_categories": screen[-1]["positive_on_light"] if screen else None}
+        for nominee in ledger.select(type="c_nominee", generation=g):
+            name = nominee["technique"]
+            row = {"nominee": nominee["nominee"], "changes": changes_by_function(nominee["changes"])}
+            gate = ledger.select(type="gate", tag=f"gate:c{g}:{name}")
+            check = ledger.select(type="confirm", tag=f"confirm:c{g}:{name}")
+            if gate:
+                row["gate"] = {k: gate[-1][k] for k in ("adopted", "mean_min", "gain_lower_bound", "cpu_ratio", "per_env")}
+            if check:
+                row["confirmation"] = check[-1]["mean_min"]
+            entry["techniques"][name] = row
+        entry["distinct_nominees"] = len({r["nominee"] for r in entry["techniques"].values() if r["nominee"]})
+        out["generations"].append(entry)
+    adoptions = ledger.select(type="adopt", process="c")
+    out["adoptions"] = [{"generation": a["round"], "technique": a["technique"], "digest": a["digest"],
+                         "changes": changes_by_function(a["changes"])} for a in adoptions]
+    out["nominees_tested"] = int(sum(e["distinct_nominees"] for e in out["generations"]))
+    mine = [r for r in ledger.records if r.get("type") == "run" and r.get("purpose", "").startswith(("search:c", "gate:c", "confirm:c"))
+            and not r["purpose"].startswith(("gate:c:external", "confirm:c:external"))]
+    out["runs"], out["cpu_seconds"] = len(mine), float(sum(r["cpu"]["acquire"] + r["cpu"]["apply"] for r in mine))
+    frozen = ledger.select(type="freeze", process="c")
+    out["finished"] = bool(frozen)
+    if frozen:
+        out["final"] = {"digest": frozen[-1]["digest"], "changes_from_generation_0": changes_by_function(frozen[-1]["changes_from_generation_0"])}
+    external = ledger.select(type="external_gate", process="c")
+    if external:
+        gate = ledger.select(type="gate", tag="gate:c:external")
+        check = ledger.select(type="confirm", tag="confirm:c:external")
+        out["external_gate"] = {"run": external[-1]["run"], "passed": external[-1]["passed"], "why": external[-1].get("why"),
+                                "gate": {k: gate[-1][k] for k in ("adopted", "conditions", "mean_min", "mean_gain_change",
+                                                                 "mean_acquired_change", "gain_lower_bound", "cpu_ratio", "per_env")} if gate else None,
+                                "confirmation": {k: check[-1][k] for k in ("mean_min", "mean_gain_change", "mean_acquired_change", "runs")} if check else None}
+    recursion = ledger.select(type="recursion_done")
+    if recursion:
+        out["recursion_check"] = {k: recursion[-1][k] for k in ("generations", "compared", "better_than_gen0", "better_than_random")}
+    # ---- the registered success condition, part by part (None: not decided yet)
+    parts = {"two_adopting_generations": (len(adoptions) >= 2) if frozen else (True if len(adoptions) >= 2 else None),
+             "external_gate_passed": external[-1]["passed"] if external else None, "targets": None}
+    if targets and targets.get("primary_arm_c"):
+        c = targets["comparisons"]
+        primary = c.get("c:self minus frozen")
+        if primary is None:
+            parts["targets"] = False
+        else:
+            point, low, _ = primary["min_change"]
+            behind = c["c:self minus c:compute"]["min_change"][0] < 0.0 if "c:self minus c:compute" in c else None
+            parts["targets"] = None if behind is None else bool(point >= 0.01 and low > 0.0 and not behind)
+            out["targets"] = {"min_change": primary["min_change"], "against_compute": c.get("c:self minus c:compute", {}).get("min_change")}
+    out["success_parts"] = parts
+    out["success"] = False if any(v is False for v in parts.values()) else (True if all(parts.values()) else None)
+    return out
+
+
+def score_predictions_c(section, ledger) -> list:
+    """Predictions C1 to C4 (registration_c.json) and C5, C6 (amendment_4.json)."""
+    out = []
+    texts = {p["id"]: p for p in ledger.select(type="registration_c")[-1]["registration"]["predictions"]}
+    path = os.path.join(os.path.dirname(HERE), "registry", "amendment_4.json")
+    if os.path.exists(path):
+        texts.update({p["id"]: p for p in json.load(open(path))["predictions"]})
+
+    def add(pid, outcome, detail):
+        if pid in texts:
+            out.append({"id": pid, "text": texts[pid]["text"], "criterion": texts[pid]["criterion"], "holds": outcome, "detail": detail})
+
+    count = len(section["adoptions"])
+    add("C1", True if count >= 1 else (False if section["finished"] else None), count)
+    if section["finished"]:
+        single = sum(1 for a in section["adoptions"] if a["technique"] in ("single", "remeasure", "combine"))
+        add("C2", bool(single > count - single), {"single-field techniques": single, "climb": count - single})
+    else:
+        add("C2", None, "the process has not ended")
+    external = section.get("external_gate")
+    add("C3", None if external is None else bool(not external["passed"]), external and (external["gate"] or external["why"]))
+    add("C4", None if section["success"] is None else bool(not section["success"]), section["success_parts"])
+    recursion = section.get("recursion_check")
+    if recursion is None or not recursion["compared"]:
+        add("C5", None, "no generation compared" if recursion else "the recursion check has not been run")
+    else:
+        add("C5", bool(recursion["better_than_gen0"] <= recursion["compared"] / 2),
+            {"compared": recursion["compared"], "climb better than generation 0 as improver": recursion["better_than_gen0"]})
+    listed = os.path.join(os.path.dirname(HERE), "registry", "targets.json")
+    add("C6", bool(len(json.load(open(listed))["admitted"]) == 4) if os.path.exists(listed) else None,
+        json.load(open(listed))["admitted"] if os.path.exists(listed) else "the list of admitted targets is not written yet")
     return out
 
 
@@ -331,11 +440,14 @@ def main() -> int:
     registered_b = ledger.select(type="registration_b")
     if registered_b:
         predictions += score_predictions_b(registered_b[-1]["registration"], rounds, searches, targets)
+    process_c = process_c_section(ledger, targets)
+    if process_c:
+        predictions += score_predictions_c(process_c, ledger)
     runs = [r for r in ledger.records if r.get("type") == "run"]
     report = {"ledger_head": ledger.head(), "records": len(ledger.records), "runs": len(runs),
               "cpu_seconds": round(float(sum(r["cpu"]["acquire"] + r["cpu"]["apply"] for r in runs)), 1),
               "predictions": predictions, **rounds, "searches": searches, "generation0": generation0_section(ledger),
-              "targets": targets}
+              "process_c": process_c, "targets": targets}
     if args.json:
         json.dump(report, open(args.json, "w"), indent=1)
     print(f"ledger: {len(ledger.records)} records, {len(runs)} runs, {report['cpu_seconds']} CPU-seconds, head {ledger.head()[:16]}")
@@ -357,6 +469,47 @@ def main() -> int:
             print(f"  confirm {name:11s} min-change {c['mean_min']:+.4f} gain {c['mean_gain_change']:+.4f} acquired {c['mean_acquired_change']:+.4f} ({c['runs']} runs)")
         for name, a in entry["adopted"].items():
             print(f"  ADOPTED by {name}: {a['changes']}")
+    if process_c:
+        number = lambda x: "none" if x is None else f"{x:+.4f}"
+        print(f"\nPROCESS C: {len(process_c['generations'])} of {process_c['planned']} generations recorded, {len(process_c['adoptions'])} "
+              f"adoptions (provisional), {process_c['nominees_tested']} distinct nominees tested, {process_c['runs']} runs, "
+              f"{process_c['cpu_seconds']:.0f} CPU-seconds")
+        for e in process_c["generations"]:
+            print(f"  generation {e['generation']}: searched on {e['searched']}; set aside {e['set_aside']}; "
+                  f"{e['single_field_changes_measured']} single-field changes measured, {e['positive_on_the_light_categories']} positive; "
+                  f"adopted by {e['adopted_by']}; version {e['version'][:12]}")
+            for name, row in e["techniques"].items():
+                if row["nominee"] is None:
+                    print(f"      {name:10s} no nominee")
+                    continue
+                g = row.get("gate")
+                print(f"      {name:10s} {row['nominee'][:12]} gate {number(g and g['mean_min'])} lower bound {number(g and g['gain_lower_bound'])} "
+                      f"cpu x{g['cpu_ratio']:.2f} passes {g['adopted']} | confirmation {number(row.get('confirmation'))} | {row['changes']}"
+                      if g else f"      {name:10s} {row['nominee'][:12]} not gated yet | {row['changes']}")
+                if g:
+                    print("                 per category (acquired):", "; ".join(f"{env} {v['acquired_change']:+.4f}" for env, v in g["per_env"].items()))
+        if process_c.get("final"):
+            print(f"  frozen at {process_c['final']['digest'][:12]}: {process_c['final']['changes_from_generation_0']}")
+        external = process_c.get("external_gate")
+        if external:
+            if not external["run"]:
+                print(f"  external gate: not run ({external['why']})")
+            else:
+                g, c = external["gate"], external["confirmation"]
+                print(f"  external gate on the reserves: passed {external['passed']} | gate min-change {g['mean_min']:+.4f} gain {g['mean_gain_change']:+.4f} "
+                      f"acquired {g['mean_acquired_change']:+.4f} lower bound {g['gain_lower_bound']:+.4f} cpu x{g['cpu_ratio']:.2f} {g['conditions']} "
+                      f"| confirmation {c['mean_min']:+.4f} ({c['runs']} runs)")
+                for env, v in g["per_env"].items():
+                    print(f"           {env:12s} gain {v['gain_change']:+.4f} acquired {v['acquired_change']:+.4f}")
+        recursion = process_c.get("recursion_check")
+        if recursion:
+            print(f"  recursion check: {recursion['compared']} generations compared; the climb's nominee better at the gate than that of "
+                  f"generation 0 as improver in {recursion['better_than_gen0']}, than the random proposer's in {recursion['better_than_random']}")
+            for row in recursion["generations"]:
+                print(f"      generation {row['generation']}: " + "; ".join(
+                    f"{who} found {number(row[who]['found'])} gate {row[who]['gate']:+.4f} confirmation {row[who]['confirmation']:+.4f}"
+                    for who in ("self", "gen0", "random")))
+        print(f"  success condition, part by part: {process_c['success_parts']} -> {process_c['success']}")
     for design, table in report["generation0"].items():
         print(f"\nGENERATION 0 of design {design}: every recorded run outside the target test (fresh instances)")
         for env, e in table.items():
@@ -377,7 +530,8 @@ def main() -> int:
                   f"categories improved {e['candidates_by_categories_improved']}; improving two or more and harming none "
                   f"{e['candidates_improving_two_or_more_and_harming_none']}")
     if targets:
-        print(f"\nTARGETS {targets['targets']}, seeds {targets['seeds']}; primary arm {targets['primary_arm']}")
+        print(f"\nTARGETS {targets['targets']}, seeds {targets['seeds']}; primary arm {targets['primary_arm']}; of the continued process "
+              f"{targets.get('primary_arm_b')}; of process c {targets.get('primary_arm_c')}")
         for arm, t in targets["arms"].items():
             print(f"  {arm:10s} untrained {t['untrained']:.4f} acquired {t['acquired']:.4f} gain {t['gain']:+.4f} "
                   f"categories reached {t['categories_reached']} cpu/run {t['cpu_per_run']:.1f}")

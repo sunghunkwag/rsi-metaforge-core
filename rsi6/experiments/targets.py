@@ -64,6 +64,7 @@ from rsi6.meta import rounds
 HERE = os.path.dirname(os.path.abspath(__file__))
 REGISTRY = os.path.join(os.path.dirname(HERE), "registry")
 LEDGER = os.path.join(os.path.dirname(HERE), "ledger", "main.jsonl")
+LIVE = os.path.join(os.path.dirname(HERE), "ledger", "live.jsonl")
 
 
 def say(*parts) -> None:
@@ -179,7 +180,11 @@ def main() -> int:
     parser.add_argument("--ledger", default=LEDGER)
     parser.add_argument("--targets", default=os.path.join(REGISTRY, "targets.json"),
                         help="the list of admitted target adapters (another file only for a development run)")
+    parser.add_argument("--dev", type=int, default=None,
+                        help="development only: this many seeds, on a scratch ledger, with a list of source categories as targets")
     args = parser.parse_args()
+    if args.dev and os.path.abspath(args.ledger) in (os.path.abspath(LEDGER), os.path.abspath(LIVE)):
+        raise SystemExit("--dev needs a scratch ledger")
     reg = json.load(open(os.path.join(REGISTRY, "registration.json")))
     ledger = ledgers.Ledger(args.ledger)
     ledger.verify()
@@ -199,18 +204,22 @@ def main() -> int:
             ledger.append({"type": "replace", "replaced": change["replaced"], "reserve": change["reserve"], "role": "target",
                            "why": change["why"]})
     wrong = [n for n in targets if roles.effective_role(environments.load(n).category, ledger) != "target"]
-    if wrong or len(targets) != roles.N_TARGET:
+    short = listed.get("fewer_than_drawn")             # stated in the list if a target has no replacement left
+    if not args.dev and (wrong or (len(targets) != roles.N_TARGET and not short)):
         raise SystemExit(f"the admitted list must be the {roles.N_TARGET} categories with the role target; not so: {wrong or targets}")
-    if not ledger.select(type="unlock", role="target"):
+    if not args.dev and not ledger.select(type="unlock", role="target"):
         ledger.append({"type": "unlock", "role": "target", "targets": targets})
     cache = run.Cache(ledger)
-    seeds, budget = reg["seeds"]["target"], reg["budgets"]["run"]
-    earlier = rounds.pool(ledger)
+    seeds, budget = reg["seeds"]["target"][:args.dev], reg["budgets"]["run"]
+    earlier = [n for n in rounds.pool(ledger) if n not in targets]
+    part = 1.0                                         # the share of a process's spending that the matched arms receive
+    if args.dev:                                       # development only: two environments in memory, a small share to match
+        earlier, part = earlier[:2], 0.002
     # ---- the two registered rounds
     tags = lambda kind, label: {f"{kind}:{label}{g}:self" for g in range(1, 10)}
     names_a = {kind: tags(kind, "") for kind in ("search", "gate", "confirm")}
     adopted_a = [r for r in ledger.select(type="adopt", lineage="self") if r.get("process") != "b"]
-    results, primary, _, _ = process_arms("", designs.default("a"), frozen_a[-1]["lineages"], adopted_a, spent_by(ledger, names_a),
+    results, primary, _, _ = process_arms("", designs.default("a"), frozen_a[-1]["lineages"], adopted_a, part * spent_by(ledger, names_a),
                                           targets, seeds, budget, cache, ledger, earlier)
     done = {"type": "target_done", "primary_arm": primary, "targets": targets, "seeds": seeds}
     # ---- the continued process
@@ -218,10 +227,10 @@ def main() -> int:
         names_b = {kind: tags(kind, "b") for kind in ("search", "gate", "confirm")}
         adopted_b = ledger.select(type="adopt", process="b", lineage="self")
         more, primary_b, want_b, share_b = process_arms("b:", designs.default("b"), frozen_b[-1]["lineages"], adopted_b,
-                                                        spent_by(ledger, names_b), targets, seeds, budget, cache, ledger, earlier)
+                                                        part * spent_by(ledger, names_b), targets, seeds, budget, cache, ledger, earlier)
         results.update(more)
         results["compute@b"] = matched("compute@b", designs.default("a"), "train", want_b, targets, seeds, budget, cache, ledger,
-                                       spent_by(ledger, names_b), share_b)
+                                       part * spent_by(ledger, names_b), share_b)
         done["primary_arm_b"] = primary_b
     # ---- process c
     if frozen_c:
@@ -234,7 +243,7 @@ def main() -> int:
         results["c:memory"] = cache.get([dict(job, memory=memory) for job in rounds.jobs_for(final, targets, seeds, budget, "target:c:memory")])
         say("c:memory", "entries in memory", len(memory["entries"]),
             "acquired %.4f gain %+.4f" % (mean(results["c:memory"], "acquired"), mean(results["c:memory"], "gain")))
-        spent_c = spent_by_process_c(ledger)
+        spent_c = part * spent_by_process_c(ledger)
         share_c = spent_c / (len(targets) * len(seeds))
         want_c = {(r["env"], r["seed"]): cpu(r) + share_c for r in results["c:self"]}
         for arm, field in (("c:compute", "train"), ("c:search", "test_e")):

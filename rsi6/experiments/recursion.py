@@ -39,6 +39,7 @@ from rsi6.meta import rounds
 HERE = os.path.dirname(os.path.abspath(__file__))
 REGISTRY = os.path.join(os.path.dirname(HERE), "registry")
 LIVE = os.path.join(os.path.dirname(HERE), "ledger", "live.jsonl")
+MAIN = os.path.join(os.path.dirname(HERE), "ledger", "main.jsonl")
 
 
 def say(*parts) -> None:
@@ -53,7 +54,11 @@ def find(ledger, **where):
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--ledger", default=LIVE)
+    parser.add_argument("--dev", type=float, default=None, help="development only: a scratch ledger, this many CPU-seconds "
+                        "for a search, and only the generations recorded in it")
     args = parser.parse_args()
+    if args.dev and os.path.abspath(args.ledger) in (os.path.abspath(LIVE), os.path.abspath(MAIN)):
+        raise SystemExit("--dev needs a scratch ledger")
     ledger = ledgers.Ledger(args.ledger)
     ledger.verify()
     registered = find(ledger, type="registration_c")
@@ -68,7 +73,10 @@ def main() -> int:
     cache = Cache(ledger)
     adopted = {a["round"]: a["version"] for a in ledger.select(type="adopt", process="c")}
     current, compared = v0, []
+    cpu_limit = args.dev or reg["climb_cpu_limit"]
     for g in range(1, reg["generations_planned"] + 1):
+        if find(ledger, type="c_generation_done", generation=g) is None:
+            break                                        # development only: a frozen process has every generation
         if designs.digest(current) != designs.digest(v0):
             light, _, aside = split_of(g, reg)
             seeds = [1000 + 10 * g + 1, 1000 + 10 * g + 2]
@@ -85,7 +93,7 @@ def main() -> int:
                 tag = f"recursion:c{g}:{name}"
                 record = find(ledger, type="search", tag=tag)
                 if record is None:
-                    record = rounds.search(kind, improver, current, light, seeds, reg["budgets"]["search"], reg["climb_cpu_limit"],
+                    record = rounds.search(kind, improver, current, light, seeds, reg["budgets"]["search"], cpu_limit,
                                            cache, tag, seed=seed, objective=rounds.breadth)
                     record = ledger.append(dict(record, round=f"c{g}", name=f"recursion:{name}", process="c", diagnostic="recursion",
                                                 objective="breadth"))
