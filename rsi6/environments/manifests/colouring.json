@@ -1,0 +1,244 @@
+{
+ "name": "colouring",
+ "category": "colouring",
+ "source": "Graph Coloring Instances page of M. Trick (https://mat.tepper.cmu.edu/COLOR/instances.html), the DIMACS challenge graphs: the instances in the DIMACS text format (.col) for which the page prints a number under 'optimal coloring' and at most 500 vertices",
+ "terms": "the page states no licence and no terms of use; it offers the files for download ('You can get all the instances ... in a tar file'). Fetched by hash, not redistributed here.",
+ "reference": "the number printed beside each instance on the page instances.html under 'optimal coloring' (the chromatic number); the page is pinned here as a data file and read by the scorer only. The source publishes no colourings. The builder's own search found a colouring with exactly that number for every instance used except le450_15c, le450_15d, le450_25c and le450_25d, where the number rests on the page alone ('Leighton graphs with guaranteed coloring size').",
+ "files": [
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances.html",
+   "path": "instances.html",
+   "sha256": "79ac93058c11533bc19bb0111372a46cdd2b4f0ecc1dd797b3992e6ff5aa0ba0"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/anna.col",
+   "path": "anna.col",
+   "sha256": "94907497db819e1375db6f20273cc582f2b6601bfa21e9bdf72b47d3533cf22a"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/david.col",
+   "path": "david.col",
+   "sha256": "8a75efd18606b87cc2f9a4e0ec87f8b8ca3e237b7ecc710a1ef2f069fe212192"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/fpsol2.i.1.col",
+   "path": "fpsol2.i.1.col",
+   "sha256": "39462d19547086d3795d18a4ce949ef96886900c9f3c6b3c5199eb0c5432b8a2"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/fpsol2.i.2.col",
+   "path": "fpsol2.i.2.col",
+   "sha256": "660ebcba830d86218134c45df81b8a6cb7af38b842daeaa4f802f47556c266d7"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/fpsol2.i.3.col",
+   "path": "fpsol2.i.3.col",
+   "sha256": "ea715a960034cfe0b7c229221cb9218317c48df9e805d377c5ac1190069876e2"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/games120.col",
+   "path": "games120.col",
+   "sha256": "30bcc1004a11b6cbed6e96727d48e1927e74a36383d966ec04eead8b68cb38f9"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/huck.col",
+   "path": "huck.col",
+   "sha256": "b635483fe5da294e3f35d890969d8f8b31c818e11e2b18521c2e5546fe2eb3ba"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/jean.col",
+   "path": "jean.col",
+   "sha256": "ad92a264160d87a2a55a9e1f0f41a9f584ca11c3f3ea1f6f1a7630d495e81790"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/le450_15a.col",
+   "path": "le450_15a.col",
+   "sha256": "8536ae4db665d8129b347f187cbfb3ad2927fdca57bf776aa161da12b5f83b63"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/le450_15b.col",
+   "path": "le450_15b.col",
+   "sha256": "1cca583867dfdd03b59dae48939f95f5057e6e88487a6fcda6cc25f11f9aa3c7"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/le450_15c.col",
+   "path": "le450_15c.col",
+   "sha256": "13c18c5ce061a900eef434c0003fc03df0896fc035a6a35639c9c7b49f62d1fb"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/le450_15d.col",
+   "path": "le450_15d.col",
+   "sha256": "f4e06dba0c68e5d07584fcb52e92d89ac2eeee63a849c3dfa29d151690f5b24e"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/le450_25a.col",
+   "path": "le450_25a.col",
+   "sha256": "fb2a0ebbc1c89a57f765ffd72754e36d1c3a6a33ddd50cf8d36b8b2720a1a6a1"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/le450_25b.col",
+   "path": "le450_25b.col",
+   "sha256": "6b082c7b320b3af5c4db39f527f38ef8115faffd8be152b0fe0cad9cec4b391d"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/le450_25c.col",
+   "path": "le450_25c.col",
+   "sha256": "98bd407ab229a815b39ece98f1f1c268c5946c4f27013a75511dbfd2a3995524"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/le450_25d.col",
+   "path": "le450_25d.col",
+   "sha256": "8a8e80280296f45b12c24d2bed0f6111430c6fcb834c9922539bb95c6cd685f6"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/le450_5a.col",
+   "path": "le450_5a.col",
+   "sha256": "a39058fbffffa5220e7c70e64403196b0be19ec859d7d29a105738bf80785490"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/le450_5b.col",
+   "path": "le450_5b.col",
+   "sha256": "b645467611cc3cbc6ae7e0ff80810b920e345dedd8668f793f231e04a005fc79"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/le450_5c.col",
+   "path": "le450_5c.col",
+   "sha256": "cf8f6072c1ae6e4ca2b97c5606d2e89c4652684e5212b318923b0e29bf2809d9"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/le450_5d.col",
+   "path": "le450_5d.col",
+   "sha256": "a0d91f59afed9c8fe04df2f14b0f37c44acc95790959ba5d1a2b9304ef2c9212"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/miles1000.col",
+   "path": "miles1000.col",
+   "sha256": "8243b080a46a5bd520454f6bb11bb117a99b64d45edc90517b350c0fb4c28ce0"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/miles1500.col",
+   "path": "miles1500.col",
+   "sha256": "7cdc0783a6bc9d06af9040faec0dbf28d30e56af1dc6126ab35d57bf876c8753"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/miles250.col",
+   "path": "miles250.col",
+   "sha256": "7fea68199802d69dd76930b74bf13cdc4da48d1a0c781c8da06688ad6d639206"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/miles500.col",
+   "path": "miles500.col",
+   "sha256": "1c2bdc5deffcb265663ef20c81baeea921cf5c2ea18fbfa4aa906d14f90fc473"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/miles750.col",
+   "path": "miles750.col",
+   "sha256": "de30585ae89d59e7c7a0600db40387ae780fd9a6f887d853ea9b8065a575afbc"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/mulsol.i.1.col",
+   "path": "mulsol.i.1.col",
+   "sha256": "dd4d55ff7926e4e207c61bebf9cdb6011cd31eead8761aed9ef64343038ca8dd"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/mulsol.i.2.col",
+   "path": "mulsol.i.2.col",
+   "sha256": "850086f76b33d19dd2adb638a4e14fd41848f90f0134bce8828e5fca0eba7126"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/mulsol.i.3.col",
+   "path": "mulsol.i.3.col",
+   "sha256": "d1529e02020620951561f938544cd71fb3b90cbb1d5b92580b6e81fc369b3102"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/mulsol.i.4.col",
+   "path": "mulsol.i.4.col",
+   "sha256": "1e27e3b3d27f404dbdbd112d985ff10040cd07de7210182407a986bdd6cd70d4"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/mulsol.i.5.col",
+   "path": "mulsol.i.5.col",
+   "sha256": "81ac1d8fe383f60fcede906305d78f148da53d91f17a7344afc9a2096f82dd83"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/myciel3.col",
+   "path": "myciel3.col",
+   "sha256": "45aa999c3142028995869f383e0c1936fb133bdf3b1589ad5633289a3228b2e4"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/myciel4.col",
+   "path": "myciel4.col",
+   "sha256": "7eb84027ef3ba0a8337c871b4342a06d97ea4a8e31121c9e2cee946f6a49afb3"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/myciel5.col",
+   "path": "myciel5.col",
+   "sha256": "ed37347e72cac98bef064bf5a39ff2881f47cb2121e3fb8bad3ac68bc175a530"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/myciel6.col",
+   "path": "myciel6.col",
+   "sha256": "5bb1be3fcb0da7bada24b90fa4e1ef67a02cdbcb1aa1e69587b2a75e287f61b1"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/myciel7.col",
+   "path": "myciel7.col",
+   "sha256": "8037aaba268f3da68d8278c17694db04a18dacd9fbca669660f8edb1e6010602"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/queen11_11.col",
+   "path": "queen11_11.col",
+   "sha256": "f838597541d4fcd82cdb8b93e9bd5956ca7a17ee5e2ca827759153a4b68e7d50"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/queen13_13.col",
+   "path": "queen13_13.col",
+   "sha256": "26b5f7f36d833c5d322c57ebcb39b6aa7c5c3cf21f1caa680bd614b815428241"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/queen5_5.col",
+   "path": "queen5_5.col",
+   "sha256": "d3b770332eb3897d35a7332baece51ea7bce99150bb900f49b27eff234d8cfac"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/queen6_6.col",
+   "path": "queen6_6.col",
+   "sha256": "ab44cb3ab4c30b3b9f4b8c8afbdb87947d287af8cdb7428e0f75d17199da512c"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/queen7_7.col",
+   "path": "queen7_7.col",
+   "sha256": "c4646d934b3ded04029da32bb72b62af6f157ff84faf8aefb1496143adfcb983"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/queen8_12.col",
+   "path": "queen8_12.col",
+   "sha256": "fbc5b112fc6a5a6212610ffcb594b880cbe0b03ada1de7a38b1eb3cd375a3fe4"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/queen8_8.col",
+   "path": "queen8_8.col",
+   "sha256": "1579f7e1cf2d5ab7a0bdd1682a4dad3131084dca54c4690547383dbf44731948"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/queen9_9.col",
+   "path": "queen9_9.col",
+   "sha256": "5c4637c94988ebab65dd49416bfc62ecc34e5518773615f27d6b6838d1c4c6c2"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/zeroin.i.1.col",
+   "path": "zeroin.i.1.col",
+   "sha256": "42f82df1b7d4933483a04653f11c603a30b952f9e742dca6f838a8e07b10b3aa"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/zeroin.i.2.col",
+   "path": "zeroin.i.2.col",
+   "sha256": "eb9ae2a30b6d49c1f0dd1508efaa002fabc110eec661e1aa9bd40491b8be19d5"
+  },
+  {
+   "url": "https://mat.tepper.cmu.edu/COLOR/instances/zeroin.i.3.col",
+   "path": "zeroin.i.3.col",
+   "sha256": "518dc00ba12f55fcb6e7231f0130c72df62ab534370e78cbeede3413e7a2c440"
+  }
+ ]
+}

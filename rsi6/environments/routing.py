@@ -9,13 +9,13 @@ three sets "Number of Routes: Fixed": an answer has exactly K routes, K being th
 vehicles given with the instance ("No of trucks: K" in the COMMENT field, the same number as
 the "k" of the name). All 74 published solutions have exactly K routes and no route without a
 customer. A route without a customer is therefore not a route here: "at most K" would be another
-problem on P-n55-k8, the one instance whose total demand fits K-1 vehicles (the source lists
-P-n55-k7 separately, with a smaller value).
+problem on P-n55-k8, the one instance whose total demand fits K-1 vehicles.
 
 Reference: the cost printed in each instance's solution file (.sol), with the routes that
 reach it. The source's table marks all 74 as optimal. It is a value an answer of the form below
-attains: an instance is used only if its published routes, written in the answer form, are valid
-and reproduce the published cost under this module's evaluation (all 74 do). The reference and
+attains: the adapter refuses to load unless the published routes of every instance, written in the
+answer form, are valid and reproduce the published cost under this module's evaluation, and unless
+that cost is below the expected length of a random answer (all 74 pass). The reference and
 the published routes are read by ``score`` and ``reference`` only. The COMMENT field of an
 instance file also prints the optimal value; nothing but the number of trucks is read from it.
 
@@ -233,8 +233,7 @@ class Routing(Environment):
             name = inst["name"]
             stops = len(inst["xy"]) + inst["trucks"] - 2         # the customers and K-1 depot copies
             if name + ".vrp" != path or name + ".sol" not in have:
-                self.left_out[path[:-4]] = "no solution file, or a file that does not carry its own name"
-                continue
+                raise ValueError(f"{path}: no solution file, or a file that does not carry its own name")
             if stops > MAX_STOPS or stops * stops > MAX_PAIRS:
                 self.left_out[name] = "the size rule"
                 continue
@@ -243,12 +242,11 @@ class Routing(Environment):
             inst["routes"] = np.array([c for k, route in enumerate(routes) for c in ([0] if k else []) + route], dtype=np.int64)
             inst["cost"], inst["stops"] = cost, stops
             inst["chance"] = random_length(inst["D"], inst["trucks"])
-            # an instance is used only if its published routes are a valid answer of the published cost
-            if self._valid(inst, inst["routes"]) and value(inst["D"], inst["demand"], inst["capacity"], inst["routes"])[0] == cost \
-                    and inst["chance"] > cost > 0:
-                self.instances[name] = inst
-            else:
-                self.left_out[name] = "its published routes do not reproduce its published cost"
+            # the published routes must be a valid answer of the published cost: no instance is left out for it
+            if not (self._valid(inst, inst["routes"]) and value(inst["D"], inst["demand"], inst["capacity"], inst["routes"])[0] == cost
+                    and inst["chance"] > cost > 0):
+                raise ValueError(f"{name}: its published routes do not reproduce its published cost")
+            self.instances[name] = inst
         self.threshold = self.threshold_for(self.instance_ids())
 
     @staticmethod

@@ -8,8 +8,8 @@ truth value. It is valid when every clause holds at least one true literal. Ther
 objective: the published problem is to find a valid answer.
 
 Reference: every instance of these sets is satisfiable. The source separated satisfiable from
-unsatisfiable formulae with a complete algorithm ("unforced filtered") and lists the sets as
-"all satisfiable". The reference is therefore a status proved by the source, not a bound: some
+unsatisfiable formulae with a complete algorithm ("unforced filtered"); its description page says
+that the test sets uf* contain only satisfiable instances. The reference is therefore a status proved by the source, not a bound: some
 assignment satisfies all m clauses. An answer of the form below attains it. The source
 publishes no satisfying assignment. ``reference`` returns m, the number of clauses such an
 assignment satisfies.
@@ -54,8 +54,10 @@ to the reference) has nothing to rescale. The mean score over instances is the s
 instances for which a satisfying assignment was produced.
 
 Threshold 0.9; anchor: an operating point, not an external fact. A satisfying assignment for
-nine in ten of the fresh instances. A mean of 1 is attainable, since every instance is
-satisfiable.
+nine in ten of the fresh instances. A mean of 1 is attainable by answers of the form, since every
+instance is satisfiable; whether a satisfying assignment can be found within the budget of a test
+is another matter (the audit found that a plain local search needs many times more evaluated
+answers than the registered test budget pays for on the fresh sets, so every method may score 0).
 
 Groups: the published set (uf50-218, ..., uf250-1065), which is also the size class: all
 instances of a set have the same numbers of variables and clauses.
@@ -201,7 +203,7 @@ class Satisfiability(Environment):
     threshold = 0.90
     anchor = ("an operating point, not an external fact: a satisfying assignment for nine in ten of the fresh "
               "instances (an instance scores 1 when every clause is satisfied and 0 otherwise; every instance is "
-              "satisfiable, so a mean of 1 is attainable)")
+              "satisfiable, so a mean of 1 is attainable by answers of the form; the budget of a test may not allow it)")
 
     def __init__(self):
         fetch.fetch("satisfiability", quiet=True)

@@ -1,0 +1,132 @@
+{
+ "verdict": "fix_then_audit_again",
+ "summary": "The adapter itself is exact and clean, but the environment as built cannot carry the registered test, so I do not admit it.\n\n**What holds.** Uncapacitated warehouse location in AssignProblem (customer -> warehouse, one soft group) is exact. My own parser and evaluator agree with the adapter everywhere to 2e-9, nothing observable depends on the reference, and all 12 references are attainable. The 13 pinned files are byte-identical to my own download. The builder's reasons for not presenting the capacitated problem are confirmed by the data. No learner was run on benchmark instances, by me or in the builder's scratch directory.\n\n**Why not admit (two major findings).**\n1. **The fresh instances are not independent of the training ones.** The 12 instances are three nested cost matrices times four fixed-cost levels. The split trains on set X and tests on set VII (exactly X's first 16 warehouse columns) and set XIII (all 25 of X's columns plus 25 more), with the same 50 customers and the same fixed-cost levels. `group()` returns the published set, so the kernel treats shared data as unrelated groups. cap134 has the same optimum as training instance cap104; cap131's optimal open set shares 14 of 15 warehouses with cap101.\n2. **Design a cannot learn here.** On made-up 50x25 instances, design a makes no learning round with 4, 5 or 6 training instances and first learns at 7. The split can never give more than 4, so \"acquired\" would equal \"untrained\" by construction for design a. Design b learns with 4.\n\n**Decision on the verdict.** I chose \"fix_then_audit_again\" rather than \"reject\" because the form is exact and the data are trustworthy, and a correction exists. It needs a decision above the builder: restate the size rule, before anything is scored, to admit capa, capb and capc (1000 x 100, uncapacitated optima are in uncapopt.txt), and make `group()` put instances that share a cost matrix in one group. Cost is not an obstacle: on made-up 1000x100 instances design b's acquire took 10.7 cpu-s and one apply 0.2 cpu-s. Even then one side of the split has only 3 instances, and design a still gets too few training instances unless the 12 small ones land on the training side. If the size rule is not to be widened, the category should not be used as a target: nothing inside the 12 instances repairs either finding.\n\nI did not compute any constructive baseline on the benchmark instances, so the threshold cannot be shaped by score knowledge.\n\nEverything is in <scratch>/targets/facility/audit1 (scripts in s/, outputs s1.out to s5.out, downloads in dl/). Nothing under REPO was modified.",
+ "checks": [
+  {
+   "id": "0 data",
+   "n": "41 files downloaded from people.brunel.ac.uk (2 pages, capopt, uncapopt, cap41..cap134); 13 pinned files compared",
+   "what_was_run": "curl -A research-data-check/1.0 into audit1/dl; cmp with REPO/rsi6/data/facility; python3 -I audit1/s/s1_data.py audit1/dl audit1/s1_answers.json",
+   "result": "PASS. fail=0; all 13 pinned files byte-identical to my download; the environment loads, so the manifest hashes match. Own parser: every file has exactly 2+2m+n(m+1) numeric tokens and nothing else. Builder's data claims confirmed: all 25 capacitated-only files have an identical twin among the 12 with capacities ignored; 13 capacitated files have a customer demand above every capacity (12912 against 5000, or 10000 in cap51)."
+  },
+  {
+   "id": "1 no hidden solver",
+   "n": "206 lines of facility.py read in full",
+   "what_was_run": "Read of rsi6/environments/facility.py",
+   "result": "PASS. Only parse, value_of, partial_totals, _new/_rows/_push, relabel/decode and score. No search, no ordering or pruning by the objective, no optimisation call. The only table beyond the instance is SETS (file names per published set) and the size-rule constants."
+  },
+  {
+   "id": "2 no privileged information",
+   "n": "12 instances x 2 seeds x training/fresh; 3 full step-by-step paths each (candidates, totals, allowed, evaluate) plus all 16 public view fields",
+   "what_was_run": "s2_adapter.py ... alter, on REPO and on a copy whose uncapopt.txt held random values (manifest hash updated in the copy; copy deleted afterwards)",
+   "result": "PASS. Observation digest 5e0ec3d59e1c3fbe... in all four conditions: true references, references replaced in memory (REPO), altered reference file (copy), and altered again in memory. 'identical: True' printed twice. No public field beyond the generic ones."
+  },
+  {
+   "id": "3 traceability",
+   "n": "72 problem objects (12 instances x 3 seeds x 2)",
+   "what_was_run": "s2_adapter.py: exposed arrays compared bitwise with my own parse under the permutations derived from decode",
+   "result": "PASS 72 of 72. var_opt[0][v,o] is the allocation cost of customer v from warehouse o; opt_attr[o,0] is the fixed cost. var_attr has 0 columns; no var_var, opt_opt, occ_attr, capacity, domain or start answer. Capacities and demands are not exposed, as the page says to ignore them."
+  },
+  {
+   "id": "4 relabelling",
+   "n": "72 problems; one own-label answer per instance under 6 relabellings",
+   "what_was_run": "s2_adapter.py",
+   "result": "PASS. No identity permutation met (0 of 144); largest spread of the value of one answer across relabellings 9.3e-10 (float summation order); decode maps back exactly."
+  },
+  {
+   "id": "5 evaluator agreement and attainability",
+   "n": "1080 complete answers, 1080 partial answers, 405,281 candidate entries, 3600 path totals; all 4 instances of every group (no group has 5) x 3 seeds x 2",
+   "what_was_run": "s2_adapter.py against audit1/s/mine.py (own parser and evaluator, plain Python); s1_data.py for attainment",
+   "result": "PASS. Largest differences: score 3.3e-16, evaluate/partial_totals 1.9e-9, candidates 1.3e-9, path totals 1.9e-9, fast rows against the kernel's slow default 2.0e-9; meter accounting exact. Attainment: my complete enumeration of all open sets (2^16, 2^25) gives exactly the published optimum for sets VII and X; my local search attains the published value for set XIII (optimality there rests on the source; no scipy for an LP bound). Four references are printed 0.0005 below the true value (cap101, cap103, cap131, cap133), so the 0.001 tolerance is needed. Attaining answers score 1.0; one customer moved to its dearest warehouse scores 0.885 to 0.912; 9 invalid forms (float, short, long, -1, m, 2-D, bool, object, empty) all score 0. The source publishes no optimal answers."
+  },
+  {
+   "id": "6 leak scan",
+   "n": "every attribute of 72 problem objects and their views, against every value printed in uncapopt.txt and capopt.txt",
+   "what_was_run": "s2_adapter.py; s1_data.py token scan of the instance files",
+   "result": "PASS. No exposed number within 1.0 of any published optimum; no string attribute; the instance files contain no text and no optimum. The problem object's own attributes are cost, fixed and the generic fields."
+  },
+  {
+   "id": "7 one layout",
+   "n": "72 problems",
+   "what_was_run": "s2_adapter.py: run.layout and rsi6.learner.learner.Layout(view(P), version.default()).names",
+   "result": "PASS. One layout: ('assign', False, True, True, (False,), (False,), 0, 1, 0, 0, 1, 0, True, True). One descriptor name list (7 names). No zero-padding used."
+  },
+  {
+   "id": "8 split",
+   "n": "12 instances, 3 groups",
+   "what_was_run": "s2_adapter.py: split(env, 16, 24) and run.halves; s1_data.py for data overlap",
+   "result": "FAIL in substance. Train 4 (cap101, cap103, cap102, cap104, all X); fresh 8 (VII: 4, XIII: 4); halves XIII | VII; no group label shared. But the groups share data: VII equals X[:, :16], all 25 X columns occur in XIII, demands and fixed-cost levels identical, 3 distinct cost matrices among the 12. The fresh set is 2 matrices x 4 fixed-cost levels, both overlapping the training matrix; it is not large or independent enough to mean much. The kernel asks for 16 and 24."
+  },
+  {
+   "id": "9 instances left out; builder's scratch",
+   "n": "work/checks.py, explore.py, probe_g.py, checks.out",
+   "what_was_run": "grep for acquire, apply, measure, run.run, Learner, designs; read of checks.py lines 281-300",
+   "result": "PASS. Left out by the stated size rule only (capa, capb, capc: 100,000 pairs) and as duplicates (the 25 capacitated-only files, verified). The learner was called only on made-up FacilityProblem objects built from g.integers random numbers; no measure or run call; no ledger file. No choice made with knowledge of scores found."
+  },
+  {
+   "id": "10 threshold anchor",
+   "n": "1",
+   "what_was_run": "env.threshold, env.anchor",
+   "result": "PASS. 0.95, worded as 'an operating point, not an external fact: a mean ratio of the published optimal value of the uncapacitated problem (attainable, not a bound) to the cost of the answer of 0.95'. Plain ratio scale is correct: mean score of 2000 uniformly random answers is 0.283 to 0.417 per instance, reference/expected value 0.277 to 0.407, all below 0.5."
+  },
+  {
+   "id": "11 cost and interface",
+   "n": "made-up instances only: 4 and 16 training of 50x25, applies on 50x16 and 50x50, both designs; 3 training of 1000x100",
+   "what_was_run": "s3_madeup.py, s4_hyp.py, s5_count.py (random numbers in the adapter's layout; the environment is not loaded in them)",
+   "result": "Cost PASS: largest instance 50x50, 2551 units per construction, test limit 7602 units, training limit 208,160 units; acquire at most 2.7 cpu-s, 8 applies 0.1 cpu-s. Interface PASS for validity: all answers of both designs well-formed and exactly evaluated. Interface FAIL for learning with design a: with 4 training instances acquire used 0 of 208,160 units and reported 'decide: the budget did not allow one round of learning'; design b learned (33 iterations, 157 constructions)."
+  }
+ ],
+ "findings": [
+  {
+   "severity": "major",
+   "where": "rsi6/environments/facility.py: group() and SETS; the resulting split(env, 16, 24)",
+   "what": "The fresh instances share their data with the training instances. Training is set X; fresh is set VII (a column subset of X's cost matrix) and set XIII (a column superset), with the same 50 customers and the same four fixed-cost levels. group() returns the published set, so the kernel's rule 'fresh instances are not siblings of the training ones' holds for the labels only. The kernel's own text (run.halves) says groups exist so that 'instances that share data (a matrix, a generator)' stay together. The module text discloses the overlap, but disclosure does not repair the test: a fresh score here mostly measures the same instance with other warehouse columns.",
+   "evidence": "s1_data.py printed: 'VII == X[:, :16]: True  demands equal: True True'; 'X columns found in XIII at: [2, 6, 7, 10, ... 48]' (all 25 found); 'distinct cost matrices among the 12: 3'; 'optimal open sets cap101 vs cap131: 15 and 15 warehouses, 14 with identical cost columns'; 'cap104 vs cap134: 4 and 4 warehouses, 4 with identical cost columns' (both references are 928941.750). s2_adapter.py printed: train all 'X', fresh 4 'VII' + 4 'XIII', halves ['cap133','cap134','cap132','cap131'] | ['cap71','cap73','cap72','cap74'].",
+   "suggested_fix": "Cannot be repaired inside the 12 instances. Needs a decision above the builder: restate the size rule (before anything is scored) to admit capa, capb, capc as uncapacitated instances, and let group() put instances that share a cost matrix in one group, with group names fixed by a rule and not picked for the split they produce. If the size rule stays, do not use this category as a target."
+  },
+  {
+   "severity": "major",
+   "where": "the environment as a whole: 4 training instances",
+   "what": "Design a of the learner makes no learning round with the number of training instances this environment can give. Its 'acquired' score would equal its 'untrained' score by construction, and a zero gain would be misread as no transfer. The split can never give more than 4 training instances (3 groups of 4; the fresh side takes two). The builder saw this and filed it as 'NOTE (not a failure of the adapter)' in work/checks.out line 33.",
+   "evidence": "s3_madeup.py (made-up 50x25, registered budget): 'design a | 4 training of 50x25 (the real split's shape): acquire used 0 of 208160 units ... failed: decide: the budget did not allow one round of learning'; design b same shape: 'used 204257 of 208160 ... iterations 33, constructions 157, learned True'. s5_count.py, design a: 4, 5, 6 training instances -> used 0, same failure; 7 -> 'used 333268 of 364280, iterations 1, constructions 64, learned True'.",
+   "suggested_fix": "At least 7 training instances of this size are needed for design a (measured on made-up instances; learner.py was not opened). The category has 12 distinct small instances, so this is only reachable if they all fall on the training side with capa, capb, capc as the fresh side. Otherwise register in advance that design a cannot learn in this category and that its result here is not evidence about acquisition."
+  },
+  {
+   "severity": "minor",
+   "where": "R6: number of instances and groups",
+   "what": "12 instances in 3 groups against the 40 asked for; the split is 4 training and 8 fresh against the kernel's 16 and 24. The benchmark has no more distinct instances within the size rule, and the module text says so. Not a defect of the adapter, but it bounds what any result here can mean.",
+   "evidence": "s2_adapter.py: 'A groups {VII: 4 ids, X: 4 ids, XIII: 4 ids}'. s1_data.py: 'capacitated-only files 25 with an identical uncap twin: 25'. s4_hyp.py: with A, B, C added under the published set names the split would be 'train [A, B, X] 6 | fresh [C, VII, XIII] 9', which still leaves VII and XIII opposite X.",
+   "suggested_fix": "See the first finding."
+  },
+  {
+   "severity": "minor",
+   "where": "rsi6/environments/facility.py module text, lines 31-33",
+   "what": "The text says of uncapopt that 'The file prints three decimals and warns that different machines may give slightly different results ... due to rounding errors'. That warning is printed in capopt.txt only; uncapopt.txt has no such sentence. The 0.001 tolerance itself is justified by the data.",
+   "evidence": "s1_data.py printed 'warning text in uncapopt: False in capopt: True'; and 'cap101 ref 796648.437 mine 796648.43750 diff +0.00050' (same for cap103, cap131, cap133).",
+   "suggested_fix": "Say that the warning stands in capopt.txt, and that uncapopt.txt prints four of the twelve values 0.0005 below the value an answer attains."
+  },
+  {
+   "severity": "note",
+   "where": "answer form (module text lines 38-44)",
+   "what": "A published answer that opens a warehouse and leaves it idle cannot be written with its own value: the form writes it as the same supplies without the idle warehouse. Such answers are never cheaper (fixed costs are non-negative, checked at load) and the optimum is unchanged. The module text states this. I accept it as exact for every answer that matters, but it is a deliberate narrowing of R1's 'every valid published answer'.",
+   "evidence": "Source reading; s1_data.py: fixed levels are {0, 7500 | 12500 | 17500 | 25000}, min cost 0.0; enumeration over all open sets reproduces the published optimum for the 8 instances of sets VII and X."
+  },
+  {
+   "severity": "note",
+   "where": "reference for set XIII",
+   "what": "Attainment of the four XIII references is verified (my local search reaches each published value to within 0.0005). Their optimality is not verified independently: 2^50 open sets, and scipy is not installed for an LP bound. It rests on the source, as the module text says.",
+   "evidence": "s1_data.py: 'cap131 ref 793439.562 mine 793439.56250 diff +0.00050 (local search) ... lp_bound None', likewise cap132, cap133, cap134."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/environments/manifests/facility.json, 'terms'",
+   "what": "The licence wording was copied from pmedian.json; the library's legal page was not fetched for this manifest. The manifest says so itself.",
+   "evidence": "Manifest text: '(The wording is the one recorded in this package's manifest of the same source, pmedian.json; the library's legal page was not fetched again for this manifest.)'"
+  },
+  {
+   "severity": "note",
+   "where": "audit scope",
+   "what": "I did not compute any constructive baseline (for example a myopic construction by exact deltas) on the benchmark instances, because that would come close to predicting the learner's untrained score before the registered test. Whether 0.95 separates anything is therefore not checked; it is an operating point taken from pmedian.py. I also did not run rsi6/tests/test_kernel.py; my own scripts cover the same properties for this adapter.",
+   "evidence": "No such script exists in audit1/s; the learner was run only in s3_madeup.py, s4_hyp.py and s5_count.py on random numbers."
+  }
+ ]
+}

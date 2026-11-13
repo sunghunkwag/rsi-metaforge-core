@@ -1,16 +1,16 @@
 {
  "buildable": true,
  "files_written": [
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/routing/repo/rsi6/environments/manifests/routing.json",
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/routing/repo/rsi6/environments/routing.py",
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/routing/repo/rsi6/environments/__init__.py",
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/routing/repo/rsi6/data/routing/ (148 fetched files: 74 .vrp and 74 .sol, pinned by SHA-256 in the manifest)",
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/routing/work/checks.py",
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/routing/work/checks.out",
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/routing/work/survey.py",
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/routing/work/scale.py",
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/routing/work/rows.json",
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/routing/work/dl/terms/terms.html"
+  "<scratch>/targets/routing/repo/rsi6/environments/manifests/routing.json",
+  "<scratch>/targets/routing/repo/rsi6/environments/routing.py",
+  "<scratch>/targets/routing/repo/rsi6/environments/__init__.py",
+  "<scratch>/targets/routing/repo/rsi6/data/routing/ (148 fetched files: 74 .vrp and 74 .sol, pinned by SHA-256 in the manifest)",
+  "<scratch>/targets/routing/work/checks.py",
+  "<scratch>/targets/routing/work/checks.out",
+  "<scratch>/targets/routing/work/survey.py",
+  "<scratch>/targets/routing/work/scale.py",
+  "<scratch>/targets/routing/work/rows.json",
+  "<scratch>/targets/routing/work/dl/terms/terms.html"
  ],
  "checks": [
   {

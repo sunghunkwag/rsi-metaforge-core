@@ -14,19 +14,19 @@
  ],
  "learner_run_on_benchmark_instances": false,
  "files_written": [
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/repo/rsi6/environments/satisfiability.py",
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/repo/rsi6/environments/manifests/satisfiability.json",
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/repo/rsi6/environments/__init__.py",
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/repo/rsi6/data/satisfiability/ (nine archives fetched by rsi6.fetch)",
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/work/checks.py",
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/work/checks.out",
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/work/indep.py",
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/work/models.py",
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/work/models.json",
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/work/models.out",
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/work/inspect_dl.py",
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/work/inspect2.py",
-  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/targets/satisfiability/work/dl/ (second download of the nine archives, benchm.html, descr.html)"
+  "<scratch>/targets/satisfiability/repo/rsi6/environments/satisfiability.py",
+  "<scratch>/targets/satisfiability/repo/rsi6/environments/manifests/satisfiability.json",
+  "<scratch>/targets/satisfiability/repo/rsi6/environments/__init__.py",
+  "<scratch>/targets/satisfiability/repo/rsi6/data/satisfiability/ (nine archives fetched by rsi6.fetch)",
+  "<scratch>/targets/satisfiability/work/checks.py",
+  "<scratch>/targets/satisfiability/work/checks.out",
+  "<scratch>/targets/satisfiability/work/indep.py",
+  "<scratch>/targets/satisfiability/work/models.py",
+  "<scratch>/targets/satisfiability/work/models.json",
+  "<scratch>/targets/satisfiability/work/models.out",
+  "<scratch>/targets/satisfiability/work/inspect_dl.py",
+  "<scratch>/targets/satisfiability/work/inspect2.py",
+  "<scratch>/targets/satisfiability/work/dl/ (second download of the nine archives, benchm.html, descr.html)"
  ],
  "checks": [
   {

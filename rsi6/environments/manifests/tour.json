@@ -1,0 +1,471 @@
+{
+ "name": "tour",
+ "category": "tour",
+ "source": "TSPLIB95 (G. Reinelt), symmetric travelling salesman problems, as hosted by the author's group at comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/ : the source's list of optimal tour lengths (TSP-BEST.html, the page formerly at STSP.html), the instance file <name>.tsp.gz of each of the 43 instances on that list whose name gives at most 173 cities, and the optimal tour <name>.opt.tour.gz where the source serves one (it publishes tours for a part of the instances only: the others are marked missing). Fetched over https from that host (its http address, named in older references, did not answer); the documentation of the distance functions is tsp95.pdf in the same directory",
+ "terms": "no licence text on the source's pages; the library is published by its author as test data for research. Fetched by hash, not redistributed here.",
+ "reference": "the optimal tour length the source lists for each instance in TSP-BEST.html ('all problems are now solved to optimality'), read by the kernel only; where the source publishes an optimal tour, it attains that length",
+ "allow_missing": true,
+ "files": [
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/TSP-BEST.html",
+   "path": "TSP-BEST.html",
+   "sha256": "024f3968adbbe0275e9ee7f7b86ad5b12e553052e7ec3c0d3d8ef762d1732e8e"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/att48.tsp.gz",
+   "path": "att48.tsp.gz",
+   "sha256": "e09da8f5f976a755d5ac95dbc6b5c7e9f5e633813c944a0fe3c9e7b04bee268a"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/att48.opt.tour.gz",
+   "path": "att48.opt.tour.gz",
+   "sha256": "93e1b0ad319b01838bb63a383c8999a7fdc73822b92ab82649e2e8aa984db80a"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/bayg29.tsp.gz",
+   "path": "bayg29.tsp.gz",
+   "sha256": "2b36c1044b433eba4be766fc40de41e7f223838680734bee7f07f6b615cc5823"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/bayg29.opt.tour.gz",
+   "path": "bayg29.opt.tour.gz",
+   "sha256": "23b71e51e12238b89f893d26f46f792979cb71e99d6ee71d37a409636a0cbaf3"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/bays29.tsp.gz",
+   "path": "bays29.tsp.gz",
+   "sha256": "80b7361c21cc008a19c7327b0fc29e5d0605eafab5c50c86b3bbf7856cd2d8da"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/bays29.opt.tour.gz",
+   "path": "bays29.opt.tour.gz",
+   "sha256": "c4235502ae907f44a51f7432c343fbc7a2664159097514055c6718ee3d77f86d"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/berlin52.tsp.gz",
+   "path": "berlin52.tsp.gz",
+   "sha256": "5bd7da24ec487b0d0bab1d68c423310297865d0770b31e79e6c99ef7b264b832"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/berlin52.opt.tour.gz",
+   "path": "berlin52.opt.tour.gz",
+   "sha256": "e11a963d3feb97b59e7f092f13bac12f5c7100841c3e550f6a922e275f409898"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/bier127.tsp.gz",
+   "path": "bier127.tsp.gz",
+   "sha256": "771440428f31cca8b9913f54e7230b13f4f55d0b5e1f05617968e7eb50c8b58a"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/bier127.opt.tour.gz",
+   "path": "bier127.opt.tour.gz",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/brazil58.tsp.gz",
+   "path": "brazil58.tsp.gz",
+   "sha256": "668d935b9dd27a6cd1820e363967dcc91239eaf9ca4b6b533667ef861584f882"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/brazil58.opt.tour.gz",
+   "path": "brazil58.opt.tour.gz",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/burma14.tsp.gz",
+   "path": "burma14.tsp.gz",
+   "sha256": "3d69de410397bc04b75096dfe01e85868d868f2ad1dc96da61e710306407e026"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/burma14.opt.tour.gz",
+   "path": "burma14.opt.tour.gz",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/ch130.tsp.gz",
+   "path": "ch130.tsp.gz",
+   "sha256": "6861a3f184a9ef24fef458c1b3baa39ef860186eda38e37cea9b23aa282c471d"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/ch130.opt.tour.gz",
+   "path": "ch130.opt.tour.gz",
+   "sha256": "264f84cebd2903afe6fa25bb73281baa85069692c15b20ab7a6828301053177a"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/ch150.tsp.gz",
+   "path": "ch150.tsp.gz",
+   "sha256": "30bba012d1b16715c24f9e383bced81143871e2caf7f2b49a09da4ee844762cf"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/ch150.opt.tour.gz",
+   "path": "ch150.opt.tour.gz",
+   "sha256": "31b4245fc74bddf3c3d0d2e91c9b6013d862f8d4b3b3210ef46e3ac0b6bbe47d"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/dantzig42.tsp.gz",
+   "path": "dantzig42.tsp.gz",
+   "sha256": "4c338034798a550836b414a78814f5a3b12e65081949687c376d1831fd45f39e"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/dantzig42.opt.tour.gz",
+   "path": "dantzig42.opt.tour.gz",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/eil101.tsp.gz",
+   "path": "eil101.tsp.gz",
+   "sha256": "8a9d0e67b8a60e9edd41dc0bc1f7376b0f6efad5f6f18e3c9e079b51385bccd5"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/eil101.opt.tour.gz",
+   "path": "eil101.opt.tour.gz",
+   "sha256": "d6205d2c088631c1d4729b889058cc5e1bf4db26a2584c12ea6ee4a238d12dca"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/eil51.tsp.gz",
+   "path": "eil51.tsp.gz",
+   "sha256": "7176f94c7ca15c242fa4e9d418c19f326c17695ea1d6b2ea2d3caf8c9d172bbe"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/eil51.opt.tour.gz",
+   "path": "eil51.opt.tour.gz",
+   "sha256": "291912b6ebbea12b675a3b733772c42c62b611244d74532b37825ff158896d75"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/eil76.tsp.gz",
+   "path": "eil76.tsp.gz",
+   "sha256": "20fb8747d37de6e7e56f08549cb899274313eb7dcf0409c0bd972f2f5819f19c"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/eil76.opt.tour.gz",
+   "path": "eil76.opt.tour.gz",
+   "sha256": "432e8804c818694145448b66a278016a5c6347b25e884c36ef004b4ea9ae5f91"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/fri26.tsp.gz",
+   "path": "fri26.tsp.gz",
+   "sha256": "7e6fa640e48ca0c891114c0135d80a9c92026c0a4debdcc8a2c94ea5ffd8ca24"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/fri26.opt.tour.gz",
+   "path": "fri26.opt.tour.gz",
+   "sha256": "9c33478e95a75e1cb211e80a3da129883d84b09ac85687859f0764a9570099c4"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/gr120.tsp.gz",
+   "path": "gr120.tsp.gz",
+   "sha256": "b70a79bff6f6b5abc7688937d2ee7d8e57165b1870d21783b3fbdfa77e1c0fb7"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/gr120.opt.tour.gz",
+   "path": "gr120.opt.tour.gz",
+   "sha256": "10d163a36496f4116eb909b6fabee6ad69d194c9ae26edadc3bdc67521ab6d91"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/gr137.tsp.gz",
+   "path": "gr137.tsp.gz",
+   "sha256": "de2a0a53de2403ccc42783a86c5ec4ac38567533bc75a17acc8d2ad5ff9a2cc9"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/gr137.opt.tour.gz",
+   "path": "gr137.opt.tour.gz",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/gr17.tsp.gz",
+   "path": "gr17.tsp.gz",
+   "sha256": "3f277b1a294512e2349e626cccd15e666c20fb1afebe67a9b05c161bf5dbe4ea"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/gr17.opt.tour.gz",
+   "path": "gr17.opt.tour.gz",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/gr21.tsp.gz",
+   "path": "gr21.tsp.gz",
+   "sha256": "1d4aa957101a974b421ffb7fe8dc3078f8804f4a636f6c6ae06f757c709ed501"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/gr21.opt.tour.gz",
+   "path": "gr21.opt.tour.gz",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/gr24.tsp.gz",
+   "path": "gr24.tsp.gz",
+   "sha256": "4a205a1482166a004f49e15a1c03dcb8ed8f839c838289b72a4f8e8abfcac6e5"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/gr24.opt.tour.gz",
+   "path": "gr24.opt.tour.gz",
+   "sha256": "aa8e68c02fc873b2eb6f7196eaf58d5ee6e7eda000732cd2b6dd56310a406481"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/gr48.tsp.gz",
+   "path": "gr48.tsp.gz",
+   "sha256": "86a9a93881d9f64e9fec2df1a047aac45a61a40b34916cb56f50c278a151d9de"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/gr48.opt.tour.gz",
+   "path": "gr48.opt.tour.gz",
+   "sha256": "ffc5eb0ab16c45f965cc28961ac92ca9b2b79e8b6221292f2add206d9401d44a"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/gr96.tsp.gz",
+   "path": "gr96.tsp.gz",
+   "sha256": "61eb3766598716126d68a4ed95c2d8b0ce4e9f89f210f6d9ee83616db37a2126"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/gr96.opt.tour.gz",
+   "path": "gr96.opt.tour.gz",
+   "sha256": "e4ef9d60713774371fec21cae747e3c55a71f52ca19ea864d6bfd85019976cc2"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/hk48.tsp.gz",
+   "path": "hk48.tsp.gz",
+   "sha256": "e7e9a49427257a49bb235e45d54fa23857c964ec5733ba4d602798ac711035f3"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/hk48.opt.tour.gz",
+   "path": "hk48.opt.tour.gz",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/kroA100.tsp.gz",
+   "path": "kroA100.tsp.gz",
+   "sha256": "016cb494dcd766cc06531c12a9fa79bd348cb21f2b2bbb9edb864951e8de7aa5"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/kroA100.opt.tour.gz",
+   "path": "kroA100.opt.tour.gz",
+   "sha256": "884ef503fb9649b662fd598860cacc2038061152a71df2bb5b9597dfc69d1727"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/kroA150.tsp.gz",
+   "path": "kroA150.tsp.gz",
+   "sha256": "cf6ee4e5d9d1e98cf0c2916e68e60f710d29b1b4bf547abb690de74f2cf77aee"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/kroA150.opt.tour.gz",
+   "path": "kroA150.opt.tour.gz",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/kroB100.tsp.gz",
+   "path": "kroB100.tsp.gz",
+   "sha256": "a79057e65f367040bc67c9940117485bbc2f69ed1496a66c062402e7b69803cb"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/kroB100.opt.tour.gz",
+   "path": "kroB100.opt.tour.gz",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/kroB150.tsp.gz",
+   "path": "kroB150.tsp.gz",
+   "sha256": "359b5b536ffdf2569045331aa44167f8eb595bdf29c7ea40bdc169857923b373"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/kroB150.opt.tour.gz",
+   "path": "kroB150.opt.tour.gz",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/kroC100.tsp.gz",
+   "path": "kroC100.tsp.gz",
+   "sha256": "62b1755fab2b60cf7049ffc93ae8d1b6270d18f71b79d3f677e41bd1dfa642c0"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/kroC100.opt.tour.gz",
+   "path": "kroC100.opt.tour.gz",
+   "sha256": "36a8c76db496c910fc225d37d6c4449121315c033b1ddb76134ad6ddc65ebe11"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/kroD100.tsp.gz",
+   "path": "kroD100.tsp.gz",
+   "sha256": "da7e565819d7b9b1d65744378a8153e77b78784dda5e1c2f26bf136387509fd9"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/kroD100.opt.tour.gz",
+   "path": "kroD100.opt.tour.gz",
+   "sha256": "9c0994bdc00a1c8299dc0931ceb4040dacd4190d35840573b75684061bce71c9"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/kroE100.tsp.gz",
+   "path": "kroE100.tsp.gz",
+   "sha256": "d67fc071cde41c7628730389b90233f67268ef71158bd42787893d3ac87dbcdf"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/kroE100.opt.tour.gz",
+   "path": "kroE100.opt.tour.gz",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/lin105.tsp.gz",
+   "path": "lin105.tsp.gz",
+   "sha256": "03d7f9c7748de91a1bd2d1ea00f74125a88544de0f6c18b2df2982e133f3cc57"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/lin105.opt.tour.gz",
+   "path": "lin105.opt.tour.gz",
+   "sha256": "a5f08b0ae6a5f281c45893418abddb11d715d946f772e878186e4524551fa8cb"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/pr107.tsp.gz",
+   "path": "pr107.tsp.gz",
+   "sha256": "f8725df6f3377d7c587c1ad7628b6407cddbdb0aa494ab8e6f798d5cbcdaff6d"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/pr107.opt.tour.gz",
+   "path": "pr107.opt.tour.gz",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/pr124.tsp.gz",
+   "path": "pr124.tsp.gz",
+   "sha256": "e9ad55b99f385ae97e8ab194c2ced241a50a817cc1d49bd4e3d3c2989b19a25e"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/pr124.opt.tour.gz",
+   "path": "pr124.opt.tour.gz",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/pr136.tsp.gz",
+   "path": "pr136.tsp.gz",
+   "sha256": "2f89e9b41d53ed8a877e52d84693cac78005fb94d4afcc0f1661b39b4f7e102c"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/pr136.opt.tour.gz",
+   "path": "pr136.opt.tour.gz",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/pr144.tsp.gz",
+   "path": "pr144.tsp.gz",
+   "sha256": "c39b7ce0890c0137f0199259aef82df6457133cfc3ff0abd3b284d5a20a31b2a"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/pr144.opt.tour.gz",
+   "path": "pr144.opt.tour.gz",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/pr152.tsp.gz",
+   "path": "pr152.tsp.gz",
+   "sha256": "5306bb196c3e35aa21f8bcdf3a26c703a6849d11d6759b782ca5c2fe60104cdc"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/pr152.opt.tour.gz",
+   "path": "pr152.opt.tour.gz",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/pr76.tsp.gz",
+   "path": "pr76.tsp.gz",
+   "sha256": "3162ab7b5854ff1a422c95d9099fce4c4e3aa5b8ba40bb98be219de08015a84e"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/pr76.opt.tour.gz",
+   "path": "pr76.opt.tour.gz",
+   "sha256": "abe4e998ae438c07e72c90ca26f5b237a5d57a5a6accf42f726cdb5584357e7f"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/rat99.tsp.gz",
+   "path": "rat99.tsp.gz",
+   "sha256": "00cfdf373541f4bc4b8c482e8adbe9972630adb005d6f1c28974017158522ee2"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/rat99.opt.tour.gz",
+   "path": "rat99.opt.tour.gz",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/rd100.tsp.gz",
+   "path": "rd100.tsp.gz",
+   "sha256": "1de646d12e730ff3d4e6e4cda584ce76593ed32f46deda6130df46d02bb30cf7"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/rd100.opt.tour.gz",
+   "path": "rd100.opt.tour.gz",
+   "sha256": "0e875ab1c7ac2be4b0007f0a7df769988d6e740f46feebc37c6a3a81d6efa825"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/st70.tsp.gz",
+   "path": "st70.tsp.gz",
+   "sha256": "7b6d70948114e9406dd3a4cc2fc2329aeda71e70b7c7327db23ad27aa2086087"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/st70.opt.tour.gz",
+   "path": "st70.opt.tour.gz",
+   "sha256": "49ba624411b615cdf19836b47100e58a983afc7291b29bcb0df2cbf79f11f669"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/swiss42.tsp.gz",
+   "path": "swiss42.tsp.gz",
+   "sha256": "3245e6a73bf4d0128b29704301cf122b27c20154fdbf3d7ad01ce136c0a29fdf"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/swiss42.opt.tour.gz",
+   "path": "swiss42.opt.tour.gz",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/u159.tsp.gz",
+   "path": "u159.tsp.gz",
+   "sha256": "a08b8a1ebeae529eb8955688b35b9e1a7b720f5d67461f310bf73177bc02819b"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/u159.opt.tour.gz",
+   "path": "u159.opt.tour.gz",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/ulysses16.tsp.gz",
+   "path": "ulysses16.tsp.gz",
+   "sha256": "926a7caa205ed1302bf47ff60cfca2f65e66ecb51d60ed007c2389de53736005"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/ulysses16.opt.tour.gz",
+   "path": "ulysses16.opt.tour.gz",
+   "sha256": "1466b238673f75f4731c50135a2e751749735b1dd3ac73f11c59e0aa15494fae"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/ulysses22.tsp.gz",
+   "path": "ulysses22.tsp.gz",
+   "sha256": "93762aff79a77f87c55c555384bfc55ace72d69652ee1e1a21cdc541bb3f67d8"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/ulysses22.opt.tour.gz",
+   "path": "ulysses22.opt.tour.gz",
+   "sha256": "e400cb6d7616089e9b5b266d7091887aa48a03522c0c637ba9c31a44db5473bf"
+  },
+  {
+   "url": "https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/st70.opt.tour",
+   "path": "st70.opt.tour",
+   "sha256": null,
+   "missing": true
+  }
+ ]
+}

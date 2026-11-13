@@ -1,0 +1,95 @@
+{
+ "buildable": true,
+ "files_written": [
+  "<scratch>/targets/colouring/repo/rsi6/environments/colouring.py",
+  "<scratch>/targets/colouring/repo/rsi6/environments/manifests/colouring.json",
+  "<scratch>/targets/colouring/repo/rsi6/environments/__init__.py",
+  "<scratch>/targets/colouring/repo/rsi6/data/colouring/ (instances.html and 46 .col files, fetched by rsi6.fetch, hashes pinned in the manifest)",
+  "<scratch>/targets/colouring/work/checks.py",
+  "<scratch>/targets/colouring/work/checks.out",
+  "<scratch>/targets/colouring/work/indep.py",
+  "<scratch>/targets/colouring/work/attain.py",
+  "<scratch>/targets/colouring/work/attain.out",
+  "<scratch>/targets/colouring/work/attain_first.out",
+  "<scratch>/targets/colouring/work/attained.json",
+  "<scratch>/targets/colouring/work/iface.py",
+  "<scratch>/targets/colouring/work/timing.out",
+  "<scratch>/targets/colouring/work/gen_manifest.py",
+  "<scratch>/targets/colouring/work/dl/page/instances.html"
+ ],
+ "checks": [
+  {
+   "id": "a",
+   "n": "33 instances (6 per group, or the whole group where it has fewer: MYC 5, book 4, game 1); 118,347 candidate rows and 676 states",
+   "result": "PASS. The fast _new/_rows/_push equal the differences of partial_totals from empty, 30%, 70% and nearly complete random partial states, with conflicts forced by drawing from few colours; a complete answer built by pushes equals evaluate."
+  },
+  {
+   "id": "b",
+   "n": "43 instances, 2 relabellings each; 259 valid, 257 conflicting and 430 malformed answers",
+   "result": "PASS. An evaluator written from the published specification (work/indep.py: own page reader, own DIMACS reader on Python sets, own score) agrees with Environment.score to 1e-12 on answers produced in the relabelled problem and passed through decode. The group totals equal the independently counted colours used and monochromatic edges. Valid scores span 0 to 1."
+  },
+  {
+   "id": "c",
+   "n": "39 of 43 instances",
+   "result": "PASS, with a caveat. The source publishes no colourings. My own search outside the adapter (a construction for queens, DSATUR, tabu search) found a colouring with exactly the page's number for 39 instances; each scores exactly 1.0 and is expressible in the answer form. One edge made monochromatic scores 0; one extra colour scores exactly 1 - 1/(largest degree + 1 - number). Not attained by my search, even with 1.5 million tabu iterations: le450_15c, le450_15d, le450_25c, le450_25d. No colouring below the page's number was found anywhere."
+  },
+  {
+   "id": "d",
+   "n": "43 instances, training and fresh",
+   "result": "PASS. One layout: ('assign', unordered, no capacity, options reusable, hard=(False, True), detail=(False, False), 0 variable attributes, 0 option attributes, 1 var_var relation, 0 opt_opt, 0 var_opt, 0 occ_attr, no domain, no start answer). No zero-padding was needed. Vertices 11 to 450, colours on offer 6 to 180, vertices*colours 66 to 81,000 (median 13,696)."
+  },
+  {
+   "id": "e",
+   "n": "86 answers (one valid, one conflicting per instance), 3 relabellings each",
+   "result": "PASS. Same totals and same score under every relabelling; decode(encode(x)) == x, with the inverse recovered from decode alone."
+  },
+  {
+   "id": "f",
+   "n": "split(env, 16, 24)",
+   "result": "PASS. Training 16: LEI 11, SGB-miles 5. Fresh 24: MYC 4, REG 7, SGB-book 4, SGB-game 1, SGB-queen 8. No group on both sides. Halves of the fresh side: 12 (book 4, queen 8) and 12 (MYC 4, REG 7, game 1). Construction cells: training sum 533,070, fresh sum 267,603."
+  },
+  {
+   "id": "g",
+   "n": "16 made-up random graphs (30 to 60 vertices) per design, plus a made-up test graph",
+   "result": "PASS for both designs, a and b, on made-up graphs only. At the registered budget (40 constructions per instance) design a ran 2 iterations and 128 constructions, design b 40 iterations and 621 constructions. Answers of the untrained and the acquired capability are well-formed, also at a near-zero budget. No score on made-up graphs is reported. Timing on 16 made-up graphs of benchmark-like size (450 vertices, about 34,000 cells each): acquire took 9.9 CPU-s for design a and 34.7 CPU-s for design b."
+  },
+  {
+   "id": "h",
+   "n": "43 instances, training and fresh, problem object and view",
+   "result": "PASS. No array or scalar field equals the page's number; there is no text field; the only array is the 0/1 adjacency matrix; n_opts (largest degree + 1) and n_vars never equal the reference; the same seed gives a byte-identical problem."
+  },
+  {
+   "id": "i",
+   "n": "43 instances, 5 sampled random valid answers each (random sequential colouring, then 10n heat-bath steps)",
+   "result": "Scale check. On the plain ratio, sampled random valid answers average above 0.5 on 6 instances (myciel3, games120, miles500, miles750, miles1000, miles1500), and every valid answer is above 0.5 on 4, so the ratio is not used. On the scale used they average 0.119 over all instances, at most 0.376 on one, and none is above 0.5."
+  }
+ ],
+ "open_issues": [
+  "The zero of the score is the worst valid value (largest degree + 1 colours), not the expected value of a uniformly random valid answer that R2 asks for. That expectation needs the chromatic polynomial and cannot be computed exactly. The scale is therefore more lenient than R2's: sampled random valid answers average 0.12 on it (group means: REG 0.27, book 0.26, miles 0.14, MYC 0.08, queen 0.06, LEI 0.01, game 0.00), at most 0.38 on one instance.",
+  "An exact alternative zero exists and was not chosen: the expected colour count of a uniformly random answer that need not be valid, K(1-(1-1/K)^n). It lies below what random valid answers reach (miles1500: 74.8 against about 94 sampled, reference 73) and would make that instance nearly all-or-nothing. An auditor may prefer it.",
+  "The answer form offers largest degree + 1 colours. A proper colouring that uses more cannot be written in the form. score() accepts any non-negative colour labels and gives such a colouring 0, the same as any answer using largest degree + 1 colours, so nothing that could score is excluded. Strictly, though, not every valid published answer is expressible.",
+  "Group [0], colours in use, is a function of the partial assignment (it rises by 1 when a vertex takes a colour no assigned vertex has). It is not literally a sum of fixed terms each reading a fixed set of variables. It follows the existing bin packing adapter, which counts bins in use the same way, and it is exact for complete answers.",
+  "The size limit MAX_CELLS = 100,000 on vertices*(largest degree + 1) is about three times the preferred 30,000. I first wrote 64,000, saw that the kernel's split then had 15 training instances, and raised it to the round limit at which it has 16. That was after looking at sizes and the split and before any answer was scored. Ten used instances exceed 30,000 (largest: le450_25c at 81,000). Under a strict 30,000 only 33 instances remain.",
+  "Attainability of the reference is not verified by me for le450_15c, le450_15d, le450_25c and le450_25d; three of them (15c, 15d, 25d) are among the 16 training instances. There the reference rests on the page alone ('Leighton graphs with guaranteed coloring size'). All 24 fresh instances have a verified attaining colouring.",
+  "The split is lopsided in kind and size. Training is 11 Leighton graphs of 450 vertices plus 5 miles graphs; fresh is Mycielski, register allocation, book, game and queen graphs of 11 to 211 vertices. SGB-game is a group of one instance.",
+  "The score is coarse on small instances: myciel3 has 6 colours on offer and reference 4, so its only scores are 0, 0.5 and 1; games120 has 14 on offer and reference 9.",
+  "With only 6 made-up graphs, design a reported 'the budget did not allow one round of learning' at the registered budget; with 16, as the kernel uses, it learns. This is the learner's planning, seen as a black box, not an interface fault.",
+  "The page's HTML is malformed around latin_square_10 and le450_15a (a broken link). The adapter reads names from the visible text, and the file URL follows the documented pattern instances/<name>.col.",
+  "The threshold 0.90 is an operating point with no external anchor. I did not compute how any heuristic or the learner scores on the benchmark to set it.",
+  "rsi6/tests/test_kernel.py was not run or imported. Importing it loads every registered environment, which would fetch data of other categories. Its adapter-level properties are reproduced in work/checks.py.",
+  "In the made-up apply runs the kernel's meter ended slightly above its limit (1033 of 1010 units), because Meter.charge counts the charge that exhausts it. This is kernel behaviour, not the adapter's."
+ ],
+ "learner_run_on_benchmark_instances": false,
+ "answer_form": "AssignProblem. One variable per vertex and one option per colour. The number of options is instance data: largest degree + 1. It is unordered, has no capacity (a colour may be taken by any number of vertices), no domain and no start answer. The only exposed array is one var_var relation, the 0/1 adjacency matrix built from the 'e' lines. There are no attribute columns. Vertices and colours are both relabelled by the seed, and decode maps an answer back to the file's vertex order.",
+ "groups": "Term groups: [0] the number of colours in use by the assigned vertices (soft; for a complete answer it is the published value); [1] the number of edges whose two assigned ends share a colour (hard). Instance groups are the page's source codes, with SGB divided as the page itself divides it: LEI 12, REG 8, SGB-queen 8, MYC 5, SGB-miles 5, SGB-book 4, SGB-game 1.",
+ "hosts_used": [
+  "mat.tepper.cmu.edu"
+ ],
+ "instances_left_out": "36 of the page's 79 instances, by four rules stated in the module text. (1) Only in the binary .col.b format, 21: the 12 DSJC, 3 DSJR and 6 flat graphs. (2) The page prints '?' instead of a number, so there is no reference, 8: latin_square_10, school1, school1_nsh, queen10_10, queen12_12, queen14_14, queen15_15, queen16_16. (3) More than 500 vertices, 4: inithx.i.1, inithx.i.2, inithx.i.3, homer. (4) vertices*(largest degree + 1) above 100,000, 3: fpsol2.i.1 (125,488), fpsol2.i.2 (156,497), fpsol2.i.3 (147,475).",
+ "instances_used": 43,
+ "reference": "The number printed beside each instance under 'optimal coloring' on the pinned page instances.html, which is the chromatic number. It is attainable by definition and never exceeds largest degree + 1. It is read only by score() and reference(). My own search found a colouring with exactly that number for 39 of the 43 instances; for le450_15c, le450_15d, le450_25c and le450_25d it rests on the page alone.",
+ "score_scale": "Not the plain ratio. The score is the share of the way from the worst valid value of the form (largest degree + 1 colours, which a valid answer does attain) to the page's number: (worst - used)/(worst - number), cut to [0, 1]. It is 1 when the number is reached or beaten and 0 for a conflict or a malformed answer. The ratio was rejected because it cannot fall below number/(largest degree + 1), which is above 0.5 on four instances (0.68 on miles1500), and sampled random valid answers average above 0.5 on six. The zero R2 asks for, the expected value of a uniformly random valid answer, is not exactly computable here, so the exact worst valid value is used instead; this is more lenient (see open issues).",
+ "source": "Graph Coloring Instances page of M. Trick, https://mat.tepper.cmu.edu/COLOR/instances.html, with files at https://mat.tepper.cmu.edu/COLOR/instances/<name>.col (DIMACS challenge graphs in the DIMACS text format). The page states no licence or terms of use. The page and 46 .col files were fetched by rsi6.fetch with the client name research-data-check/1.0 and are pinned by SHA-256 in the manifest; no file was missing.",
+ "threshold_and_anchor": "threshold = 0.90. Anchor: \"an operating point, not an external fact: on average nine tenths of the way from the largest number of colours a valid answer can use (largest degree + 1) to the chromatic number printed on the instance page\".",
+ "reason_if_not": ""
+}

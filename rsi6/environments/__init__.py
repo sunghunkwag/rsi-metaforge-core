@@ -13,6 +13,11 @@ REGISTRY = {
     "regression": ("rsi6.environments.regression", "Regression"),
     "partitioning": ("rsi6.environments.partitioning", "Partitioning"),
     "setcover": ("rsi6.environments.setcover", "SetCover"),
+    "satisfiability": ("rsi6.environments.satisfiability", "Satisfiability"),
+    "routing": ("rsi6.environments.routing", "Routing"),
+    "facility": ("rsi6.environments.facility", "Facility"),
+    "tour": ("rsi6.environments.tour", "Tour"),
+    "colouring": ("rsi6.environments.colouring", "Colouring"),
 }
 _CACHE = {}
 
