@@ -62,6 +62,25 @@ def test_the_memory_carries_the_record_and_changes_the_machinery():
     assert json.dumps([a[0], a[1], a[3]], sort_keys=True) == json.dumps([b[0], b[1], b[3]], sort_keys=True)
 
 
+def test_empty_memory_is_design_q():
+    """With nothing recorded, design r is design q exactly: the same capability, answers and counts."""
+    from rsi6.learner import design_q as Q
+    for fixture in FIXTURES:
+        for ordered in (False, True):
+            for limit in (2000.0, 60000.0, 200000.0):
+                meter = Meter(limit)
+                problems = [fixture(s, meter, ordered) for s in range(8)]
+                q = Q.LearnerQ(Q.default())
+                cq, _, rq = q.acquire([view(P) for P in problems], np.random.default_rng(3))
+                test = fixture(99, Meter(400.0), ordered)
+                aq = q.apply(cq, view(test), np.random.default_rng(4)).tolist()
+                cr, _, rr, ar = _run(R.default(), fixture, ordered, limit)
+                assert json.dumps(cq, sort_keys=True) == json.dumps(cr, sort_keys=True), (ordered, limit)
+                assert aq == ar
+                for k in ("iterations", "program_rounds", "switches", "constructions", "learned"):
+                    assert rq[k] == rr[k], (k, rq[k], rr[k])
+
+
 def test_derangement_moves_every_label():
     p = R.derangement(R.N_CELLS, 5)
     assert sorted(p) == list(range(R.N_CELLS)) and all(p[i] != i for i in range(R.N_CELLS))

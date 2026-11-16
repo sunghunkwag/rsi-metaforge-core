@@ -172,40 +172,52 @@ class LearnerR(Q.LearnerQ):
 
     # ---- the variants, now drawn by the rebuilt machinery, and credited -----------------------
     def _variant(self, prog, theta, rng):
-        p = Q.softmax(np.concatenate([np.asarray(self.inner["w"], float), np.zeros(N_CELLS - len(Q.INNER_CELLS))]) + self.m["prior"])
+        """An edited copy of ``prog``. Without composites and without a library this is design
+        q's ``_variant`` draw for draw (the splice operators are not offered while the library is
+        empty), with the rebuilt prior added to the inner weights."""
+        library = [{"part": b["part"], "block": b["block"]} for b in self.m["blocks"]]
+        active = list(range(len(Q.INNER_CELLS))) + ([len(Q.INNER_CELLS), len(Q.INNER_CELLS) + 1] if library else [])
+        weights = np.concatenate([np.asarray(self.inner["w"], float), np.zeros(N_CELLS - len(Q.INNER_CELLS))]) + self.m["prior"]
+        p = Q.softmax(weights[active])
         comps = self.m["composites"]
         use_comp = bool(comps) and rng.random() < self.relay["composite_share"]
-        if use_comp:
-            cw = Q.softmax([c["weight"] for c in comps])
-            comp = comps[int(rng.choice(len(comps), p=cw))]
-            plan = [CELLS.index(tuple(c)) for c in comp["cells"]]
-        else:
-            ed = np.asarray(self.inner["edits"], float)
-            k = 1 + int(rng.choice(3, p=ed / ed.sum()))
-            plan = [int(rng.choice(N_CELLS, p=p)) for _ in range(k)]
-        library = [{"part": b["part"], "block": b["block"]} for b in self.m["blocks"]]
         g = dict(self.g, score=copy.deepcopy(prog["score"]), pick=copy.deepcopy(prog["pick"]),
                  theta=[float(np.clip(x, -100.0, 100.0)) for x in theta])
-        used, inserted = [], []
-        for c in plan:
-            for _ in range(12 if not use_comp else 1):
-                cell = CELLS[c] if use_comp else CELLS[c]
+        used, inserted, composite = [], [], None
+
+        def take(cell, new, info):
+            if len(new["theta"]) > len(g["theta"]):          # a new constant: a random start, not a no-op
+                base = 1.0 if (info.get("block") and info["block"][-1][0] == "scale" and cell[0] == "theta") else 0.0
+                new["theta"][-1] = round(float(np.clip(base + rng.normal(0.0, 1.0), -50.0, 50.0)), 6)
+            if info.get("block") and info["part"] in ("score", "pick") and info["kind"] in ("insert", "term", "cross"):
+                inserted.append({"part": info["part"], "block": copy.deepcopy(info["block"])})
+            return new
+
+        if use_comp:                                          # a composite operator: its operators in order, once each
+            comp = comps[int(rng.choice(len(comps), p=Q.softmax([c["weight"] for c in comps])))]
+            composite = [list(c) for c in comp["cells"]]
+            for c in comp["cells"]:
+                cell = tuple(c)
                 new, info = E.apply_edit(g, cell, library, rng)
-                if new is None:
-                    if not use_comp:
-                        c = int(rng.choice(N_CELLS, p=p))
-                    continue
-                if len(new["theta"]) > len(g["theta"]):
-                    base = 1.0 if (info.get("block") and info["block"][-1][0] == "scale" and cell[0] == "theta") else 0.0
-                    new["theta"][-1] = round(float(np.clip(base + rng.normal(0.0, 1.0), -50.0, 50.0)), 6)
-                g = new
-                used.append(c)
-                if info.get("block") and info["part"] in ("score", "pick") and info["kind"] in ("insert", "term", "cross"):
-                    inserted.append({"part": info["part"], "block": copy.deepcopy(info["block"])})
-                break
+                if new is not None:
+                    g = take(cell, new, info)
+                    used.append(CELLS.index(cell))
+        else:
+            ed = np.asarray(self.inner["edits"], float)
+            n = 1 + int(rng.choice(3, p=ed / ed.sum()))
+            for _ in range(n):
+                for _ in range(12):
+                    c = active[int(rng.choice(len(active), p=p))]
+                    cell = CELLS[c]
+                    new, info = E.apply_edit(g, cell, library, rng)
+                    if new is None:
+                        continue
+                    g = take(cell, new, info)
+                    used.append(c)
+                    break
         if not used:
             return None
-        self._last_plan = {"cells": used, "composite": [list(CELLS[c]) for c in plan] if use_comp else None, "inserted": inserted}
+        self._last_plan = {"cells": used, "composite": composite, "inserted": inserted}
         return {"score": g["score"], "pick": g["pick"]}, np.array(g["theta"], dtype=float)
 
     def _credit(self, plans, F, switched_to):
