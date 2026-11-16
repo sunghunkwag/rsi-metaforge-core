@@ -197,12 +197,15 @@ def main() -> int:
     o0 = designs.default("o")
     arms = {}
 
-    def jobs_for(name, version, memory_of, seeds_per_chain, chains, budget_of=lambda j: budget):
+    train_of = H.get("train_by_category", {})                 # the registered size rule, fixed before any held-out run
+    budget_for = lambda e, factor=1.0: dict(budget, train=float(train_of.get(e, budget["train"])) * factor)
+
+    def jobs_for(name, version, memory_of, seeds_per_chain, chains, factor=1.0):
         out = []
         for j in chains:
             for e in held:
                 for s in range(seeds_per_chain):
-                    out.append({"env": e, "version": version, "seed": S["heldout_base"] + 10 * j + s, "budget": budget_of(j),
+                    out.append({"env": e, "version": version, "seed": S["heldout_base"] + 10 * j + s, "budget": budget_for(e, factor),
                                 "memory": memory_of(j), "purpose": f"relay-heldout:{name}:chain{j}"})
         return out
 
@@ -217,15 +220,16 @@ def main() -> int:
         jobs = jobs_for(name, reg["version"], memory_of, k, chains)
         arms[name] = cache.get(jobs)
         say(f"held-out {name}: acquired {np.mean([r['acquired'] for r in arms[name]]):.4f} over {len(jobs)} runs")
-    want = {(r["env"], r["seed"]): evaluate.cpu(r) for r in arms["relay"] if (r["seed"] - S["heldout_base"]) % 10 < sub}
-    rows = evaluate.raise_until(cache, o0, want, "relay-heldout:o0@relay", budget)
+    rows = []
+    for e in held:                                              # raised from each category's own registered budget
+        want = {(r["env"], r["seed"]): evaluate.cpu(r) for r in arms["relay"] if r["env"] == e and (r["seed"] - S["heldout_base"]) % 10 < sub}
+        rows += evaluate.raise_until(cache, o0, want, "relay-heldout:o0@relay", budget_for(e))
     arms["o0@relay"] = rows
     append_once(ledger, {"type": "r_matched", "arm": "o0@relay", "keys": [r["key"] for r in rows],
                          "reached": [bool(r["reached"]) for r in rows], "levels": [r["levels"] for r in rows],
                          "budgets": [r["budget"]["train"] for r in rows]}, ("arm",))
-    ceiling = dict(budget, train=budget["train"] * H["ceiling_factor"])
     arms["frozen@ceiling"] = cache.get(jobs_for("frozen@ceiling", reg["version"], lambda j: {"entries": []}, H["seeds_ceiling"],
-                                                chains, lambda j: ceiling))
+                                                chains, H["ceiling_factor"]))
     ledger.append({"type": "r_stage_done", "stage": "heldout", "envs": held,
                    "arms": {name: [r["key"] for r in rows] for name, rows in arms.items()}})
     return 0
