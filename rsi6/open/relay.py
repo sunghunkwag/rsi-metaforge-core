@@ -170,6 +170,102 @@ def chain_means(arm, base, chains_of, held):
     return {j: float(np.mean([np.mean(v) for v in ev.values()])) for j, ev in by.items()}
 
 
+def raise_with_memory(cache, version, want: dict, purpose, budget, memory_of=lambda pair: None) -> list:
+    """``evaluate.raise_until`` with a memory per pair: the same schedule (doubled at first, then the
+    factor that the measured CPU of the last two levels says is needed with a tenth to spare, at
+    least 2 and at most 64 per level, 64 when the CPU did not rise, at most twelve levels counting
+    the registered budget as the first). With no memory its jobs, and so its runs, are those of
+    ``evaluate.raise_until``. A pair still below its CPU after the last level is not reached."""
+    value = {pair: budget["train"] for pair in want}
+    last, seen = {}, {pair: [] for pair in want}
+    pending = list(want)
+    for _ in range(12):
+        if not pending:
+            break
+        jobs = []
+        for e, s in pending:
+            job = {"env": e, "version": version, "seed": s, "budget": dict(budget, train=value[(e, s)]), "purpose": purpose}
+            memory = memory_of((e, s))
+            if memory is not None:
+                job["memory"] = memory
+            jobs.append(job)
+        got = []
+        for k in range(0, len(jobs), 4):                   # in small batches, so that a stopped driver loses little
+            got += cache.get(jobs[k:k + 4])
+        for pair, r in zip(pending, got):
+            last[pair] = r
+            seen[pair].append((value[pair], evaluate.cpu(r)))
+            factor = 2.0
+            if len(seen[pair]) >= 2:
+                (v1, c1), (v2, c2) = seen[pair][-2:]
+                slope = (c2 - c1) / (v2 - v1)
+                factor = 64.0 if slope <= 0 else min(64.0, max(2.0, (v2 + (1.1 * want[pair] - c2) / slope) / v2))
+            value[pair] *= factor
+        pending = [p for p in pending if evaluate.cpu(last[p]) < want[p]]
+    return [dict(last[p], reached=evaluate.cpu(last[p]) >= want[p], levels=len(seen[p]), matched_cpu=want[p]) for p in want]
+
+
+class Counted:
+    """The cache, counting the CPU of every distinct run the stage has requested so far. A replay
+    makes the same requests in the same order, so it reads the same count at every step (the
+    cache itself may already hold runs of an item that was stopped half way)."""
+
+    def __init__(self, cache):
+        self.cache, self.cpu = cache, {}
+        self.by_key = cache.by_key
+
+    def get(self, jobs, workers: int = 4) -> list:
+        got = self.cache.get(jobs, workers)
+        for r in got:
+            self.cpu.setdefault(r["key"], evaluate.cpu(r))
+        return got
+
+    def spent(self) -> float:
+        return float(sum(self.cpu.values()))
+
+
+ITEMS = [(1, "primary-a"), (2, "primary-b"), (3, "shuffled"), (4, "o0@relay"), (5, "offpolicy"), (6, "libonly"),
+         (7, "frozen@ceiling"), (8, "prioronly"), (9, "depth-a"), (10, "depth-b"), (11, "references"), (12, "a0@relay")]
+FUTILE = (2, 3, 5, 6, 8, 9, 10)                          # cancelled by the futility look
+LATER_R0 = ("shuffled", "offpolicy", "libonly", "prioronly")   # r0 arms compared with relay: the CPU rule applies to them
+
+
+def item_cost(number, c, unit, H, J, S, J2, R) -> float:
+    """Predicted recorded CPU of priority item ``number`` on category ``c``: runs times the CPU of a
+    run (``unit``: r0 at the category's training budget, o0 and a0 at the reference budget); a
+    matched item counts ``matched_levels`` runs at relay's CPU per pair, frozen at the ceiling
+    budget ``ceiling_cost`` runs."""
+    r0, ref = unit["r0"][c], unit["o0@ref"][c] + unit["a0@ref"][c]
+    half, lv, ceil = J // 2, H["matched_levels"], H["ceiling_cost"]
+    return {1: 2 * half * S * r0, 2: 2 * (J - half) * S * r0, 3: J2 * 2 * r0, 4: J2 * 2 * lv * r0, 5: J2 * 2 * r0,
+            6: J2 * 2 * r0, 7: J2 * ceil * r0, 8: J2 * 2 * r0, 9: J2 * r0, 10: J2 * r0, 11: R * ref, 12: R * lv * r0}[number]
+
+
+def plan_of(H, cats, U, J, S, J2, R, h_cap):
+    """The plan made before any held-out run (registration_r.json, heldout.plan_rule)."""
+    model, grid = H["cpu_model"], sorted(H["train_grid"], reverse=True)
+    T = {}
+    for c in cats:
+        ok = [t for t in grid if predicted_cpu(model["o0"], t, U[c]) <= H["max_cpu_per_run"]]
+        T[c] = max(ok) if ok else min(grid)
+    factor = H["machine_factor"]
+    while True:
+        unit = {"r0": {c: predicted_cpu(model["o0"], T[c], U[c]) * model["r0_over_o0"] for c in cats},
+                "o0@ref": {c: predicted_cpu(model["o0"], evaluate.RUN_BUDGET["train"], U[c]) for c in cats},
+                "a0@ref": {c: predicted_cpu(model["o0"], evaluate.RUN_BUDGET["train"], U[c]) for c in cats}}
+        cost = {n: sum(item_cost(n, c, unit, H, J, S, J2, R) for c in cats) for n, _ in ITEMS}
+        lower = [c for c in cats if T[c] > min(grid)]
+        if factor * (cost[1] + cost[2]) <= h_cap or not lower:
+            break
+        worst = max(lower, key=lambda c: item_cost(1, c, unit, H, J, S, J2, R) + item_cost(2, c, unit, H, J, S, J2, R))
+        T[worst] = max(t for t in grid if t < T[worst])
+    kept = [n for n, name in ITEMS if name not in H.get("dropped_arms", [])]
+    while len(kept) > 2 and factor * sum(cost[n] for n in kept) > h_cap:
+        kept.pop()
+    return {"train": T, "unit": unit, "cost": {str(n): cost[n] for n in cost}, "kept": kept,
+            "projection": factor * sum(cost[n] for n in kept), "h_cap": h_cap}
+
+
 def run_heldout(reg, cache, ledger, mem, args) -> None:
     H = reg["heldout"]
     base_seed = H["seed_base"]
@@ -185,18 +281,23 @@ def run_heldout(reg, cache, ledger, mem, args) -> None:
     cats = [c for c in cats if not U[c]["all_fresh_have_start_answers"]]
     if len(cats) < 3 and not args.dev:
         raise SystemExit(f"fewer than three held-out categories can be changed by a capability: {cats}")
-    model = H["cpu_model"]
-    grid = H["train_grid"]
-    T = {}
-    for c in cats:
-        ok = [t for t in grid if predicted_cpu(model["o0"], t, U[c]) <= H["max_cpu_per_run"]]
-        T[c] = max(ok) if ok else min(grid)
-    held_budget = lambda c, factor=1.0: dict(reg["budgets"]["heldout"], train=float(T[c]) * factor)
     J, S, J2 = reg["meta"]["chains"], H["seeds"], H["secondary_chains"]
+    R = min(H["reference_chains"], J2)
+    stage_cpu = lambda prefixes: sum(evaluate.cpu(r) for r in cache.by_key.values() if r.get("purpose", "").startswith(prefixes))
+    meta_cpu = stage_cpu(("relay-meta:", "relay-retention:"))
+    factor = H["machine_factor"]
+    h_cap = H["cpu_total"] - factor * (H["cpu_development"] + meta_cpu) - H["cpu_reserve"]
+    plan = plan_of(H, cats, U, J, S, J2, R, h_cap)
+    T = plan["train"]
+    append_once(ledger, {"type": "r_plan", "categories": cats, "units": U, "train": T, "meta_cpu": meta_cpu, **{k: plan[k] for k in
+                         ("unit", "cost", "kept", "projection", "h_cap")}}, ("type",))
+    say(f"held-out plan: train {T}, items {plan['kept']}, projection {plan['projection']:.0f} of {h_cap:.0f}")
+    held_budget = lambda c, factor=1.0: dict(reg["budgets"]["heldout"], train=float(T[c]) * factor)
     r0, o0, a0 = reg["version"], designs.default("o"), designs.default("a")
-    plan = {"categories": cats, "units": U, "train": T}
-    append_once(ledger, dict({"type": "r_plan"}, **plan), ("type",))
-    say(f"held-out plan: {plan['train']}")
+    final = lambda j: mem["on"][j][len(reg["meta"]["order"])]
+    memories = {"relay": final, "frozen": lambda j: None, "shuffled": lambda j: design_r.shuffled(final(j), j),
+                "offpolicy": lambda j: mem["off"][j], "libonly": lambda j: design_r.without(final(j), design_r.KIND_STATS),
+                "prioronly": lambda j: design_r.without(final(j), design_r.KIND_LIB)}
 
     def jobs(name, version, memory_of, chains, seeds, factor=1.0, budget_of=None):
         out = []
@@ -208,71 +309,122 @@ def run_heldout(reg, cache, ledger, mem, args) -> None:
                                 "memory": memory_of(j), "purpose": f"relay-heldout:{name}:chain{j}"})
         return out
 
-    arms, cancelled, matched_frozen = {}, set(), {}
-    spent = lambda: sum(evaluate.cpu(r) for rows in arms.values() for r in rows)
-    cap = H["cpu_cap"]
+    arms = {}
+    cache = Counted(cache)
+    spent = cache.spent
 
     def add(name, rows):
         arms[name] = arms.get(name, []) + rows
         say(f"held-out {name}: {len(rows)} runs, acquired {np.mean([r['acquired'] for r in rows]):.4f}; spent {spent():.0f}")
 
-    def matched(name, version, rows_ref, budget_of):
+    def matched(name, version, rows_ref, memory_of=lambda j: None, part=None):
         out = []
         for c in cats:
             want = {(r["env"], r["seed"]): evaluate.cpu(r) for r in rows_ref if r["env"] == c}
             if want:
-                out += evaluate.raise_until(cache, version, want, f"relay-heldout:{name}", budget_of(c))
-        append_once(ledger, {"type": "r_matched", "arm": name, "keys": [r["key"] for r in out], "reached": [bool(r["reached"]) for r in out],
-                             "levels": [r["levels"] for r in out], "budgets": [r["budget"]["train"] for r in out]}, ("arm",))
+                out += raise_with_memory(cache, version, want, f"relay-heldout:{name}", held_budget(c), lambda pair: memory_of(chain_of(pair[1])))
+        ident = {"type": "r_matched", "arm": name, "part": part}
+        append_once(ledger, {**ident, "keys": [r["key"] for r in out], "reached": [bool(r["reached"]) for r in out],
+                             "levels": [r["levels"] for r in out], "budgets": [r["budget"]["train"] for r in out]}, ("type", "arm", "part"))
         return out
+
+    def cpu_rule(name, rows, part=None):
+        """The registered CPU rule: on a category where relay's CPU over the arm's exceeds the
+        tolerance over the arm's pairs, the arm is raised pair by pair to relay's CPU."""
+        pairs = {(r["env"], r["seed"]) for r in rows}
+        ratios = {}
+        for c in cats:
+            mine = [r for r in rows if r["env"] == c]
+            theirs = [r for r in arms["relay"] if r["env"] == c and (r["env"], r["seed"]) in pairs]
+            ratios[c] = sum(evaluate.cpu(r) for r in theirs) / max(sum(evaluate.cpu(r) for r in mine), 1e-9) if mine else None
+        over = [c for c, v in ratios.items() if v is not None and v > H["cpu_tolerance"]]
+        if name == "frozen" and H.get("frozen_matched_everywhere"):          # development rule (f)
+            over = list(cats)
+        append_once(ledger, {"type": "r_cpu_rule", "arm": name, "part": part, "ratios": ratios, "matched_categories": over},
+                    ("type", "arm", "part"))
+        if over:
+            ref = [r for r in arms["relay"] if r["env"] in over and (r["env"], r["seed"]) in pairs]
+            add(f"{name}@relay", matched(f"{name}@relay", r0, ref, memories[name], part))
 
     half = list(range(J // 2))
     sec = list(range(J2))
-    D1, D2 = H["depths"]                                         # the shallower memories measured besides the final one
-    refs = list(range(min(H["reference_chains"], J2)))
-    # 1. primary-a
-    add("relay", cache.get(jobs("relay", r0, lambda j: mem["on"][j][len(reg["meta"]["order"])], half, S)))
-    add("frozen", cache.get(jobs("frozen", r0, lambda j: None, half, S)))
+    refs = list(range(R))
+    DA, DB = H["depths"]                                         # the shallower memories measured besides the final one
+    kept = list(plan["kept"])
+
+    def arm(name, chains, seeds, factor=1.0):
+        rows = cache.get(jobs(name, r0, memories[name], chains, seeds, factor))
+        add(name, rows)
+        return rows
+
+    def primary(chains, part):
+        relay_rows = arm("relay", chains, S)
+        frozen_rows = arm("frozen", chains, S)
+        if part == "a":                                          # the categories are decided over item 1
+            cpu_rule("frozen", frozen_rows, "a")
+            return
+        over = find(ledger, type="r_cpu_rule", arm="frozen", part="a")["matched_categories"]
+        if over:                                                 # primary-b follows them
+            add("frozen@relay", matched("frozen@relay", r0, [r for r in relay_rows if r["env"] in over], memories["frozen"], "b"))
+
+    def later(name, chains=sec, seeds=2):
+        rows = arm(name, chains, seeds)
+        cpu_rule(name, rows)
+
+    run_item = {
+        2: lambda: primary(range(J // 2, J), "b"),
+        3: lambda: later("shuffled"),
+        4: lambda: add("o0@relay", matched("o0@relay", o0, [r for r in arms["relay"]
+                                                           if chain_of(r["seed"]) < J2 and (r["seed"] - base_seed) % 10 < 2])),
+        5: lambda: later("offpolicy"),
+        6: lambda: later("libonly"),
+        7: lambda: add("frozen@ceiling", cache.get(jobs("frozen@ceiling", r0, memories["frozen"], sec, 1, H["ceiling_factor"]))),
+        8: lambda: later("prioronly"),
+        9: lambda: add(f"depth{DA}", cache.get(jobs(f"depth{DA}", r0, lambda j: mem["on"][j][DA], sec, 1))),
+        10: lambda: add(f"depth{DB}", cache.get(jobs(f"depth{DB}", r0, lambda j: mem["on"][j][DB], sec, 1))),
+        11: lambda: (add("o0@ref", cache.get(jobs("o0@ref", o0, lambda j: None, refs, 1, budget_of=lambda c: dict(evaluate.RUN_BUDGET)))),
+                     add("a0@ref", cache.get(jobs("a0@ref", a0, lambda j: None, refs, 1, budget_of=lambda c: dict(evaluate.RUN_BUDGET))))),
+        12: lambda: add("a0@relay", matched("a0@relay", a0, [r for r in arms["relay"] if chain_of(r["seed"]) in refs and (r["seed"] - base_seed) % 10 == 0])),
+    }
+    # 1. primary-a, then the futility look and the CPU rule
+    primary(half, "a")
     cm = chain_means(arms["relay"], arms["frozen"], chain_of, cats)
     x = np.array([cm[j] for j in sorted(cm)])
     t = float(x.mean() / (x.std(ddof=1) / math.sqrt(len(x)))) if len(x) > 1 and x.std(ddof=1) > 0 else 0.0
-    append_once(ledger, {"type": "r_futility", "chains": len(x), "mean": float(x.mean()), "t": t, "stop": bool(t < H["futility_t"])}, ("type",))
-    if t < H["futility_t"]:
-        cancelled = {2, 3, 5, 6, 8, 9, 10}
-    ratios = {}
-    for c in cats:
-        cells = {(r["env"], r["seed"]) for r in arms["frozen"] if r["env"] == c}
-        ratios[c] = sum(evaluate.cpu(r) for r in arms["relay"] if (r["env"], r["seed"]) in cells) / max(
-            sum(evaluate.cpu(r) for r in arms["frozen"] if r["env"] == c), 1e-9)
-    over = [c for c, v in ratios.items() if v > H["cpu_tolerance"]]
-    append_once(ledger, {"type": "r_cpu_rule", "ratios": ratios, "matched_categories": over}, ("type",))
-    if over:
-        rows = matched("frozen@relay", r0, [r for r in arms["relay"] if r["env"] in over], held_budget)
-        add("frozen@relay", rows)
-
-    items = [
-        (2, "primary-b", lambda: (add("relay", cache.get(jobs("relay", r0, lambda j: mem["on"][j][len(reg["meta"]["order"])], range(J // 2, J), S))),
-                                  add("frozen", cache.get(jobs("frozen", r0, lambda j: None, range(J // 2, J), S))))),
-        (3, "shuffled", lambda: add("shuffled", cache.get(jobs("shuffled", r0, lambda j: design_r.shuffled(mem["on"][j][len(reg["meta"]["order"])], j), sec, 2)))),
-        (4, "o0@relay", lambda: add("o0@relay", matched("o0@relay", o0, [r for r in arms["relay"] if chain_of(r["seed"]) < J2 and (r["seed"] - base_seed) % 10 < 2], held_budget))),
-        (5, "offpolicy", lambda: add("offpolicy", cache.get(jobs("offpolicy", r0, lambda j: mem["off"][j], sec, 2)))),
-        (6, "libonly", lambda: add("libonly", cache.get(jobs("libonly", r0, lambda j: design_r.without(mem["on"][j][len(reg["meta"]["order"])], design_r.KIND_STATS), sec, 2)))),
-        (7, "frozen@ceiling", lambda: add("frozen@ceiling", cache.get(jobs("frozen@ceiling", r0, lambda j: None, sec, 1, H["ceiling_factor"])))),
-        (8, "prioronly", lambda: add("prioronly", cache.get(jobs("prioronly", r0, lambda j: design_r.without(mem["on"][j][len(reg["meta"]["order"])], design_r.KIND_LIB), sec, 2)))),
-        (9, f"depth{D1}", lambda: add(f"depth{D1}", cache.get(jobs(f"depth{D1}", r0, lambda j: mem["on"][j][D1], sec, 1)))),
-        (10, f"depth{D2}", lambda: add(f"depth{D2}", cache.get(jobs(f"depth{D2}", r0, lambda j: mem["on"][j][D2], sec, 1)))),
-        (11, "references", lambda: (add("o0@ref", cache.get(jobs("o0@ref", o0, lambda j: None, refs, 1, budget_of=lambda c: dict(evaluate.RUN_BUDGET)))),
-                                    add("a0@ref", cache.get(jobs("a0@ref", a0, lambda j: None, refs, 1, budget_of=lambda c: dict(evaluate.RUN_BUDGET)))))),
-        (12, "a0@relay", lambda: add("a0@relay", matched("a0@relay", a0, [r for r in arms["relay"] if chain_of(r["seed"]) in refs and (r["seed"] - base_seed) % 10 == 0], held_budget))),
-    ]
-    for number, name, run in items:
-        if number in cancelled:
-            append_once(ledger, {"type": "r_item", "item": number, "name": name, "done": False, "why": "cancelled by the futility look"}, ("type", "item"))
+    stop = bool(t < H["futility_t"])
+    append_once(ledger, {"type": "r_futility", "chains": len(x), "mean": float(x.mean()), "t": t, "stop": stop}, ("type",))
+    append_once(ledger, {"type": "r_item", "item": 1, "name": "primary-a", "done": True}, ("type", "item"))
+    for number, name in ITEMS[1:]:
+        if stop and number in FUTILE:
+            append_once(ledger, {"type": "r_item", "item": number, "name": name, "done": False, "why": "cancelled by the futility look"},
+                        ("type", "item"))
             continue
-        if spent() > cap:
-            append_once(ledger, {"type": "r_cap", "item": number, "name": name, "spent": spent(), "cap": cap}, ("type",))
+        if name in H.get("dropped_arms", []):                                # development rule (b)
+            append_once(ledger, {"type": "r_item", "item": number, "name": name, "done": False, "why": "dropped by a development rule"},
+                        ("type", "item"))
+            continue
+        if number not in kept:
+            append_once(ledger, {"type": "r_item", "item": number, "name": name, "done": False, "why": "dropped by the CPU plan"},
+                        ("type", "item"))
+            continue
+        # re-project with the measured CPU per run of r0 on each category
+        done_r0 = [r for a in ("relay", "frozen") for r in arms.get(a, [])]
+        unit = {"r0": {c: float(np.mean([evaluate.cpu(r) for r in done_r0 if r["env"] == c])) for c in cats},
+                "o0@ref": plan["unit"]["o0@ref"], "a0@ref": plan["unit"]["a0@ref"]}
+        todo = [n for n in kept if n >= number and not (stop and n in FUTILE)]
+        cost = lambda ns: sum(item_cost(n, c, unit, H, J, S, J2, R) for n in ns for c in cats)
+        dropped = []
+        while len(todo) > 1 and factor * (spent() + cost(todo)) > h_cap:
+            dropped.append(todo.pop())
+        if dropped:
+            kept = [n for n in kept if n not in dropped]
+            append_once(ledger, {"type": "r_drop", "before_item": number, "dropped": dropped, "spent": spent(),
+                                 "projection": factor * (spent() + cost(todo)), "h_cap": h_cap}, ("type", "before_item"))
+        if factor * (spent() + cost(todo)) > h_cap:
+            append_once(ledger, {"type": "r_cap", "item": number, "name": name, "spent": spent(),
+                                 "projection": factor * (spent() + cost(todo)), "h_cap": h_cap}, ("type",))
             break
-        run()
+        run_item[number]()
         append_once(ledger, {"type": "r_item", "item": number, "name": name, "done": True}, ("type", "item"))
     ledger.append({"type": "r_stage_done", "stage": "heldout", "categories": cats, "train": T,
                    "arms": {name: [r["key"] for r in rows] for name, rows in arms.items()}})
