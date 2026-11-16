@@ -110,6 +110,36 @@ def test_inner_settings_are_validated():
     assert Q.digest(good) != O.digest(O.default())
 
 
+def test_outer_edits_of_design_q():
+    """Every cell of the outer edit space gives a valid mechanism of design q or no edit; inner
+    settings that are never read do not change the behaviour key; the prior and the edit weights
+    are part of what the discoverer reads."""
+    from rsi6.open import discovery_q as DQ
+    rng = np.random.default_rng(1)
+    q0 = Q.default()
+    made = 0
+    for _ in range(4):
+        for cell in DQ.CELLS:
+            new, info = DQ.apply_edit(q0, cell, [], rng)
+            if new is not None:
+                assert Q.validate(new) == new
+                made += 1
+    assert made > len(DQ.CELLS)
+    off = json.loads(json.dumps(q0))
+    off["inner"]["share"] = 0.0
+    off2 = json.loads(json.dumps(off))
+    off2["inner"]["w"][0] = 3.0
+    assert DQ.behaviour(off) == DQ.behaviour(off2)
+    on2 = json.loads(json.dumps(q0))
+    on2["inner"]["w"][0] = 3.0
+    assert DQ.behaviour(q0) != DQ.behaviour(on2) and DQ.principle(q0) != DQ.principle(on2)
+    D = DQ.Discoverer(on2, np.random.default_rng(0), {"kd": 6, "nedit": [0.6, 0.3, 0.1]}, mode="recursive")
+    p = D.distribution(np.zeros(len(DQ.CELLS)))
+    assert abs(p.sum() - 1) < 1e-9 and p[DQ.SHARED[0]] > p[DQ.SHARED[1]]
+    assert DQ.Discoverer(on2, np.random.default_rng(0), {"kd": 6, "nedit": [0.6, 0.3, 0.1]}, mode="uniform").distribution(
+        np.zeros(len(DQ.CELLS))).std() < 1e-12
+
+
 def main() -> int:
     tests = [(name, fn) for name, fn in sorted(globals().items()) if name.startswith("test_") and callable(fn)]
     failed = 0

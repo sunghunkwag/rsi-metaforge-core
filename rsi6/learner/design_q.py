@@ -24,8 +24,11 @@ the training problems of the category being learned:
 
 A program round takes the current programs with the current state of the learning principle
 (its register 0) and ``variants`` edited copies, constructs with each on the round's batch of
-training problems, and switches to the best copy when it beats the current programs strictly on
-that batch (mean rank over the problems, as the learning principle's fitness). On a switch the
+training problems, and takes the best copy if it beats the current programs strictly on that
+batch (mean rank over the problems, as the learning principle's fitness). Because that copy was
+chosen on the batch, it is judged again against the current programs on a second batch drawn
+independently, and the learner switches to it only if it wins there too (in development, with
+the first rule alone, the programs switched in most rounds, on noise). On a switch the
 learning principle starts again, by its own ``init`` program, around the constants of the new
 programs (an edit can add a constant). Every other round is a round of the learning principle,
 exactly as in design o. A constant that an edit adds starts at a random value drawn from the
@@ -220,7 +223,9 @@ class LearnerQ(O.OpenLearner):
                 chosen = rng_order.choice(len(fit), size=batch, replace=False)
                 idx = [int(fit[i]) for i in chosen]
                 if program_rounds(it, inner["share"]):
-                    if meter.left() - reserve < (inner["variants"] + 1) * fit_cost[chosen].sum():
+                    second = rng_order.choice(len(fit), size=batch, replace=False)     # the batch that confirms a switch
+                    idx2 = [int(fit[i]) for i in second]
+                    if meter.left() - reserve < (inner["variants"] + 1) * fit_cost[chosen].sum() + 2 * fit_cost[second].sum():
                         break
                     here = acq.A[0].copy()
                     variants = [self._variant(prog, here, rng_edit) for _ in range(inner["variants"])]
@@ -230,13 +235,22 @@ class LearnerQ(O.OpenLearner):
                         break
                     F = O._fitness(keys)
                     best = int(np.argmax(F))
-                    if best > 0 and F[best] > F[0]:
-                        prog, theta = cands[best]
-                        acq = O.Acquirer(g, theta, rng_acq)          # the principle starts again around the new constants
-                        last_best = (prog, theta.copy())
-                        report["switches"] += 1
                     report["program_rounds"] += 1
                     report["constructions"] += len(cands) * batch
+                    if best > 0 and F[best] > F[0]:
+                        # the best variant was chosen on this batch, so it is judged again, against the current
+                        # programs, on a second batch drawn independently: it must win there too
+                        pair = [cands[0], cands[best]]
+                        keys2 = self._rollouts_q([problems[i] for i in idx2], idx2, pair, rng_con, meter)
+                        if keys2 is None:
+                            break
+                        report["constructions"] += 2 * batch
+                        F2 = O._fitness(keys2)
+                        if F2[1] > F2[0]:
+                            prog, theta = cands[best]
+                            acq = O.Acquirer(g, theta, rng_acq)      # the principle starts again around the new constants
+                            last_best = (prog, theta.copy())
+                            report["switches"] += 1
                 else:
                     if meter.left() - reserve < acq.K * fit_cost[chosen].sum():
                         break
