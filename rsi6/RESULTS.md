@@ -203,8 +203,96 @@ designs.
 came closest were single-field changes proposed at random; every nominee the learner found by
 following its own measurements on the pool lost on the new categories.
 
+## The open design and the discovery of its mechanisms (amendment 5)
+
+Registration: `registry/registration_o.json` (written to the ledger before the first run of the
+experiment, with the SHA-256 of the 32 files that run; the driver refuses to run when one
+differs). Every number in this section is printed by `python -m rsi6.open.report` from the
+ledger (`results/open_20261116/report.txt`). The later held-out stage on the sealed categories
+has not run; it follows the target test.
+
+**What was tested.** The learner of the open design (design o, `learner/design_o.py`) is a set of
+programs of one small vector machine: a score program and a pick program (its representation and
+its decisions, over generic sensors of the problem forms) and three programs that form its
+learning principle (`init`, `propose`, `update`: how a population of constant vectors is filled
+and how fitness turns into new state). Discovery (`open/discovery.py`) edits these programs. The
+edit distribution is learned, and in the recursive arm it is learned by the current mechanism's
+own learning principle, restarted at every accepted mechanism: what is discovered changes how
+the next candidates are generated. The question: does such a system improve its own ability to
+discover, measurably, on categories it never saw?
+
+**Arms and controls.** recursive; frozen (generation 0's principle always); uniform (no learning);
+shuffled (generation 0's principle learning from permuted values); tune (constants and numbers
+only). Two lineages per arm, 6,000 CPU-seconds each, on job shop, knapsack, p-median and
+quadratic assignment. Acceptance: screen, promote, confirm on four seeds used for nothing else,
+t at least 2.6 (null calibration: about 1% false acceptance per step). Held-out: bin packing,
+partitioning, set covering, with every control given the measured CPU of the recursive arm's
+final mechanism.
+
+**What missed.** The two predictions that the experiment needed missed. O1 (every recursive
+lineage accepts at least one mechanism) and O4 (the recursive arm accepts at least one change of
+the learning principle): no lineage of any arm accepted anything. 152 steps of discovery tried
+912 candidates and 18 confirmations; none passed. Every final mechanism is generation 0.
+
+| arm | lineages | steps | CPU-s | candidates | confirmations passed | accepted |
+|---|---|---|---|---|---|---|
+| recursive | 2 | 16, 16 | 6,102, 6,139 | 96, 96 | 0 of 2, 0 of 1 | 0 |
+| frozen | 2 | 16, 16 | 6,101, 6,153 | 96, 96 | 0 of 2, 0 of 1 | 0 |
+| uniform | 2 | 16, 13 | 6,292, 6,340 | 96, 78 | 0 of 1, 0 of 4 | 0 |
+| shuffled | 2 | 14, 17 | 6,062, 6,196 | 84, 102 | 0 of 3, 0 of 1 | 0 |
+| tune | 2 | 14, 14 | 6,172, 6,201 | 84, 84 | 0 of 2, 0 of 1 | 0 |
+
+What follows from that, as registered:
+
+* The recursion was never exercised. The swap test did not run.
+* On the held-out categories every arm is generation 0, so every registered difference between
+  arms is exactly 0 (acquired 0.9124, gain +0.3365, 211.8 CPU-s per run, 18 runs per arm). The
+  success condition is not met: E1, E3(a), E3(b) and E3(c) are all false.
+* O2, O3 and O5 held (E1 not met; no advantage of the learned discoverer over uniform edits; no
+  advantage in the swap test), but they hold because nothing was accepted, not because a
+  discovered mechanism was tested and found equal.
+* Reference only: generation 0 of the open design against the first design given its CPU,
+  +0.0103 (interval -0.0072 to +0.0388; bin packing -0.007, partitioning -0.004, set covering
+  +0.043). Not distinguishable from zero.
+
+**What limited discovery** (post hoc and read-only: `open/diagnose.py`, `open/transfer_bound.py`;
+outputs in `results/open_20261116/`). None of this is evidence for or against an endpoint.
+
+* The 18 candidates that reached confirmation were worth +0.0080 on the discovery seeds that
+  selected them and +0.0000 on the four confirmation seeds that no selection had touched (10 of
+  18 positive there). What looked like gains was selection among noise.
+* The registered rule accepts a mean difference of about 0.011 over 16 paired runs at the
+  measured noise (median confirmation sd 0.017). No candidate was near it.
+* Screening does not predict. The correlation between a candidate's value on the screening seed
+  and its value on the two other discovery seeds is 0.03 (298 promoted candidates).
+* Edits mostly hurt. The 741 screening values that are not exactly zero have mean -0.018 and sd
+  0.050, against a one-seed noise of 0.009: the effects of edits are large next to the noise and
+  centred below zero.
+* The effects of a candidate on different categories are correlated (0.09 to 0.75 after the
+  noise correction), and the common part is harm (mean effect -0.001 on job shop, -0.022 on
+  knapsack, -0.042 on p-median, -0.008 on quadratic assignment).
+
+So the step that failed is not the learning of the edit distribution, which never got an accepted
+mechanism to learn from. It is that almost every edit of the programs makes the learner worse,
+and the few that look better on three seeds are not better on four more.
+
+**What followed.** Two attempts on the same question, both on source categories only so far:
+
+* Design q searches over its score and pick programs inside one acquisition, with the measured
+  noise in mind (a switch must win on a second batch). At training budget 40 it gained nothing
+  over generation 0 of the open design (-0.003 and -0.002; `results/dev_20261116/`).
+* Design r (amendment 6, in preparation) carries the record of that inner search from one
+  acquisition to the next across categories. Its first development check found why more budget
+  made the inner search worse: a batch judged by mean rank takes programs that break a hard
+  constraint on some problems. With batches judged hard constraints first, four times the budget
+  acquires +0.0125 more instead of -0.0140 less, on the same development seeds
+  (`results/dev_r_20261116/`). That is a development result, not evidence; the registered test
+  of design r is on four categories no process has used.
+
 ## How to reproduce
 
     OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m rsi6.tests.test_kernel
-    python -m rsi6.experiments.report        # every number above
+    python -m rsi6.experiments.report        # every number of the rounds
     python -m rsi6.experiments.replay        # every search again, from the ledger alone
+    python -m rsi6.open.report               # every number of the open experiment
+    python -m rsi6.open.diagnose --ledger rsi6/ledger/main.jsonl      # what limited its discovery
