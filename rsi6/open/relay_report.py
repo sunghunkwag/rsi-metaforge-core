@@ -165,6 +165,20 @@ def build(ledger, reg) -> dict:
         unreached = int(sum(1 for r in arms["o0@relay"] if r.get("reached") is False))
         less = sum(1 for r in arms["o0@relay"] for s in arms["relay"] if (s["env"], s["seed"]) == (r["env"], r["seed"]) and evaluate.cpu(r) < evaluate.cpu(s))
         E["E-R3 relay minus o0@relay (m_net)"]["void"] = bool(unreached or less)
+        # the design-r arms run the same code at the same meter budget; relay must not have bought its
+        # difference with CPU the meter does not count: void if its CPU exceeds the other arm's by more
+        # than a tenth on any held-out category
+        for name, other in (("E-R1 relay minus frozen", "frozen"), ("E-R2 relay minus shuffled", "shuffled"),
+                            ("E-R4 relay minus offpolicy", "offpolicy")):
+            ratios = {}
+            for e in sorted({r["env"] for r in arms["relay"]}):
+                cells = {(r["env"], r["seed"]) for r in arms[other] if r["env"] == e}
+                mine = sum(evaluate.cpu(r) for r in arms["relay"] if (r["env"], r["seed"]) in cells)
+                theirs = sum(evaluate.cpu(r) for r in arms[other] if r["env"] == e)
+                ratios[e] = float(mine / max(theirs, 1e-9))
+            E[name]["cpu_ratio_by_category"] = ratios
+            E[name]["void"] = bool(any(v > reg["heldout"].get("cpu_tolerance", 1.10) for v in ratios.values()))
+            E[name]["met"] = bool(E[name].get("met") and not E[name]["void"])
         out["endpoints"] = E
         D = {"L1 frozen minus o0@relay": endpoint(arms["frozen"], arms["o0@relay"], chain_of, a["secondary"], statistic="min"),
              "L2 ceiling minus frozen": endpoint(arms["frozen@ceiling"], arms["frozen"], chain_of, a["secondary"]),
