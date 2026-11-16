@@ -1,0 +1,883 @@
+{
+ "tag": "d1h",
+ "accept": "hard_first",
+ "version_digest": "38a78ca98b19e9337c694486eb20a353030209c9ba5a5915ad279eb590af2d4e",
+ "r0": {
+  "jobshop": {
+   "acquired": 0.8191217083876534,
+   "gain": 0.015176889531957782,
+   "train_gain": 0.004496407767622039,
+   "cpu": 50.089166666666664,
+   "switches": 7.5,
+   "vetoes": 0.0,
+   "program_rounds": 28.5,
+   "kept_program": 0.6666666666666666,
+   "instances_scored_0": 0,
+   "instances": 144
+  },
+  "quadassign": {
+   "acquired": 0.5032840663738918,
+   "gain": 0.04955407469369569,
+   "train_gain": 0.12214954256981769,
+   "cpu": 17.121333333333332,
+   "switches": 8.833333333333334,
+   "vetoes": 0.0,
+   "program_rounds": 30.0,
+   "kept_program": 1.0,
+   "instances_scored_0": 0,
+   "instances": 144
+  },
+  "pmedian": {
+   "acquired": 0.6846875737135537,
+   "gain": 0.015880030648469563,
+   "train_gain": 0.020014105867053305,
+   "cpu": 61.20283333333333,
+   "switches": 4.833333333333333,
+   "vetoes": 0.0,
+   "program_rounds": 16.666666666666668,
+   "kept_program": 0.8333333333333334,
+   "instances_scored_0": 0,
+   "instances": 60
+  }
+ },
+ "o0": {
+  "jobshop": {
+   "acquired": 0.814286891348975,
+   "gain": 0.010342072493279267,
+   "train_gain": 0.00425242163811033,
+   "cpu": 44.048333333333325,
+   "switches": 0.0,
+   "vetoes": 0.0,
+   "program_rounds": 0.0,
+   "kept_program": 0.0,
+   "instances_scored_0": 0,
+   "instances": 144
+  },
+  "quadassign": {
+   "acquired": 0.49157938413023433,
+   "gain": 0.03784939245003829,
+   "train_gain": 0.10023374110426009,
+   "cpu": 12.356166666666667,
+   "switches": 0.0,
+   "vetoes": 0.0,
+   "program_rounds": 0.0,
+   "kept_program": 0.0,
+   "instances_scored_0": 0,
+   "instances": 144
+  },
+  "pmedian": {
+   "acquired": 0.6701809305602312,
+   "gain": 0.0013733874951471121,
+   "train_gain": 0.004972895529441301,
+   "cpu": 48.990166666666674,
+   "switches": 0.0,
+   "vetoes": 0.0,
+   "program_rounds": 0.0,
+   "kept_program": 0.0,
+   "instances_scored_0": 0,
+   "instances": 60
+  }
+ },
+ "o0@r0": {
+  "jobshop": {
+   "acquired": 0.8185529081386423,
+   "gain": 0.014608089282946712,
+   "train_gain": 0.0066455794563904935,
+   "cpu": 87.6025,
+   "switches": 0.0,
+   "vetoes": 0.0,
+   "program_rounds": 0.0,
+   "kept_program": 0.0,
+   "instances_scored_0": 0,
+   "instances": 144
+  },
+  "quadassign": {
+   "acquired": 0.4891080482575925,
+   "gain": 0.03537805657739649,
+   "train_gain": 0.09988117478632873,
+   "cpu": 29.144499999999997,
+   "switches": 0.0,
+   "vetoes": 0.0,
+   "program_rounds": 0.0,
+   "kept_program": 0.0,
+   "instances_scored_0": 0,
+   "instances": 144
+  },
+  "pmedian": {
+   "acquired": 0.6677399154316829,
+   "gain": -0.0010676276334012542,
+   "train_gain": 0.004009229052407008,
+   "cpu": 89.54283333333332,
+   "switches": 0.0,
+   "vetoes": 0.0,
+   "program_rounds": 0.0,
+   "kept_program": 0.0,
+   "instances_scored_0": 0,
+   "instances": 60
+  }
+ },
+ "r0@800": {
+  "jobshop": {
+   "acquired": 0.8234281229520722,
+   "gain": 0.019483304096376535,
+   "train_gain": 0.013543066301846818,
+   "cpu": 199.641,
+   "switches": 17.833333333333332,
+   "vetoes": 0.0,
+   "program_rounds": 120.83333333333333,
+   "kept_program": 0.6666666666666666,
+   "instances_scored_0": 0,
+   "instances": 144
+  },
+  "quadassign": {
+   "acquired": 0.5038435144992849,
+   "gain": 0.050113522819088714,
+   "train_gain": 0.11927596648791772,
+   "cpu": 66.06949999999999,
+   "switches": 32.166666666666664,
+   "vetoes": 0.0,
+   "program_rounds": 119.66666666666667,
+   "kept_program": 1.0,
+   "instances_scored_0": 0,
+   "instances": 144
+  },
+  "pmedian": {
+   "acquired": 0.7171941826174977,
+   "gain": 0.04838663955241359,
+   "train_gain": 0.05203939821711068,
+   "cpu": 287.88666666666666,
+   "switches": 18.666666666666668,
+   "vetoes": 0.3333333333333333,
+   "program_rounds": 70.5,
+   "kept_program": 1.0,
+   "instances_scored_0": 0,
+   "instances": 60
+  }
+ },
+ "r0 minus o0": {
+  "min_change": [
+   0.010348714145219456,
+   -0.0019232124045964788,
+   0.023204642218713885
+  ],
+  "acquired": [
+   0.010348714145219456,
+   -0.00197674423712496,
+   0.022834750668950556
+  ],
+  "per_env": {
+   "jobshop": 0.004834817038678514,
+   "pmedian": 0.014506643153322452,
+   "quadassign": 0.011704682243657403
+  },
+  "cpu_ratio": 1.2184044733446346
+ },
+ "r0 minus o0@r0": {
+  "min_change": [
+   0.010564158882393695,
+   -0.0032804774198759994,
+   0.025032341179703415
+  ],
+  "acquired": [
+   0.010564158882393695,
+   -0.0035143171247284757,
+   0.025940245873236158
+  ],
+  "per_env": {
+   "jobshop": 0.00056880024901107,
+   "pmedian": 0.01694765828187082,
+   "quadassign": 0.014176018116299196
+  },
+  "cpu_ratio": 0.6224898787224123
+ },
+ "r0@800 minus r0": {
+  "min_change": [
+   0.012457490531251933,
+   -0.005221520694678372,
+   0.03234514723226314
+  ],
+  "acquired": [
+   0.012457490531251933,
+   -0.005029380259218251,
+   0.032077823941988805
+  ],
+  "per_env": {
+   "jobshop": 0.004306414564418752,
+   "pmedian": 0.03250660890394402,
+   "quadassign": 0.0005594481253930287
+  },
+  "cpu_ratio": 4.311056743847991
+ },
+ "paired r0 minus o0 by category": {
+  "jobshop": {
+   "mean": 0.004834817038678514,
+   "sd": 0.02825791830648075
+  },
+  "quadassign": {
+   "mean": 0.011704682243657403,
+   "sd": 0.019043385343958254
+  },
+  "pmedian": {
+   "mean": 0.014506643153322452,
+   "sd": 0.031875640367526895
+  }
+ },
+ "runs": {
+  "r0": [
+   {
+    "env": "jobshop",
+    "seed": 9201,
+    "train": 200.0,
+    "acquired": 0.8529684919432502,
+    "gain": 0.04542794773077419,
+    "cpu": 46.979,
+    "key": "1be87709ac886e263f129d5602c48296ce029644a3433b1dcfe7a495f45a55c3"
+   },
+   {
+    "env": "jobshop",
+    "seed": 9202,
+    "train": 200.0,
+    "acquired": 0.8114742671918034,
+    "gain": 0.008988968649713436,
+    "cpu": 43.39,
+    "key": "b84793f90affd1bd542579dc196ae6d8c851dc451b164401d04c93a5df505fef"
+   },
+   {
+    "env": "jobshop",
+    "seed": 9203,
+    "train": 200.0,
+    "acquired": 0.8013344088664466,
+    "gain": 0.0,
+    "cpu": 47.463,
+    "key": "5cb4f277e4d1cb50518f8aa8f7da7ea1f7571cf1671fa51f57cc0f440aa39c05"
+   },
+   {
+    "env": "jobshop",
+    "seed": 9204,
+    "train": 200.0,
+    "acquired": 0.8014683410116358,
+    "gain": 0.0,
+    "cpu": 42.373999999999995,
+    "key": "d3dee0fa738ef60e1c0de1373ab6d2c6e681a78801ba33d1b31cb6fd1685df77"
+   },
+   {
+    "env": "jobshop",
+    "seed": 9205,
+    "train": 200.0,
+    "acquired": 0.8428505687290135,
+    "gain": 0.03664442081125907,
+    "cpu": 62.274,
+    "key": "4faf42a393642de775d5105104f83efaae6a3734a1eae0aec346a07856b72406"
+   },
+   {
+    "env": "jobshop",
+    "seed": 9206,
+    "train": 200.0,
+    "acquired": 0.804634172583771,
+    "gain": 0.0,
+    "cpu": 58.055,
+    "key": "cc3dc30b17e023d048e010ff914a0fbd87af04b843a0553a9a1d55262ce02c1b"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9201,
+    "train": 200.0,
+    "acquired": 0.48631090623862855,
+    "gain": 0.034606396348419666,
+    "cpu": 19.174,
+    "key": "dd0555cebc2a92ab7a146f65ec6bd4d53e57917a3351db69f549cd76571f1a8b"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9202,
+    "train": 200.0,
+    "acquired": 0.4879348299791002,
+    "gain": 0.0299480796489775,
+    "cpu": 13.393,
+    "key": "18db170f9549386ce3e6820ec8fa95ff21fb0bbdb48fe553454d7681bf5dc88a"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9203,
+    "train": 200.0,
+    "acquired": 0.5258261770008809,
+    "gain": 0.07839245126361077,
+    "cpu": 16.801,
+    "key": "f9ca5deb38cd9da7d11e242debb02f0f1cfb0ae7f6ae98cbbadae614739ebb59"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9204,
+    "train": 200.0,
+    "acquired": 0.5113283645977943,
+    "gain": 0.08998880184841018,
+    "cpu": 13.468,
+    "key": "188bd25b6307ec3303fec03b667e91ccd5302b0c7a8a4986153217c89d27c2dd"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9205,
+    "train": 200.0,
+    "acquired": 0.5036454890544771,
+    "gain": 0.04673261536287632,
+    "cpu": 17.877,
+    "key": "afb89c208006cd22b3cb6df5b949d42f699991f2a3bfa7dbe784bb011cc3810e"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9206,
+    "train": 200.0,
+    "acquired": 0.5046586313724695,
+    "gain": 0.017656103689879687,
+    "cpu": 22.014999999999997,
+    "key": "7a681ee5015c630b96f38df958a083264a8b10619a2edd0887335e322345aa8a"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9201,
+    "train": 200.0,
+    "acquired": 0.6683453650683684,
+    "gain": -0.0012568776319984432,
+    "cpu": 72.398,
+    "key": "6bf92b5e2487eb07244f376c03d1b166788acb880dc72c3f2bd49ee8dd5cfa82"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9202,
+    "train": 200.0,
+    "acquired": 0.7544032692406702,
+    "gain": 0.07993128371128466,
+    "cpu": 79.664,
+    "key": "7a9eb312ee4ccecac3da705736e7ed968639bba67fda2d7aaf3b12b81dce409c"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9203,
+    "train": 200.0,
+    "acquired": 0.6560249618390788,
+    "gain": 0.0,
+    "cpu": 52.741,
+    "key": "01233afec3198f7826adbbb3451d16389b094006da0cf02668223f0d2ed036d0"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9204,
+    "train": 200.0,
+    "acquired": 0.6950074064704217,
+    "gain": 0.01161861487652771,
+    "cpu": 53.687,
+    "key": "ce0b248304e4fcae48747132b7ac4926dd3e691a737ef3fcb77695142d2a7dbf"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9205,
+    "train": 200.0,
+    "acquired": 0.6742210099820329,
+    "gain": 0.0,
+    "cpu": 48.481,
+    "key": "ca23ff8d876e2884dc5692b308d4bb9fc38940e809a7087b30f7448993970ec7"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9206,
+    "train": 200.0,
+    "acquired": 0.6601234296807502,
+    "gain": 0.004987162935003453,
+    "cpu": 60.246,
+    "key": "16fee3ed2c10ab46f01ac33084f9590eb49cda2c2b9f02e31efe678b5c57cf5e"
+   }
+  ],
+  "o0": [
+   {
+    "env": "jobshop",
+    "seed": 9201,
+    "train": 200.0,
+    "acquired": 0.807540544212476,
+    "gain": 0.0,
+    "cpu": 44.298,
+    "key": "5b498ac47495bb863432bbd7389b30c1b599606f4f88b4d4ca0af7a31032c7f8"
+   },
+   {
+    "env": "jobshop",
+    "seed": 9202,
+    "train": 200.0,
+    "acquired": 0.8024852985420899,
+    "gain": 0.0,
+    "cpu": 42.074,
+    "key": "049b9cad8a742627da6e222cb0543520aaeff9bb0b6d4be51556c4afa57d8914"
+   },
+   {
+    "env": "jobshop",
+    "seed": 9203,
+    "train": 200.0,
+    "acquired": 0.842895987615738,
+    "gain": 0.04156157874929145,
+    "cpu": 46.221,
+    "key": "61628546c0561d7d4ec8ac48c81fdf89c6cff43d12ead4b83af5aded3d533eda"
+   },
+   {
+    "env": "jobshop",
+    "seed": 9204,
+    "train": 200.0,
+    "acquired": 0.8014683410116358,
+    "gain": 0.0,
+    "cpu": 45.129,
+    "key": "7235b411bb54112b61474debd8f6ae5037fabd5df522562591412959a4af1e2a"
+   },
+   {
+    "env": "jobshop",
+    "seed": 9205,
+    "train": 200.0,
+    "acquired": 0.8266970041281386,
+    "gain": 0.020490856210384156,
+    "cpu": 43.027,
+    "key": "35696859bd2019999a0210f436f52a28432272696dfd7a14db51fd39ed8bbd8e"
+   },
+   {
+    "env": "jobshop",
+    "seed": 9206,
+    "train": 200.0,
+    "acquired": 0.804634172583771,
+    "gain": 0.0,
+    "cpu": 43.541,
+    "key": "83b18536309f668aff8ba43d94a22daa19c4eacf601e0dc7609d4a2987800a8c"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9201,
+    "train": 200.0,
+    "acquired": 0.4517045098902089,
+    "gain": 0.0,
+    "cpu": 12.356,
+    "key": "9ee0d8526fdad6fff3cbe2c83d1cdc05b61d2b8b116550e79856127061d14554"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9202,
+    "train": 200.0,
+    "acquired": 0.4913809044855186,
+    "gain": 0.03339415415539587,
+    "cpu": 11.214,
+    "key": "701b0eecc07065abf8aab1c8f06b0ac1e83685f0bae5a5b7099446f155b95b73"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9203,
+    "train": 200.0,
+    "acquired": 0.5124950304177399,
+    "gain": 0.06506130468046983,
+    "cpu": 11.122,
+    "key": "4b2281241a5a24958adbf538801acea22c2e7091d9c67167d6ba29c57359b51f"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9204,
+    "train": 200.0,
+    "acquired": 0.5257101284210001,
+    "gain": 0.10437056567161596,
+    "cpu": 12.068,
+    "key": "9f63514c467a294ee0a94594ac033d0a46c5c0b9da79441d69c2bddbccfb10c7"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9205,
+    "train": 200.0,
+    "acquired": 0.49445999880854924,
+    "gain": 0.03754712511694841,
+    "cpu": 11.654,
+    "key": "14a5dd6e42fe7591f017e5d18c2afedcf232d84173bcf5fcab5a996de95f292a"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9206,
+    "train": 200.0,
+    "acquired": 0.4737257327583894,
+    "gain": -0.013276794924200364,
+    "cpu": 15.722999999999999,
+    "key": "b5091b94cd1c1a78c0e000ef16860c78ffbbc23b642785baa4e24cff19f801bf"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9201,
+    "train": 200.0,
+    "acquired": 0.6696022427003668,
+    "gain": 0.0,
+    "cpu": 46.602000000000004,
+    "key": "418633c3a74b708e79076b5754ca89939ad5a6dbb4c9473c07a6ff81b38637e3"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9202,
+    "train": 200.0,
+    "acquired": 0.6756366192878126,
+    "gain": 0.0011646337584270139,
+    "cpu": 44.61,
+    "key": "82a36414ffa3ee8a4c1a2b4519b39c8159a38a9b608902534e743f163be4f53a"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9203,
+    "train": 200.0,
+    "acquired": 0.6560249618390788,
+    "gain": 0.0,
+    "cpu": 48.007000000000005,
+    "key": "260a88fc7fdb81b0979d857d672e1f8c3c904066313ec972d234cd940945bbfd"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9204,
+    "train": 200.0,
+    "acquired": 0.683388791593894,
+    "gain": 0.0,
+    "cpu": 49.252,
+    "key": "eaa6a03f15d876cf6ecf9eab283539f84c5a65de7b18cd344e58658de95eb075"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9205,
+    "train": 200.0,
+    "acquired": 0.6752521467292594,
+    "gain": 0.0010311367472264354,
+    "cpu": 54.089999999999996,
+    "key": "4088ff0855a7500d6f68dde84ca89344c18bd86a26dec48ec8614c3fcf2d56c7"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9206,
+    "train": 200.0,
+    "acquired": 0.661180821210976,
+    "gain": 0.006044554465229224,
+    "cpu": 51.38,
+    "key": "f456c03f8a7e6242cbef23f10a7362d43d04ffa4386a698c7a53f6a75d09bc69"
+   }
+  ],
+  "o0@r0": [
+   {
+    "env": "jobshop",
+    "seed": 9201,
+    "train": 400.0,
+    "acquired": 0.807540544212476,
+    "gain": 0.0,
+    "cpu": 99.685,
+    "key": "2c4242f80a9c60701a271791c809ede7db0a71b7f32326bec2e8d00f615fcb5f"
+   },
+   {
+    "env": "jobshop",
+    "seed": 9202,
+    "train": 400.0,
+    "acquired": 0.8254303688372054,
+    "gain": 0.0229450702951155,
+    "cpu": 75.39,
+    "key": "d455cf7339ef73747f76fd3e6508cbcb2411caf836ef87329382eb88a035e4bc"
+   },
+   {
+    "env": "jobshop",
+    "seed": 9203,
+    "train": 400.0,
+    "acquired": 0.8349177304377374,
+    "gain": 0.03358332157129085,
+    "cpu": 108.32199999999999,
+    "key": "c58dcec9b7f811927b8fb5a8eca5249f40ec65127d34007002cc66056cacdab7"
+   },
+   {
+    "env": "jobshop",
+    "seed": 9204,
+    "train": 200.0,
+    "acquired": 0.8014683410116358,
+    "gain": 0.0,
+    "cpu": 45.129,
+    "key": "7235b411bb54112b61474debd8f6ae5037fabd5df522562591412959a4af1e2a"
+   },
+   {
+    "env": "jobshop",
+    "seed": 9205,
+    "train": 400.0,
+    "acquired": 0.8373262917490284,
+    "gain": 0.031120143831273928,
+    "cpu": 103.848,
+    "key": "0435230d995651387e3bccc94f43335ee0e313d43f69513e5fde2adefb55ea28"
+   },
+   {
+    "env": "jobshop",
+    "seed": 9206,
+    "train": 400.0,
+    "acquired": 0.804634172583771,
+    "gain": 0.0,
+    "cpu": 93.241,
+    "key": "68fed3b8a4bc5b04347bceb746a30d7f03433e5fdbf46c82b2040614313fa7ac"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9201,
+    "train": 400.0,
+    "acquired": 0.4517045098902089,
+    "gain": 0.0,
+    "cpu": 28.486,
+    "key": "297d1f0ab119cd109d1c1758ae294b8d65634f0b18228b3d2be170535d884940"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9202,
+    "train": 400.0,
+    "acquired": 0.48797547366093896,
+    "gain": 0.029988723330816258,
+    "cpu": 26.031000000000002,
+    "key": "5068775c38e5e0d7544f2673504deb53d9cb3328e81290e5d4c8740458563c38"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9203,
+    "train": 400.0,
+    "acquired": 0.47703033112933585,
+    "gain": 0.029596605392065767,
+    "cpu": 27.733,
+    "key": "2a5da90149b0eaffc80cdb992f4a3e4d3879c2f08c90eef119a2e1f9cf147283"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9204,
+    "train": 400.0,
+    "acquired": 0.5318917777780099,
+    "gain": 0.11055221502862578,
+    "cpu": 27.737000000000002,
+    "key": "0169c76d2e49cf2c12ba8665b8cf7572c51b0009e4abb5523298a094b765a28b"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9205,
+    "train": 400.0,
+    "acquired": 0.5014705279845262,
+    "gain": 0.04455765429292535,
+    "cpu": 27.35,
+    "key": "ea315b2df2e3b627fdca38d732a5d57e4733469b9090f936dcfb5cfc76b490da"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9206,
+    "train": 400.0,
+    "acquired": 0.4845756691025356,
+    "gain": -0.002426858580054203,
+    "cpu": 37.53,
+    "key": "bf9a07a94b7ca8cff25ad837277282924c4d5f257e3f7e29ea2449466ddeafc8"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9201,
+    "train": 400.0,
+    "acquired": 0.6696022427003668,
+    "gain": 0.0,
+    "cpu": 100.079,
+    "key": "ca7b29c38415e919d433fa584b29aeae6012b1e68fe38809093d2a41355ebd54"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9202,
+    "train": 400.0,
+    "acquired": 0.6744719855293856,
+    "gain": 0.0,
+    "cpu": 99.90499999999999,
+    "key": "2e76047b1de821e178fcb2e8fd43396892feb228b9ae8cb75545fae2a1d30799"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9203,
+    "train": 400.0,
+    "acquired": 0.6540077529137936,
+    "gain": -0.002017208925285119,
+    "cpu": 81.774,
+    "key": "5eb18e8d3dca26704793a26f31db93794f32ef8adf31e50a39a9faf0b10b63e7"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9204,
+    "train": 400.0,
+    "acquired": 0.6694478692375528,
+    "gain": -0.013940922356341146,
+    "cpu": 101.708,
+    "key": "f6a19837d08a7d925b84e4a17578ac06a5725a62a7e8cb4ff0fc219f5aba76d9"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9205,
+    "train": 200.0,
+    "acquired": 0.6752521467292594,
+    "gain": 0.0010311367472264354,
+    "cpu": 54.089999999999996,
+    "key": "4088ff0855a7500d6f68dde84ca89344c18bd86a26dec48ec8614c3fcf2d56c7"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9206,
+    "train": 400.0,
+    "acquired": 0.6636574954797391,
+    "gain": 0.008521228733992303,
+    "cpu": 99.70100000000001,
+    "key": "6a11c98071b5a9d8995ef784574833e50b8bfeab4efbc4cf0eca05bd0ff4e98d"
+   }
+  ],
+  "r0@800": [
+   {
+    "env": "jobshop",
+    "seed": 9201,
+    "train": 800.0,
+    "acquired": 0.807540544212476,
+    "gain": 0.0,
+    "cpu": 173.16500000000002,
+    "key": "78503d7a89a76bbab303c3e33580d81ff5f02ca5f7b8c0ebccd37e987efbeb72"
+   },
+   {
+    "env": "jobshop",
+    "seed": 9202,
+    "train": 800.0,
+    "acquired": 0.821671180511057,
+    "gain": 0.01918588196896709,
+    "cpu": 192.324,
+    "key": "634f8d249edf73e1fc1bc19a4b92e5f83768651a90a24936a4b3420431f501eb"
+   },
+   {
+    "env": "jobshop",
+    "seed": 9203,
+    "train": 800.0,
+    "acquired": 0.8224859396503104,
+    "gain": 0.02115153078386378,
+    "cpu": 167.827,
+    "key": "6509f1459aebd16f10d4e1ac5d8d14abe321ed61bc42c5bf0a671ddc5ae83c26"
+   },
+   {
+    "env": "jobshop",
+    "seed": 9204,
+    "train": 800.0,
+    "acquired": 0.8451767386717067,
+    "gain": 0.04370839766007095,
+    "cpu": 158.233,
+    "key": "faa1082c36e54da00382beb347830f4fe2ec01867f92b91ec23c38fd4ea0fb23"
+   },
+   {
+    "env": "jobshop",
+    "seed": 9205,
+    "train": 800.0,
+    "acquired": 0.8390601620831118,
+    "gain": 0.03285401416535738,
+    "cpu": 277.419,
+    "key": "b9a70e1ffc148c0058f4baabccd66b3bac1f85a3d64d3c1d4f5e24eb61eec3f9"
+   },
+   {
+    "env": "jobshop",
+    "seed": 9206,
+    "train": 800.0,
+    "acquired": 0.804634172583771,
+    "gain": 0.0,
+    "cpu": 228.87800000000001,
+    "key": "6fb41066600a4dce837c58fb26db1749ad979d03fca13cae1f119e9c21245319"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9201,
+    "train": 800.0,
+    "acquired": 0.5123275097305436,
+    "gain": 0.06062299984033476,
+    "cpu": 68.528,
+    "key": "3dbba3afa1d32209aec602446e72611d0e9906359efad4b51daaa86fdaca2e0b"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9202,
+    "train": 800.0,
+    "acquired": 0.4813186663883904,
+    "gain": 0.023331916058267677,
+    "cpu": 54.336000000000006,
+    "key": "5903a950334370e5120d8b90e0dc39f5c5b00be180417c3a644409bbe62300df"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9203,
+    "train": 800.0,
+    "acquired": 0.5008977437862403,
+    "gain": 0.05346401804897022,
+    "cpu": 67.03099999999999,
+    "key": "ca76e6cf324a43f48756f88bf26ad22eab8f1a2611930cc5c7aa873280e56ebc"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9204,
+    "train": 800.0,
+    "acquired": 0.5376992853819107,
+    "gain": 0.11635972263252659,
+    "cpu": 62.091,
+    "key": "42643729e179a233521c566bc8b13a587d3b12244472c6f48299db0e00b70411"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9205,
+    "train": 800.0,
+    "acquired": 0.4953782583966388,
+    "gain": 0.038465384705037964,
+    "cpu": 59.959,
+    "key": "a44525b2c2615bb1af86833e3b3d4b440c841cabe156770b7b7817adc9269cd7"
+   },
+   {
+    "env": "quadassign",
+    "seed": 9206,
+    "train": 800.0,
+    "acquired": 0.4954396233119849,
+    "gain": 0.008437095629395097,
+    "cpu": 84.472,
+    "key": "c4a9d8fd0c1f7ab514e013e2f099fa60c79be13935853875323b9aad7a6f226a"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9201,
+    "train": 800.0,
+    "acquired": 0.7039150853324492,
+    "gain": 0.03431284263208234,
+    "cpu": 320.17400000000004,
+    "key": "f5bba1084c31a0948d870d97956d5e2c70f96aa3996f87a44e1ab001b552458f"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9202,
+    "train": 800.0,
+    "acquired": 0.7783703820392651,
+    "gain": 0.10389839650987953,
+    "cpu": 347.931,
+    "key": "d709a0da3700ff78469af2b7d4f297283fce403b57106641411278330862de57"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9203,
+    "train": 800.0,
+    "acquired": 0.6864603206453441,
+    "gain": 0.030435358806265356,
+    "cpu": 257.21,
+    "key": "13d5a6fad3005f7804ac5c0f111ce17d2368663292622d1b966c5cc13fc26ebc"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9204,
+    "train": 800.0,
+    "acquired": 0.7160683033948427,
+    "gain": 0.032679511800948746,
+    "cpu": 248.61499999999998,
+    "key": "135d822686c17962ecd829287b867600b2e0d188556963469e48173f622c2625"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9205,
+    "train": 800.0,
+    "acquired": 0.7406617177832172,
+    "gain": 0.06644070780118427,
+    "cpu": 242.014,
+    "key": "3f8722bf8e94badd47adbfe947b27896efea12caf9fd93beed9122352a1fcf24"
+   },
+   {
+    "env": "pmedian",
+    "seed": 9206,
+    "train": 800.0,
+    "acquired": 0.677689286509868,
+    "gain": 0.022553019764121274,
+    "cpu": 311.376,
+    "key": "8e9fd1dcc8106d26894b683793171b9c6408e51f3f736c1f963775965649ec67"
+   }
+  ]
+ }
+}

@@ -6,10 +6,12 @@ need no learner).
 """
 from __future__ import annotations
 
+import json
 import math
 import os
 import sys
 import tempfile
+import zlib
 
 import numpy as np
 
@@ -194,7 +196,8 @@ class _LedgerCache:
         u = lambda k: ((h >> (4 * k)) % 1000) / 1000.0
         memory = job.get("memory")
         design = job["version"].get("design", "a")
-        cpu = {"c1": 20.0, "c2": 30.0, "c3": 12.0}[job["env"]] * job["budget"]["train"] / 200.0 * (0.95 + 0.1 * u(0))
+        base = {"c1": 20.0, "c2": 30.0, "c3": 12.0}.get(job["env"], 10.0 + zlib.crc32(job["env"].encode()) % 20)
+        cpu = base * job["budget"]["train"] / 200.0 * (0.95 + 0.1 * u(0))
         if design == "r" and memory is not None and job["env"] == "c2":
             cpu *= 1.3                                         # relay's CPU is above frozen's on c2: the CPU rule applies there
         untrained = 0.4 if design != "a" else 0.35
@@ -390,6 +393,47 @@ def test_the_sign_flip_test_agrees_with_t_on_a_planted_effect_and_on_the_null():
     e_t = relay_report.endpoint("x", rows_a, rows_b, lambda s: s // 10, 0.05, "t")
     e_s = relay_report.endpoint("x", rows_a, rows_b, lambda s: s // 10, 0.05, "signflip")
     assert abs(e_t["p"] - e_s["p"]) < 0.03, (e_t["p"], e_s["p"])                    # the two tests agree closely on normal data
+
+
+def test_every_registered_prediction_can_be_scored():
+    """On a whole experiment made by the deterministic cache (the registered order, fewer chains): every
+    quantity a registered prediction is scored on is in the report as a number. (Nothing to check until
+    the registration exists.)"""
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "registry", "registration_r.json")
+    if not os.path.exists(path):
+        return
+    real = json.load(open(path))
+    reg = _heldout_reg(J=6, test=real["heldout"]["test"], dropped_arms=real["heldout"]["dropped_arms"], depths=real["heldout"]["depths"])
+    reg["predictions"] = real["predictions"]
+    reg["version"] = real["version"]
+    reg["meta"] = dict(real["meta"], chains=6, chains_off=4, retention=dict(real["meta"]["retention"], chains=4))
+    reg["budgets"] = real["budgets"]
+    reg["m_net"] = real["m_net"]
+
+    class Args:
+        dev = True
+    units, load, quiet = relay.units, relay.environments.load, relay.say
+    relay.units = lambda env: {"train": {"c1": 0.1, "c2": 0.15, "c3": 0.06}[env], "test": 0.0, "all_fresh_have_start_answers": False}
+    relay.environments.load = lambda c: c
+    relay.say = lambda *a: None
+    try:
+        ledger = ledgers.Ledger(os.path.join(tempfile.mkdtemp(prefix="relay-whole-"), "l.jsonl"))
+        cache = _LedgerCache(ledger)
+        relay.run_meta(reg, cache, ledger)
+        ledger.append({"type": "r_stage_done", "stage": "meta"})
+        relay.run_heldout(reg, cache, ledger, relay.rebuild(ledger, reg), Args())
+    finally:
+        relay.units, relay.environments.load, relay.say = units, load, quiet
+    out = relay_report.build(ledger, reg)
+    missing = []
+    for p in real["predictions"]:
+        for c in p.get("checks", []) + p.get("events", []):
+            v = relay_report.quantity(out, c["quantity"])
+            if not isinstance(v, (int, float)) or isinstance(v, bool) and False:
+                missing.append((p["id"], c["quantity"], v))
+    assert not missing, missing
+    scored = [p for p in out["predictions"] if "met" in p]
+    assert scored and all(p["met"] is not None for p in scored)
 
 
 def main() -> int:

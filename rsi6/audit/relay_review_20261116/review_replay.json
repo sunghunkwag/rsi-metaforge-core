@@ -1,0 +1,76 @@
+{
+ "findings": [
+  {
+   "file": "<scratch>/repo/rsi6/learner/design_r.py",
+   "line": 454,
+   "severity": "major",
+   "summary": "The shuffled placebo does not keep the length or the number of new constants of term blocks. _random_block turns every block flagged term into the 4- or 6-instruction term skeleton with fresh = 1. A term block of any other shape (common case: the single instruction ['add', 0, 0, r]) gets a placebo that is longer and adds a constant. This breaks the specification's rule ('a random block with the same part, length, fresh count and term flag') and the docstring of shuffled().",
+   "scenario": "relocate([['add',0,0,5]]) returns (that block, fresh 0, term True). _random_block of that block returns [['load',6,9,2],['mm',6,6,0],['scale',6,6,-1],['add',0,0,6]], which has length 4 and fresh 1. Such blocks come from ordinary edits: a score/mutarg on one of the default program's 'add 0 0 k' instructions yields one in 131 of 1685 edits (measured with edits.apply_edit on design_o.default()). Kept switches therefore put them into M_j's library. In the shuffled arm (E-R2, the first gate endpoint), every splice of such a block appends a 4-instruction term with a new random constant where relay appends one instruction. E-R2 then compares the record against a library that is structurally heavier, not one that is merely uninformative. That biases E-R2 toward relay. T7 asserts equal block lengths, but its 4-acquisition fixture holds no such block, so it passes.",
+   "fix": "Keep the skeleton only for term blocks of length 4 or 6. For other lengths, draw L-1 random instructions followed by ['add', 0, 0, r'] with r' != 0, using exactly blk['fresh'] placeholders (for L == 1: one random 'add 0 0 r'' and fresh 0). Add a T7 case with a one-instruction term block."
+  },
+  {
+   "file": "<scratch>/repo/rsi6/open/relay_report.py",
+   "line": 543,
+   "severity": "minor",
+   "summary": "Predictions are scored on quantities computed from only part of their registered inputs. m_net becomes the minimum over whichever comparators were measured, and P13 is scored although out['m_net']['complete'] is False. L8's slope is fitted on two depths when one depth arm was dropped, and P14 is scored. Both contradict score_predictions' own rule: 'not scored when one was not measured'.",
+   "scenario": "On a futility stop (registered probability about 0.4), shuffled, offpolicy and libonly are never run, so m_net = min(frozen, o0@relay) with complete False. A synthetic ledger with a futility stop gives per_comparator ['frozen', 'o0@relay'] and P13 met True. A binding cap that makes r_drop remove item 10 (depth 4) but not item 9 leaves depths {8, 12}, so l8 returns a 2-point slope and P14 is scored as if the registered 4/8/12 curve had been measured.",
+   "fix": "Set m_net 'value' and 'lower_bound' to None unless complete, and the L8 slope to None unless every registered depth was measured. Alternatively, have quantity() or score_predictions treat a dict marked complete=False as not measured."
+  },
+  {
+   "file": "<scratch>/repo/rsi6/open/relay_report.py",
+   "line": 134,
+   "severity": "minor",
+   "summary": "endpoint() computes cpu_ratio over all rows of both arms rather than over the pairs and chains that enter the statistic. The reported CPU ratio is therefore wrong for every endpoint whose two arms cover different chains or seeds.",
+   "scenario": "E-R2 to E-R5 pass arms['relay'] (all J chains, S seeds) against comparators measured on chains < 32 and s < 2. As a result: E-R3 reports cpu_ratio of about 2.0 although o0@relay was raised pair by pair to at least relay's CPU; 'L2 frozen@ceiling minus frozen' reports about 0.95 (128 runs at 4T over 512 frozen runs) instead of about 3.8; 'L1 frozen minus o0@relay' reports about 1.9. Synthetic ledger with equal CPU per run (relay on 8 chains, comparators on 4): E-R1 1.002, E-R2 1.984, E-R3 2.02.",
+   "fix": "Sum the CPU only over the pairs present in both arms, restricted to `chains` when it is given."
+  },
+  {
+   "file": "<scratch>/repo/rsi6/open/relay.py",
+   "line": 361,
+   "severity": "minor",
+   "summary": "The primary items are submitted as two consecutive batches, all relay runs and then all frozen runs, rather than as one interleaved batch per item (specification 6.2(3)). Item 11 is split the same way (o0@ref, then a0@ref, lines 385-386).",
+   "scenario": "Item 1 measures its 256 relay runs in one pool window (about 50 minutes at 4 workers) and the 256 frozen runs in the next. Any drift in machine speed between the two windows goes straight into the relay/frozen CPU ratio, always with relay first. That ratio decides the registered CPU rule at 1.10, which raises frozen to relay's CPU on that category for both halves of the primary, and it is what P16 scores.",
+   "fix": "Build the relay and frozen jobs of the item, submit them in one cache.get interleaved by (chain, category, seed), and split the returned rows by arm. Do the same for o0@ref and a0@ref."
+  },
+  {
+   "file": "<scratch>/repo/rsi6/open/relay_report.py",
+   "line": 537,
+   "severity": "minor",
+   "summary": "m_net's frozen comparator pairs every primary seed of chains < 32. The registered m_net is the mean over chains j < 32 with s < 2. When D2 selects S = 3, the frozen comparator includes s = 2 pairs that no other comparator has.",
+   "scenario": "With (J, S) = (48, 3), endpoint(arms['relay'], compared(..., 'frozen')[0], chains=sec) pairs seeds 0, 1 and 2, while shuffled, offpolicy, libonly and o0@relay pair s < 2 only. The minimum and the Bonferroni lower bound are then taken over comparators measured on different pair sets, and frozen's has a smaller standard error.",
+   "fix": "For the m_net comparators, restrict relay's rows (or the comparator's) to (seed - seed_base) % 10 < 2."
+  },
+  {
+   "file": "<scratch>/repo/rsi6/open/relay_report.py",
+   "line": 364,
+   "severity": "minor",
+   "summary": "two_by_two iterates a set of (category, seed) pairs. The order of its floating sums therefore depends on PYTHONHASHSEED, and two runs of the report on the same ledger print different 2x2 values.",
+   "scenario": "The same synthetic ledger, reported under PYTHONHASHSEED=1 and 2, gives interaction means of -0.0031822786972950197 and -0.003182278697295018. Six hash seeds gave six different outputs (different md5 sums).",
+   "fix": "Iterate `for pair in sorted(common)`."
+  },
+  {
+   "file": "<scratch>/repo/rsi6/open/relay_report.py",
+   "line": 127,
+   "severity": "minor",
+   "summary": "The bootstraps use fixed seeds: 20261116 in every endpoint (line 127), plus 20261117 (line 154) and 20261118 (line 319). The specification's reproduction rule seeds each bootstrap by the CRC-32 of the comparison's name, and the registration records neither rule. Every endpoint's chain bootstrap therefore resamples with the same index stream.",
+   "scenario": "E-R1 to E-R5 and the 32-chain diagnostics all draw identical chain indices. Their 95% chain intervals are not independent draws, and anyone reproducing the report from the specification's rule gets different intervals.",
+   "fix": "Seed each bootstrap with zlib.crc32 of the endpoint's label (and of the L7 label), as the specification states."
+  },
+  {
+   "file": "<scratch>/repo/rsi6/open/relay.py",
+   "line": 454,
+   "severity": "minor",
+   "summary": "A stage stopped while writing a ledger line cannot be restarted. relay.main loads the ledger without the guard.torn() check that finish.py makes, so an incomplete last line raises JSONDecodeError instead of the documented repair message.",
+   "scenario": "SIGTERM arrives while a multi-page record is being appended, for example r_stage_done 'heldout' (thousands of run keys, roughly 200 KB) or a large run record. With a fatal signal pending, Linux returns a short write, leaving the last line of live.jsonl incomplete. The restarted stage then fails in ledgers.Ledger(args.ledger), before same-history checks pass into any replay.",
+   "fix": "Before loading, call guard.torn(args.ledger) and stop with finish.py's message: remove the incomplete line, note it, and start again."
+  },
+  {
+   "file": "<scratch>/repo/rsi6/tests/test_design_r.py",
+   "line": 2,
+   "severity": "minor",
+   "summary": "Test T10 of the specification ('a dry ledger that is stopped and restarted replays and agrees') is not implemented: test_design_r.py covers T1 to T9 and test_relay.py covers T11. Replay agreement is only exercised by the manual D5 dry run.",
+   "scenario": "The D5 dry registration sets futility_t -99, cpu_total 1e9 and cpu_tolerance 0.5, so the restart check never produces an r_futility stop, an r_drop or an r_cap. Any nondeterminism in those records would first surface as an append_once RuntimeError during the registered held-out stage, after held-out CPU has been spent.",
+   "fix": "Add a test that runs the stages against a deterministic fake cache (like test_relay's _FakeCache) and fake environments on a scratch ledger. It should raise at a chosen request count, restart, and compare the final ledger with an uninterrupted run, including configurations with a futility stop, an r_drop and an r_cap."
+  }
+ ]
+}

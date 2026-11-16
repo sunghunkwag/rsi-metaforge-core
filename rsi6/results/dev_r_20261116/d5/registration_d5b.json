@@ -1,0 +1,458 @@
+{
+ "what": "development D5 (new code): dry run B (futility stop always; the CPU total set after the meta stage so that the plan's re-projection drops items)",
+ "amendment": 0,
+ "version": {
+  "design": "r",
+  "score": [
+   [
+    "load",
+    1,
+    0,
+    0
+   ],
+   [
+    "mm",
+    1,
+    1,
+    0
+   ],
+   [
+    "scale",
+    0,
+    1,
+    0
+   ],
+   [
+    "load",
+    2,
+    1,
+    0
+   ],
+   [
+    "step",
+    3,
+    2,
+    0
+   ],
+   [
+    "scale",
+    3,
+    3,
+    1
+   ],
+   [
+    "mm",
+    2,
+    2,
+    0
+   ],
+   [
+    "scale",
+    2,
+    2,
+    2
+   ],
+   [
+    "add",
+    0,
+    0,
+    2
+   ],
+   [
+    "add",
+    0,
+    0,
+    3
+   ],
+   [
+    "load",
+    4,
+    3,
+    0
+   ],
+   [
+    "mm",
+    4,
+    4,
+    0
+   ],
+   [
+    "scale",
+    4,
+    4,
+    3
+   ],
+   [
+    "add",
+    0,
+    0,
+    4
+   ],
+   [
+    "load",
+    5,
+    5,
+    0
+   ],
+   [
+    "mm",
+    5,
+    5,
+    0
+   ],
+   [
+    "scale",
+    5,
+    5,
+    4
+   ],
+   [
+    "add",
+    0,
+    0,
+    5
+   ],
+   [
+    "load",
+    6,
+    6,
+    0
+   ],
+   [
+    "mm",
+    6,
+    6,
+    0
+   ],
+   [
+    "scale",
+    6,
+    6,
+    5
+   ],
+   [
+    "add",
+    0,
+    0,
+    6
+   ],
+   [
+    "load",
+    7,
+    8,
+    0
+   ],
+   [
+    "mm",
+    7,
+    7,
+    0
+   ],
+   [
+    "scale",
+    7,
+    7,
+    6
+   ],
+   [
+    "add",
+    0,
+    0,
+    7
+   ]
+  ],
+  "pick": [
+   [
+    "load",
+    1,
+    1,
+    0
+   ],
+   [
+    "mm",
+    1,
+    1,
+    0
+   ],
+   [
+    "scale",
+    0,
+    1,
+    7
+   ],
+   [
+    "load",
+    2,
+    2,
+    0
+   ],
+   [
+    "mm",
+    2,
+    2,
+    0
+   ],
+   [
+    "scale",
+    2,
+    2,
+    8
+   ],
+   [
+    "add",
+    0,
+    0,
+    2
+   ],
+   [
+    "load",
+    3,
+    0,
+    0
+   ],
+   [
+    "mm",
+    3,
+    3,
+    0
+   ],
+   [
+    "scale",
+    3,
+    3,
+    9
+   ],
+   [
+    "add",
+    0,
+    0,
+    3
+   ]
+  ],
+  "theta": [
+   -1.0,
+   -6.0,
+   -3.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  "init": [
+   [
+    "ones",
+    1,
+    0,
+    0
+   ],
+   [
+    "scale",
+    1,
+    1,
+    9
+   ]
+  ],
+  "propose": [
+   [
+    "rows",
+    0,
+    0,
+    1
+   ],
+   [
+    "row",
+    0,
+    0,
+    0
+   ]
+  ],
+  "update": [
+   [
+    "wfit",
+    0,
+    0,
+    0
+   ],
+   [
+    "wtop",
+    1,
+    0,
+    6
+   ],
+   [
+    "wnorm",
+    1,
+    1,
+    0
+   ],
+   [
+    "zero",
+    4,
+    0,
+    0
+   ],
+   [
+    "comb",
+    5,
+    1,
+    4
+   ],
+   [
+    "copy",
+    0,
+    5,
+    0
+   ],
+   [
+    "scale",
+    1,
+    1,
+    8
+   ],
+   [
+    "floor",
+    1,
+    1,
+    5
+   ]
+  ],
+  "pop": 16,
+  "batch": 4,
+  "shortlist": 1,
+  "holdback": 0.25,
+  "select": "best_of_3",
+  "inner": {
+   "share": 0.5,
+   "variants": 8,
+   "edits": [
+    0.6,
+    0.3,
+    0.1
+   ],
+   "w": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "relay": {
+   "beta": 1.0,
+   "kappa": 20.0,
+   "cap": 2.0,
+   "lib_max": 32,
+   "lib_per_run": 4,
+   "rule": "dplus"
+  }
+ },
+ "version_digest": "de2d960e2916d41608b714527a335d399425d7f264b20003cb3e5fdaac9261de",
+ "files": {},
+ "budgets": {
+  "meta": {
+   "train": 10.0,
+   "test_c": 2.0,
+   "test_e": 1.0,
+   "n_train": 16,
+   "n_fresh": 24,
+   "part": "A"
+  },
+  "retention": {
+   "train": 10.0,
+   "test_c": 2.0,
+   "test_e": 1.0,
+   "n_train": 16,
+   "n_fresh": 24,
+   "part": "B"
+  },
+  "heldout": {
+   "train": 10.0,
+   "test_c": 2.0,
+   "test_e": 1.0,
+   "n_train": 16,
+   "n_fresh": 24
+  }
+ },
+ "meta": {
+  "chains": 4,
+  "chains_off": 2,
+  "order": [
+   "jobshop",
+   "jobshop",
+   "quadassign",
+   "quadassign"
+  ],
+  "seed_base": 640000,
+  "retention": {
+   "chains": 2,
+   "seed_base": 641000,
+   "plan": {
+    "jobshop": [
+     0,
+     2,
+     4
+    ]
+   }
+  }
+ },
+ "heldout": {
+  "categories": [],
+  "role": "fresh",
+  "seed_base": 642000,
+  "seeds": 2,
+  "secondary_chains": 2,
+  "depths": [
+   1,
+   2
+  ],
+  "reference_chains": 2,
+  "cpu_model": {
+   "o0": {
+    "a": 0.0,
+    "b": 1e-06,
+    "d": 0.0
+   },
+   "r0_over_o0": 1.26
+  },
+  "train_grid": [
+   10,
+   8,
+   6,
+   4,
+   2
+  ],
+  "max_cpu_per_run": 60.0,
+  "cpu_tolerance": 1.1,
+  "futility_t": 99.0,
+  "ceiling_factor": 4,
+  "alpha": {
+   "primary": 0.01
+  },
+  "machine_factor": 1.15,
+  "cpu_total": 133.4253,
+  "cpu_development": 0.0,
+  "cpu_reserve": 0.0,
+  "matched_levels": 2,
+  "ceiling_cost": 3.8
+ },
+ "dev_heldout": [
+  "pmedian"
+ ],
+ "m_net": "relay minus the worst of frozen, shuffled, offpolicy, libonly, o0@relay"
+}
