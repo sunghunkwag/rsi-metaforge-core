@@ -60,17 +60,22 @@ def heldout_section(ledger, held, stage) -> dict:
         by_key = {r["key"]: r for r in ledger.records if r.get("type") == "run" and "key" in r}
         arms = {name: [dict(by_key[k]) for k in keys] for name, keys in held["arms"].items()}
         matched = {r["arm"]: r for r in ledger.select(type="o_matched") if r.get("stage", "heldout") == stage}
-        for name in ("o0@recursive", "a0@recursive"):
-            for row, reached in zip(arms[name], matched[name]["reached"]):
+        for name, m in matched.items():
+            for row, reached in zip(arms[name], m["reached"]):
                 row["reached"] = reached
         comp = {}
-        pairs = [("recursive", "o0@recursive", True), ("recursive", "a0@recursive", True), ("recursive", "o0", True),
-                 ("recursive", "a0", True), ("recursive", "uniform", False), ("recursive", "shuffled", False),
-                 ("recursive", "tune", False), ("recursive", "frozen", False)]
-        pairs += [(arm, "o0", True) for arm in ("frozen", "uniform", "shuffled", "tune")]
+        # the registered comparisons: the recursive arm against every control given its CPU
+        pairs = [("recursive", f"{c}@recursive", True) for c in ("o0", "a0", "frozen", "uniform", "shuffled", "tune")]
+        # reported beside them, not evidence: equal counted units, and the other lineage of every arm
+        pairs += [("recursive", c, False) for c in ("o0", "a0", "frozen", "uniform", "shuffled", "tune")]
+        pairs += [(arm, "o0", False) for arm in ("frozen", "uniform", "shuffled", "tune")]
+        pairs += [(f"{arm}:other", arm, False) for arm in ("recursive", "frozen", "uniform", "shuffled", "tune") if f"{arm}:other" in arms]
         for a, b, control in pairs:
             comp[f"{a} minus {b}"] = evaluate.compare(arms[a], arms[b], name=f"{a} minus {b}", control=control)
+        versions = held.get("versions", {})
         return {"envs": held["envs"], "seeds": held["seeds"], "comparisons": comp,
+                "finals_other_than_o0": sorted(a for a in ("recursive", "frozen", "uniform", "shuffled", "tune")
+                                               if versions.get(a) and versions.get(a) != versions.get("o0")),
                 "arms": {name: {"acquired": float(np.mean([r["acquired"] for r in rows])),
                                 "untrained": float(np.mean([r["untrained"] for r in rows])),
                                 "gain": float(np.mean([r["gain"] for r in rows])),
@@ -85,9 +90,9 @@ def endpoints(reg, out) -> dict:
     if "heldout" in out:
         e1 = out["heldout"]["comparisons"]["recursive minus o0@recursive"]
         point, low, _ = e1["min_change"]
-        parts["E1"] = None if e1["void"] else bool(point >= 0.01 and low > 0.0)
-        e3b = out["heldout"]["comparisons"]["recursive minus frozen"]["min_change"][0]
-        parts["E3b"] = bool(e3b > 0.0)
+        parts["E1"] = bool(not e1["void"] and point >= 0.01 and low > 0.0)      # a void comparison does not meet E1
+        e3b = out["heldout"]["comparisons"]["recursive minus frozen@recursive"]
+        parts["E3b"] = bool(not e3b["void"] and e3b["min_change"][0] > 0.0)
     if rec and "swap" in out:
         parts["E3a"] = bool(sum(v["principle_changes"] for v in rec) > 0) and bool(out["swap"]["exercised"])
         parts["E3c"] = bool(out["swap"]["exercised"] and out["swap"]["mean_difference"] >= reg["swap"]["threshold"]) \
@@ -113,10 +118,13 @@ def predictions(reg, out) -> list:
     add("O1", bool(rec and all(v["accepted"] >= 1 for v in rec.values())) if rec else None, {k: v["accepted"] for k, v in rec.items()})
     held = out.get("heldout")
     if held:
+        others = held["finals_other_than_o0"]
         e1 = held["comparisons"]["recursive minus o0@recursive"]
-        add("O2", bool(e1["void"] or e1["min_change"][0] < 0.01 or e1["min_change"][1] <= 0.0), e1["min_change"])
-        e2 = held["comparisons"]["recursive minus uniform"]["min_change"]
-        add("O3", bool(e2[1] <= 0.0 <= e2[2]), e2)
+        add("O2", bool(e1["void"] or e1["min_change"][0] < 0.01 or e1["min_change"][1] <= 0.0),
+            {"interval": e1["min_change"], "void": e1["void"], "arms whose final is not generation 0": others})
+        e2 = held["comparisons"]["recursive minus uniform@recursive"]
+        add("O3", bool(e2["void"] or e2["min_change"][1] <= 0.0 <= e2["min_change"][2]),
+            {"interval": e2["min_change"], "void": e2["void"], "arms whose final is not generation 0": others})
     else:
         add("O2", None, "the held-out stage has not run")
         add("O3", None, "the held-out stage has not run")

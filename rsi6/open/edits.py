@@ -193,12 +193,13 @@ def apply_edit(mechanism: dict, cell, library: list, rng) -> tuple:
 
 
 def effective(mechanism: dict) -> dict:
-    """The mechanism with the dead instructions of ``score`` and ``pick`` removed: they are never
-    run (``design_o.live``). Every constant keeps its value, read or not: the learning principle
-    starts from all of them and can mix them (``mean``, ``norm``)."""
+    """The mechanism with the dead instructions of every program removed: they are never run
+    (``design_o.live``, ``design_o.live_principle``). Every constant keeps its value, read or not:
+    the learning principle starts from all of them and can mix them (``mean``, ``norm``)."""
     g = copy.deepcopy(mechanism)
     for part in ("score", "pick"):
         g[part] = O.live(g[part])
+    g.update(O.live_principle(g))                       # dead instructions of the learning programs are not run either
     return g
 
 

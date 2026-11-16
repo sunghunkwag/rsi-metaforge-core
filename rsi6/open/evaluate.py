@@ -1,6 +1,7 @@
 """Held-out evaluation of open mechanisms: what each acquires on categories discovery never saw.
 
-    python -m rsi6.open.evaluate --ledger PATH --envs a,b,c --seeds 1,2,3,4 [--from LEDGER_OF_DISCOVERY ...]
+The functions the experiment's stages and its report use (``runs``, ``raise_until``,
+``compare``); the stages are in ``experiment.py`` and the report in ``report.py``.
 
 Arms, all measured by the kernel at the registered run budget on the given categories and
 seeds, with empty memory:
@@ -66,8 +67,11 @@ def raise_until(cache, version, want: dict, purpose, budget=RUN_BUDGET) -> list:
     for _ in range(12):
         if not pending:
             break
-        got = cache.get([{"env": e, "version": version, "seed": s, "budget": dict(budget, train=value[(e, s)]), "purpose": purpose}
-                         for e, s in pending])
+        jobs = [{"env": e, "version": version, "seed": s, "budget": dict(budget, train=value[(e, s)]), "purpose": purpose}
+                for e, s in pending]
+        got = []
+        for k in range(0, len(jobs), 4):                   # in small batches, so that a stopped driver loses little
+            got += cache.get(jobs[k:k + 4])
         for pair, r in zip(pending, got):
             last[pair] = r
             seen[pair].append((value[pair], cpu(r)))
@@ -117,58 +121,4 @@ def compare(arm, base, rng=None, name="", control=False) -> dict:
             "void": bool(control and (less or unreached))}
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--ledger", required=True)
-    parser.add_argument("--envs", required=True)
-    parser.add_argument("--seeds", default="1,2,3,4")
-    parser.add_argument("--discovery", nargs="*", default=[], help="ledgers of discovery runs whose last accepted mechanisms are arms")
-    parser.add_argument("--out", default=None)
-    parser.add_argument("--no-match", action="store_true")
-    args = parser.parse_args()
-    if guard.is_registered(args.ledger):
-        raise SystemExit("development evaluations use a scratch ledger")
-    envs, seeds = args.envs.split(","), [int(x) for x in args.seeds.split(",")]
-    registered = ledgers.Ledger(guard.MAIN)
-    for e in envs:
-        if roles.effective_role(environments.load(e).category, registered) != "source":
-            raise SystemExit(f"{e} is not a source category")
-    if not os.path.exists(args.ledger):
-        shutil.copy(guard.MAIN, args.ledger)
-    guard.single_writer(args.ledger)
-    ledger = ledgers.Ledger(args.ledger)
-    cache = Cache(ledger)
-    arms = {"a0": designs.default("a"), "o0": designs.default("o")}
-    for path in args.discovery:
-        for r in ledgers.Ledger(path).select(type="o_accept"):
-            arms[f"{os.path.basename(path).split('.')[0]}:{r['lineage']}"] = r["mechanism"]          # the last one of a lineage wins
-    results = {}
-    for name, version in arms.items():
-        results[name] = runs(cache, version, envs, seeds, f"open-eval:{name}")
-        say(f"{name:28s} acquired {np.mean([r['acquired'] for r in results[name]]):.4f} gain {np.mean([r['gain'] for r in results[name]]):+.4f}"
-            f" cpu/run {np.mean([cpu(r) for r in results[name]]):.1f}")
-    rng = np.random.default_rng(0)
-    table = {}
-    for name in arms:
-        if name == "o0":
-            continue
-        table[f"{name} minus o0"] = compare(results[name], results["o0"], rng)
-        if name not in ("a0",):
-            table[f"{name} minus a0"] = compare(results[name], results["a0"], rng)
-            if not args.no_match:
-                want = {(r["env"], r["seed"]): cpu(r) for r in results[name]}
-                control = matched(cache, arms["o0"], want, f"open-eval:o0@{name}")
-                table[f"{name} minus o0@{name}"] = dict(compare(results[name], control, rng),
-                                                        reached=int(sum(r["reached"] for r in control)), of=len(control))
-    for name, c in table.items():
-        say(f"{name:40s} min-change {c['min_change'][0]:+.4f} [{c['min_change'][1]:+.4f}, {c['min_change'][2]:+.4f}] per category",
-            {e: round(v, 4) for e, v in c["per_env"].items()}, "" if "reached" not in c else f"matched {c['reached']}/{c['of']}")
-    if args.out:
-        json.dump({"envs": envs, "seeds": seeds, "table": table,
-                   "arms": {k: {"acquired": float(np.mean([r["acquired"] for r in v])), "cpu": float(np.mean([cpu(r) for r in v]))}
-                            for k, v in results.items()}}, open(args.out, "w"), indent=1)
-    return 0
 
-
-if __name__ == "__main__":
-    sys.exit(main())

@@ -606,11 +606,64 @@ def _wvec(op, W, a, b, F):
     return out
 
 
+def _reads(op, dst, a, b) -> tuple:
+    """``(parameter registers read, fitness registers read)`` by one instruction of a learning program."""
+    if op in POP_OPS:
+        return ({a} if op == "row" else {a, b}), set()
+    if op in ("comb", "combabs"):
+        return {b}, {a}
+    if op in W_OPS:
+        if op in ("wmul", "wadd"):
+            return set(), {a, b % N_WREG}
+        return set(), (set() if op == "wfit" else {a})
+    if op in A_NULLARY:
+        return set(), set()
+    if op in A_BINARY:
+        return {a, b}, set()
+    return {a}, set()
+
+
+def live_principle(genome: dict) -> dict:
+    """The three learning programs with the instructions removed whose result nothing can read:
+    an instruction that writes a parameter register other than register 0 (the state, which is
+    read out) that no instruction of the three programs reads, or a fitness register that none
+    reads. Writes to the population are always live. The test is conservative (a register read
+    anywhere keeps every write to it), and only live instructions are run, so a removed
+    instruction draws no noise: two mechanisms with the same live learning programs learn
+    identically."""
+    programs = {p: [list(ins) for ins in genome[p]] for p in ("init", "propose", "update")}
+    while True:
+        read_a, read_w = {0}, set()
+        for prog in programs.values():
+            for ins in prog:
+                ra, rw = _reads(*ins)
+                read_a |= ra
+                read_w |= rw
+        changed = False
+        for p, prog in programs.items():
+            keep = []
+            for ins in prog:
+                op, dst = ins[0], ins[1]
+                if op in POP_OPS:
+                    keep.append(ins)
+                elif op in W_OPS and op not in ("comb", "combabs"):
+                    (keep.append(ins) if dst in read_w else None)
+                elif dst in read_a:
+                    keep.append(ins)
+            changed |= len(keep) != len(prog)
+            programs[p] = keep
+        if not changed:
+            return programs
+
+
 class Acquirer:
     """State of the learning principle during one acquisition: eight registers over the
-    parameter space, a population, four registers over the population."""
+    parameter space, a population, four registers over the population. Only the live
+    instructions of the learning programs are run (``live_principle``)."""
 
     def __init__(self, genome: dict, start: np.ndarray, rng, pop: int | None = None):
+        live = live_principle(genome)
+        genome = dict(genome, **live)
         self.g, self.rng = genome, rng
         self.d = len(start)
         self.K = int(pop or genome["pop"])
@@ -798,5 +851,8 @@ class OpenLearner(Learner):
         try:
             totals, answer = construct(P, Sensors(P, self.g), self.g, theta, rng, shortlist, hold=hold)
         except (BudgetExhausted, Infeasible):
-            return _finish_arbitrarily(P, hold[0] if hold else None)
+            try:
+                return _finish_arbitrarily(P, hold[0] if hold else None)
+            except IndexError:                                 # no well-formed completion exists: an answer the kernel scores 0
+                return np.zeros(P.n_vars, dtype=np.int64)
         return self._improve(None, P, rng, answer, _key(totals, P))

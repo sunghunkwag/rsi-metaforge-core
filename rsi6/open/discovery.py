@@ -20,23 +20,28 @@ values: a control for the learning of the weights, not for the recursion); ``tun
 generation 0's constants and numbers only, drawn uniformly: a control that spends the same
 compute tuning instead of discovering).
 
-A step, all measured by the kernel (``rsi6.kernel.run.measure`` through ``Cache``) on fresh
-instances after acquisition at the registered search budget:
+A step, all measured by the kernel (``rsi6.kernel.run.measure`` through ``Cache``) on the
+deciding half of the fresh instances (``part`` A) after acquisition at the registered search
+budget. The confirming half (``part`` B) is left alone: the experiment uses it to choose between
+lineages and to assess the swap test, on instances no acceptance has seen. A seed changes the
+relabelling and the learner's random draws, not the instances.
 
-1. *screen*: every candidate on the first discovery seed, deciding half (``part`` A);
+1. *screen*: every candidate on the first discovery seed;
 2. *promote*: the candidates that screened above zero, the best half, on the other discovery
    seeds; their value is the mean paired difference from the parent on those seeds only (the
    screen seed, on which they were selected, is left out);
 3. *confirm*: the best promoted candidate whose value clears the margin is measured with its
-   parent on the confirming half of the fresh instances (``part`` B, never selected on) with
-   seeds used for no other measurement; it is accepted if the mean paired difference is at least
-   half the margin and its one-sided z statistic over the (category, seed) pairs at least the
-   registered value, and if its CPU is within the registered ratio of the parent's on the same
-   runs and of generation 0's.
+   parent on four seeds used for no other measurement; it is accepted if the mean paired
+   difference over the (category, seed) pairs is at least half the margin and its one-sided t
+   statistic at least the registered value (pairs on one category share their instances, so
+   this is a screening threshold, not a calibrated test), and if its CPU on those runs is within
+   the registered ratio of the parent's.
 
-Every lineage is charged the recorded CPU of every run it uses (served from the ledger or not),
-and the experiment gives every lineage the same CPU budget. Nothing here reads a reference, and
-nothing here touches a category outside the ones it is given.
+A candidate whose CPU exceeds the registered ratio over generation 0's on the same runs is
+refused at screening and on the other discovery seeds. Every lineage is charged, once per run,
+the recorded CPU of every run it uses (served from the ledger or not), and the experiment gives
+every lineage the same CPU budget. Nothing here reads a reference, and nothing here touches a
+category outside the ones it is given.
 """
 from __future__ import annotations
 
@@ -51,10 +56,13 @@ from rsi6.learner import designs
 from rsi6.open import edits
 
 SEARCH_BUDGET = {"train": 40.0, "test_c": 2.0, "test_e": 1.0, "n_train": 12, "n_fresh": 24, "part": "A"}
-CONFIRM_BUDGET = dict(SEARCH_BUDGET, part="B")
-CPU_RATIO = 1.25            # against generation 0, on the same seeds
+ASSESS_BUDGET = dict(SEARCH_BUDGET, part="B")      # the confirming half: selection and the swap assessment only
+CPU_RATIO = 1.25            # against generation 0, on the same runs
 CPU_STEP = 1.10             # against the parent, on the confirmation runs
-TUNE_CELLS = [k for k, (part, _) in enumerate(edits.CELLS) if part in ("theta", "scalar")]
+SEED_STRIDE = 1000          # confirmation seeds of one lineage: confirm_base + 4k + j, k < SEED_STRIDE / 4
+# the tune arm: generation 0's constants and numbers, nothing that adds or changes an instruction
+TUNE_CELLS = [k for k, cell in enumerate(edits.CELLS)
+              if cell == ("theta", "perturb") or (cell[0] == "scalar" and cell[1] in ("pop", "batch", "shortlist", "holdback"))]
 
 
 def append_once(ledger, record: dict, identity) -> dict:
@@ -77,8 +85,10 @@ def softmax(x):
 
 
 def principle(mechanism: dict) -> str:
-    """The identity of a learning principle: its three programs."""
-    text = json.dumps([mechanism[p] for p in ("init", "propose", "update")], separators=(",", ":"))
+    """The identity of a learning principle: its three programs, dead instructions removed (they
+    are never run: a change that only adds one is not a change of principle)."""
+    live = O.live_principle(mechanism)
+    text = json.dumps([live[p] for p in ("init", "propose", "update")], separators=(",", ":"))
     return hashlib.sha256(text.encode()).hexdigest()
 
 
@@ -159,7 +169,7 @@ class Lineage:
         self.principle_source = principle_source if principle_source is not None else self.start
         self.D = Discoverer(self.principle_source, rng, self.knobs, mode=mode)
         self.steps, self.accepted, self.confirmations, self.spent = 0, [], 0, 0.0
-        self.charged = set()
+        self.charged = set()                                 # run keys this lineage has paid for
         self.seen = {edits.behaviour(self.parent)}
         self.reference = reference if reference is not None else self.parent   # generation 0, for the CPU cap
         self.parent_records = self.records(self.parent, self.seeds, SEARCH_BUDGET, "start")
@@ -171,9 +181,10 @@ class Lineage:
         key = (edits.behaviour(mechanism), tuple(self.envs), tuple(seeds), budget.get("part"))
         if key not in self.memo:
             self.memo[key] = self.cache.get(jobs(mechanism, self.envs, seeds, budget, f"open:{self.name}:{tag}"))
-        if key not in self.charged:
-            self.charged.add(key)
-            self.spent += cpu_of(self.memo[key])
+        for r in self.memo[key]:
+            if r["key"] not in self.charged:
+                self.charged.add(r["key"])
+                self.spent += r["cpu"]["acquire"] + r["cpu"]["apply"]
         return self.memo[key]
 
     def batch(self, mechanisms, seeds, budget, tag) -> None:
@@ -213,7 +224,8 @@ class Lineage:
         live = [c for c in cands if c[0] is not None]
         self.batch([c[0] for c in live], screen, SEARCH_BUDGET, f"screen{self.steps}")
         parent_screen = self.records(self.parent, screen, SEARCH_BUDGET, "screen")
-        ref_cpu = cpu_of(self.records(self.reference, self.seeds, SEARCH_BUDGET, "reference")) / len(self.seeds)   # per seed
+        ref_screen = cpu_of(self.records(self.reference, screen, SEARCH_BUDGET, "reference"))
+        ref_rest = cpu_of(self.records(self.reference, rest, SEARCH_BUDGET, "reference")) if rest else 0.0
         values, rows = [], []
         for m, desc, cells, key in cands:
             if m is None:
@@ -221,11 +233,12 @@ class Lineage:
                 rows.append({"digest": None, "reason": "no new candidate"})
                 continue
             got = self.records(m, screen, SEARCH_BUDGET, f"screen{self.steps}")
-            ok = cpu_of(got) <= CPU_RATIO * ref_cpu
+            ok = cpu_of(got) <= CPU_RATIO * ref_screen
             v = float(paired(got, parent_screen).mean())
             values.append(v if ok else None)
             rows.append({"digest": designs.digest(m), "behaviour": key[:16], "edits": desc, "cells": cells, "screen": v,
-                         "cpu_screen": cpu_of(got), "reason": None if ok else "cpu above the cap at screening"})
+                         "cpu_screen": cpu_of(got), "runs_screen": [r["key"] for r in got],
+                         "reason": None if ok else "cpu above the cap at screening"})
         alive = sorted((k for k, v in enumerate(values) if v is not None and v > 0.0), key=lambda k: -values[k])
         promoted = alive[: max(1, int(round(knobs["promote"] * len(cands))))] if alive else []
         if rest and promoted:
@@ -233,9 +246,9 @@ class Lineage:
         parent_rest = self.records(self.parent, rest, SEARCH_BUDGET, "promote") if rest else []
         for k in promoted:
             got = self.records(cands[k][0], rest, SEARCH_BUDGET, f"promote{self.steps}")
-            ok = cpu_of(got) <= CPU_RATIO * ref_cpu * len(rest)
+            ok = cpu_of(got) <= CPU_RATIO * ref_rest
             values[k] = float(paired(got, parent_rest).mean()) if ok else None
-            rows[k].update({"promoted": values[k], "cpu_promote": cpu_of(got),
+            rows[k].update({"promoted": values[k], "cpu_promote": cpu_of(got), "runs_promote": [r["key"] for r in got],
                             "reason": None if ok else "cpu above the cap on the other discovery seeds"})
         measured = [v for v in values if v is not None]
         floor = (min(measured) if measured else 0.0) - 0.01
@@ -247,18 +260,21 @@ class Lineage:
         if ready:
             best = max(ready, key=lambda k: values[k])
             m = cands[best][0]
+            if 4 * (self.confirmations + 1) > SEED_STRIDE:
+                raise RuntimeError(f"{self.name}: more confirmations than its window of seeds holds")
             seeds = [self.confirm_base + 4 * self.confirmations + j for j in range(4)]
             self.confirmations += 1
-            self.batch([m, self.parent], seeds, CONFIRM_BUDGET, f"confirm{self.steps}")
-            got = self.records(m, seeds, CONFIRM_BUDGET, f"confirm{self.steps}")
-            base = self.records(self.parent, seeds, CONFIRM_BUDGET, f"confirm{self.steps}")
+            self.batch([m, self.parent], seeds, SEARCH_BUDGET, f"confirm{self.steps}")
+            got = self.records(m, seeds, SEARCH_BUDGET, f"confirm{self.steps}")
+            base = self.records(self.parent, seeds, SEARCH_BUDGET, f"confirm{self.steps}")
             d = paired(got, base)
             sd = float(d.std(ddof=1)) if len(d) > 1 else 0.0
-            z = float(d.mean() / (sd / np.sqrt(len(d)))) if sd > 0 else (np.inf if d.mean() > 0 else 0.0)
+            tstat = float(d.mean() / (sd / np.sqrt(len(d)))) if sd > 0 else (np.inf if d.mean() > 0 else 0.0)
             ratio_parent = cpu_of(got) / max(cpu_of(base), 1e-9)
-            passed = bool(d.mean() >= 0.5 * knobs["margin"] and z >= knobs["z"] and ratio_parent <= CPU_STEP)
-            confirmation = {"seeds": seeds, "part": "B", "mean": float(d.mean()), "sd": sd, "z": z, "n": len(d),
-                            "cpu_ratio_to_parent": ratio_parent, "passed": passed}
+            passed = bool(d.mean() >= 0.5 * knobs["margin"] and tstat >= knobs["t"] and ratio_parent <= CPU_STEP)
+            confirmation = {"seeds": seeds, "part": "A", "mean": float(d.mean()), "sd": sd, "t": tstat, "n": len(d),
+                            "cpu_ratio_to_parent": ratio_parent, "passed": passed,
+                            "runs": [r["key"] for r in got], "parent_runs": [r["key"] for r in base]}
             rows[best]["confirmation"] = confirmation
             if passed:
                 accepted = self.accept(m, cands[best][1], values[best], confirmation)

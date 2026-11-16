@@ -1,0 +1,193 @@
+{
+ "summary": "I verified experiment.py, evaluate.compare/raise_until and report.py against registration_o.json, registration.json failure_conditions and amendment 4(d). I used a fake Cache, so no learner ran; scripts and ledger copies are in WORK.\n\nWhat works:\n- **Stage order and refusals.** Stages run in order, a stage out of order is refused (\"the stage selection follows discovery\", \"the stage heldout follows swap\"), and a recorded stage is not run again.\n- **Resume.** I stopped discovery at calls 9/300/700, selection at 4, swap at 30/250 and heldout at 5/10/12, the last two inside raise_until, and restarted each time. The result has 164 non-run records identical to an uninterrupted run and the same 4918 run keys.\n- **Seeds and categories.** Selection uses part B with seeds 20001-20004, which no other stage uses. Heldout touches only the held-out categories and seeds. No earlier stage touches a held-out category.\n- **The swap path.** The dev run never exercised it, so I ran it under the stub and it completes.\n- **--dev.** It cannot write a registered ledger (experiment.py:103), and the role check of kernel/run.py runs in both modes.\n- **raise_until.** It is the same schedule as targets.matched: 12 levels, factor between 2 and 64, 64 when the CPU slope is not positive.\n- **compare.** It pairs runs by category and seed, checks that every cell is present once, and voids a comparison against o0, a0, o0@ or a0@ when the control has less CPU or is unreached.\n- **report.py and the dev ledger.** The report on dev_e2e.jsonl matches the records exactly. Examples: a0 acquired 0.9875 with 8.3 CPU per run, o0 0.9802 with 32.6; recursive minus a0@recursive -0.0073 at CPU ratio 0.72; recursive minus a0 VOID at ratio 3.93. The predictions come out O1 False, O2/O3/O4/O5 True. The success parts all come out False.\n\nDefects that remain:\n1. **(major)** The comparisons recursive minus frozen, uniform, shuffled and tune are never voided. registration.json voids \"any comparison in which the control received less measured CPU\". E3b is part of the success condition. In a synthetic ledger where recursive used 3x frozen's CPU, E3b was True and success True, with no void flag.\n2. **(major)** Confirmation decides acceptance on part B. Selection and the swap assessment then re-measure on the same part-B instances, which do not change with the seed. So E3c and the selection are biased toward lineages that accepted more, and \"never selected on\" in the registration is false.\n3. **(minor)** A void E1 gives E1=None, so success reads \"not decided\" instead of \"not met\". O2 treats void as \"not met\", so the two disagree.\n4. **(minor)** evaluate.main, the development tool, still builds arms from o_accept records, never marks o0@ void, and uses one shared rng(0).\n5. **(minor)** The swap replicates use a different random stream for each arm, so they are paired on seeds only. There is no placebo principle.\n6. **(minor)** Nothing checks the code-file hashes or version_digest in the registration. The dev ledger was produced with a different design_o.py and report.py.\n\nThe rest are notes.",
+ "checks_run": [
+  "Read rsi6/open/experiment.py, evaluate.py, report.py, discovery.py in full; guard.py (is_registered, same_history, single_writer, amendment); kernel/run.py key_of/Cache/run; kernel/ledger.py; roles.effective_role; design_o.Acquirer (which genome fields it reads); environment.split and run.py part handling; experiments/report.py both_interval/blocked_interval; experiments/targets.py matched",
+  "Read review_experiment.json (15 findings) and verification_experiment.json (5 verdicts with better fixes); registration_o.json; registration.json failure_conditions; amendment_4 decisions[4](d); amendment_5.json",
+  "sha256 of the 9 files listed in registration_o generation_0.files: all match the repo; registration_o.json sha matches amendment_5 registration_o_sha256; registration_o_dev.json lists different hashes for design_o.py (91a77d..) and report.py (ebeeda..)",
+  "Scanned REPO main.jsonl: no run with seeds 7001-7006, 10000-59999, no record containing the o0 digest 765e0e601c9a",
+  "WORK/audit_dev.py on a copy of dev_e2e.jsonl: seeds and categories by stage (open: discovery cats, seeds 1-3 part A + 10100-10103 part B; open-selection 20001-20004 part B; open-heldout binpacking 7001), no seed shared between stages; lineage spent 383-902 against 300; o_matched o0 levels [1] budget [40], a0 levels [3] budget [160]",
+  "python -m rsi6.open.report on the dev copy with --registration registration_o_dev.json; compared every number against the records (acquired, gain, cpu/run, cpu ratios 0.72 and 3.93, VOID flags, selection minus_o0 -0.0031 for recursive1, predictions O1 False, O2-O5 True, success parts all False)",
+  "WORK/synth_report.py: synthetic ledgers through report.build for: all good (success True); E1 void by one unreached pair (E1 None, success None, O2 True); swap not exercised (E3a False, E3c False, success False, O5 True); recursive final equal to o0 with shared runs (E1 False, min-change 0 [0,0]); one recursive lineage without acceptance (O1 False, arm evaluated); recursive at 3x frozen's held-out CPU (E3b True, success True, pairs_base_with_less_cpu 18, not void)",
+  "WORK/stub_run.py: experiment.main in --dev mode with a fake Cache (deterministic made-up runs, a principle change worth +0.02) on a copy of main.jsonl, all four stages; swap exercised path ran; seeds/categories per stage logged (selection 20001-4 B, swap 30000-30002 A + 40000-41003 B + assess 50001-4 B, heldout binpacking 7001-7002 only)",
+  "Stop/resume test: killed discovery at calls 9, 300, 700, selection at 4, swap at 30 and 250, heldout at 5, 10, 12 (inside raise_until of a0), restarted; WORK/cmp.py: 164 non-run records identical to the uninterrupted run, run keys identical (4918); out-of-order stages refused; recorded stage not rerun",
+  "Checked sum(ord(arm)) rng seeds for collisions between arms (none)"
+ ],
+ "fixed": [
+  {
+   "finding": "0 (major, evaluate.py 117-127): comparisons against o0/a0/o0@arm not voided when the control got less CPU or was unreached",
+   "status": "partly_fixed",
+   "evidence": "Registered path is fixed. compare() (evaluate.py:316-325) counts the pairs where base CPU < arm CPU and the unreached pairs, and sets void=control and (less or unreached). report.py:60-63 passes control=True for o0@recursive, a0@recursive, o0 and a0. The a0@recursive control has been added (experiment.py:195-200). In the dev ledger, 'recursive minus a0' is VOID at cpu x3.93. The synthetic case with one unreached pair gives void True. Not fixed in evaluate.main: line 369 calls compare(results[name], control, rng) with control left at False, so 'X minus o0@X' is never void there. Arm-versus-arm comparisons are never voided either (see defects)."
+  },
+  {
+   "finding": "1 (verified minor, evaluate.py 55-68): matched control does not follow the amendment 4(d) schedule",
+   "status": "fixed",
+   "evidence": "raise_until (evaluate.py:264-289) is the targets.matched logic line for line: 12 levels counting the registered budget, factor 2 at first, then max(2, min(64, needed at 1.1x want)), 64 when the slope <= 0. Levels and budgets are recorded in o_matched (experiment.py:198-200). The dev ledger shows a0@recursive at levels 3, budget 160. Remaining: the code is a copy, not a shared helper. The per-pair achieved CPU ratio is in the rows (matched_cpu) but not in o_matched, and is not reported; only the aggregate cpu_ratio and reached/of are."
+  },
+  {
+   "finding": "2 (major, evaluate.py 104-106): arms built from o_accept records (survivorship, migration, name collisions)",
+   "status": "fixed",
+   "evidence": "experiment.py:87-93 writes o_lineage_done for every lineage with final=L.parent. Selection and heldout build arms from these records (experiment.py:138, 185-189), so a lineage with no acceptance is evaluated as o0. In the dev ledger, recursive0 has 0 acceptances, final digest 765e0e = o0, and was selected. discovery.py no longer migrates. Lineage names carry the stage prefix. The development tool evaluate.main:350-352 still uses the last o_accept record, keyed by basename."
+  },
+  {
+   "finding": "3 (major, evaluate.py 121-122): discovery CPU never charged; no tune arm",
+   "status": "fixed",
+   "evidence": "Lineage.records charges the recorded CPU of every run a lineage uses (discovery.py:168-177). run_until_spent stops each lineage at cpu_per_lineage (experiment.py:76-86). A 'tune' arm restricted to theta/scalar cells has been added (discovery.py:57, 124-132). report.py prints spent per lineage. Remaining: the step that crosses the budget is counted, so totals overshoot by up to one step (dev 383-902 against 300; stub 3021-3276 against 3000)."
+  },
+  {
+   "finding": "4 (major, environment.py 61-69): fresh instances do not depend on the seed",
+   "status": "partly_fixed",
+   "evidence": "Confirmation now runs on part B (discovery.py:250-254). The held-out seeds 7001-7006 occur nowhere in main.jsonl. The leaks are stated in registration_o what_cannot_be_removed. No stage touches a held-out category: the stub log shows only binpacking, and only at open-heldout. However, part B is now used for acceptance decisions and then reused for selection (experiment.py:139) and the swap assessment (experiment.py:168), on the same instances (run.py:81-82). See defects."
+  },
+  {
+   "finding": "5 (major, discovery.py 182-193): acceptance lets no-effect candidates through",
+   "status": "partly_fixed",
+   "evidence": "The margin is now 0.005. Confirmation uses 4 fresh seeds on part B and requires mean >= margin/2 and a one-sided z >= 1.64 over 16 pairs (discovery.py:246-259). The expected number of no-effect acceptances is not reported. The z covers seed noise only, on fixed instances."
+  },
+  {
+   "finding": "6 (major, experiments/report.py 30-47): the bootstrap with 3 categories is anti-conservative",
+   "status": "partly_fixed",
+   "evidence": "registration_o 'statistic' states that the interval with 3 categories is close to requiring all 3 to agree. compare reports all_categories_positive and per_env (evaluate.py:321-322). Held-out seeds were raised to 6. No minimal detectable effect is registered."
+  },
+  {
+   "finding": "7 (major, evaluate.py 107-124): no test of the recursion claim",
+   "status": "partly_fixed",
+   "evidence": "There is now a swap test (experiment.py:152-182; E3c) and recursive minus frozen (E3b). It ran end to end under the stub. There is no placebo principle. replicates=3. Each arm in a replicate pair gets its own rng (experiment.py:69 uses sum(map(ord, arm))), so only the seeds are paired. The assessment uses part B."
+  },
+  {
+   "finding": "8 (major, discovery.py 74,196): principle_of hashes the whole mechanism; pop of the genome never reaches the discoverer",
+   "status": "fixed",
+   "evidence": "principle() hashes only init/propose/update (discovery.py:79-82). Acquirer reads only genome['init'], ['propose'] and ['update'], with pop passed as kd (design_o.py:613-655), so the hash covers everything the discoverer's learner uses. The proposed pre-check of different proposals for the same rng is not done."
+  },
+  {
+   "finding": "9 (major, discovery.py 153-176): arms matched on steps, not CPU",
+   "status": "fixed",
+   "evidence": "Every lineage runs until it has spent cpu_per_lineage (experiment.py:76-86, 135), and spent is recorded in o_step and o_lineage_done. The overshoot is at most one step."
+  },
+  {
+   "finding": "10 (major, evaluate.py 1-17): information from held-out categories cannot be removed",
+   "status": "partly_fixed",
+   "evidence": "The held-out categories, seeds and statistic are fixed in registration_o.json before any registered run. The leaks are stated in what_cannot_be_removed. The selection table gives each lineage's part-B score minus o0, but no within-category specialisation control is reported for the arms beside the held-out result."
+  },
+  {
+   "finding": "11 (minor, discovery.py 214-217): shuffled control only for frozen; no null-accept control",
+   "status": "not_fixed",
+   "evidence": "Shuffled still learns with generation 0's principle (discovery.py:140-142, 159, 290-291). The registration now says so ('a control for the learning of the weights, not for the recursion'). No null-accept arm exists (ARMS, experiment.py:51)."
+  },
+  {
+   "finding": "12 (minor, evaluate.py 112-123): one shared rng across comparisons",
+   "status": "partly_fixed",
+   "evidence": "compare() seeds from crc32(name) when no rng is given (evaluate.py:305), and report.py passes none. evaluate.main still passes a shared np.random.default_rng(0) (line 358)."
+  },
+  {
+   "finding": "13 (note, discovery.py 177-180): fitness mixes 1-seed and 3-seed values plus a floor",
+   "status": "not_fixed",
+   "evidence": "discovery.py:240-244: non-promoted candidates still feed their 1-seed screen value, promoted ones their 2-seed value, and refused ones floor = min - 0.01. No frozen-versus-uniform pre-test is recorded."
+  },
+  {
+   "finding": "14 (note, experiments/report.py 36-39): min statistic gives no credit to untrained improvements",
+   "status": "fixed",
+   "evidence": "compare returns acquired_change, untrained_change and gain_change separately (evaluate.py:319-320), and report.py prints them per comparison and per arm."
+  }
+ ],
+ "defects": [
+  {
+   "severity": "major",
+   "file": "rsi6/open/report.py",
+   "line": "60-63, 78-80",
+   "what": "The comparisons recursive minus frozen, uniform, shuffled and tune (E2 and E3b) and the reverse pairs are made with control=False, so they are never void. Yet registration_o.json arms_meaning calls uniform, shuffled and tune 'control's, and registration.json failure_conditions[3] voids 'any comparison in which the control received less measured CPU than the arm'. E3b (recursive minus frozen > 0) enters the success condition. registration_o.json 'matching' covers only o0@/a0@. The exemption comes from the docstring of evaluate.compare, not from the registration.",
+   "why_it_matters": "The CPU cap in discovery applies to generation 0 on the discovery categories (screen and promote, 1.25x) and to the parent on the confirmation runs (1.10x). It does not bound a final mechanism's per-run CPU on the held-out categories. A recursive final that uses more test-time CPU than frozen's can satisfy E3b, and so success, through compute alone.",
+   "evidence": "WORK/synth_report.py, case 'recursive uses 3x the CPU of frozen on held-out': recursive minus frozen min-change +0.03, cpu x3.0, pairs_base_with_less_cpu 18, void False. Success parts are {E1: True, E3b: True, E3a: True, E3c: True}, so success is True. evaluate.py:325 sets void only when control=True.",
+   "suggested_fix": "Apply the void rule to every comparison whose base is a control or comparator (frozen, uniform, shuffled, tune), or require E3b not to be void. Alternatively, record before the registration is entered that arm-versus-arm comparisons are exempt, with the reason."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/open/experiment.py",
+   "line": "139, 168 (with discovery.py:250-259 and kernel/run.py:81-82)",
+   "what": "Acceptance is decided on part B: a candidate is accepted only if it beats its parent on the part-B fresh instances. Selection then ranks the lineages on part B, and the swap assessment that gives E3c also measures on part B. Fresh instances depend only on the category, so all three use the same instances; only the seeds differ. registration_o steps_rule says part B is 'never selected on', which is false once any confirmation has run.",
+   "why_it_matters": "A mechanism accepted because it happened to do better on those particular part-B instances scores higher again on them in selection and in the swap assessment. The E3c difference (discovered minus generation 0, threshold 0.005) is therefore inflated for whichever swap arm accepted more candidates. Selection likewise favours lineages with more instance-level luck. E3c is a success part.",
+   "evidence": "In the dev ledger, recursive1's confirmation on part B gave mean +0.0076 (z 2.11). Re-measured on the same part-B instances with selection seeds it gave -0.0031. Stub log: confirmation, selection and swap assessment all ran with part B on the discovery categories. Verification 4's better_fix had asked to keep part B unused, or to split part A further.",
+   "suggested_fix": "Before the registration is entered, confirm on a split of part A and keep part B for selection and the swap assessment only. Otherwise, state in the registration that selection and E3c re-measure the instances used for acceptance, and treat E3c as biased upward."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/open/report.py",
+   "line": "78, 87",
+   "what": "A void E1 is recorded as None. Success then becomes None ('not decided') whenever the other parts hold. Registration E1 is defined as 'at least 0.01 with an interval excluding zero, not void', so a void E1 means E1 is not met, and success should be 'not met'. O2 (line 107) does treat void as 'E1 not met', so the report contradicts itself.",
+   "why_it_matters": "The success line would read 'not decided' for a result the registration calls a failure. This is rare in practice: void E1 requires a pair still unreached after 12 levels, because reached means at least the arm's CPU.",
+   "evidence": "WORK/synth_report.py, case 'E1 void (one pair unreached)': parts {E1: None, E3b: True, E3a: True, E3c: True}, success None, O2 True.",
+   "suggested_fix": "parts['E1'] = (not e1['void']) and point >= 0.01 and low > 0.0. Report the void flag in the detail."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/open/evaluate.py",
+   "line": "350-370",
+   "what": "evaluate.main, the development tool, which is listed among the registered files, still has the original defects. Arms come from the last o_accept record per basename:lineage. The 'X minus o0@X' comparison calls compare() with control=False, so it is never void. All comparisons share np.random.default_rng(0).",
+   "why_it_matters": "Any development number produced with this tool keeps the survivorship and void defects of findings 0, 2 and 12. The registered numbers come from experiment.py and report.py, which do not use it.",
+   "evidence": "evaluate.py:351-352, 358, 363-370.",
+   "suggested_fix": "Have main call compare(..., name=..., control=True) for the o0, a0 and o0@ bases, and read o_lineage_done records. Or remove main and say that report.py is the only evaluator."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/open/experiment.py",
+   "line": "69, 162-166",
+   "what": "The swap replicates are 'paired' on the discovery seeds only. Each lineage's rng is seeded with sum(map(ord, arm)), which is 1064 for 'discovered' and 1116 for 'generation0', so the two lineages of a pair draw different candidate edits. There is no placebo principle, and replicates=3.",
+   "why_it_matters": "The mean difference over 3 replicates includes unpaired search noise on top of the effect of the principle, so E3c and O5 have low power and a high variance against the 0.005 threshold.",
+   "evidence": "experiment.py:69 rng = default_rng([seed, stage_sum, arm_sum, k]); the stub swap gave a single-replicate difference of 0.0012.",
+   "suggested_fix": "Seed both lineages of replicate k with the same rng, without the arm term, and register that. Consider adding a placebo-principle replicate."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/open/experiment.py",
+   "line": "107-121",
+   "what": "The driver checks only the digest of the registration file. It does not check the sha256 of the files in registration_o generation_0.files, nor that designs.digest(designs.default('o')) equals version_digest. Run keys contain the version digest but not the code. Also, --registration can be any file and is recorded on the first call. The dev ledger was produced with a different design_o.py and report.py, so the current design_o.py has not been run end to end.",
+   "why_it_matters": "A registered run made with changed code, or a run served from a ledger measured under older code, would not be detected at run time.",
+   "evidence": "The registration_o_dev.json hashes differ: design_o.py 91a77d\u2026 against the current 2d437d\u2026, and report.py ebeeda\u2026 against 98f6ee\u2026. The dev o0 digest equals the registered 765e0e\u2026, so changing the code did not change the version digest. grep finds no check of 'generation_0' or 'files' in rsi6/open.",
+   "suggested_fix": "In non-dev mode, verify the file hashes and the version digest of generation_0 before writing anything. Refuse a --registration other than registry/registration_o.json."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/open/experiment.py",
+   "line": "76-86",
+   "what": "Each lineage stops after the step that crosses the budget, so arms receive unequal total CPU. A lineage that accepts spends more per step, because confirmation and acceptance runs are charged.",
+   "why_it_matters": "'Equal CPU' between arms and between the swap pairs holds only to within about one step: up to about 15% at 6000 CPU-s, given 400-900 CPU-s per step in the dev run.",
+   "evidence": "Dev o_lineage_done spent 383-902 against 300; stub 3021-3276 against 3000; stub swap 2588 against 2708 for a 2500 budget.",
+   "suggested_fix": "Report the spent ratio between compared arms beside E2/E3, or truncate at the smaller total."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/open/discovery.py",
+   "line": "250 (seed scheme from registration_o steps_rule)",
+   "what": "Confirmation seeds confirm_base + 1000*arm + 100*lineage + 4*k + j collide with the next lineage's seeds once a lineage makes 25 confirmations. Nothing checks for this.",
+   "why_it_matters": "With about 10-15 steps per lineage at 6000 CPU-s this is unlikely, but if it happened the confirmation runs would be served from the cache (the key ignores purpose) instead of using seeds once.",
+   "evidence": "Stub: confirmation seeds 10000-13103 in blocks of 4, with 100 seeds per lineage.",
+   "suggested_fix": "Assert that 4*confirmations < 100, or derive the seeds by hashing."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/open/experiment.py",
+   "line": "98, 103-121",
+   "what": "The default --ledger is guard.LIVE, not guard.working(). If live.jsonl is absent, a new chain unrelated to main.jsonl would be started. It is refused only because partitioning and setcover are not 'source' in an empty ledger. In --dev, roles are read from the scratch ledger, which is never checked to share main's history; the kernel's roles.check still runs on every job.",
+   "why_it_matters": "The protection is accidental for the registered path, and for dev it depends on the scratch ledger's contents.",
+   "evidence": "guard.py:66-77 (same_history returns early when live is absent); ledger.py:26-32 (a missing file gives an empty ledger); roles.effective_role reads release records from the given ledger.",
+   "suggested_fix": "In non-dev mode, refuse if LIVE does not exist or if MAIN is not a prefix of it."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/registry/amendment_5.json",
+   "line": "decisions[0]",
+   "what": "Amendment 5 names the stages 'discovery, transplant, held-out'. The registration and the driver have discovery, selection, swap and heldout.",
+   "why_it_matters": "The registered text does not name the selection stage, and calls the swap stage by another name.",
+   "evidence": "amendment_5.json decisions[0]; experiment.py:52 ORDER.",
+   "suggested_fix": "Align the wording before amendment 5 is recorded."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/open/evaluate.py",
+   "line": "277-278",
+   "what": "raise_until submits every pending pair of a level in one Cache.get, whereas targets.matched uses batches of 4. Run records are appended only after the whole pool finishes.",
+   "why_it_matters": "A stop during a level discards all of that level's measurements. This costs CPU only; the resume tests show the results are unaffected.",
+   "evidence": "kernel/run.py:159-179; targets.py in_batches(size=4).",
+   "suggested_fix": "Use in_batches as targets.py does."
+  }
+ ]
+}

@@ -20,10 +20,12 @@ each replayed record agrees with the recorded one, and goes on.
                discoverer's weights learned by that principle and one by generation 0's, at equal
                CPU and on the same seeds; otherwise the stage records that the recursion was never
                exercised.
-``heldout``    every arm's final mechanism, generation 0 of both designs, and both generation 0s
-               with their training budgets raised to the CPU of the recursive arm's final
-               mechanism, on the held-out categories, which no stage before touches, at the
-               registered run budget.
+``heldout``    every arm's final mechanism, generation 0 of both designs, and every one of them
+               except the recursive arm's with its training budget raised to the CPU of the
+               recursive arm's final mechanism (the compute-matched comparison of every control),
+               on the held-out categories, which no stage before touches, at the registered run
+               budget; and the other lineage of every arm at the registered budget, to show the
+               spread between lineages.
 ``heldout_later``  the same on the six categories of the earlier processes' sealed target test,
                with seeds of its own, once that test has run on them (it refuses before); no run
                of the open design touches them until then.
@@ -31,6 +33,7 @@ each replayed record agrees with the recorded one, and goes on.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
@@ -65,11 +68,13 @@ def find(ledger, **where):
 
 
 def make_lineages(reg, cache, ledger, memo, stage, plan, seeds_of, confirm_of):
-    """``plan``: (arm, index, mode, principle source or None) for every lineage."""
+    """``plan``: (arm, index, mode, principle source or None) for every lineage. Lineage k of every
+    arm draws from the same random stream, so that arms differ only where their stated difference
+    acts."""
     v0 = designs.default("o")
     out = []
     for arm, k, mode, source in plan:
-        rng = np.random.default_rng([reg["seed"], sum(map(ord, stage)), sum(map(ord, arm)), k])
+        rng = np.random.default_rng([reg["seed"], sum(map(ord, stage)), k])
         out.append((arm, discovery.Lineage(f"{stage}:{arm}{k}", v0, reg["discovery"], seeds_of(arm, k), confirm_of(arm, k), cache,
                                            ledger, rng, dict(reg["knobs"]), mode=mode, memo=memo, reference=v0,
                                            principle_source=source)))
@@ -105,9 +110,20 @@ def main() -> int:
     args = parser.parse_args()
     if args.dev == guard.is_registered(args.ledger):
         raise SystemExit("the registered experiment writes the working ledger; --dev writes a scratch ledger")
+    if not args.dev:
+        if os.path.realpath(args.registration) != os.path.realpath(REGISTRATION):
+            raise SystemExit("the registered experiment reads registry/registration_o.json and no other file")
+        if not os.path.exists(guard.LIVE) or not os.path.samefile(args.ledger, guard.LIVE):
+            raise SystemExit("the registered experiment writes ledger/live.jsonl, which must exist")
     guard.same_history(args.ledger)
     guard.single_writer(args.ledger)
     reg = json.load(open(args.registration))
+    if not args.dev:                                       # the code that runs is the code that was registered
+        root = os.path.dirname(os.path.dirname(HERE))
+        wrong = [f for f, sha in reg["generation_0"]["files"].items()
+                 if hashlib.sha256(open(os.path.join(root, f), "rb").read()).hexdigest() != sha]
+        if wrong or designs.digest(designs.default("o")) != reg["generation_0"]["version_digest"]:
+            raise SystemExit(f"the files or generation 0 differ from the registration: {wrong or 'version digest'}")
     ledger = ledgers.Ledger(args.ledger)
     ledger.verify()
     if not args.dev:
@@ -136,12 +152,12 @@ def main() -> int:
     if stage == "discovery":
         plan = [(arm, k, arm, None) for arm in ARMS for k in range(reg["lineages"])]
         lineages = make_lineages(reg, cache, ledger, memo, "discovery", plan, lambda arm, k: S["discovery"],
-                                 lambda arm, k: S["confirm_base"] + 1000 * ARMS.index(arm) + 100 * k)
+                                 lambda arm, k: S["confirm_base"] + discovery.SEED_STRIDE * (ARMS.index(arm) * reg["lineages"] + k))
         run_until_spent(lineages, reg["cpu_per_lineage"], "discovery", ledger)
         ledger.append({"type": "o_stage_done", "stage": "discovery"})
     elif stage == "selection":
         done = ledger.select(type="o_lineage_done", stage="discovery")
-        envs, seeds, budget = reg["discovery"], S["selection"], discovery.CONFIRM_BUDGET
+        envs, seeds, budget = reg["discovery"], S["selection"], discovery.ASSESS_BUDGET
         base = evaluate.runs(cache, v0, envs, seeds, "open-selection:o0", budget)
         table, finals = {}, {}
         for r in done:
@@ -168,9 +184,9 @@ def main() -> int:
             plan += [("discovered", k, "frozen", source), ("generation0", k, "frozen", v0)]
         lineages = make_lineages(reg, cache, ledger, memo, "swap", plan,
                                  lambda arm, k: [S["swap_base"] + 3 * k + j for j in range(3)],    # paired: the same seeds for both
-                                 lambda arm, k: S["swap_confirm_base"] + 1000 * (arm == "discovered") + 100 * k)
+                                 lambda arm, k: S["swap_confirm_base"] + discovery.SEED_STRIDE * (2 * k + (arm == "discovered")))
         run_until_spent(lineages, reg["swap"]["cpu"], "swap", ledger)
-        envs, seeds, budget = reg["discovery"], S["swap_assess"], discovery.CONFIRM_BUDGET
+        envs, seeds, budget = reg["discovery"], S["swap_assess"], discovery.ASSESS_BUDGET
         base = evaluate.runs(cache, v0, envs, seeds, "open-swap:o0", budget)
         pairs = []
         for k in range(reg["swap"]["replicates"]):
@@ -194,12 +210,16 @@ def main() -> int:
         arms = {"a0": a0, "o0": v0}
         for arm in ARMS:
             arms[arm] = lineage[sel["finals"][arm]]["final"]
+            other = [r for r in lineage.values() if r["arm"] == arm and r["lineage"] != sel["finals"][arm]]
+            for r in other:                                    # the other lineage, to show the spread between lineages
+                arms[f"{arm}:other"] = r["final"]
         results = {}
         for name, version in arms.items():
             results[name] = evaluate.runs(cache, version, envs, seeds, f"open-{stage}:{name}")
             say(f"held-out {name}: acquired {np.mean([r['acquired'] for r in results[name]]):.4f}")
         want = {(r["env"], r["seed"]): evaluate.cpu(r) for r in results["recursive"]}
-        for base_name, version in (("o0", v0), ("a0", a0)):
+        controls = [("o0", v0), ("a0", a0)] + [(arm, arms[arm]) for arm in ARMS if arm != "recursive"]
+        for base_name, version in controls:
             rows = evaluate.raise_until(cache, version, want, f"open-{stage}:{base_name}@recursive")
             results[f"{base_name}@recursive"] = rows
             discovery.append_once(ledger, {"type": "o_matched", "stage": stage, "arm": f"{base_name}@recursive",
