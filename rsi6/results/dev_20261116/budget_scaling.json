@@ -1,0 +1,162 @@
+{
+ "train40": {
+  "sigma_by_category": {
+   "jobshop": 0.006798982062908317,
+   "pmedian": 0.08845403212982494,
+   "quadassign": 0.01689115958140595
+  },
+  "tau_by_category": {
+   "jobshop": 0.007187847661255961,
+   "pmedian": 0.15197932747334847,
+   "quadassign": 0.019013445873498337
+  },
+  "edit_means_over_categories": [
+   0.0,
+   0.0017,
+   -0.1289,
+   -0.0958,
+   -0.0214,
+   -0.0121,
+   0.0,
+   0.0
+  ],
+  "per_edit_per_category": [
+   [
+    0.0,
+    0.0,
+    0.0
+   ],
+   [
+    0.0,
+    0.0,
+    0.0051
+   ],
+   [
+    0.0,
+    -0.3868,
+    0.0
+   ],
+   [
+    -0.018,
+    -0.2874,
+    0.0182
+   ],
+   [
+    -0.0151,
+    -0.0001,
+    -0.049
+   ],
+   [
+    -0.012,
+    -0.0001,
+    -0.0241
+   ],
+   [
+    0.0,
+    0.0,
+    0.0
+   ],
+   [
+    0.0,
+    0.0,
+    0.0
+   ]
+  ],
+  "sd_of_a_12_pair_mean_from_noise": 0.015051442556483465,
+  "sd_of_edit_means_over_categories": 0.05096030306107844,
+  "untrained_parent": 0.6187752127145438,
+  "acquired_parent": 0.6401685917208861,
+  "gain_parent": 0.021393379006342278,
+  "cpu_per_run": 7.078770833333333,
+  "cells": [
+   "init/mutarg",
+   "pick/mutarg",
+   "score/replace",
+   "score/swap",
+   "propose/replace",
+   "update/replace",
+   "score/replace",
+   "pick/mutop"
+  ]
+ },
+ "train200": {
+  "sigma_by_category": {
+   "jobshop": 0.019726685602880652,
+   "pmedian": 0.02965801551082826,
+   "quadassign": 0.007121981905527274
+  },
+  "tau_by_category": {
+   "jobshop": 0.003542094281563909,
+   "pmedian": 0.12970750674443776,
+   "quadassign": 0.02520053183557039
+  },
+  "edit_means_over_categories": [
+   0.0,
+   -0.0024,
+   -0.1232,
+   -0.0422,
+   -0.0266,
+   -0.0143,
+   0.0,
+   0.0
+  ],
+  "per_edit_per_category": [
+   [
+    0.0,
+    0.0,
+    0.0
+   ],
+   [
+    0.0,
+    0.0,
+    -0.0071
+   ],
+   [
+    0.0,
+    -0.3695,
+    0.0
+   ],
+   [
+    -0.0181,
+    -0.1116,
+    0.0031
+   ],
+   [
+    -0.0188,
+    -0.0031,
+    -0.058
+   ],
+   [
+    0.0127,
+    -0.0031,
+    -0.0524
+   ],
+   [
+    0.0,
+    0.0,
+    0.0
+   ],
+   [
+    0.0,
+    0.0,
+    0.0
+   ]
+  ],
+  "sd_of_a_12_pair_mean_from_noise": 0.006054068042734402,
+  "sd_of_edit_means_over_categories": 0.04213451098105246,
+  "untrained_parent": 0.6187752127145438,
+  "acquired_parent": 0.6454246553286239,
+  "gain_parent": 0.026649442614079977,
+  "cpu_per_run": 27.488791666666668,
+  "cells": [
+   "init/mutarg",
+   "pick/mutarg",
+   "score/replace",
+   "score/swap",
+   "propose/replace",
+   "update/replace",
+   "score/replace",
+   "pick/mutop"
+  ]
+ }
+}
