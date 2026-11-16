@@ -20,6 +20,7 @@ import json
 import math
 import os
 import sys
+import zlib
 
 import numpy as np
 
@@ -94,50 +95,80 @@ def stats_of(record):
     return None
 
 
-def paired(arm, base, chain_of, statistic="acquired"):
+def _seed(label: str) -> int:
+    """Every resampling is seeded by the CRC-32 of its comparison's label."""
+    return zlib.crc32(label.encode())
+
+
+def paired(arm, base, chain_of, statistic="acquired", chains=None, seed_ok=None) -> dict:
+    """arm minus base, paired by category and seed: per chain, the mean over categories of the mean
+    over seeds; the CPU of the pairs that enter. ``statistic`` "acquired": the change of the acquired
+    score; "both": that and the change of the gain, the series with the smaller mean deciding
+    (comparisons with design a, whose untrained answers differ)."""
     b = {(r["env"], r["seed"]): r for r in base}
-    by = {}
+    by, cpu_a, cpu_b = {}, 0.0, 0.0
     for r in arm:
         o = b.get((r["env"], r["seed"]))
-        if o is None:
+        j = chain_of(r["seed"])
+        if o is None or (chains is not None and j not in chains) or (seed_ok is not None and not seed_ok(r["seed"])):
             continue
-        d = r["acquired"] - o["acquired"] if statistic == "acquired" else min(r["acquired"] - o["acquired"], r["gain"] - o["gain"])
-        by.setdefault(chain_of(r["seed"]), {}).setdefault(r["env"], []).append(d)
-    chains = {j: float(np.mean([np.mean(v) for v in ev.values()])) for j, ev in by.items()}
+        by.setdefault(j, {}).setdefault(r["env"], []).append((r["acquired"] - o["acquired"], r["gain"] - o["gain"]))
+        cpu_a += evaluate.cpu(r)
+        cpu_b += evaluate.cpu(o)
+    series = [{j: float(np.mean([np.mean([x[i] for x in v]) for v in ev.values()])) for j, ev in sorted(by.items())} for i in (0, 1)]
+    means = [float(np.mean(list(m.values()))) if m else None for m in series]
+    i = 1 if statistic == "both" and by and means[1] < means[0] else 0
     per_env = {}
     for ev in by.values():
         for e, v in ev.items():
-            per_env.setdefault(e, []).extend(v)
-    return chains, {e: float(np.mean(v)) for e, v in per_env.items()}, int(sum(len(v) for ev in by.values() for v in ev.values()))
+            per_env.setdefault(e, []).extend(x[i] for x in v)
+    return {"chains": series[i], "per_env": {e: float(np.mean(v)) for e, v in sorted(per_env.items())},
+            "n_pairs": int(sum(len(v) for ev in by.values() for v in ev.values())),
+            "cpu_ratio": cpu_a / cpu_b if cpu_b > 0 else None,
+            "change": {"acquired": means[0], "gain": means[1], "used": ("acquired", "gain")[i]}}
 
 
-def endpoint(arm, base, chain_of, alpha, statistic="acquired", chains=None, need=None):
-    """One-sided t over chain means of arm minus base. ``need``: the number of chains the
-    registration requires; an endpoint measured on fewer is reported and not met."""
-    cm, per_env, n = paired(arm, base, chain_of, statistic)
-    if chains is not None:
-        cm = {j: v for j, v in cm.items() if j in chains}
-    x = np.array([cm[j] for j in sorted(cm)])
+FLIPS = 10000
+
+
+def endpoint(label, arm, base, chain_of, alpha, test="t", statistic="acquired", chains=None, seed_ok=None, need=None) -> dict:
+    """One-sided test over chain means of arm minus base: Student's t, or (``test`` "signflip", the
+    alternative development check D6 prescribes) a sign-flip permutation test with 10,000 seeded
+    flips. ``need``: the number of chains the registration requires; an endpoint measured on fewer
+    is reported and its test does not count. ``single_test`` is this test alone; whether the
+    registered endpoint is met is decided by the gate."""
+    pr = paired(arm, base, chain_of, statistic, chains, seed_ok)
+    x = np.array([pr["chains"][j] for j in sorted(pr["chains"])])
     if len(x) < 2:
-        return {"n_pairs": n, "chains": int(len(x)), "met": False, "complete": False, "why": "not measured"}
+        return {"n_pairs": pr["n_pairs"], "chains": int(len(x)), "single_test": False, "complete": False, "why": "not measured", "p": 1.0}
     mean, sd = float(x.mean()), float(x.std(ddof=1))
     se = sd / math.sqrt(len(x))
     t = mean / se if se > 0 else (math.inf if mean > 0 else 0.0)
     crit = t_quantile(alpha, len(x) - 1)
-    rng = np.random.default_rng(20261116)
+    rng = np.random.default_rng(_seed(label))
+    if test == "signflip":
+        flips = rng.choice([-1.0, 1.0], size=(FLIPS, len(x)))
+        pv = float((1 + np.sum((flips * x).mean(axis=1) >= mean - 1e-15)) / (1 + FLIPS))
+        passed = pv <= alpha
+    else:
+        pv = t_sf(t, len(x) - 1)
+        passed = t >= crit
     boot = [float(x[rng.integers(0, len(x), len(x))].mean()) for _ in range(5000)]
     complete = need is None or len(x) >= need
-    out = {"mean": mean, "se": se, "t": t, "critical_t": crit, "alpha": alpha, "met": bool(t >= crit and complete), "complete": complete,
+    out = {"mean": mean, "se": se, "t": t, "critical_t": crit, "alpha": alpha, "test": test, "p": pv,
+           "single_test": bool(passed and complete), "complete": complete,
            "upper_95": float(mean + t_quantile(0.05, len(x) - 1) * se), "interval_95_chains": [float(np.percentile(boot, 2.5)), float(np.percentile(boot, 97.5))],
-           "per_category": per_env, "categories_positive": int(sum(v > 0 for v in per_env.values())),
-           "negative_transfer_categories": sorted(e for e, v in per_env.items() if v < -0.005), "chains": int(len(x)), "n_pairs": n,
-           "cpu_ratio": float(sum(evaluate.cpu(r) for r in arm) / max(sum(evaluate.cpu(r) for r in base), 1e-9))}
+           "per_category": pr["per_env"], "categories_positive": int(sum(v > 0 for v in pr["per_env"].values())),
+           "negative_transfer_categories": sorted(e for e, v in pr["per_env"].items() if v < -0.005), "chains": int(len(x)),
+           "n_pairs": pr["n_pairs"], "cpu_ratio": pr["cpu_ratio"]}
+    if statistic == "both":
+        out["change"] = pr["change"]
     if not complete:
         out["why"] = f"measured on {len(x)} of the {need} registered chains"
     return out
 
 
-def bootstraps(arm, base, chain_of, n=5000):
+def bootstraps(label, arm, base, chain_of, n=5000):
     """95% intervals of the mean difference, resampling chains and seeds, and categories and seeds."""
     b = {(r["env"], r["seed"]): r["acquired"] for r in base}
     cell = {}
@@ -151,7 +182,7 @@ def bootstraps(arm, base, chain_of, n=5000):
     D = np.full((len(chains), len(cats), S), np.nan)
     for (j, c), v in cell.items():
         D[chains.index(j), cats.index(c), :len(v)] = v
-    rng = np.random.default_rng(20261117)
+    rng = np.random.default_rng(_seed(label + ": bootstraps"))
     counts = np.sum(~np.isnan(D), axis=2)                    # seeds measured per (chain, category)
     out = {}
     jj = rng.integers(0, len(chains), (n, len(chains)))
@@ -316,7 +347,7 @@ def l7(gen_on, gen_off, order) -> dict:
             out[label] = None
             continue
         A, B = np.array(A), np.array(B)
-        rng = np.random.default_rng(20261118)
+        rng = np.random.default_rng(_seed("L7 " + label))
         idx = rng.integers(0, len(A), (5000, len(A)))
         boot = A[idx].mean(axis=1) / B[idx].mean(axis=1) - 1
         out[label] = {"dplus_relative": float(A.mean() / B.mean() - 1), "interval_95": [float(np.percentile(boot, 2.5)), float(np.percentile(boot, 97.5))],
@@ -327,28 +358,25 @@ def l7(gen_on, gen_off, order) -> dict:
 
 
 def l8(arms, depths, final_depth, chain_of, J2, base_seed) -> dict:
-    """L8: the memories of depth d (chains below J2, seed s = 0) each minus frozen, and the slope."""
+    """L8: the memories of depth d (chains below J2, seed s = 0) each minus frozen, and the slope
+    over the registered depths (not given unless every one of them was measured)."""
     first = lambda rows: [r for r in rows if chain_of(r["seed"]) < J2 and (r["seed"] - base_seed) % 10 == 0]
     curve = {d: f"depth{d}" for d in depths}
     curve[final_depth] = "relay"
     per = {}
     for d, name in curve.items():
         if arms.get(name) and arms.get("frozen"):
-            cm, _, _ = paired(first(arms[name]), first(arms["frozen"]), chain_of)
-            per[d] = cm
-    if len(per) < 2:
-        return {"depths": sorted(per), "slope": None}
+            per[d] = paired(first(arms[name]), first(arms["frozen"]), chain_of)["chains"]
     ds = sorted(per)
+    out = {"depths": ds, "mean_minus_frozen": {d: float(np.mean(list(per[d].values()))) for d in ds if per[d]}, "slope": None}
+    if ds != sorted(curve) or any(not per[d] for d in ds):
+        return out
     chains = sorted(set.intersection(*[set(per[d]) for d in ds]))
-    slopes = []
-    for j in chains:
-        y = np.array([per[d][j] for d in ds])
-        x = np.array(ds, float)
-        slopes.append(float(np.polyfit(x, y, 1)[0]))
-    slopes = np.array(slopes)
-    return {"depths": ds, "mean_minus_frozen": {d: float(np.mean([per[d][j] for j in chains])) for d in ds},
-            "slope": float(slopes.mean()) if len(slopes) else None,
-            "slope_se": float(slopes.std(ddof=1) / math.sqrt(len(slopes))) if len(slopes) > 1 else None, "chains": len(chains)}
+    slopes = np.array([float(np.polyfit(np.array(ds, float), np.array([per[d][j] for d in ds]), 1)[0]) for j in chains])
+    if len(slopes):
+        out.update({"mean_minus_frozen": {d: float(np.mean([per[d][j] for j in chains])) for d in ds}, "slope": float(slopes.mean()),
+                    "slope_se": float(slopes.std(ddof=1) / math.sqrt(len(slopes))) if len(slopes) > 1 else None, "chains": len(chains)})
+    return out
 
 
 def two_by_two(arms, chain_of, J2) -> dict | None:
@@ -361,10 +389,10 @@ def two_by_two(arms, chain_of, J2) -> dict | None:
     A = {n: key(arms[n]) for n in names}
     common = set.intersection(*[set(v) for v in A.values()])
     by = {}
-    for pair in common:
+    for pair in sorted(common):                                # a fixed order: the sums do not depend on the hash seed
         P, p, l, f = (A[n][pair] for n in names)
         by.setdefault(chain_of(pair[1]), {}).setdefault(pair[0], []).append(((P - l + p - f) / 2, (P - p + l - f) / 2, (P - p) - (l - f)))
-    cm = np.array([[np.mean([np.mean([x[i] for x in v]) for v in ev.values()]) for i in range(3)] for ev in by.values()])
+    cm = np.array([[np.mean([np.mean([x[i] for x in v]) for v in ev.values()]) for i in range(3)] for j, ev in sorted(by.items())])
     if len(cm) < 2:
         return None
     se = cm.std(axis=0, ddof=1) / math.sqrt(len(cm))
@@ -478,41 +506,78 @@ def build(ledger, reg) -> dict:
     out["futility look"] = {k: fut[k] for k in ("chains", "mean", "t", "stop")} if fut else None
     out["items"] = [{k: r.get(k) for k in ("item", "name", "done", "why")} for r in ledger.select(type="r_item")]
     out["cap"] = [{k: r.get(k) for k in ("item", "name", "spent", "projection", "h_cap")} for r in ledger.select(type="r_cap")]
+    out["dropped by the re-projection"] = [{k: r.get(k) for k in ("before_item", "dropped", "spent", "projection", "h_cap")}
+                                           for r in ledger.select(type="r_drop")]
     a1 = H["alpha"]["primary"]
+    test = H.get("test", "t")
     J, J2 = M["chains"], H["secondary_chains"]
     sec = set(range(J2))
-    base1, over1 = compared(arms, rules, "frozen")
-    E = {"E-R1 relay minus frozen": endpoint(arms["relay"], base1, chain_of, a1, need=J)}
-    E["E-R1 relay minus frozen"]["frozen raised to relay's CPU on"] = over1
-    E["E-R1 relay minus frozen"]["bootstraps"] = bootstraps(arms["relay"], base1, chain_of)
-    if "upper_95" in E["E-R1 relay minus frozen"]:
-        E["E-R1 relay minus frozen"]["decisive_negative"] = bool(E["E-R1 relay minus frozen"]["upper_95"] < 0.007)
-    names = {"E-R2 relay minus shuffled": "shuffled", "E-R3 relay minus o0@relay (matched CPU)": "o0@relay",
-             "E-R4 relay minus offpolicy": "offpolicy", "E-R5 relay minus libonly": "libonly"}
-    for label, name in names.items():
-        rows, over = compared(arms, rules, name) if name != "o0@relay" else (arms.get(name, []), [])
-        E[label] = endpoint(arms["relay"], rows, chain_of, a1, chains=sec, need=J2)
+    two = lambda seed: (seed - base_seed) % 10 < 2             # the secondaries, m_net and the diagnostics use seeds 0 and 1
+    dropped = set(H.get("dropped_arms", []))
+
+    def versus(label, name, alpha, chains=None, seed_ok=None, need=None):
+        """relay minus the comparator ``name``, by the registered rule: against the comparator as the
+        CPU rule leaves it (raised to relay's CPU where the rule applied; o0 raised everywhere) and,
+        where that differs, also against the comparator at the registered budget. Both tests must
+        hold: a comparator is not weakened by being given more CPU."""
+        if name in ("o0", "a0"):
+            designated, other = arms.get(f"{name}@relay", []), arms.get(name, [])
+            over = sorted({r["env"] for r in designated})
+        else:
+            designated, over = compared(arms, rules, name)
+            other = arms.get(name, []) if over else []
+        stat = "both" if name == "a0" else "acquired"
+        e = endpoint(label, arms["relay"], designated, chain_of, alpha, test, stat, chains, seed_ok, need)
+        e["p_both"] = e["p"]
         if over:
-            E[label]["raised to relay's CPU on"] = over
+            e["comparator raised to relay's CPU on"] = over
+            e2 = endpoint(label + ", comparator at the registered budget", arms["relay"], other, chain_of, alpha, test, stat, chains, seed_ok, need)
+            e["against the comparator at the registered budget"] = e2
+            e["single_test"] = bool(e["single_test"] and e2["single_test"])
+            e["p_both"] = max(e["p"], e2["p"])
+        return e
+
+    E1 = "E-R1 relay minus frozen"
+    names = {"E-R2 relay minus shuffled": "shuffled", "E-R3 relay minus o0@relay (matched CPU)": "o0",
+             "E-R4 relay minus offpolicy": "offpolicy", "E-R5 relay minus libonly": "libonly"}
+    E = {E1: versus(E1, "frozen", a1, need=J)}
+    E[E1]["bootstraps"] = bootstraps(E1, arms["relay"], compared(arms, rules, "frozen")[0], chain_of)
+    if "upper_95" in E[E1]:
+        E[E1]["decisive_negative"] = bool(E[E1]["upper_95"] < 0.007)
+    for label, name in names.items():
+        E[label] = versus(label, name, a1, chains=sec, seed_ok=two, need=J2)
+    E3 = "E-R3 relay minus o0@relay (matched CPU)"
     o0m = arms.get("o0@relay", [])
     cpu_relay = {(r["env"], r["seed"]): evaluate.cpu(r) for r in arms["relay"]}
     less = sum(1 for r in o0m if evaluate.cpu(r) < cpu_relay.get((r["env"], r["seed"]), 0.0))
-    E["E-R3 relay minus o0@relay (matched CPU)"]["void"] = bool(not o0m or any(r.get("reached") is False for r in o0m) or less)
-    gate = {"E-R1": E["E-R1 relay minus frozen"]["met"]}
-    gate["E-R2"] = bool(gate["E-R1"] and E["E-R2 relay minus shuffled"]["met"])
-    dropped = set(H.get("dropped_arms", []))
-    family = [label for label in ("E-R3 relay minus o0@relay (matched CPU)", "E-R4 relay minus offpolicy", "E-R5 relay minus libonly")
-              if names[label] not in dropped]                     # development rule (b) removes E-R5 with the library arms
+    E[E3]["void"] = bool(not o0m or any(r.get("reached") is False for r in o0m) or less)
+    # the untrained answers must agree across every arm of design r and of design o (same programs and
+    # constants before acquisition, same apply stream); the registered statistic rests on it
+    un = {}
+    for name, rows in arms.items():
+        if not name.startswith("a0"):
+            for r in rows:
+                un.setdefault((r["env"], r["seed"]), set()).add(round(r["untrained"], 9))
+    identical = all(len(v) == 1 for v in un.values())
+    if not identical:
+        for e in E.values():
+            e["single_test"] = False
+            e["why"] = "the untrained answers differ between arms: the registered statistic does not apply"
+    # the gate: E-R1; then E-R2; then Holm over the remaining family
+    gate = {"E-R1": bool(E[E1]["single_test"])}
+    gate["E-R2"] = bool(gate["E-R1"] and E["E-R2 relay minus shuffled"]["single_test"])
+    family = [label for label in (E3, "E-R4 relay minus offpolicy", "E-R5 relay minus libonly") if names[label] not in dropped]
     holm = []
-    for label in family:
+    for label in family:                                       # development rule (b) removes E-R5 with the library arms
         e = E[label]
-        ok = "t" in e and not e.get("void") and e.get("complete", False)
-        holm.append((t_sf(e["t"], e["chains"] - 1) if ok else 1.0, label))
-        e["p_one_sided"] = holm[-1][0]
+        ok = "t" in e and not e.get("void") and e.get("complete", False) and identical
+        if ok and "against the comparator at the registered budget" in e:
+            ok = e["against the comparator at the registered budget"].get("complete", False)
+        holm.append((e["p_both"] if ok else 1.0, label))
     holm.sort()
     passed = set()
-    for i, (p, label) in enumerate(holm):
-        if gate["E-R2"] and p <= a1 / (len(holm) - i):
+    for i, (pv, label) in enumerate(holm):
+        if gate["E-R2"] and pv <= a1 / (len(holm) - i):
             passed.add(label)
         else:
             break
@@ -521,6 +586,8 @@ def build(ledger, reg) -> dict:
     if "libonly" in dropped:
         E.pop("E-R5 relay minus libonly", None)
         gate["E-R5"] = None                                      # not an endpoint of this registration
+    for label, e in E.items():
+        e["met"] = gate[label.split()[0]]                        # the registered decision; single_test is the test alone
     out["endpoints"] = E
     out["gate"] = gate
     e5 = True if gate["E-R5"] is None else gate["E-R5"]
@@ -529,28 +596,38 @@ def build(ledger, reg) -> dict:
                     "meaning": {"T1": "the record carries information that helps on these unseen categories (E-R1, E-R2)",
                                 "T2": "recursive, beyond accumulation and beyond retained blocks (and E-R4, E-R5)",
                                 "T3": "useful at matched compute (and E-R3); 'recursive improvement observed' only here"}}
+    # m_net: the smallest difference of relay over the registered comparators, chains below J2, seeds 0 and 1; each
+    # comparator both as the CPU rule leaves it and at the registered budget
     comps = {}
-    m_arms = [n for n in ("frozen", "shuffled", "offpolicy", "libonly", "o0@relay") if n not in dropped]
+    m_arms = [n for n in ("frozen", "shuffled", "offpolicy", "libonly", "o0") if n not in dropped]
     for name in m_arms:
-        rows = compared(arms, rules, name)[0] if name != "o0@relay" else arms.get(name, [])
-        if rows:
-            e = endpoint(arms["relay"], rows, chain_of, a1, chains=sec)
-            if "mean" in e:
-                comps[name] = {"mean": e["mean"], "lower": e["mean"] - t_quantile(0.01, e["chains"] - 1) * e["se"], "chains": e["chains"]}
-    if comps:
-        worst = min(comps, key=lambda k: comps[k]["mean"])
-        gain = float(np.mean([r["gain"] for r in arms["frozen"]]))
-        out["m_net"] = {"definition": reg.get("m_net"), "value": comps[worst]["mean"], "against": worst,
-                        "lower_bound": min(v["lower"] for v in comps.values()), "per_comparator": comps,
-                        "relative_to_frozen_gain": comps[worst]["mean"] / gain if gain else None, "complete": len(comps) == len(m_arms)}
+        e = versus("m_net " + name, name, a1, chains=sec, seed_ok=two, need=J2)
+        both = [x for x in (e, e.get("against the comparator at the registered budget")) if x and "mean" in x and x.get("complete")]
+        if both and len(both) == (2 if "against the comparator at the registered budget" in e else 1):
+            comps[name] = {"mean": min(x["mean"] for x in both), "lower": min(x["mean"] - t_quantile(0.01, x["chains"] - 1) * x["se"] for x in both),
+                           "chains": e["chains"]}
+    complete = len(comps) == len(m_arms)
+    gain = float(np.mean([r["gain"] for r in arms["frozen"]]))
+    worst = min(comps, key=lambda k: comps[k]["mean"]) if comps else None
+    out["m_net"] = {"definition": reg.get("m_net"), "complete": complete, "per_comparator": comps,
+                    "value": comps[worst]["mean"] if complete else None, "against": worst if complete else None,
+                    "lower_bound": min(v["lower"] for v in comps.values()) if complete else None,
+                    "relative_to_frozen_gain": comps[worst]["mean"] / gain if complete and gain else None}
     D = {}
-    for label, a, b in (("L1 frozen minus o0@relay", "frozen", "o0@relay"), ("L2 frozen@ceiling minus frozen", "frozen@ceiling", "frozen"),
-                        ("L5 shuffled minus frozen", "shuffled", "frozen"), ("prioronly minus frozen", "prioronly", "frozen"),
-                        ("libonly minus frozen", "libonly", "frozen"), ("relay minus prioronly", "relay", "prioronly"),
-                        ("relay minus a0@relay", "relay", "a0@relay"), ("o0@ref minus a0@ref", "o0@ref", "a0@ref")):
-        if arms.get(a) and arms.get(b):
-            rows_b = compared(arms, rules, b)[0] if (a == "relay" and b in relay_driver.LATER_R0) else arms[b]
-            D[label] = endpoint(arms[a], rows_b, chain_of, 0.05, statistic="min" if "a0" in b else "acquired", chains=sec)
+    frozen_c = compared(arms, rules, "frozen")[0]
+    pairs = (("L1 frozen minus o0@relay", frozen_c, arms.get("o0@relay"), "acquired"),
+             ("L1 at the registered budget: frozen minus o0", arms.get("frozen"), arms.get("o0"), "acquired"),
+             ("L2 frozen@ceiling minus frozen", arms.get("frozen@ceiling"), arms.get("frozen"), "acquired"),
+             ("L5 shuffled minus frozen", arms.get("shuffled"), arms.get("frozen"), "acquired"),
+             ("prioronly minus frozen", arms.get("prioronly"), arms.get("frozen"), "acquired"),
+             ("libonly minus frozen", arms.get("libonly"), arms.get("frozen"), "acquired"),
+             ("relay minus prioronly", arms.get("relay"), compared(arms, rules, "prioronly")[0], "acquired"),
+             ("relay minus a0@relay", arms.get("relay"), arms.get("a0@relay"), "both"),
+             ("relay minus a0 at the registered budget", arms.get("relay"), arms.get("a0"), "both"),
+             ("o0@ref minus a0@ref", arms.get("o0@ref"), arms.get("a0@ref"), "both"))
+    for label, a, b, stat in pairs:
+        if a and b:
+            D[label] = endpoint(label, a, b, chain_of, 0.05, "t", stat, chains=sec, seed_ok=two)
     D["L3 inner productivity"] = {name: {"all": productivity(rows), "by_category": {c: productivity([r for r in rows if r["env"] == c])
                                                                                      for c in sorted({r["env"] for r in rows})}}
                                   for name, rows in arms.items() if not name.startswith(("o0", "a0"))}
@@ -558,17 +635,11 @@ def build(ledger, reg) -> dict:
     D["L8 depth curve"] = l8(arms, H.get("depths", []), K, chain_of, J2, base_seed)
     D["2x2 prior x library"] = two_by_two(arms, chain_of, J2)
     D["per arm: CPU, units, constructions, share at or above the threshold, acquired"] = per_arm(arms)
-    un = {}
-    for name in ("relay", "frozen", "shuffled", "offpolicy", "libonly", "prioronly", "o0@relay"):
-        for r in arms.get(name, []):                         # the untrained answer does not depend on the training budget
-            un.setdefault((r["env"], r["seed"]), set()).add(round(r["untrained"], 9))
-    D["untrained answers identical across the design-r arms and o0"] = all(len(v) == 1 for v in un.values())
+    D["untrained answers identical across the arms of designs r and o"] = identical
     ratios = {}
     for c in held["categories"]:
-        pr = [r for r in arms["relay"] if r["env"] == c]
-        fr = {(r["env"], r["seed"]): r for r in arms["frozen"] if r["env"] == c}
-        both = [r for r in pr if (r["env"], r["seed"]) in fr]
-        ratios[c] = sum(evaluate.cpu(r) for r in both) / max(sum(evaluate.cpu(fr[(r["env"], r["seed"])]) for r in both), 1e-9) if both else None
+        pr = paired([r for r in arms["relay"] if r["env"] == c], [r for r in arms["frozen"] if r["env"] == c], chain_of)
+        ratios[c] = pr["cpu_ratio"]
     D["relay over frozen CPU per category (primary pairs)"] = ratios
     vals = [v for v in ratios.values() if v is not None]
     D["relay over frozen CPU, smallest"] = min(vals) if vals else None
@@ -589,7 +660,8 @@ def build(ledger, reg) -> dict:
               for c in pa["relay"]["at_or_above_threshold"] if c in pa["frozen"]["at_or_above_threshold"]]
         D["largest threshold-share difference, relay minus frozen"] = max(th) if th else None
     D["o0@relay reached within 2 levels"] = float(np.mean([bool(r.get("reached")) and r.get("levels", 99) <= 2 for r in o0m])) if o0m else None
-    D["void comparisons"] = int(E["E-R3 relay minus o0@relay (matched CPU)"]["void"])
+    D["o0@relay over relay CPU (matched pairs)"] = (1.0 / E[E3]["cpu_ratio"]) if E[E3].get("cpu_ratio") else None
+    D["void comparisons"] = int(E[E3]["void"])
     out["diagnostics"] = D
     out["predictions"] = score_predictions(reg, out)
     return out

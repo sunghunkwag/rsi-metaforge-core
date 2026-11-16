@@ -335,14 +335,15 @@ class LearnerR(Q.LearnerQ):
     def _new_entries(self, capability, P0) -> list:
         r6 = lambda a: [round(float(x), 6) for x in a]
         kept = "program" in capability
-        kept_splice = bool(kept and any(CELLS[c][1] == "splice" for log in self._switches for c in log["cells"]))
+        live = {part: {_canon(ins) for ins in O.live(capability["program"][part])} for part in ("score", "pick")} if kept else {}
+        # a spliced block counts as kept only if all of it is still live in the kept programs
+        kept_splice = bool(kept and any(info.get("kind") == "splice" and all(_canon(ins) in live[info["part"]] for ins in info["block"])
+                                        for log in self._switches for info in log["infos"]))
         stats = {"kind": KIND_STATS, "v": ENTRY_V, **{k: r6(self._stats[k]) for k in STAT_KEYS},
                  **{k: r6(self._sizes[k]) for k in SIZE_KEYS}, **self._counts, "kept": kept, "kept_splice": kept_splice,
                  "layout": {"ordered": bool(P0.ordered), "binary": bool(P0.n_opts == 2), "capacity": P0.capacity is not None}}
         out = [stats]
         if kept and self.relay["lib_per_run"] > 0:
-            final = capability["program"]
-            live = {part: {_canon(ins) for ins in O.live(final[part])} for part in ("score", "pick")}
             blocks, keys = [], set()
             for log in reversed(self._switches):
                 for info in log["infos"]:
@@ -505,25 +506,30 @@ def without(memory, kind) -> dict | None:
 
 
 def _random_block(blk, rng):
-    """A random block with the same part, length, number of new constants and term flag."""
-    part, L = blk["part"], len(blk["block"])
+    """A random block with the same part, length, number of new constants and term flag. A term
+    block of four or six instructions with one new constant gets the form of design o's term
+    edits (a sensor, or the product of two, normalised, scaled by the new constant, added); any
+    other block gets its new constants on random registers, random instructions up to its length
+    and, for a term block, a closing addition into the result."""
+    part, L, fresh = blk["part"], len(blk["block"]), blk["fresh"]
     nreg = O.N_REG if part == "score" else O.N_PREG
     sensors = O.SCORE_SENSORS if part == "score" else O.PICK_SENSORS
     quiet = [k for k, name in enumerate(sensors) if name != "noise"]
-    if blk["term"]:
+    if blk["term"] and L in (4, 6) and fresh == 1:
         r = int(rng.integers(1, nreg))
         r2 = 1 + (r % (nreg - 1))
         body = [["load", r, int(rng.choice(quiet)), int(rng.integers(O.SENSOR_ARGS))]]
-        if L >= 6:
+        if L == 6:
             body += [["load", r2, int(rng.choice(quiet)), int(rng.integers(O.SENSOR_ARGS))], ["mul", r, r, r2]]
         body += [[str(rng.choice(["mm", "rank", "z"])), r, r, 0], ["scale", r, r, -1], ["add", 0, 0, r]]
-        fresh = 1
-    else:                                                        # as many new constants as the original, then random instructions
-        fresh = blk["fresh"]
-        body = [[str(rng.choice(["scale", "shift"])), (r := int(rng.integers(nreg))), r, -1 - i] for i in range(min(fresh, L))]
-        while len(body) < L:
+    else:
+        free = L - 1 if blk["term"] else L                       # a term block ends by adding a register into the result
+        fresh = min(fresh, free)
+        body = [[str(rng.choice(["scale", "shift"])), (r := int(rng.integers(nreg))), r, -1 - i] for i in range(fresh)]
+        while len(body) < free:
             body.append(E.random_instruction(part, BASE_THETA, rng))
-        fresh = min(fresh, L)
+        if blk["term"]:
+            body.append(["add", 0, 0, int(rng.integers(1, nreg))])
     return {"part": part, "block": body, "fresh": fresh, "term": blk["term"]}
 
 
@@ -532,17 +538,34 @@ def shuffled(memory, j: int) -> dict | None:
     every 20-array of every stats entry permuted by one uniformly random permutation of the
     operators, every 3-array by one of the edit sizes (fixed points allowed: a derangement would
     always move the destructive operators' records onto other operators and so misinform), and
-    every library block replaced by a random block of the same part, length, constants and form."""
+    every library block replaced by a random block of the same part, length, constants and form.
+    Every occurrence of one block gets the same random block and different blocks get different
+    ones (where enough exist), so the library the placebo rebuilds has the size and the shapes of
+    the real one."""
     import zlib
     rng = np.random.default_rng([29, zlib.crc32(b"shuffle"), j])
     pi, sigma = rng.permutation(N_CELLS), rng.permutation(3)
     rng2 = np.random.default_rng([29, zlib.crc32(b"shuffle-lib"), j])
+    swap, used = {}, set()
+
+    def placebo(b):
+        key = _canon(b)
+        if key not in swap:
+            new = _random_block(b, rng2)
+            for _ in range(50):
+                if _canon(new) not in used:
+                    break
+                new = _random_block(b, rng2)
+            swap[key] = new
+            used.add(_canon(new))
+        return swap[key]
+
     out = []
     for e in (memory or {}).get("entries", []):
         if e.get("kind") == KIND_STATS:
             e = dict(e, **{k: [e[k][int(pi[c])] for c in range(N_CELLS)] for k in STAT_KEYS},
                      **{k: [e[k][int(sigma[i])] for i in range(3)] for k in SIZE_KEYS})
         elif e.get("kind") == KIND_LIB:
-            e = dict(e, blocks=[_random_block(b, rng2) for b in e["blocks"]])
+            e = dict(e, blocks=[placebo(b) for b in e["blocks"]])
         out.append(e)
     return mem(out)

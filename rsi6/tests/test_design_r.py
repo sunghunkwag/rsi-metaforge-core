@@ -165,7 +165,37 @@ def test_T7_memory_transforms_keep_amounts_and_structure():
                 assert sorted(a[k]) == sorted(b[k])
         if a["kind"] == R.KIND_LIB:
             for x, y in zip(a["blocks"], b["blocks"]):
-                assert (x["part"], len(x["block"]), x["term"]) == (y["part"], len(y["block"]), y["term"])
+                assert (x["part"], len(x["block"]), x["term"], x["fresh"]) == (y["part"], len(y["block"]), y["term"], y["fresh"])
+    # every shape a kept switch can leave: the placebo keeps part, length, new constants and the term form
+    shapes = [{"part": "score", "block": [["add", 0, 0, 5]], "fresh": 0, "term": True},
+              {"part": "pick", "block": [["load", 2, 1, 0], ["add", 0, 0, 2]], "fresh": 0, "term": True},
+              {"part": "score", "block": [["load", 3, 2, 0], ["mm", 3, 3, 0], ["scale", 3, 3, -1], ["add", 0, 0, 3]], "fresh": 1, "term": True},
+              {"part": "score", "block": [["load", 3, 2, 0], ["load", 4, 1, 0], ["mul", 3, 3, 4], ["z", 3, 3, 0], ["scale", 3, 3, -1], ["add", 0, 0, 3]],
+               "fresh": 1, "term": True},
+              {"part": "score", "block": [["load", 3, 2, 0], ["scale", 3, 3, -1], ["shift", 3, 3, -2], ["scale", 3, 3, 4], ["add", 0, 0, 3]], "fresh": 2, "term": True},
+              {"part": "pick", "block": [["scale", 1, 1, -1]], "fresh": 1, "term": False},
+              {"part": "score", "block": [["load", 2, 0, 0], ["mm", 2, 2, 0], ["scale", 2, 2, 3]], "fresh": 0, "term": False}]
+    for k, blk in enumerate(shapes):
+        assert R.relocate(blk["block"])[1:] == (0 if blk["fresh"] == 0 else R.relocate(blk["block"])[1], blk["term"])
+        for draw in range(20):
+            out = R._random_block(blk, np.random.default_rng([k, draw]))
+            ins, fresh, term = R.relocate(out["block"])
+            assert (out["part"], len(out["block"]), out["fresh"], out["term"]) == (blk["part"], len(blk["block"]), blk["fresh"], blk["term"]), (blk, out)
+            assert term == blk["term"] or not blk["term"], (blk, out)
+            placeholders = {b for op, _, _, b in out["block"] if op in R.PARAMLIKE and b < 0}
+            assert placeholders == {-1 - i for i in range(blk["fresh"])}, (blk, out)
+            g = O.default()
+            spliced, info = R.splice(g, blk["part"], [out], np.random.default_rng(draw))
+            assert spliced is not None and len(spliced["theta"]) == len(g["theta"]) + blk["fresh"], info
+    # a block that recurs across entries stays one block, and the rebuilt library keeps its size and shapes
+    grow, term1 = {"part": "score", "block": [["scale", 3, 3, -1]], "fresh": 1, "term": False}, shapes[1]
+    repeated = {"entries": [{"kind": R.KIND_LIB, "v": 1, "blocks": [grow, term1]} for _ in range(5)] + [{"kind": R.KIND_LIB, "v": 1, "blocks": shapes}]}
+    shape = lambda lib: sorted((b["part"], len(b["block"]), b["fresh"], b["term"]) for b in lib)
+    for j in range(8):
+        real, fake = R.prior_from(repeated["entries"], R.RELAY0)["library"], R.prior_from(R.shuffled(repeated, j)["entries"], R.RELAY0)["library"]
+        assert len(real) == len(fake) == len(shapes) + 1 and shape(real) == shape(fake), (j, len(real), len(fake))
+    real, fake = R.prior_from(memory["entries"], R.RELAY0)["library"], R.prior_from(sh["entries"], R.RELAY0)["library"]
+    assert shape(real) == shape(fake)
     assert R.shuffled(memory, 3) == sh and R.shuffled(memory, 4) != sh or all(e["kind"] != R.KIND_STATS for e in memory["entries"])
     assert all(e["kind"] != R.KIND_LIB for e in (R.without(memory, R.KIND_LIB) or {"entries": []})["entries"])
     assert all(e["kind"] != R.KIND_STATS for e in (R.without(memory, R.KIND_STATS) or {"entries": []})["entries"])
