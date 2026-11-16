@@ -30,6 +30,8 @@ def table() -> dict:
 def install() -> list:
     """Add the admitted fresh adapters to the kernel's registry in this process; returns their names."""
     names = []
+    if not os.path.exists(FRESH):
+        return names
     for name, entry in table()["categories"].items():
         if entry.get("admitted"):
             environments.REGISTRY.setdefault(name, (entry["module"], entry["class"]))
