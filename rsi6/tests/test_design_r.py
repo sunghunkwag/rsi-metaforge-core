@@ -81,9 +81,11 @@ def test_empty_memory_is_design_q():
                     assert rq[k] == rr[k], (k, rq[k], rr[k])
 
 
-def test_derangement_moves_every_label():
+def test_derangement_and_permutation():
     p = R.derangement(R.N_CELLS, 5)
     assert sorted(p) == list(range(R.N_CELLS)) and all(p[i] != i for i in range(R.N_CELLS))
+    q = R.permutation(R.N_CELLS, 5)
+    assert sorted(q) == list(range(R.N_CELLS)) and q == R.permutation(R.N_CELLS, 5)
 
 
 def test_relay_settings_are_validated():

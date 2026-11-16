@@ -387,11 +387,20 @@ def derangement(n: int, seed: int) -> list:
             return [int(x) for x in p]
 
 
+def permutation(n: int, seed: int) -> list:
+    """A uniformly random permutation of ``n`` labels (fixed points allowed)."""
+    return [int(x) for x in np.random.default_rng(seed).permutation(n)]
+
+
 def shuffled(memory: dict, seed: int) -> dict:
-    """The memory with the same amounts and no information: operator labels deranged in the cell
-    records and in the composites, and the library replaced by blocks of variants that were not
-    kept (as many as there were kept blocks, from the same entries)."""
-    perm = derangement(N_CELLS, seed)
+    """The memory with the same amounts and no information about which operator did what: the
+    operator labels permuted uniformly at random in the cell records and in the composites, and
+    the library replaced by blocks of variants that were not kept (as many as there were kept
+    blocks, from the same entries). The permutation is uniform, not a derangement: a derangement
+    would move the strongly negative records of the few destructive operators onto other
+    operators every time and so make the placebo misinformed rather than uninformed; under a
+    uniform permutation every operator's record is, in expectation, the mean record."""
+    perm = permutation(N_CELLS, seed)
     out = []
     for e in memory.get("entries", []):
         cells = [None] * N_CELLS

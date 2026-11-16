@@ -209,7 +209,7 @@ def main() -> int:
     full, sub = H["seeds_full"], H["seeds_sub"]
     chains = list(range(n))
     plan = [("relay", lambda j: mem["on"][j], full), ("frozen", lambda j: {"entries": []}, full),
-            ("shuffled", lambda j: design_r.shuffled(mem["on"][j], S["derangement"]), sub),
+            ("shuffled", lambda j: design_r.shuffled(mem["on"][j], S["permutation"] + j), sub),
             ("offpolicy", lambda j: mem["off"][j], sub),
             ("prior", lambda j: design_r.ablated(mem["on"][j], "prior"), sub),
             ("blocks", lambda j: design_r.ablated(mem["on"][j], "blocks"), sub)]
