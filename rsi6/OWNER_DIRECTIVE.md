@@ -330,3 +330,16 @@ find or to select a modification, lowering a registered rule, opening the sealed
 the process is frozen, or reporting as success anything the final test on unseen categories
 does not show. A technique is judged on categories its search did not see; success is decided
 once, on the reserve categories and the sealed targets.
+
+## Instruction 10 (2026-11-16, about 04:25 UTC), verbatim
+
+> continue until succes
+
+(Received twice in the same message, after the session had been stopped for about two and a
+half days by a usage limit and the machine had restarted; process c was in its second
+generation.) Carried out as instruction 9: process c runs to its end, then its external gate,
+the recursion check of amendment 4 and the sealed target test, under the rules registered
+before each of them. It changes none of the limits stated under instruction 9. If the
+registered success condition is not met, that is reported as it is, and any further technique
+is registered before it is run and judged on categories that neither it nor any earlier
+process has used.
