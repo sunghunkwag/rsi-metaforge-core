@@ -207,32 +207,46 @@ def targets_section(ledger, reg) -> dict | None:
     base = arms["frozen"]
     cpu_of = lambda r: r["cpu"]["acquire"] + r["cpu"]["apply"]
     matched = {}
+    # which arm each matched arm was matched to; records written before the field existed are read by this rule
+    reference_of = {"compute": done["primary_arm"], "search": done["primary_arm"], "b:compute": done.get("primary_arm_b"),
+                    "b:search": done.get("primary_arm_b"), "compute@b": done.get("primary_arm_b"), "c:compute": "c:self",
+                    "c:search": "c:self"}
     for record in ledger.select(type="matched"):       # the last record of an arm; a pair is short if it did not reach its matched CPU
         matched[record["arm"]] = {"share_per_run": record["share_per_run"], "reached": int(sum(record["reached"])),
-                                  "of": len(record["reached"]), "short": int(len(record["reached"]) - sum(record["reached"]))}
+                                  "of": len(record["reached"]), "short": int(len(record["reached"]) - sum(record["reached"])),
+                                  "matched_to": record.get("matched_to") or reference_of.get(record["arm"])}
+    for arm in reference_of:                            # an arm that should have been matched and has no record is void
+        if arm in arms and arm not in matched:
+            matched[arm] = {"share_per_run": None, "reached": 0, "of": 0, "short": None, "matched_to": reference_of[arm],
+                            "missing_record": True}
 
     def compare(name, other, reference=base):
         """``other`` minus ``reference``, runs paired by category and seed. Where one side is an arm with a matched
         budget, the comparison is void if that arm fell short of its matched CPU in any pair, or received less
         measured CPU than the other side in any pair (registration.json, failure_conditions)."""
         acquired, gain = {}, {}
-        for env in sorted({r["env"] for r in reference}):
+        for side in (reference, other):
+            cells = [(r["env"], r["seed"]) for r in side]
+            if len(set(cells)) != len(cells) or set(cells) != {(e, s) for e in done["targets"] for s in done["seeds"]}:
+                raise SystemExit(f"{name}: an arm does not hold exactly one run of every target and seed")
+        for env in sorted(done["targets"]):
             b = {r["seed"]: r for r in reference if r["env"] == env}
             o = {r["seed"]: r for r in other if r["env"] == env}
-            if sorted(b) != sorted(o) or sorted(b) != sorted(done["seeds"]):
-                raise SystemExit(f"{name}: the two arms do not hold the same seeds of {env}")
             acquired[env] = np.array([o[s]["acquired"] - b[s]["acquired"] for s in sorted(b)])
             gain[env] = np.array([o[s]["gain"] - b[s]["gain"] for s in sorted(b)])
         entry = {"min_change": both_interval(acquired, gain, rng), "acquired_change": blocked_interval(acquired, rng),
                  "gain_change": blocked_interval(gain, rng)}
         left, right = name.split(" minus ")
-        for control, rows, against in ((right, reference, other), (left, other, reference)):
+        for control, rows, against, against_name in ((right, reference, other, left), (left, other, reference, right)):
             if control in matched:
                 pairs = {(r["env"], r["seed"]): r for r in against}
                 less = int(sum(cpu_of(r) < cpu_of(pairs[(r["env"], r["seed"])]) for r in rows))
-                entry.update({"control": control, "pairs_short_of_matched_cpu": matched[control]["short"],
+                info = matched[control]
+                # falling short of the matched CPU matters against the arm it was matched to; against any arm, less CPU voids
+                short = (info["short"] if info["short"] is not None else 1) if against_name == info["matched_to"] else 0
+                entry.update({"control": control, "pairs_short_of_matched_cpu": short,
                               "pairs_with_less_cpu_than_the_other_arm": less,
-                              "void": bool(matched[control]["short"] > 0 or less > 0)})
+                              "void": bool(info.get("missing_record") or short > 0 or less > 0)})
         comparisons[name] = entry
 
     for arm in arms:                                   # every arm against generation 0 of its own design
@@ -345,15 +359,19 @@ def process_c_section(ledger, targets) -> dict | None:
             parts["targets"] = False                    # nothing was adopted: there is no final version to compare
         elif primary is not None and against is not None:
             point, low, _ = primary["min_change"]
-            if against.get("void"):
+            if point < 0.01 or low <= 0.0:
+                parts["targets"] = False                # the primary margin fails whatever the compute-matched arm says
+            elif against.get("void"):
                 parts["targets"] = "void"
             else:
-                parts["targets"] = bool(point >= 0.01 and low > 0.0 and against["min_change"][0] >= 0.0)
+                parts["targets"] = bool(against["min_change"][0] >= 0.0)
             out["targets"] = {"min_change": primary["min_change"], "against_compute": against["min_change"],
                               "compute_arm_void": bool(against.get("void"))}
     out["success_parts"] = parts
     values = list(parts.values())
-    out["success"] = False if any(v is False or v == "void" for v in values) else (True if all(v is True for v in values) else None)
+    # False if a part fails; None while a part is undecided or void (then success is not established); True if all hold
+    out["success"] = False if any(v is False for v in values) else (True if all(v is True for v in values) else None)
+    out["success_void"] = any(v == "void" for v in values)
     return out
 
 
@@ -385,7 +403,9 @@ def score_predictions_c(section, ledger) -> list:
         add("C2", None, "the process has not ended")
     external = section.get("external_gate")
     add("C3", None if external is None else bool(not external["passed"]), external and (external["gate"] or external["why"]))
-    add("C4", None if section["success"] is None else bool(not section["success"]), section["success_parts"])
+    add("C4", None if section["success"] is None else bool(not section["success"]),
+        dict(section["success_parts"], note="a void part leaves the condition undecided") if section.get("success_void")
+        else section["success_parts"])
     recursion = section.get("recursion_check")
     if recursion is None or not recursion["compared"]:
         add("C5", None, "no generation compared" if recursion else "the recursion check has not been run")
@@ -397,10 +417,13 @@ def score_predictions_c(section, ledger) -> list:
     listed = os.path.join(os.path.dirname(HERE), "registry", "targets.json")
     admitted = json.load(open(listed)).get("admitted") if os.path.exists(listed) else None
     unlocked = ledger.select(type="unlock", role="target")
+    ran = ledger.select(type="target_done")
     if admitted is None:
         add("C6", None, "the list of admitted targets is not written yet")
     elif unlocked and sorted(admitted) != sorted(unlocked[-1]["targets"]):
         add("C6", None, {"the list file": sorted(admitted), "the list the ledger unlocked": unlocked[-1]["targets"]})
+    elif ran and sorted(admitted) != sorted(ran[-1]["targets"]):
+        add("C6", None, {"the list file": sorted(admitted), "the list the target test ran on": ran[-1]["targets"]})
     else:
         add("C6", bool(len(admitted) == 4), {"admitted": sorted(admitted), "recorded in the ledger": bool(unlocked)})
     return out
@@ -468,7 +491,12 @@ def score_predictions_b(reg_b, rounds, searches, targets) -> list:
         add("B4", bool(c["b:frozen minus frozen"]["acquired_change"][0] > 0), c["b:frozen minus frozen"]["acquired_change"])
         if "b:frozen minus compute@b" in c:
             point, low, high = c["b:frozen minus compute@b"]["acquired_change"]
-            add("B5", bool(low <= 0.0), [point, low, high])
+            if c["b:frozen minus compute@b"].get("void"):
+                add("B5", None, {"void": True, "interval": [point, low, high],
+                                 "pairs short": c["b:frozen minus compute@b"].get("pairs_short_of_matched_cpu"),
+                                 "pairs with less CPU": c["b:frozen minus compute@b"].get("pairs_with_less_cpu_than_the_other_arm")})
+            else:
+                add("B5", bool(low <= 0.0), [point, low, high])
         if "b:skills minus b:frozen" in c:
             add("B6", bool(c["b:skills minus b:frozen"]["acquired_change"][0] < 0.005), c["b:skills minus b:frozen"]["acquired_change"][0])
         primary = c.get(f"{targets['primary_arm_b']} minus b:frozen")
@@ -568,7 +596,9 @@ def main() -> int:
                 print(f"      generation {row['generation']}: " + "; ".join(
                     f"{who} found {number(row[who]['found'])} gate {row[who]['gate']:+.4f} confirmation {row[who]['confirmation']:+.4f}"
                     for who in ("self", "gen0", "random")))
-        print(f"  success condition, part by part: {process_c['success_parts']} -> {process_c['success']}")
+        print(f"  success condition, part by part: {process_c['success_parts']} -> "
+              + {True: "met", False: "not met", None: "not decided"}[process_c["success"]]
+              + (" (a part is void: the compute-matched arm received too little CPU)" if process_c.get("success_void") else ""))
     for design, table in report["generation0"].items():
         print(f"\nGENERATION 0 of design {design}: every recorded run outside the target test (fresh instances)")
         for env, e in table.items():

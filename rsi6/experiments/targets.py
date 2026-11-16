@@ -115,7 +115,7 @@ def in_batches(cache, jobs, size: int = 4) -> list:
     return out
 
 
-def matched(arm, version, field, want, targets, seeds, budget, cache, ledger, spent, share) -> list:
+def matched(arm, version, field, want, targets, seeds, budget, cache, ledger, spent, share, matched_to=None) -> list:
     """Generation 0 with one budget raised, pair by pair, until its measured CPU reaches ``want``."""
     value, last, seen = {pair: budget[field] for pair in want}, {}, {pair: [] for pair in want}
     pending = list(want)
@@ -142,7 +142,8 @@ def matched(arm, version, field, want, targets, seeds, budget, cache, ledger, sp
     rows = [dict(last[pair], matched_cpu=want[pair], reached=cpu(last[pair]) >= want[pair]) for pair in want]
     keys = [r["key"] for r in rows]
     if not [r for r in ledger.select(type="matched", arm=arm) if r["keys"] == keys]:      # once, also when the driver is started again
-        ledger.append({"type": "matched", "arm": arm, "field": field, "share_per_run": share, "spent": spent, "keys": keys,
+        ledger.append({"type": "matched", "arm": arm, "matched_to": matched_to, "field": field, "share_per_run": share,
+                       "spent": spent, "keys": keys,
                        "pairs": [[name, seed] for name, seed in want], "matched_cpu": [want[pair] for pair in want],
                        "cpu": [cpu(last[pair]) for pair in want], "levels": [len(seen[pair]) for pair in want],
                        "budget": [seen[pair][-1][0] for pair in want], "reached": [bool(r["reached"]) for r in rows]})
@@ -170,8 +171,10 @@ def process_arms(prefix, v0, lineage, adopted, spent, targets, seeds, budget, ca
     primary = selfs[-1] if selfs else f"{prefix}frozen"
     share = spent / (len(targets) * len(seeds))
     want = {(r["env"], r["seed"]): cpu(r) + share for r in results[primary]}
-    results[f"{prefix}compute"] = matched(f"{prefix}compute", v0, "train", want, targets, seeds, budget, cache, ledger, spent, share)
-    results[f"{prefix}search"] = matched(f"{prefix}search", v0, "test_e", want, targets, seeds, budget, cache, ledger, spent, share)
+    results[f"{prefix}compute"] = matched(f"{prefix}compute", v0, "train", want, targets, seeds, budget, cache, ledger, spent, share,
+                                          matched_to=primary)
+    results[f"{prefix}search"] = matched(f"{prefix}search", v0, "test_e", want, targets, seeds, budget, cache, ledger, spent, share,
+                                         matched_to=primary)
     return results, primary, want, share
 
 
@@ -202,9 +205,10 @@ def check_list(listed: dict, ledger) -> list:
     if not admitted or len(set(admitted)) != len(admitted):
         problems.append("the admitted list is empty or names a category twice")
     expected = {c for c in roles.CANDIDATES if roles.effective_role(c, ledger) == "target"}
-    pending = []
+    pending, named = [], []
     for change in listed.get("replacements", []):
         old, new = change["replaced"], change["reserve"]
+        named += [old, new]
         recorded = ledger.select(type="replace", replaced=old)
         if recorded:
             if recorded[-1]["reserve"] != new or recorded[-1]["role"] != "target":
@@ -212,6 +216,8 @@ def check_list(listed: dict, ledger) -> list:
             continue
         if roles.role_of(old) != "target" or roles.effective_role(old, ledger) != "target":
             problems.append(f"{old} does not have the role of a target")
+        if old in environments.REGISTRY or old in admitted:      # only a target without an adapter is replaced
+            problems.append(f"{old} has an admitted adapter: a target that can be built is not replaced")
         if roles.role_of(new) != "reserve" or roles.effective_role(new, ledger) != "reserve":
             problems.append(f"{new} is not an unused reserve")
         if any(r.get("type") == "run" and r.get("category") == new for r in ledger.records):
@@ -220,6 +226,12 @@ def check_list(listed: dict, ledger) -> list:
             problems.append(f"the replacement of {old} states no reason")
         expected = (expected - {old}) | {new}
         pending.append(change)
+    if len(set(named)) != len(named):
+        problems.append("a category is named in two replacements")
+    unused = [c for c in roles.CANDIDATES if roles.effective_role(c, ledger) == "reserve" and c in environments.REGISTRY
+              and c not in named]
+    if listed.get("missing") and unused:                 # a target may be missing only when no usable reserve is left
+        problems.append(f"a target is stated as missing while the reserves {unused} have admitted adapters and are unused")
     for gone in listed.get("missing", []):
         # only a target that has no adapter can be missing: a target with an admitted adapter is never left out
         if gone["category"] not in expected or gone["category"] in admitted or gone["category"] in environments.REGISTRY \
@@ -270,6 +282,8 @@ def main() -> int:
         return 0
     listed = json.load(open(args.targets))
     targets = sorted(listed["admitted"])
+    if dev and any(roles.effective_role(n, ledger) != "source" for n in targets):
+        raise SystemExit("--dev runs on source categories only")
     if not dev:
         for number in (3, 4):                          # the amendments whose readings this driver applies
             if ledger.select(type="registration_c") and not ledger.select(type="amendment", amendment=number):
@@ -306,7 +320,7 @@ def main() -> int:
                                                         part * spent_by(ledger, names_b), targets, seeds, budget, cache, ledger, earlier)
         results.update(more)
         results["compute@b"] = matched("compute@b", designs.default("a"), "train", want_b, targets, seeds, budget, cache, ledger,
-                                       part * spent_by(ledger, names_b), share_b)
+                                       part * spent_by(ledger, names_b), share_b, matched_to=primary_b)
         done["primary_arm_b"] = primary_b
     # ---- process c
     if frozen_c:
@@ -323,7 +337,7 @@ def main() -> int:
         share_c = spent_c / (len(targets) * len(seeds))
         want_c = {(r["env"], r["seed"]): cpu(r) + share_c for r in results["c:self"]}
         for arm, field in (("c:compute", "train"), ("c:search", "test_e")):
-            results[arm] = matched(arm, v0, field, want_c, targets, seeds, budget, cache, ledger, spent_c, share_c)
+            results[arm] = matched(arm, v0, field, want_c, targets, seeds, budget, cache, ledger, spent_c, share_c, matched_to="c:self")
         done["primary_arm_c"] = "c:self" if adopted_c else "c:frozen"
     ledger.append(dict(done, arms={arm: [r["key"] for r in rows] for arm, rows in results.items()}))
     return 0

@@ -81,6 +81,29 @@ def main() -> int:
     if len(adopted) != len(adoptions):
         raise SystemExit("process c has more than one adoption in a generation")
     cpu_limit = args.dev if dev else reg["climb_cpu_limit"]
+    # every recorded climb this check is compared with must be the climb its generation registered: checked first
+    start = v0
+    for g in range(1, reg["generations_planned"] + 1):
+        if find(ledger, type="c_generation_done", generation=g) is None:
+            break
+        climb = find(ledger, type="search", tag=f"search:c{g}:climb")
+        light, _, _ = split_of(g, reg)
+        problems = []
+        if climb is None:
+            problems.append("no climb is recorded")
+        else:
+            if climb["start"] != designs.digest(start) or climb["improver_version"] != climb["start"]:
+                problems.append("its start or its improver is not the version the generation started from")
+            if sorted(climb["envs"]) != sorted(light) or climb["seeds"] != [1000 + 10 * g + 1, 1000 + 10 * g + 2]:
+                problems.append("its categories or seeds are not the registered ones")
+            if climb["cpu_limit"] != reg["climb_cpu_limit"] or climb.get("objective") != "breadth":
+                problems.append("its CPU limit or objective is not the registered one")
+            if climb["nominee"] is not None and find(ledger, type="gate", tag=f"gate:c{g}:climb") is None:
+                problems.append("its nominee has no gate record")
+        if problems:
+            raise SystemExit(f"generation {g}: " + "; ".join(problems))
+        if g in adopted:
+            start = adopted[g]
     current, compared = v0, []
     for g in range(1, reg["generations_planned"] + 1):
         if find(ledger, type="c_generation_done", generation=g) is None:

@@ -250,7 +250,9 @@ def main() -> int:
         ledger.append({"type": "c_generation_done", "process": "c", "generation": g, "searched": envs, "set_aside": aside,
                        "adopted_by": adopted, "version": designs.digest(current)})
         say(f"generation {g} done: adopted by {adopted}; version {designs.digest(current)[:12]}")
-    say("process c at", designs.digest(current)[:12], "after", len(ledger.select(type="adopt", process="c")), "adoptions")
+    adoptions = ledger.select(type="adopt", process="c")
+    final = adoptions[-1]["version"] if adoptions else designs.default(reg["design"])
+    say("process c at", designs.digest(final)[:12], "after", len(adoptions), "adoptions")
     return 0
 
 

@@ -72,3 +72,36 @@ confirmed as real; four kept the rating major and four were rated minor by their
   the memory arms collapse (recall across categories replaces the starting point and is not
   checked against the untrained prior), and the arm with a raised test-time budget and no
   training does not change its scores with the budget.
+
+## Second verification (2026-11-16), and what was changed after it
+
+Three further agents checked the corrections above in a fresh isolated copy
+(`second_verification_*.json`). A first attempt of this verification was stopped by the
+session's usage limit before any agent reported; it was run again. Of the 33 earlier findings
+they rate 27 fixed and 6 partly fixed or not fixed, and they found new defects:
+
+* **Two holes in the list of targets (major).** A target could be stated as missing while an
+  unused reserve with an admitted adapter remained, and a target that has an admitted adapter
+  could be "replaced". Both now stop the driver before it writes anything; the real
+  `registry/targets.json` still passes.
+* **B5 was scored on a comparison that is void (major).** It is now left unscored, with the
+  reason, when the compute-matched arm fell short.
+* **The void rule was too broad, and too narrow (minor).** Falling short of the matched CPU now
+  voids the comparisons against the arm a control was matched to (each `matched` record names
+  it); against any arm, less measured CPU in a pair voids the comparison; a matched arm without
+  a record is void. Both sides of a comparison must hold exactly one run of every target and
+  seed.
+* **The success condition of process c (minor).** The primary margin is decided first; only if
+  it holds can the comparison with the compute-matched arm make the part void. A void part
+  leaves the condition, and C4, undecided instead of failed.
+* **Two writers on two files (minor).** A driver on `main.jsonl` and one on `live.jsonl` could
+  both hold their locks. Now no driver writes `main.jsonl` while a working ledger exists, every
+  registered driver also takes one lock shared by both files, and a hard link to a registered
+  ledger counts as registered.
+* **Order of irreversible records (notes).** `external.py` checks the adapters before its first
+  record; `recursion.py` checks every recorded climb (start, improver, categories, seeds, CPU
+  limit, objective, gate record) before its first search; `finish.py` stops with a clear message
+  on a ledger whose last line a stopped driver left incomplete.
+
+Not changed: `rounds.pool` loads every registered adapter, the targets included, when the
+target test computes the categories of the memory arms (it reads their roles only).

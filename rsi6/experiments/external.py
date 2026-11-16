@@ -102,6 +102,9 @@ def main() -> int:
         raise SystemExit(f"process c has not finished: generations {missing} are not recorded")
     rounds.RULES.update(reg["rules"])
     v0, final, adoptions = final_version(ledger, reg)
+    absent = [n for n in names if n not in environments.REGISTRY]
+    if absent:                                           # checked before the first record that cannot be taken back
+        raise SystemExit(f"no admitted adapter for {absent}")
     guard.amendment(ledger, 4, guard.AMENDMENT_4)
     frozen = find(ledger, type="freeze", process="c")
     if frozen is None:
@@ -122,9 +125,6 @@ def main() -> int:
                        "why": "process c adopted no version: its final version is generation 0 and there is nothing to test"})
         say("no version was adopted: the external gate has nothing to test")
         return 0
-    absent = [n for n in names if n not in environments.REGISTRY]
-    if absent:
-        raise SystemExit(f"no admitted adapter for {absent}")
     released = find(ledger, type="release", role=role) is not None and not args.dev
     if not released:
         for n in names:

@@ -343,3 +343,58 @@ before each of them. It changes none of the limits stated under instruction 9. I
 registered success condition is not met, that is reported as it is, and any further technique
 is registered before it is run and judged on categories that neither it nor any earlier
 process has used.
+
+## Instructions 11 to 13 (2026-11-16, from about 04:40 UTC), verbatim
+
+### 11
+
+start implementing the actual general-purpose recursive capability-acquisition mechanism.
+
+The four architectural requirements have already been defined. Do not repeatedly restart the planning process.
+
+Implement the learner L, its self-modification mechanism, independent evaluation infrastructure, and multi-generation experiments.
+
+Run the new dimension experiments, examine failures, improve the implementation, and report measured results.
+
+Do not substitute toy puzzles or additional planning documents for executable research.
+
+### 12
+
+Explore radically novel, non-human-intuitive approaches to recursive self-improvement and capability acquisition.
+
+Do not restrict the search to established human-designed algorithms, familiar AI architectures, conventional representations, or incremental combinations of existing techniques.
+
+Actively investigate unconventional computational principles, emergent representations, unfamiliar learning dynamics, and self-discovered mechanisms that may be difficult for humans to intuitively interpret.
+
+Prioritize the discovery and implementation of fundamentally new mechanisms for acquiring capabilities, including mechanisms that can recursively improve their own capacity for discovering further mechanisms.
+
+Run actual experiments, examine failures, modify the implementation, and report independently verified results.
+
+Do not substitute toy puzzles, conventional benchmark optimization, or additional planning documents for executable research.
+
+**Human interpretability is not a prerequisite for discovering a mechanism, but reproducibility, independent verification, and measurable capability gains remain mandatory.**
+
+### 13
+
+Recursive Discovery of New Learning Principles
+
+Treat the principles of learning, representation, exploration, and mechanism discovery themselves as mutable objects of recursive experimentation.
+
+Do not merely generate unconventional variants of known algorithms. Investigate whether fundamentally different computational mechanisms can emerge through autonomous experimentation.
+
+Crucially, allow each discovered mechanism to alter the process by which subsequent mechanisms are generated, evaluated, and improved.
+
+The objective is not merely to discover a better learner, but to experimentally establish a learner capable of improving its own ability to discover new learning principles.
+
+Implement and test candidate mechanisms. Distinguish genuine capability acquisition from benchmark specialization, computational scaling, and measurement noise.
+
+Evaluate improvements on independent held-out tasks with strong baselines, negative controls, and reproducible experimental records.
+
+Do not stop at proposing ideas or producing research plans. Execute the experiments, diagnose failures, revise the implementation, and report measured outcomes. Do not claim a fundamentally new principle without supporting comparative evidence.
+
+(Instruction 11 interrupted the reading of the code for the first step of it; 12 and 13 interrupted
+again. How they are carried out: the open design, `rsi6/learner/design_o.py`, makes the
+representation and the learning principle programs of one small vector machine, and the
+discovery process, `rsi6/open/`, generates new programs with the edit distribution that the
+current mechanism's own learning principle adapts, so that a discovered learning principle
+changes how the next mechanisms are generated. Process c continues under its registration.)

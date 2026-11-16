@@ -33,20 +33,30 @@ _HELD = []                                             # lock files stay open as
 
 
 def is_registered(path: str) -> bool:
-    """Whether the path is one of the two registered ledger files (symbolic links resolved)."""
+    """Whether the path is one of the two registered ledger files (symbolic and hard links resolved)."""
     real = os.path.realpath(path)
-    return real in (os.path.realpath(MAIN), os.path.realpath(LIVE))
+    if real in (os.path.realpath(MAIN), os.path.realpath(LIVE)):
+        return True
+    return os.path.exists(path) and any(os.path.exists(f) and os.path.samefile(path, f) for f in (MAIN, LIVE))
 
 
-def single_writer(path: str) -> None:
-    """Hold an exclusive lock on the ledger at ``path`` until this process ends."""
-    handle = open(os.path.realpath(path) + ".lock", "w")
+def _lock(name: str, what: str) -> None:
+    handle = open(name, "w")
     try:
         fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except OSError:
         handle.close()
-        raise SystemExit(f"another driver is writing {path}: two writers would break the chain")
+        raise SystemExit(f"another driver is writing {what}: two writers would break the chain")
     _HELD.append(handle)
+
+
+def single_writer(path: str) -> None:
+    """Hold an exclusive lock on the ledger at ``path`` until this process ends. For the two
+    registered files one further lock is shared by both, so that no two drivers write the two
+    histories at once."""
+    _lock(os.path.realpath(path) + ".lock", path)
+    if is_registered(path):
+        _lock(os.path.join(os.path.dirname(MAIN), ".writer.lock"), "a registered ledger")
 
 
 def _lines(path: str) -> list:
@@ -61,8 +71,9 @@ def same_history(path: str) -> None:
     main, live = _lines(MAIN), _lines(LIVE)
     if live[:len(main)] != main:
         raise SystemExit("ledger/main.jsonl is not a prefix of ledger/live.jsonl: the two histories differ; nothing is written")
-    if os.path.realpath(path) == os.path.realpath(MAIN) and len(live) > len(main):
-        raise SystemExit("ledger/live.jsonl is ahead of ledger/main.jsonl: run the driver on the working ledger, or checkpoint first")
+    if os.path.exists(path) and os.path.samefile(path, MAIN):
+        # main.jsonl is written by checkpoints only, while a working ledger exists
+        raise SystemExit("a working ledger exists: drivers write ledger/live.jsonl, and main.jsonl is replaced by checkpoints")
 
 
 def working() -> str:
@@ -70,10 +81,24 @@ def working() -> str:
     return LIVE if os.path.exists(LIVE) else MAIN
 
 
+def torn(path: str) -> bool:
+    """Whether the last line of a ledger file is incomplete (a driver stopped while writing it).
+    Such a line is never part of the chain: the repair is to remove it, and to say so."""
+    lines = _lines(path)
+    if not lines:
+        return False
+    try:
+        json.loads(lines[-1])
+        return False
+    except ValueError:
+        return True
+
+
 def checkpoint() -> int:
     """Replace the committed ledger by the working one, after verifying the chain of the working
     ledger and that the committed one is a prefix of it. A last line that a driver was still
-    writing is left out. Returns the number of records committed."""
+    writing is left out. Returns the number of records committed. No driver writes main.jsonl
+    while a working ledger exists (``same_history``), so this needs no lock."""
     lines = _lines(LIVE)
     try:
         json.loads(lines[-1])

@@ -73,6 +73,10 @@ def main() -> int:
         raise SystemExit("there is no working ledger (ledger/live.jsonl)")
     env = dict(os.environ, OPENBLAS_NUM_THREADS="1", OMP_NUM_THREADS="1", PYTHONHASHSEED="0")
     for name, module, done in STEPS:
+        if guard.torn(path):
+            say(args.log, "the last line of ledger/live.jsonl is incomplete (a driver stopped while writing it); remove that "
+                          "line, note it, and start again")
+            return 1
         ledger = ledgers.Ledger(path)
         reg = ledger.select(type="registration_c")[-1]["registration"]
         if done(ledger, reg):

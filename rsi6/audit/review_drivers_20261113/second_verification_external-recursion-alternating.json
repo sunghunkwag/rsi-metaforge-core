@@ -1,0 +1,117 @@
+{
+ "summary": "All eleven findings in review_external-recursion.json are fixed or were stated as intended, except finding 10, which is unchanged. I found no blocking or major new defect in external.py, recursion.py, alternating.py or replay.py. I found one minor new defect (the lock and the history check work per file, so a driver on main.jsonl and one on live.jsonl can fork the ledger right after a checkpoint) and five notes.\n\n**alternating.py (process c).**\n- Generation 1 rerun by the new nominees() from the cache, on a copy of main.jsonl, gives exactly the recorded c_nominee digests for all four techniques. No learner run was needed, so the tags, seeds and cache keys are the old code's.\n- Generation 2 starts from 7e8fdaf5 in the new code. That is the version the recorded c2 climb started from, and the incumbent of the 18 gate:c2:single runs the old code recorded (aside jobshop, knapsack, setcover; seeds 2021 to 2026).\n- I restarted the new main() from that state, with gate, confirm and search stubbed and no learner run allowed. A stop after each of the 13 appends (0 to 13: inside the techniques, between gate and confirmation, between adopt and c_generation_done, after c_generation_done) always ended in a ledger byte-identical to an uninterrupted run, with no duplicate record.\n- The start version is taken from adopt records with round < g, read in ledger order. It cannot pick a wrong version, because there is at most one adoption per round and only alternating.py writes adopt records.\n- The lock and the history check do not stop a legitimate restart on live.jsonl (the flock ends with the process; main is a prefix of live).\n- Their weak point is that each file has its own lock, and a driver may run on main.jsonl when main and live have the same length.\n\n**external.py.**\n- With stubs and a synthetic ledger where all six generations are done, the order is amendment, freeze, reassign colouring, reassign tour, unlock, gate, confirm, release, external_gate.\n- A stop after each of the 9 appends, followed by a restart, gave the same records with nothing written twice. A start after completion appends nothing.\n- If the amendment file is edited after it was recorded, every later start stops with a message, also after the freeze, reassign or unlock were written. This is by design and is undone by restoring the file.\n- In development mode it only uses binpacking and jobshop with the role source, and it refuses the registered ledgers.\n\n**recursion.py.**\n- I made up generations 2 to 6 covering an adoption by the climb, an adoption by another technique, a climb with no nominee, a climb with no history, and a missing nominee from the random proposer.\n- All 28 calls (10 searches, 9 gates, 9 confirmations) matched what I derived on my own from amendment 4 and the climb call in alternating.py.\n- D values, counts and record types were right. Restarts after a stop at every append gave the same records. A wrong climb start or a wrong nominee on the climb's gate is refused. A wrong seed or CPU limit on the climb is not.\n\n**replay.py.**\n- All 13 search records in main.jsonl replay identically, in about 1.5 CPU-seconds.\n- Recursion records built from cached runs only (gen0 with seed 3001, random with 4001) replay identically. A gen0 record relabelled to generation 2 does not replay.\n- Its seed rules agree with generations.py, continued.py, alternating.py and recursion.py.\n\nTotal compute was about 1.5 CPU-minutes, one process at a time. Test scripts: <review>/work_b/t_alt.py, t_ext.py, t_rec.py, t_replay.py and t_guard.py.",
+ "checks_run": [
+  "Read README.md, review_external-recursion.json and verification_external-recursion.json; read guard.py, alternating.py, external.py, recursion.py, replay.py, and the relevant parts of rounds.py, ledger.py, run.py (key_of, Cache), roles.py, generations.py, continued.py, targets.py and report.py; read amendment_4.json and registration_c.json",
+  "Listed the process-c records in rsi6/ledger/main.jsonl: c_screen, c_nominee, gate, confirm, adopt and c_generation_done of generation 1; the c2 c_screen, climb and c_nominee c2:single; the 18 gate:c2:single incumbent runs (7e8fdaf5; jobshop, knapsack, setcover; seeds 2021 to 2026)",
+  "t_alt.py (copy of main.jsonl in WORK, run.run refused, gate/confirm/search stubbed): nominees() for generation 1 rerun from the cache equals the recorded c_nominee digests for all 4 techniques, with no missing run; generation 2 start = 7e8fdaf5 = recorded climb start; reference run appends 13 records; a stop after k = 0..13 appends followed by a restart gives a byte-identical ledger (0 mismatches); a start after done appends 0",
+  "t_ext.py (dev-ledger prefix plus synthetic c_generation_done 2 to 6, is_registered and environments.load stubbed, run.run refused): record order; gate call v0 -> 7e8fdaf5 on colouring and tour, seeds 4001 to 4006, run budget, bootstrap seed 300; confirmation seeds 5001 to 5006; roles after: source; a stop after k = 0..9 appends then a restart: identical (0 mismatches); start after done: 0 appends; amendment_4.json edited after 1, 2 and 5 appends: SystemExit on every later start, with the freeze, reassign and unlock already written",
+  "t_rec.py (synthetic generations 2 to 6 with adoptions in 2 (climb) and 3 (single), a climb with no nominee, one with no history, a missing random nominee; search/gate/confirm stubbed): 28 calls equal the independently derived conditions (0 mismatches); D_gen0 and D_random equal the expected values; recursion_done counts compared 5, climb_named_a_nominee 3; record types recursion_search/gate/confirm/done; restarts after a stop at every append are identical; a tampered climb start and a tampered nominee on the climb's gate are refused; tampered climb seeds and cpu_limit are accepted",
+  "replay.py on a WORK copy of main.jsonl (TMPDIR in WORK): all 13 searches replayed identically, exit 0",
+  "t_replay.py: recursion_search records made only from cached runs (gen0 with seed 3001, random with 4001, generation-1 conditions) replay identically; the gen0 record relabelled to generation 2 makes replay stop (it needs a run that is not in the ledger)",
+  "t_guard.py with guard.MAIN/LIVE redirected to WORK: equal-length main and live allow a driver on either file; a lock on main succeeds while live is locked; after both are written, same_history and checkpoint refuse; a torn last line in live: checkpoint drops it and commits, Ledger(live) raises JSONDecodeError"
+ ],
+ "fixes": [
+  {
+   "finding": "F0 (major, confirmed; verifier rated it minor): nothing prevents two drivers from writing one ledger; recursion.py needed only the freeze; targets.py ignored recursion",
+   "status": "fixed",
+   "evidence": "guard.single_writer (guard.py:41-49, flock LOCK_EX|LOCK_NB on <ledger>.lock) is called by alternating.py:188, external.py:92, recursion.py:64 and targets.py:253. recursion.py:69 requires the external_gate record. targets.py:266-267 refuses while a recursion_search has no recursion_done. Residual: the lock is per file (see the first new defect), and the verifier's tail-size check inside append was not added."
+  },
+  {
+   "finding": "F1 (major, confirmed; verifier rated it minor): the drivers default to different ledger files and no code makes the checkpoint",
+   "status": "fixed",
+   "evidence": "external.py:82 and recursion.py:54 default to guard.LIVE, alternating.py:178 to LIVE, targets.py:241 to guard.working(). guard.checkpoint (guard.py:73-90) checks that main is a prefix of live, verifies the copy and replaces main with os.replace. guard.same_history refuses histories that differ and refuses main when live is ahead (t_guard.py). report.py:485 still defaults to main.jsonl with no warning when live is ahead (the verifier's item 2, report part). It only reads."
+  },
+  {
+   "finding": "F2 (minor): a stop between external_gate and release leaves the release unwritten for good",
+   "status": "fixed",
+   "evidence": "external.py:154-155 writes the release before the external_gate record (157). t_ext.py: stops after each of the 9 appends, each followed by a restart, gave identical records; roles after the run: tour and colouring are source."
+  },
+  {
+   "finding": "F3 (minor): the amendment 4 record had another shape, another lookup key, and was not written before the runs on the reserves",
+   "status": "fixed",
+   "evidence": "guard.amendment (guard.py:93-104) writes {type, amendment: 4, record, record_sha256 of the file bytes, utc, what}, the shape of the records at idx 1297, 1298 and 2195, and looks them up by amendment=4. external.py:105 writes it before the freeze (106-110) and before the reassign; recursion.py:75 checks it. targets.py:274-276 requires the record but does not compare its hash with the file. If the file is edited after it was recorded, every later driver start stops (t_ext.py)."
+  },
+  {
+   "finding": "F4 (minor): report.search_section and replay.py misread the recursion search records",
+   "status": "fixed",
+   "evidence": "recursion.py:113, 123 and 128 write the types recursion_search, recursion_gate and recursion_confirm. report.py:112 selects only type=search. replay.py:44-45 handles recursion_search (seed 3000/4000+g). t_replay.py: recursion records replay identically. All 13 searches in main.jsonl, including b1 and c1/c2 with string rounds, replay identically."
+  },
+  {
+   "finding": "F5 (minor): a stop between adopt and c_generation_done reruns the generation from the new version; recursion.py does not check the climb's gate against the climb",
+   "status": "fixed",
+   "evidence": "alternating.py:204-205 takes the start version from adopts with round < g. Lines 242-248 do not write an adoption twice and stop if the recorded one differs. t_alt.py: a stop after append 12 (adopt) and a restart gave an identical ledger. recursion.py:97-103 checks climb.start, the envs, and the incumbent and nominee of the climb's gate and confirmation (tampered start and nominee were refused in t_rec.py). external.py:72-76 and recursion.py:81-82 refuse two adoptions in one generation."
+  },
+  {
+   "finding": "F6 (minor): external.py does not compare an existing freeze or gate with the final version; alternating can run after the freeze",
+   "status": "fixed",
+   "evidence": "external.py:111-112 checks the freeze digest and the number of adoptions; 116-117 checks the outcome's final digest; 150-152 checks the incumbent and nominee of the gate and confirmation. alternating.py:191-192 refuses after a freeze of process c, and alternating.py:200 caps generations at generations_planned."
+  },
+  {
+   "finding": "F7 (note): tour and colouring join the source pool after the release, so they feed the memory arms only if process c adopted",
+   "status": "fixed",
+   "evidence": "No code change was needed. The README (under 'Stated, not changed') says the closing record of the target test lists the categories used, and dev_run.log shows 'the memory arms acquired first on: [...]'. targets.py is outside this part and I did not inspect it further."
+  },
+  {
+   "finding": "F8 (note): D_g with a missing nominee counted as 0; report how many generations had a climb nominee",
+   "status": "fixed",
+   "evidence": "recursion.py:141 records climb_named_a_nominee; report.py:335 and 564-565 print it. t_rec.py: climb_named_a_nominee = 3 of 5 compared, as expected."
+  },
+  {
+   "finding": "F9 (note): the recursion searches are charged CPU measured under whatever load the machine has; run them alone",
+   "status": "partly_fixed",
+   "evidence": "The docstring (recursion.py:23) says it should run alone. The lock stops a second driver on the same ledger file but not other load on the machine, and the number of workers is not recorded. Served runs keep the CPU recorded by process c, because run.key_of (run.py:137-140) leaves out the purpose."
+  },
+  {
+   "finding": "F10 (note): rounds.pool loads every adapter, the target adapters included",
+   "status": "not_fixed",
+   "evidence": "rounds.py:61-64 is unchanged and is still called at targets.py:290. The README does not list it. It is outside the files of this part. The development run of targets.py finished (dev_run.log), so it did not stall there."
+  }
+ ],
+ "new_defects": [
+  {
+   "severity": "minor",
+   "file": "rsi6/experiments/guard.py",
+   "line": "41-49, 56-65, 73-90",
+   "what": "There is a separate lock for each file (realpath(path)+'.lock'). same_history allows a driver on ledger/main.jsonl whenever live and main have the same length, which is the state right after every checkpoint. checkpoint itself takes no lock.",
+   "why_it_matters": "Right after a checkpoint, a driver started with --ledger main.jsonl and another on live.jsonl both pass both checks and fork the history. The next start of any driver refuses ('not a prefix'), so one history has to be thrown away; it could be the once-only target test. A checkpoint that reads main just before a driver on main appends, and then replaces main with os.replace, sends that driver's later appends to an unlinked inode. It needs a non-default --ledger main.jsonl.",
+   "evidence": "t_guard.py: 'equal length, driver on main -> allowed'; 'lock on main while live is locked -> allowed'; after one append to each file, same_history and checkpoint both refuse.",
+   "suggested_fix": "Lock one sidecar file shared by both registered ledgers (for example ledger/.writer.lock), refuse a driver on main.jsonl whenever live.jsonl exists, and take the same lock in checkpoint."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/experiments/recursion.py",
+   "line": "96-106",
+   "what": "The consistency check on the recorded climb covers start, envs, and the incumbent and nominee of the gate. It does not check the climb's seeds, cpu_limit, objective, improver, or that a climb nominee has a gate record. A climb nominee with no gate:c<g>:climb record is silently scored as gate 0.0. An inconsistency in generation g is found only after the searches of the earlier generations have been run and recorded.",
+   "why_it_matters": "Amendment 4 requires the same seeds, budget, objective and CPU limit as the climb. recursion.py derives them again instead of checking them against the record. alternating.py always uses those same values, so nothing differs on the real ledger. This is a missing cross-check, not a wrong result.",
+   "evidence": "t_rec.py, 'tampered seeds' (climb seeds [1,2], cpu_limit 999): the result was ('done', 29) with no refusal.",
+   "suggested_fix": "Also require climb['seeds'] == seeds, climb['cpu_limit'] == reg['climb_cpu_limit'], climb.get('objective') == 'breadth', climb['improver_version'] == climb['start'], and a gate record whenever climb['nominee'] is not None. Run these checks for every generation before the first search."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/kernel/ledger.py",
+   "line": "26-32 (with guard.py 77-81)",
+   "what": "checkpoint tolerates a torn last line in live.jsonl, but Ledger() does not. A driver killed in the middle of writing a long record (c_screen, search) cannot be restarted until the line is truncated by hand.",
+   "why_it_matters": "This already happened twice: the machine was restarted twice during process c. The behaviour predates this change and the restart fails loudly, without corrupting anything.",
+   "evidence": "t_guard.py: 'torn line: checkpoint commits 4', then 'torn line: Ledger(live) fails: JSONDecodeError'.",
+   "suggested_fix": "Leave the ledger as it is, but tell the operator how to recover: truncate the one torn last line and say so when the work is reported."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/experiments/alternating.py",
+   "line": "201-207, 253",
+   "what": "When the last generation in the loop is already done, the closing log line prints the start version of that generation, not the version it adopted.",
+   "why_it_matters": "This affects the log only; the ledger records are correct. After a restart where everything is already done, the log shows a stale version.",
+   "evidence": "Code: on 'continue' (206-207), current holds the adoptions with round < g. Line 253 prints designs.digest(current).",
+   "suggested_fix": "Print the digest of the last adopt record of process c."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/experiments/external.py",
+   "line": "105-112, 125-127",
+   "what": "The amendment record and the freeze are written before the check that the adapters of tour and colouring are present. A start with a missing adapter writes these two irreversible records and then stops.",
+   "why_it_matters": "Both records are correct whatever the adapters are. The run can be finished later, and t_ext.py shows that a restart writes nothing twice.",
+   "evidence": "Code order: guard.amendment at 105 and the freeze at 108, then the REGISTRY check at 125-127.",
+   "suggested_fix": "Optionally move the adapter check before line 105."
+  }
+ ]
+}
