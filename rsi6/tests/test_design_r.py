@@ -1,5 +1,6 @@
 """Tests of design r (the discovery machinery rebuilt from the learner's own record), on synthetic
-fixtures only (tests T1 to T9 of the relay experiment's specification).
+fixtures only (tests T1 to T9 of the relay experiment's specification, and the acceptance rule
+``hard_first`` that development added).
 
     OPENBLAS_NUM_THREADS=1 python -m rsi6.tests.test_design_r
 """
@@ -12,7 +13,7 @@ import sys
 
 import numpy as np
 
-from rsi6.kernel.problem import Meter, view
+from rsi6.kernel.problem import AssignProblem, Meter, view
 from rsi6.learner import design_o as O
 from rsi6.learner import design_q as Q
 from rsi6.learner import design_r as R
@@ -21,6 +22,26 @@ from rsi6.tests.test_kernel import _Fixture, _Parts
 FIXTURES = (lambda seed, meter, ordered: _Fixture(8, 5, seed, meter, ordered),
             lambda seed, meter, ordered: _Parts(12, 3, seed, meter))
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+RANK = lambda: dict(R.default(), accept="rank")              # design q's acceptance rule
+
+
+class _ForbiddenParts(AssignProblem):
+    """Plumbing fixture with a hard group: a made-up graph whose vertices go into parts of limited size,
+    some (vertex, part) pairs forbidden; the soft cost is the number of edges between parts."""
+
+    def __init__(self, n, k, seed, meter):
+        rng = np.random.default_rng(seed)
+        upper = np.triu((rng.random((n, n)) < 0.25).astype(float), 1)
+        self.w = upper + upper.T
+        self.bad = (rng.random((n, k)) < 0.3).astype(float)
+        super().__init__(n, k, hard=[True, False], ordered=False, capacity=np.full(k, n // k), var_var=(self.w,), var_opt=(self.bad,),
+                         meter=meter)
+
+    def partial_totals(self, a):
+        placed = a >= 0
+        idx = np.flatnonzero(placed)
+        cut = self.w * placed[:, None] * placed[None, :] * (a[:, None] != a[None, :])
+        return np.array([self.bad[idx, a[idx]].sum(), cut.sum() / 2.0])
 
 
 def _run(learner, fixture, ordered, limit, memory=None, seed=3):
@@ -47,7 +68,7 @@ def test_T1_empty_memory_is_design_q_and_foreign_entries_pass():
             for limit in (30.0, 2000.0, 60000.0, 200000.0):
                 cq, _, rq, aq = _run(Q.LearnerQ(Q.default()), fixture, ordered, limit)
                 for memory in (None, {"entries": []}, {"entries": [{"kind": "other", "x": 1}]}):
-                    cr, mr, rr, ar = _run(R.LearnerR(R.default()), fixture, ordered, limit, memory)
+                    cr, mr, rr, ar = _run(R.LearnerR(RANK()), fixture, ordered, limit, memory)
                     assert json.dumps(cq, sort_keys=True) == json.dumps(cr, sort_keys=True), (ordered, limit)
                     assert aq == ar
                     for k in ("iterations", "program_rounds", "switches", "constructions", "learned"):
@@ -173,9 +194,88 @@ def test_T9_the_memory_holds_no_score_answer_or_reference():
             assert set(e) == {"kind", "v", "blocks"} and all(set(b) == {"part", "block", "fresh", "term"} for b in e["blocks"])
 
 
+def test_hard_first_fitness_is_lexicographic_over_the_batch():
+    # three candidates, four problems; keys are (hard, soft). Candidate 1 is best on three problems and
+    # breaks a hard constraint on the fourth; candidate 2 is never best and never breaks one.
+    keys = np.array([[(0, 5.0), (0, 5.0), (0, 5.0), (0, 5.0)],
+                     [(0, 1.0), (0, 1.0), (0, 1.0), (2, 0.0)],
+                     [(0, 6.0), (0, 6.0), (0, 6.0), (0, 4.0)]], dtype=float)
+    rank, hard = O._fitness(keys), R.fitness_hard_first(keys)
+    assert int(np.argmax(rank)) == 1                                   # the mean rank takes the fragile candidate
+    assert hard[1] < hard[0] and hard[1] < hard[2] and int(np.argmax(hard)) == 0
+    assert hard[0] == rank[0] and hard[2] == rank[2]                   # the clean candidates keep their mean rank
+    clean = keys.copy()
+    clean[1, 3] = (0, 0.0)
+    assert np.array_equal(R.fitness_hard_first(clean), O._fitness(clean))   # nothing broken: design o's fitness exactly
+    inf = keys.copy()
+    inf[1, 3] = (np.inf, np.inf)                                       # a construction that could not be completed
+    assert int(np.argmax(R.fitness_hard_first(inf))) == 0
+    everyone = keys.copy()
+    everyone[:, 3, 0] = (3, 1, 2)                                      # all break it there: the rank of the keys decides
+    assert np.array_equal(R.fitness_hard_first(everyone), O._fitness(everyone))
+
+
+def test_hard_first_tests_a_switch_on_every_other_problem():
+    learner = R.LearnerR(R.default())
+    calls = []
+
+    def fake(problems, indices, cands, rng, meter):
+        calls.append(list(indices))
+        keys = np.zeros((2, len(indices), 2))
+        keys[1, 0, 0] = planted                                        # the second candidate's hard total on the first problem
+        return keys
+
+    learner._rollouts_q = fake
+    report = {"constructions": 0, "vetoes": 0}
+    planted = 1.0
+    assert learner._clean_everywhere(list(range(9)), [3, 5, 7], [None, None], None, None, report) is False
+    assert report == {"constructions": 6, "vetoes": 1} and calls == [[3, 5, 7]]
+    planted = 0.0
+    assert learner._clean_everywhere(list(range(9)), [3, 5, 7], [None, None], None, None, report) is True
+    assert learner._clean_everywhere(list(range(9)), [], [None, None], None, None, report) is True and len(calls) == 2
+    rank = R.LearnerR(RANK())
+    rank._rollouts_q = fake
+    planted = 1.0
+    assert rank._clean_everywhere(list(range(9)), [3, 5, 7], [None, None], None, None, report) is True and len(calls) == 2
+
+
+def test_hard_first_on_a_fixture_with_a_hard_group():
+    """Within the meter, repeatable, the tests on every problem are exercised (some switch is refused), and
+    a capability refused at the end is the starting one. (That a refused candidate breaks more problems
+    than the one it would replace is the unit test above: this fixture's constructions depend on the
+    random stream, so a second construction cannot check it.)"""
+    vetoes, end_refusals = 0, 0
+    for seed in range(8):
+        out = []
+        for _ in range(2 if seed == 0 else 1):
+            learner = R.LearnerR(R.default())
+            meter = Meter(250000.0)
+            problems = [_ForbiddenParts(12, 3, 100 * seed + s, meter) for s in range(8)]
+            capability, memory, report = learner.acquire([view(P) for P in problems], np.random.default_rng(seed), None)
+            assert meter.used <= meter.limit + 1e-9 and "vetoes" in report
+            out.append(json.dumps([capability, memory, report["vetoes"]], sort_keys=True))
+        assert len(set(out)) == 1
+        vetoes += report["vetoes"]
+        if report["failed"] and "breaks hard constraints" in report["failed"]:
+            end_refusals += 1
+            assert capability["learned"] is False and "program" not in capability
+            assert capability["theta"] == [float(x) for x in learner.g["theta"]]
+    assert vetoes >= 3 and end_refusals >= 1, (vetoes, end_refusals)
+    rank = R.LearnerR(RANK())
+    meter = Meter(250000.0)
+    _, _, report = rank.acquire([view(_ForbiddenParts(12, 3, s, meter)) for s in range(8)], np.random.default_rng(0), None)
+    assert "vetoes" not in report
+
+
 def test_relay_settings_are_validated():
     good = R.default()
     R.validate(good)
+    try:
+        R.validate(dict(good, accept="other"))
+        raise AssertionError("accepted an unknown acceptance rule")
+    except ValueError:
+        pass
+    assert R.digest(good) != R.digest(dict(good, accept="rank")) and R.differences(good, dict(good, accept="rank"))["accept"]["to"] == "rank"
     for broken in ({"beta": 0.0}, {"kappa": 0}, {"cap": 9}, {"lib_max": 65}, {"rule": "other"}):
         bad = json.loads(json.dumps(good))
         bad["relay"].update(broken)

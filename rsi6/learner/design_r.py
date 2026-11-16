@@ -25,9 +25,23 @@ operator is ``clip(beta * ln(m / ubar), -cap, cap)``, where ``m = (U + kappa * u
 is its shrunk mean positive margin and ``ubar`` the mean over all operators (probability matching
 on the positive margin; rule ``dplus``). The edit sizes are weighted the same way.
 
+Design r also changes how the inner search judges a candidate (``accept``). Design o's batch
+fitness is the mean rank over the batch's problems: a construction that breaks a hard constraint
+is last on its problem and no worse, so a copy of the programs that wins narrowly on most
+problems and breaks a hard constraint on the others is taken. In development such programs were
+taken (4.6% of one acquisition's constructions broke a hard constraint; the programs it kept
+broke one on 3 of its 10 training problems and on 3 of 10 fresh instances, which the category
+scores 0; rsi6/results/dev_r_20261116). With ``accept: "hard_first"`` every comparison within a
+batch is lexicographic, as the cost of one problem already is: first the number of the batch's
+problems constructed without a hard violation, then the mean rank; a switch of programs, after
+its second batch, is constructed once on every other problem it learns from and is taken only
+if it breaks no more of them than the programs it replaces; and the capability kept at the end
+passes the same test against the starting programs. ``accept: "rank"`` is design q's rule.
+
 Nothing in the memory is a score on fresh instances, an answer, a reference or a category's
 name: only the learner's own ranks on training problems, operator counts and instruction
-blocks. With no entry of either kind, design r is design q's generation 0 draw for draw. The
+blocks. With no entry of either kind and ``accept: "rank"``, design r is design q's generation
+0 draw for draw. The
 entries an acquisition adds are also written into its report (``report["relay"]["new_entries"]``),
 which the kernel keeps in the run record: a chain of acquisitions is rebuilt, and replayed, from
 the ledger alone.
@@ -55,12 +69,14 @@ RELAY0 = {"beta": 1.0, "kappa": 20.0, "cap": 2.0, "lib_max": 32, "lib_per_run": 
 Q_KEYS = tuple(Q.O_KEYS) + ("inner",)
 STAT_KEYS = ("N", "U", "S", "Q", "W", "SW")
 SIZE_KEYS = ("NE", "UE", "SE", "QE")
+ACCEPT = ("hard_first", "rank")                     # the first is generation 0's rule; "rank" is design q's
 
 
 def default() -> dict:
     out = Q.default()
     out["design"] = "r"
     out["relay"] = dict(RELAY0)
+    out["accept"] = ACCEPT[0]
     return out
 
 
@@ -71,9 +87,11 @@ def q_part(version: dict) -> dict:
 
 
 def validate(version: dict) -> dict:
-    keys = set(Q_KEYS) | {"relay"}
+    keys = set(Q_KEYS) | {"relay", "accept"}
     if set(version) != keys or version.get("design") != "r":
         raise ValueError(f"a version of design r has exactly the parts {sorted(keys)}")
+    if version["accept"] not in ACCEPT:
+        raise ValueError(f"accept: one of {ACCEPT}")
     out = Q.validate(q_part(version))
     out["design"] = "r"
     r = version["relay"]
@@ -86,6 +104,7 @@ def validate(version: dict) -> dict:
         raise ValueError("relay settings out of range")
     out["relay"] = {"beta": round(beta, 6), "kappa": round(kappa, 6), "cap": round(cap, 6), "lib_max": lib_max,
                     "lib_per_run": lib_per_run, "rule": rule}
+    out["accept"] = version["accept"]
     return out
 
 
@@ -98,10 +117,22 @@ def differences(a: dict, b: dict) -> dict:
     for k in a["relay"]:
         if a["relay"][k] != b["relay"][k]:
             out[f"relay.{k}"] = {"from": a["relay"][k], "to": b["relay"][k], "function": "explore"}
+    if a["accept"] != b["accept"]:
+        out["accept"] = {"from": a["accept"], "to": b["accept"], "function": "explore"}
     return out
 
 
 SCHEMA = {}
+
+
+def fitness_hard_first(keys: np.ndarray) -> np.ndarray:
+    """The batch fitness of rule ``hard_first``: first the number of the batch's problems on which
+    the candidate's construction has no hard violation, then design o's mean rank. The candidates
+    with the largest such number keep their mean rank exactly (so a batch on which nothing breaks
+    a hard constraint is judged as design o judges it); a candidate with fewer is below them all."""
+    F = O._fitness(keys)
+    clean = (keys[:, :, 0] == 0).sum(axis=1)
+    return F - len(F) * (clean.max() - clean)
 
 
 def _canon(x) -> str:
@@ -203,6 +234,7 @@ class LearnerR(Q.LearnerQ):
         full = validate(version)
         super().__init__(q_part(full))
         self.relay = full["relay"]
+        self.accept = full["accept"]
         self._prior = None
 
     def acquire(self, problems, rng, memory=None):
@@ -282,7 +314,7 @@ class LearnerR(Q.LearnerQ):
             if np.array_equal(keys[i], keys[0]):
                 continue                                         # a tie: the variant changed nothing the batch measures
             self._counts["informative"] += 1
-            d = float((F[i] - F[0]) / (K - 1))
+            d = float(np.clip((F[i] - F[0]) / (K - 1), -1.0, 1.0))   # under hard_first a lost problem is the worst margin
             k = log["k"]
             for c in log["cells"]:
                 self._stats["N"][c] += 1.0 / k
@@ -328,10 +360,30 @@ class LearnerR(Q.LearnerQ):
                 out.append({"kind": KIND_LIB, "v": ENTRY_V, "blocks": blocks})
         return out
 
+    def _clean_everywhere(self, problems, rest, pair, rng, meter, report) -> bool:
+        """Rule ``hard_first``: the second of ``pair`` (programs and constants) is constructed once, with
+        the first, on the problems ``rest``; it passes if it breaks hard constraints on no more of
+        them than the first does. Rule ``rank`` has no such test."""
+        if self.accept != "hard_first" or not rest:
+            return True
+        keys = self._rollouts_q([problems[i] for i in rest], rest, pair, rng, meter)
+        if keys is None:
+            report["vetoes"] += 1
+            return False
+        report["constructions"] += 2 * len(rest)
+        clean = (keys[:, :, 0] == 0).sum(axis=1)
+        if clean[1] < clean[0]:
+            report["vetoes"] += 1
+            return False
+        return True
+
     def _acquire_open(self, problems, rng):
-        """Design q's ``_acquire_open`` with three insertions: the log of a program round's variants,
-        their credit after the round's fitness, and the log entry of a confirmed switch."""
+        """Design q's ``_acquire_open`` with the log of a program round's variants, their credit after
+        the round's fitness, the log entry of a confirmed switch, and, under ``accept: "hard_first"``,
+        the lexicographic batch fitness and the two tests on every problem the learner learns from."""
         g, inner = self.g, self.inner
+        hard_first = self.accept == "hard_first"
+        fitness = fitness_hard_first if hard_first else O._fitness
         meter = problems[0].meter
         n = len(problems)
         rng_order, rng_acq, rng_con = (np.random.default_rng(int(x)) for x in rng.integers(0, 2 ** 63, size=3))
@@ -346,6 +398,10 @@ class LearnerR(Q.LearnerQ):
                   "constructions": 0, "failed": None, "program_rounds": 0, "switches": 0, "program_size": None}
         reserve = 3.0 * sum(self._cost(problems[i], g["shortlist"]) for i in check)
         fit_cost = np.array([self._cost(problems[i], g["shortlist"]) for i in fit])
+        everywhere = 2.0 * float(fit_cost.sum()) if hard_first else 0.0     # two programs once on every fit problem
+        reserve += everywhere                                                # kept for the test of the capability at the end
+        if hard_first:
+            report["vetoes"] = 0
         acq = O.Acquirer(g, start, rng_acq)
         last_best = (prog, start.copy())
         it = 0
@@ -357,7 +413,7 @@ class LearnerR(Q.LearnerQ):
                 if Q.program_rounds(it, inner["share"]):
                     second = rng_order.choice(len(fit), size=batch, replace=False)
                     idx2 = [int(fit[i]) for i in second]
-                    if meter.left() - reserve < (inner["variants"] + 1) * fit_cost[chosen].sum() + 2 * fit_cost[second].sum():
+                    if meter.left() - reserve < (inner["variants"] + 1) * fit_cost[chosen].sum() + 2 * fit_cost[second].sum() + everywhere:
                         break
                     here = acq.A[0].copy()
                     self._vlog = []
@@ -367,7 +423,7 @@ class LearnerR(Q.LearnerQ):
                     keys = self._rollouts_q([problems[i] for i in idx], idx, cands, rng_con, meter)
                     if keys is None:
                         break
-                    F = O._fitness(keys)
+                    F = fitness(keys)
                     best = int(np.argmax(F))
                     report["program_rounds"] += 1
                     report["constructions"] += len(cands) * batch
@@ -379,8 +435,9 @@ class LearnerR(Q.LearnerQ):
                             self._credit(logs, keys, F, None)
                             break
                         report["constructions"] += 2 * batch
-                        F2 = O._fitness(keys2)
-                        if F2[1] > F2[0]:
+                        F2 = fitness(keys2)
+                        rest = [int(i) for i in fit if int(i) not in idx and int(i) not in idx2]
+                        if F2[1] > F2[0] and self._clean_everywhere(problems, rest, pair, rng_con, meter, report):
                             prog, theta = cands[best]
                             acq = O.Acquirer(g, theta, rng_acq)
                             last_best = (prog, theta.copy())
@@ -394,7 +451,7 @@ class LearnerR(Q.LearnerQ):
                     keys = self._rollouts_q([problems[i] for i in idx], idx, [(prog, t) for t in thetas], rng_con, meter)
                     if keys is None:
                         break
-                    F = O._fitness(keys)
+                    F = fitness(keys)
                     last_best = (prog, thetas[int(np.argmax(F))].copy())
                     acq.update(F)
                     report["constructions"] += len(thetas) * batch
@@ -417,13 +474,15 @@ class LearnerR(Q.LearnerQ):
                 if keys is None:
                     report["failed"] = "decide: no budget left for the held-back check"
                 else:
-                    f = O._fitness(keys)
+                    f = fitness(keys)
                     report["held_back"] = {k: float(f[j]) for j, k in enumerate(names)}
                     best = int(np.argmax(f))
-                    if f[best] > f[0]:
+                    if f[best] <= f[0]:
+                        report["failed"] = "self-assess: nothing learned beat the starting constants on held-back problems"
+                    elif self._clean_everywhere(problems, [int(i) for i in fit], [options["start"], options[names[best]]], rng_con, meter, report):
                         (chosen_prog, chosen_theta), learned = options[names[best]], True
                     else:
-                        report["failed"] = "self-assess: nothing learned beat the starting constants on held-back problems"
+                        report["failed"] = "self-assess: what was learned breaks hard constraints that the starting programs keep on the training problems"
             except Q.BudgetExhausted:
                 report["failed"] = "decide: the budget ended inside the held-back check"
         report["learned"] = learned
