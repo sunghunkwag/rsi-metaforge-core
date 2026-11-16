@@ -27,3 +27,4 @@ rsi6/ledger/dev_b.jsonl
 rsi6/ledger/live.jsonl
 rsi6/ledger/*.lock
 rsi6/ledger/*.checkpoint
+rsi6/ledger/*.log
