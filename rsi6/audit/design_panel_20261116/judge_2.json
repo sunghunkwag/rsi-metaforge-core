@@ -1,0 +1,120 @@
+{
+ "scores": [
+  {
+   "proposal": "statistics",
+   "power": 2,
+   "rigor": 4,
+   "novelty": 1,
+   "feasibility": 4,
+   "honesty": 5,
+   "fatal_flaws": [
+    "It is not a new mechanism in the sense of instructions 12 and 13. It only replaces design o's acceptance measurement. The recursion is design o's, unchanged, and the proposal itself expects no change of principle to be accepted ('principle cells screened between -0.040 and +0.018'). Even full success therefore gives acceptances on the source categories, not a learner that improves its own discovery.",
+    "Its forecasts of acceptances come from a mixture fitted to '4 confirmations in 29 steps', but those 4 are only 2 distinct candidates: recursive0, frozen0 and shuffled0 confirmed the same step-0 candidate, and recursive1 and frozen1 are identical. The stated components also imply a mean true effect of about -0.012 to -0.020, against the -0.0088 (SE 0.003) they were fitted to. The simulated counts (0.2, 3.4 and 5.2 per lineage) are in scripts outside the readable record, so I could not check them.",
+    "Seeds do not change instances: kernel/environment.split depends only on the environment. The race and the panel therefore re-measure the same part-A instances, and the panel removes the winner's curse from seed noise but not from instance specificity. It also drops the uniform and shuffled discovery arms, which are the randomized controls instruction 14 asks for, and it neither defines nor measures m_net or retention."
+   ],
+   "best_parts": [
+    "Correct diagnosis that knapsack carries no signal yet costs about half of every step. Allocating runs by paired noise and CPU is close to optimal: by my check, 8:3:1 is within about 4% of the optimum. The arithmetic checks out: variance x CPU goes from 0.0071 to 0.00149 (4.8x), the panel SE is 0.0015, the smallest accepted mean is 0.0039 (80% power at 0.0052), and one 36-CPU-s cycle has SE 0.0064.",
+    "A known-variance z-test at alpha 0.005 per confirmation, with a resampling null calibration and a Bonferroni bound per lineage. It says plainly that no rule on four source categories can certify transfer, and it measures transfer directly per accepted step (M3) and through rho-hat.",
+    "Correct code reading: kernel/run.py scores the training instances after cpu_apply, so the 1.15x factor for machine time over charged CPU is justified. Only new files are added, and the budget (198k to 228k counted CPU-s) fits."
+   ],
+   "justification": "Feasibility is strong: new files only, about 1,350 lines, reuse of raise_until and the cache, a budget that fits, and arithmetic I reproduced. On my lens, though, novelty is minimal (the authors say so). It is a sound measurement upgrade, not a candidate mechanism. Its own forecast is no recursion and no held-out effect (E1 not met with probability about 0.95). Its calibration is weaker than it looks: the mixture appears inconsistent with the screening mean it was fitted to, and the confirmations it was fitted on are duplicated. The likely product is a better-calibrated negative on the source categories."
+  },
+  {
+   "proposal": "generator",
+   "power": 3,
+   "rigor": 3,
+   "novelty": 2,
+   "feasibility": 3,
+   "honesty": 4,
+   "fatal_flaws": [
+    "Its quantitative case rests on three things: a true-effect sd of 0.004 per single edit, inferred from a correlation of 0.10 over 66 promoted candidates (duplicates included; 95% CI roughly -0.14 to 0.33); additivity of up to 8 edits, which is untested; and a mean per edit of about 0. The result is very sensitive to that mean. In my Monte Carlo of its own step model, a mean of -0.001 per edit cuts the pass probability at k = 8 to about 0.10, versus about 0.30 at a mean of 0 and about 0.57 at +0.001. Its analytic figures for the same cases are 0.03, 0.18 and 0.45.",
+    "It drops design o's route by which a discovered learning principle changes generation. What remains as recursion is the posterior of a human-written hierarchical Gaussian model, plus transplants, which is learning-to-search. A positive E_meta would show better statistics about the edit space, not a learner that improves its ability to discover learning principles (instruction 13).",
+    "Pooling one posterior across R's four lineages removes the replication between lineages. The plan is the heaviest on the panel for one day: about 1,450 lines with GLS over about 1,300 coefficients, a Thompson composer, structure variants and a meta stage. P5's probability of about 0.6 for E_meta goes beyond its own analysis, and m_net is not defined."
+   ],
+   "best_parts": [
+    "The most non-obvious statistical move on the panel: size candidates (macro-edits) to the measured detection limit of the acceptance rule, which is group screening. Under its own assumptions its analytic pass probabilities are conservative.",
+    "It correctly finds the shared parent-seed offset. registration_o gives every arm and lineage discovery seeds 61, 62 and 63, so every lineage screens against the same o0 run on seed 61.",
+    "It tests the generator itself on unseen categories, by one-step discovery yield on part B, against both the original generator (G0) and the same machinery without the discovered knowledge (G_R0). That endpoint is aimed directly at 'discovery improving discovery': SE 0.0019 over 24 episodes and a detectable difference of about 0.0047, both checked. D3 measures additivity and sets K_MAX by a rule written before it runs."
+   ],
+   "justification": "The novelty is moderate. The parts are familiar (empirical-Bayes surrogate, Thompson sampling, group screening), but the reason for using them, sizing candidates to the measured detection limit, is clever. The meta endpoint is the best-aimed held-out test of a generator among the five. Feasibility is the weakest after level, because of the amount of statistical code and the meta stage on categories of unknown cost. The power estimates are all analytic, rest on a single-edit effect size that the record barely supports, and swing by an order of magnitude on a per-edit mean difference of +/-0.001. The recursion is reduced to a posterior update, which the authors acknowledge."
+  },
+  {
+   "proposal": "level",
+   "power": 2,
+   "rigor": 3,
+   "novelty": 2,
+   "feasibility": 3,
+   "honesty": 4,
+   "fatal_flaws": [
+    "It is close to a repackaging of design q, which instruction 14 warns against: program search inside acquisition, which measured -0.002 against o0 over 16 runs, now at 10 times the budget with o's discoverer inside the run. The claim of '1 to 2 real' acceptances per run has no support in q's record: 15 confirmed switches in 62 program rounds gave a mean of -0.002.",
+    "Each candidate gets one round of its learning principle inside the run. One round cannot reveal a better learning dynamic, so the learning-principle part of the recursion is close to untestable by construction, and the proposal itself predicts principle changes in fewer than 20% of runs.",
+    "The in-run layout is impossible on p-median. n_train 24, a reserve of 6, then 6 screening plus 6 confirmation problems cannot fit: the seed-independent split leaves p-median 10 training instances and bin packing 20. Held-out runs at 12x budget fall on categories of unknown cost, power on E1r and E3r(b) is at most about 0.25, the pinned designs.py dispatch is needed, and m_net is not defined."
+   ],
+   "best_parts": [
+    "Each held-out run is an independent replicate of the whole recursive process. This fixes design o's held-out stage, which measures one selected mechanism per arm.",
+    "Candidates are evaluated at equal cost with common draws and judged by the answer after the improvement step, with retrospective precision as an in-run calibration. The controls (Z, K, F, R*, O@R, Q@R) map onto the directive's five comparisons.",
+    "The arithmetic checks out: 610 units per step and about 15 steps, a 30-pair adoption threshold of 0.010, and paired sd 0.0206 for q minus o0 over 28 runs (se 0.0026). It correctly notes that designs.py is pinned by registration_o."
+   ],
+   "justification": "It is the lowest-novelty mechanism of the four that propose one, being q relocated with o's discoverer, and it is the least likely to answer the question. Its own forecast puts the success condition at no better than 0.1, and learning principles are judged after a single learning round. Feasibility is middling: there is a lot of delicate machinery inside the run, the budget is 12x on fresh categories of unknown cost, and the training pools are smaller than the design assumes. The measurement framing is its strongest contribution."
+  },
+  {
+   "proposal": "unconventional",
+   "power": 3,
+   "rigor": 3,
+   "novelty": 3,
+   "feasibility": 3,
+   "honesty": 5,
+   "fatal_flaws": [
+    "It freezes the score and pick programs, so no representation or primitive can change across generations. That goes against instruction 14's requirement, and its comparison of joint evolution of representation and discovery operators cannot be made.",
+    "Everything depends on how well the simulator ranks the best of about 1,000 candidates, but the D4 gate does not measure that. D4 is a Spearman of at least 0.3 over 24 random mechanisms, with SE about 0.2, and it is dominated by detecting destructive edits. The expected-acceptance figures assume a Gaussian upper tail of real effects (sd 0.006) for which the record has no evidence: positive screeners confirmed at about +0.001, and none of the 8 edits in budget_scaling helped. The proxy also ignores the test-time local improvement that sets the real score.",
+    "Two items fail on the code or data. First, the 'independent table of 20 other problems per category' for the swap test cannot be built: the training pools are 10 instances for p-median and 20 for bin packing. Second, H1's stated power (0.90 at 0.01) ignores its own condition that the point estimate be at least 0.01. m_net is not defined."
+   ],
+   "best_parts": [
+    "The causal pathway is genuinely different from design o and design q. Learning principles are discovered inside a recorded model of the learner's own acquisition landscape. That model is refit wherever adopted principles search, so discoveries change both the generator and the evaluator, and only real kernel confirmations can adopt anything.",
+    "Selection happens in the simulator on training-pool tables and confirmation on unused seeds of fresh part-A instances, so the confirmed mean carries no winner's curse from seed or instance selection. The stronger gate is affordable, and its arithmetic checks out: SE 0.0028, smallest accepted mean 0.0065, power 0.18 to 0.99 for effects of 0.004 to 0.013.",
+    "It has a full set of controls: W-frozen, W-static, W-shuffled, a real-only arm and a swap inside the simulator. A replay-equivalence test checks the simulator, registration is gated on fidelity checks, and no pinned file changes, since every product is an ordinary design-o version."
+   ],
+   "justification": "On novelty it is the strongest of the five: a self-model as evaluator, refit by its own discoveries, is a substantively different mechanism here, though it is still surrogate-assisted meta-optimization, as the authors say. Feasibility is moderate. The simulator has to mirror _acquire_open's meter and random streams exactly, the fidelity gates may stop registration, and the swap's independent table cannot be built for two of the four categories. Its weakest point is that the decisive quantity, fidelity in the upper tail, is not what its gate measures. It also gives up representation search."
+  },
+  {
+   "proposal": "decisive",
+   "power": 3,
+   "rigor": 4,
+   "novelty": 2,
+   "feasibility": 4,
+   "honesty": 5,
+   "fatal_flaws": [
+    "The mechanism is conventional adaptive operator selection, with a human-written update by counts and sums, carried across categories. It predicts an effect of +0.002, below its detectable 0.007, so the most likely output is a well-diagnosed negative rather than a demonstration (by its own estimate, E-R1 is met with probability about 0.1).",
+    "The shuffled placebo is not free of information. A derangement of the 18 cell labels moves weight between cells that apply differently: pick edits do nothing on ordered job shop, and design q's _variant does not drop no-op variants. So E-R2 (relay minus shuffled) can pass for mechanical reasons.",
+    "Learning principles are not searched: the programs that learn theta stay fixed. m_net is not defined. The plan depends on an assumed 39 s per run on fresh categories of unknown cost, and on editing the pinned designs.py only after registration_o's stages, or working from a checkout."
+   ],
+   "best_parts": [
+    "The on-policy versus off-policy contrast is the only design on the panel that separates recursion from mere accumulation, as instruction 6.3 asks. It adds a label-shuffled placebo, a ceiling arm (frozen at 4x budget) that turns a null into a named limit, replication at the level of 32 chains, and diagnostics L1 to L5.",
+    "Every power figure reproduces: SE 0.0019, t at least 2.45, power 0.18, 0.55 and 0.88 at effects of 0.003, 0.005 and 0.007, and a futility look that stops with probability 0.69 under the null and 0.02 at 0.007. The facts it quotes check out against the record: q minus o0 paired sd 0.0206 overall and 0.029 on job shop and QAP, and 15 switches in 62 program rounds.",
+    "Its reading of the code is correct: the memory channel exists in kernel/run.py, Cache returns no memory (hence its r_memory records), the training split does not depend on the seed, and untrained answers are identical across arms, so min(change of acquired, change of gain) equals the change of acquired. It is the smallest build (about 710 lines), uses about 175k CPU-s with about 125k in reserve, and adds an alpha-spending rule across attempts."
+   ],
+   "justification": "It has the best ratio of decisiveness to cost. It is cheap and almost certain to run end-to-end in a day, it is powered for an effect of 0.007 with chain replication, and it is the only design that can tell recursive gains from accumulation. Novelty is limited, since the mechanism is a familiar hyper-heuristic and what is new is the test, and its main placebo has a flaw. On my lens (feasibility first, then novelty), its feasibility edges out the more novel self-model design, and it is the most likely to produce conclusive evidence of either sign."
+  }
+ ],
+ "ranking": [
+  "decisive",
+  "unconventional",
+  "statistics",
+  "generator",
+  "level"
+ ],
+ "errors_in_proposals": [
+  "[level] 'q with a weaker rule switched in 49 of 112 program rounds' is wrong. q_compare1.txt (first rule) has 34 switches in 50 program rounds, and q_compare2.txt (two-batch rule) has 15 in 62. 49/112 pools both rules; the weaker rule alone switched in 68% of rounds.",
+  "[level] 'Across categories, effects cancel: the mean between-category correlation is about 0' is the designs a/b fact. For design o's edits, transfer_bound.json gives noise-corrected correlations of true effects of 0.15 to 0.80 over 439 candidates, carried by harm that transfers. Effects do not cancel in o's edit space.",
+  "[level] 'Inside one category the effects are the signal: design q's in-run switches moved job shop by -0.068 to +0.035' misreads the data. These are per-run q-minus-o0 differences from q_compare2.txt, and their spread matches the paired noise: sd 0.029 over the job-shop and QAP q-o0 runs (I recomputed it), and job-shop paired sd 0.021. q's mean over all 28 runs was -0.0024, so these numbers are not evidence of signal within a category.",
+  "[level] The run layout 'train 400, n_train 24, reserve a quarter (at least 3), 6 screening + 6 confirmation of the 18 non-reserved' cannot be met. kernel/environment.split splits by published group and does not depend on the seed. p-median has 20 instances (pmed1-20, manifests/pmedian.json) in four size groups of 5; 10 go to the fresh side, leaving 10 training instances. Bin packing (binpack1-3) leaves one size class of 20. n_train 24 and the disjoint layout are impossible on p-median.",
+  "[unconventional] H1's 'power 0.90 for 0.01' is the power of its lower-bound clause only. H1 also requires W-rec minus o0@ to be at least 0.01 as a point estimate, and no category below -0.005. At a true effect of 0.01 the point estimate reaches 0.01 only about half the time, so H1's power there is at most about 0.5.",
+  "[unconventional] 'an independent table of 20 other problems per category' (swap test), and TABLE_PROBLEMS 20, cannot be met. The tables use training-pool instances only, and the seed-independent group split leaves 10 training instances for p-median and 20 for bin packing. Twenty other training problems do not exist for two of the four source categories, and p-median cannot fill even the main table.",
+  "[statistics] The mixture fit appears inconsistent. Components of 2% at -0.16 to -0.40, 10% at -0.047 and 88% at -0.008 (pessimistic) or -0.005 (central) imply a mean true effect of -0.012 to -0.020. The screening mean it was fitted to is -0.0088, with SE 0.0029 over 142 non-zero candidates (diagnose_open_discovery.txt). The fitting script is outside the readable directories, so I could not resolve this.",
+  "[statistics] (minor) '8:3:1 runs ... the Neyman allocation' does not follow from the measured numbers. With the brief's paired sds (QAP 0.039, job shop 0.021, p-median 0.006) and o0's CPU per run (about 1.8, 5.0 and 9.2 s), the Neyman ratio sd/sqrt(cpu) is about 15:5:1. 8:3:1 is within about 4% of the optimal variance x CPU, so the 4.8x efficiency claim roughly survives, but 8:3:1 is not the Neyman allocation.",
+  "[statistics and generator; also quoted by level, unconventional and decisive] '4 confirmations in 29 steps' and '+0.0089 shrinking to +0.0012' are treated as independent evidence, and they are not. diagnose_open_discovery.json shows recursive0, frozen0 and shuffled0 confirming the same step-0 candidate (screen 0.003995, promoted 0.009663; confirmed -0.008, +0.0015 and +0.0042), and recursive1 and frozen1 spending an identical 1149.049 CPU-s. The 4 confirmations are 2 distinct candidates, and about 6 of the 29 steps duplicate others. The cause: lineage k of every arm draws one random stream (experiment.make_lineages), and the recursive arm equals the frozen arm until a principle change. The statistics fit ('pessimistic matches 4/29') and the generator's F rate rest on these counts.",
+  "[generator] 'the best half of the positive ones are promoted to 2 seeds' is not what the code does. open/discovery.py line 243 promotes the top max(1, round(0.5 x 6)) = 3 of the candidates that screened above zero, not half of the positive ones.",
+  "[decisive] 'At the null rate of about 0.01 per step, a 6,000 CPU-s lineage expects about 0.1 acceptances' overstates the rate. 0.0083 to 0.0103 per step is registration_o's worst case, in which every step reaches confirmation. With the measured confirmation share (4 of 29 steps), expected false acceptances per 10-step lineage are about 0.01 to 0.015.",
+  "[decisive] (minor) 'o0 is saturated there (5 times the budget buys +0.006)': budget_scaling.json gives acquired 0.6402 to 0.6454 and gain 0.0214 to 0.0266, i.e. +0.0053."
+ ]
+}
