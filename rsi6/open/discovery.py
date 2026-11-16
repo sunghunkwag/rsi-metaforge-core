@@ -7,28 +7,42 @@ learning principle are programs) and a discoverer ``D``. ``D`` is not a fixed pr
   ``M`` an edit changes and what kind of edit it is). The distribution is a weight vector, and
   **the weights are learned by M's own learning principle**: ``D`` runs ``M``'s ``init``,
   ``propose`` and ``update`` programs over its weight vector, with the measured values of the
-  candidates it proposed as the fitness. When a step adopts a mechanism whose learning
-  principle differs, ``D`` is rebuilt on the new principle: what is discovered changes how the
-  next mechanisms are generated. (The *frozen-principle* arm keeps generation 0's principle in
-  ``D`` instead; that is the comparison that tests whether this recursion matters.)
-* It keeps a library of the instruction blocks of accepted edits, which the ``splice`` edit
-  inserts elsewhere: what was found becomes material for what is proposed.
-* Its own numbers (candidates per step, edits per candidate, the margin a candidate must clear)
-  differ between lineages and are inherited, perturbed, when a lineage replaces another.
+  candidates it proposed as the fitness. When a step adopts a mechanism, ``D``'s learner starts
+  again from its current weights on the adopted mechanism's principle: what is discovered
+  changes how the next mechanisms are generated.
+* It keeps a library of the instruction blocks of accepted edits that are live in the accepted
+  mechanism, which the ``splice`` edit inserts elsewhere.
 
-A candidate is measured by the kernel (``rsi6.kernel.run.measure`` through ``Cache``): fresh
-instances of the discovery categories after acquisition, at the registered search budget, on
-the discovery seeds. A candidate whose measured CPU exceeds the registered ratio over the
-mechanism the lineage started from is refused, so that a gain cannot come from more compute.
-The best candidate of a step is accepted only if its gain over the parent clears the margin on
-the discovery seeds and again, with the same sign, on confirmation seeds it was not selected
-on. Nothing here reads a reference, and nothing here touches a category outside the ones it is
-given.
+Arms (``mode``): ``recursive`` (as above); ``frozen`` (generation 0's principle always, restarted
+at the same moments: the only difference from ``recursive`` is which principle learns);
+``uniform`` (no learning); ``shuffled`` (generation 0's principle learning from permuted
+values: a control for the learning of the weights, not for the recursion); ``tune`` (edits of
+generation 0's constants and numbers only, drawn uniformly: a control that spends the same
+compute tuning instead of discovering).
+
+A step, all measured by the kernel (``rsi6.kernel.run.measure`` through ``Cache``) on fresh
+instances after acquisition at the registered search budget:
+
+1. *screen*: every candidate on the first discovery seed, deciding half (``part`` A);
+2. *promote*: the candidates that screened above zero, the best half, on the other discovery
+   seeds; their value is the mean paired difference from the parent on those seeds only (the
+   screen seed, on which they were selected, is left out);
+3. *confirm*: the best promoted candidate whose value clears the margin is measured with its
+   parent on the confirming half of the fresh instances (``part`` B, never selected on) with
+   seeds used for no other measurement; it is accepted if the mean paired difference is at least
+   half the margin and its one-sided z statistic over the (category, seed) pairs at least the
+   registered value, and if its CPU is within the registered ratio of the parent's on the same
+   runs and of generation 0's.
+
+Every lineage is charged the recorded CPU of every run it uses (served from the ledger or not),
+and the experiment gives every lineage the same CPU budget. Nothing here reads a reference, and
+nothing here touches a category outside the ones it is given.
 """
 from __future__ import annotations
 
 import copy
-import time
+import hashlib
+import json
 
 import numpy as np
 
@@ -37,7 +51,24 @@ from rsi6.learner import designs
 from rsi6.open import edits
 
 SEARCH_BUDGET = {"train": 40.0, "test_c": 2.0, "test_e": 1.0, "n_train": 12, "n_fresh": 24, "part": "A"}
-CPU_RATIO = 1.25
+CONFIRM_BUDGET = dict(SEARCH_BUDGET, part="B")
+CPU_RATIO = 1.25            # against generation 0, on the same seeds
+CPU_STEP = 1.10             # against the parent, on the confirmation runs
+TUNE_CELLS = [k for k, (part, _) in enumerate(edits.CELLS) if part in ("theta", "scalar")]
+
+
+def append_once(ledger, record: dict, identity) -> dict:
+    """Append a record unless one with the same identity is already there. A stopped run started
+    again replays its steps from the start (every measurement is served from the ledger, every
+    random choice repeats), and each replayed record must agree with the one it finds: a resumed
+    run checks its own history."""
+    for old in reversed(ledger.select(type=record["type"])):
+        if all(old.get(k) == record.get(k) for k in identity):
+            for k in record:
+                if k not in ("idx", "prev", "h") and json.dumps(old.get(k), sort_keys=True) != json.dumps(record[k], sort_keys=True):
+                    raise RuntimeError(f"a replayed {record['type']} record differs from the recorded one in {k!r}")
+            return old
+    return ledger.append(record)
 
 
 def softmax(x):
@@ -45,8 +76,24 @@ def softmax(x):
     return z / z.sum()
 
 
-def jobs(mechanism, envs, seeds, purpose):
-    return [{"env": e, "version": mechanism, "seed": s, "budget": SEARCH_BUDGET, "purpose": purpose} for e in envs for s in seeds]
+def principle(mechanism: dict) -> str:
+    """The identity of a learning principle: its three programs."""
+    text = json.dumps([mechanism[p] for p in ("init", "propose", "update")], separators=(",", ":"))
+    return hashlib.sha256(text.encode()).hexdigest()
+
+
+def jobs(mechanism, envs, seeds, budget, purpose):
+    return [{"env": e, "version": mechanism, "seed": s, "budget": budget, "purpose": purpose} for e in envs for s in seeds]
+
+
+def cpu_of(records) -> float:
+    return float(sum(r["cpu"]["acquire"] + r["cpu"]["apply"] for r in records))
+
+
+def paired(cand, base) -> np.ndarray:
+    """Differences of the acquired score, candidate minus base, one per (category, seed)."""
+    b = {(r["env"], r["seed"]): r["acquired"] for r in base}
+    return np.array([r["acquired"] - b[(r["env"], r["seed"])] for r in cand])
 
 
 def score_of(records) -> float:
@@ -55,68 +102,89 @@ def score_of(records) -> float:
     return float(np.mean([np.mean([r["acquired"] for r in records if r["env"] == e]) for e in envs]))
 
 
-def cpu_of(records) -> float:
-    return float(sum(r["cpu"]["acquire"] + r["cpu"]["apply"] for r in records))
-
-
 class Discoverer:
-    """The edit distribution (learned by a mechanism's learning principle), the library, the knobs."""
+    """The edit distribution (learned by a mechanism's learning principle) and the library."""
 
-    def __init__(self, principle_source: dict, rng, knobs=None, weights=None, library=None, mode="recursive"):
-        self.knobs = dict(knobs or {"kd": 4, "nedit": [0.6, 0.3, 0.1], "margin": 0.002})
+    def __init__(self, principle_source: dict, rng, knobs: dict, weights=None, library=None, mode="recursive"):
+        self.knobs = dict(knobs)
         self.library = list(library or [])
-        self.mode = mode                                    # "recursive", "frozen", "uniform", "shuffled"
+        self.mode = mode
         self.rng = rng
         self.rebuild(principle_source, np.zeros(len(edits.CELLS)) if weights is None else np.asarray(weights, float))
 
     def rebuild(self, principle_source: dict, start) -> None:
-        """Take the learning principle of ``principle_source`` to learn the weights from now on."""
-        self.source = edits.behaviour(principle_source)
-        self.principle = O.Acquirer(principle_source, np.asarray(start, float), self.rng, pop=self.knobs["kd"])
+        """Learn the weights with the principle of ``principle_source`` from now on."""
+        self.source = principle(principle_source)
+        self.learner = O.Acquirer(principle_source, np.asarray(start, float), self.rng, pop=self.knobs["kd"])
 
     def weights(self) -> np.ndarray:
-        return self.principle.A[0].copy()
+        return self.learner.A[0].copy()
 
     def propose(self) -> np.ndarray:
-        if self.mode == "uniform":
+        if self.mode in ("uniform", "tune"):
             return np.zeros((self.knobs["kd"], len(edits.CELLS)))
-        return self.principle.propose()[: self.knobs["kd"]]
+        return self.learner.propose()[: self.knobs["kd"]]
 
-    def learn(self, values) -> None:
-        if self.mode == "uniform":
-            return
+    def distribution(self, w) -> np.ndarray:
+        if self.mode == "tune":
+            p = np.zeros(len(edits.CELLS))
+            p[TUNE_CELLS] = 1.0 / len(TUNE_CELLS)
+            return p
+        return softmax(w)
+
+    def learn(self, values) -> list:
+        """Learn from the candidates' values; returns what the learner was given."""
         values = np.asarray(values, float)
-        if self.mode == "shuffled":                         # negative control: the feedback carries no information
+        if self.mode in ("uniform", "tune"):
+            return values.tolist()
+        if self.mode == "shuffled":                         # the feedback carries no information
             values = self.rng.permutation(values)
-        self.principle.update(values)
+        self.learner.update(values)
+        return values.tolist()
 
 
 class Lineage:
-    """One line of descent: a parent mechanism, its discoverer, and what it has measured."""
+    """One line of descent: a parent mechanism, its discoverer, what it has measured and spent."""
 
-    def __init__(self, name, mechanism, envs, seeds, confirm_seeds, cache, ledger, rng, mode="recursive", knobs=None,
-                 reference_cpu=None, memo=None):
-        self.name, self.envs, self.seeds, self.confirm_seeds = name, list(envs), list(seeds), list(confirm_seeds)
-        self.cache, self.ledger, self.rng = cache, ledger, rng
+    def __init__(self, name, mechanism, envs, seeds, confirm_base, cache, ledger, rng, knobs, mode="recursive", memo=None,
+                 reference=None, principle_source=None):
+        self.name, self.envs, self.seeds = name, list(envs), list(seeds)
+        self.confirm_base = int(confirm_base)               # confirmation k of this lineage uses confirm_base + 4k + (0..3)
+        self.cache, self.ledger, self.rng, self.knobs = cache, ledger, rng, dict(knobs)
         self.parent = O.validate(mechanism)
         self.start = self.parent
-        self.memo = memo if memo is not None else {}       # behaviour -> (score, cpu) on the discovery seeds
-        self.D = Discoverer(self.parent, rng, knobs=knobs, mode=mode)
-        self.steps, self.accepted = 0, []
-        self.parent_score, self.parent_cpu = self.measure(self.parent, "start")
-        self.reference_cpu = reference_cpu if reference_cpu is not None else self.parent_cpu
+        self.memo = memo if memo is not None else {}
+        # whose learning principle learns the weights in the frozen and shuffled arms (generation 0's unless the
+        # experiment assigns another, as the swap test does); the recursive arm always takes the current parent's
+        self.principle_source = principle_source if principle_source is not None else self.start
+        self.D = Discoverer(self.principle_source, rng, self.knobs, mode=mode)
+        self.steps, self.accepted, self.confirmations, self.spent = 0, [], 0, 0.0
+        self.charged = set()
         self.seen = {edits.behaviour(self.parent)}
+        self.reference = reference if reference is not None else self.parent   # generation 0, for the CPU cap
+        self.parent_records = self.records(self.parent, self.seeds, SEARCH_BUDGET, "start")
+        self.parent_score = score_of(self.parent_records)
 
-    def measure(self, mechanism, tag, seeds=None):
-        key = (edits.behaviour(mechanism), tuple(seeds or self.seeds))
+    def records(self, mechanism, seeds, budget, tag):
+        """The kernel's records of ``mechanism`` on the lineage's categories and these seeds; the
+        lineage is charged their CPU the first time it uses them."""
+        key = (edits.behaviour(mechanism), tuple(self.envs), tuple(seeds), budget.get("part"))
         if key not in self.memo:
-            records = self.cache.get(jobs(mechanism, self.envs, seeds or self.seeds, f"open:{self.name}:{tag}"))
-            self.memo[key] = (score_of(records), cpu_of(records))
+            self.memo[key] = self.cache.get(jobs(mechanism, self.envs, seeds, budget, f"open:{self.name}:{tag}"))
+        if key not in self.charged:
+            self.charged.add(key)
+            self.spent += cpu_of(self.memo[key])
         return self.memo[key]
 
+    def batch(self, mechanisms, seeds, budget, tag) -> None:
+        """Measure several mechanisms in one parallel batch (what is in the ledger is not run again)."""
+        todo = [m for m in mechanisms if (edits.behaviour(m), tuple(self.envs), tuple(seeds), budget.get("part")) not in self.memo]
+        if todo:
+            self.cache.get([j for m in todo for j in jobs(m, self.envs, seeds, budget, f"open:{self.name}:{tag}")])
+
     def _candidate(self, w):
-        p = softmax(w)
-        nedit = np.asarray(self.D.knobs["nedit"], float)
+        p = self.D.distribution(w)
+        nedit = np.asarray(self.knobs["nedit"], float)
         for _ in range(8):
             n = 1 + int(self.rng.choice(len(nedit), p=nedit / nedit.sum()))
             m, desc, cells = self.parent, [], []
@@ -134,86 +202,99 @@ class Lineage:
         return None, [], [], None
 
     def step(self) -> dict:
-        """One step: propose, measure, learn, and accept the best candidate if it holds up."""
-        before = self.parent_score
+        knobs = self.knobs
+        before, parent_digest, used_principle = self.parent_score, designs.digest(self.parent), self.D.source
         W = self.D.propose()
         cands = [self._candidate(w) for w in W]
-        fresh = [c for c in cands if c[0] is not None]
-        for m, _, _, key in fresh:
-            self.seen.add(key)
-        # one batch for every fresh candidate on the discovery seeds
-        need = [m for m, _, _, key in fresh if (key, tuple(self.seeds)) not in self.memo]
-        if need:
-            all_jobs = [j for m in need for j in jobs(m, self.envs, self.seeds, f"open:{self.name}:step{self.steps}")]
-            self.cache.get(all_jobs)
+        for c in cands:
+            if c[0] is not None:
+                self.seen.add(c[3])
+        screen, rest = self.seeds[:1], self.seeds[1:]
+        live = [c for c in cands if c[0] is not None]
+        self.batch([c[0] for c in live], screen, SEARCH_BUDGET, f"screen{self.steps}")
+        parent_screen = self.records(self.parent, screen, SEARCH_BUDGET, "screen")
+        ref_cpu = cpu_of(self.records(self.reference, self.seeds, SEARCH_BUDGET, "reference")) / len(self.seeds)   # per seed
         values, rows = [], []
         for m, desc, cells, key in cands:
             if m is None:
                 values.append(None)
-                rows.append({"key": None})
+                rows.append({"digest": None, "reason": "no new candidate"})
                 continue
-            s, cpu = self.measure(m, f"step{self.steps}")
-            ok = cpu <= CPU_RATIO * self.reference_cpu
-            values.append((s - self.parent_score) if ok else None)
-            rows.append({"key": key[:16], "edits": desc, "cells": cells, "score": s, "cpu": cpu, "cpu_ok": ok})
+            got = self.records(m, screen, SEARCH_BUDGET, f"screen{self.steps}")
+            ok = cpu_of(got) <= CPU_RATIO * ref_cpu
+            v = float(paired(got, parent_screen).mean())
+            values.append(v if ok else None)
+            rows.append({"digest": designs.digest(m), "behaviour": key[:16], "edits": desc, "cells": cells, "screen": v,
+                         "cpu_screen": cpu_of(got), "reason": None if ok else "cpu above the cap at screening"})
+        alive = sorted((k for k, v in enumerate(values) if v is not None and v > 0.0), key=lambda k: -values[k])
+        promoted = alive[: max(1, int(round(knobs["promote"] * len(cands))))] if alive else []
+        if rest and promoted:
+            self.batch([cands[k][0] for k in promoted], rest, SEARCH_BUDGET, f"promote{self.steps}")
+        parent_rest = self.records(self.parent, rest, SEARCH_BUDGET, "promote") if rest else []
+        for k in promoted:
+            got = self.records(cands[k][0], rest, SEARCH_BUDGET, f"promote{self.steps}")
+            ok = cpu_of(got) <= CPU_RATIO * ref_cpu * len(rest)
+            values[k] = float(paired(got, parent_rest).mean()) if ok else None
+            rows[k].update({"promoted": values[k], "cpu_promote": cpu_of(got),
+                            "reason": None if ok else "cpu above the cap on the other discovery seeds"})
         measured = [v for v in values if v is not None]
         floor = (min(measured) if measured else 0.0) - 0.01
-        F = np.array([floor if v is None else v for v in values])
-        self.D.learn(F)
+        # a candidate that changed nothing it was measured on wasted its measurement: a little below nothing
+        F = [floor if v is None else (v - knobs["neutral"] if v == 0.0 else v) for v in values]
+        given = self.D.learn(F)
         accepted = None
-        best = int(np.argmax(F)) if len(F) else None
-        if best is not None and values[best] is not None and values[best] >= self.D.knobs["margin"]:
+        ready = [k for k in promoted if values[k] is not None and values[k] >= knobs["margin"]]
+        if ready:
+            best = max(ready, key=lambda k: values[k])
             m = cands[best][0]
-            # confirmation on seeds used once: a candidate is never confirmed on seeds an earlier selection has seen
-            fresh_seeds = [s + 2 * self.steps for s in self.confirm_seeds]
-            s2, cpu2 = self.measure(m, f"confirm{self.steps}", seeds=fresh_seeds)
-            p2, _ = self.measure(self.parent, f"confirm{self.steps}", seeds=fresh_seeds)
-            rows[best]["confirmation"] = s2 - p2
-            if s2 - p2 > 0.0 and cpu2 <= CPU_RATIO * self.reference_cpu * len(self.confirm_seeds) / len(self.seeds):
-                accepted = self.accept(m, cands[best][1], values[best], s2 - p2)
-        record = {"type": "o_step", "lineage": self.name, "step": self.steps, "mode": self.D.mode, "parent": edits.behaviour(self.parent)[:16],
-                  "parent_score": before, "parent_score_after": self.parent_score, "candidates": rows, "accepted": accepted,
-                  "knobs": self.D.knobs,
-                  "principle_of": self.D.source[:16], "weights": [round(float(x), 4) for x in self.D.weights()],
-                  "library": len(self.D.library)}
-        self.ledger.append(record)
+            seeds = [self.confirm_base + 4 * self.confirmations + j for j in range(4)]
+            self.confirmations += 1
+            self.batch([m, self.parent], seeds, CONFIRM_BUDGET, f"confirm{self.steps}")
+            got = self.records(m, seeds, CONFIRM_BUDGET, f"confirm{self.steps}")
+            base = self.records(self.parent, seeds, CONFIRM_BUDGET, f"confirm{self.steps}")
+            d = paired(got, base)
+            sd = float(d.std(ddof=1)) if len(d) > 1 else 0.0
+            z = float(d.mean() / (sd / np.sqrt(len(d)))) if sd > 0 else (np.inf if d.mean() > 0 else 0.0)
+            ratio_parent = cpu_of(got) / max(cpu_of(base), 1e-9)
+            passed = bool(d.mean() >= 0.5 * knobs["margin"] and z >= knobs["z"] and ratio_parent <= CPU_STEP)
+            confirmation = {"seeds": seeds, "part": "B", "mean": float(d.mean()), "sd": sd, "z": z, "n": len(d),
+                            "cpu_ratio_to_parent": ratio_parent, "passed": passed}
+            rows[best]["confirmation"] = confirmation
+            if passed:
+                accepted = self.accept(m, cands[best][1], values[best], confirmation)
+        record = {"type": "o_step", "lineage": self.name, "step": self.steps, "mode": self.D.mode, "parent": parent_digest,
+                  "parent_score": before, "parent_score_after": self.parent_score, "seeds": {"screen": screen, "promote": rest},
+                  "candidates": rows, "promoted": promoted, "learner_input": given, "accepted": accepted, "knobs": knobs,
+                  "principle_used": used_principle, "principle_now": self.D.source,
+                  "weights": [round(float(x), 4) for x in self.D.weights()], "library": len(self.D.library),
+                  "spent": round(self.spent, 3)}
+        append_once(self.ledger, record, ("lineage", "step"))
         self.steps += 1
         return record
 
     def accept(self, mechanism, desc, value, confirmation) -> str:
-        key = edits.behaviour(mechanism)
+        previous = self.parent
         self.parent = mechanism
-        self.parent_score, _ = self.measure(mechanism, "accepted")
-        for info in desc:                                  # what an accepted edit inserted becomes material for later edits
-            if info.get("block") and info["part"] in edits.PROGRAMS:
-                self.D.library.append({"part": info["part"], "block": copy.deepcopy(info["block"])})
-            elif info.get("block") and info.get("target"):
-                self.D.library.append({"part": info["target"], "block": copy.deepcopy(info["block"])})
+        self.parent_records = self.records(mechanism, self.seeds, SEARCH_BUDGET, "accepted")
+        self.parent_score = score_of(self.parent_records)
+        live = {part: {json.dumps(ins) for ins in (O.live(mechanism[part]) if part in ("score", "pick") else mechanism[part])}
+                for part in edits.PROGRAMS}
+        for info in desc:                                  # what an accepted edit inserted, if still live in the accepted mechanism
+            part = info.get("target") or info["part"]
+            block = info.get("block")
+            if block and part in edits.PROGRAMS and all(json.dumps(ins) in live[part] for ins in block):
+                self.D.library.append({"part": part, "block": copy.deepcopy(block)})
         self.D.library = self.D.library[-32:]
-        if self.D.mode == "recursive":                     # the adopted learning principle learns the discoverer's weights from now on
+        if self.D.mode == "recursive":                     # the adopted principle learns the discoverer's weights from now on
             self.D.rebuild(mechanism, self.D.weights())
-        self.accepted.append({"step": self.steps, "key": key[:16], "value": value, "confirmation": confirmation})
-        self.ledger.append({"type": "o_accept", "lineage": self.name, "step": self.steps, "key": key, "mechanism": mechanism,
-                            "digest": designs.digest(mechanism), "value": value, "confirmation": confirmation,
-                            "edits": desc, "differences": designs.differences(self.start, mechanism)})
-        return key[:16]
-
-
-def migrate(lineages, rng, ledger) -> None:
-    """The lineage whose parent scores lowest takes over the best one's mechanism, library and
-    weights, and inherits its discoverer's numbers, perturbed: discoverers are selected by what
-    their lineages find."""
-    order = sorted(lineages, key=lambda L: L.parent_score)
-    worst, best = order[0], order[-1]
-    if worst is best or best.parent_score <= worst.parent_score:
-        return
-    knobs = copy.deepcopy(best.D.knobs)
-    knobs["kd"] = int(np.clip(knobs["kd"] + rng.choice([-1, 0, 1]), 2, 8))
-    knobs["margin"] = float(np.clip(knobs["margin"] * float(np.exp(rng.normal(0.0, 0.3))), 0.0005, 0.02))
-    nedit = np.clip(np.asarray(knobs["nedit"], float) * np.exp(rng.normal(0.0, 0.3, len(knobs["nedit"]))), 0.02, None)
-    knobs["nedit"] = [round(float(x), 4) for x in nedit / nedit.sum()]
-    worst.parent, worst.parent_score = best.parent, best.parent_score
-    worst.D = Discoverer(best.parent if best.D.mode == "recursive" else worst.start, rng, knobs=knobs, weights=best.D.weights(),
-                         library=best.D.library, mode=best.D.mode)
-    worst.seen |= best.seen
-    ledger.append({"type": "o_migrate", "from": best.name, "to": worst.name, "knobs": knobs, "score": best.parent_score})
+        elif self.D.mode in ("frozen", "shuffled"):        # the assigned principle, restarted at the same moment
+            self.D.rebuild(self.principle_source, self.D.weights())
+        digest = designs.digest(mechanism)
+        changed = principle(mechanism) != principle(self.start)
+        self.accepted.append({"step": self.steps, "digest": digest, "value": value, "confirmation": confirmation["mean"],
+                              "principle_changed": changed})
+        append_once(self.ledger, {"type": "o_accept", "lineage": self.name, "step": self.steps, "mode": self.D.mode,
+                                  "parent": designs.digest(previous), "digest": digest, "mechanism": mechanism, "value": value,
+                                  "confirmation": confirmation, "edits": desc, "principle_changed": changed,
+                                  "differences": designs.differences(self.start, mechanism)}, ("lineage", "step"))
+        return digest

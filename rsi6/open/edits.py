@@ -1,5 +1,11 @@
 """Edits of a mechanism of the open design: generic changes of its programs and constants.
 
+The growth edits (``term``, ``cross``, theta ``grow``) add a constant whose starting value makes
+the new instruction a no-op (a term times zero, a register times one or plus zero) and read no
+noise: before learning the policy is unchanged, and the learning principle's draws for the
+existing constants are unchanged too (``design_o`` draws noise per coordinate). Learning then
+has one more direction.
+
 An edit knows the syntax of the machine and nothing else: it inserts, deletes, replaces or
 changes instructions, swaps two, splices a block from a library, perturbs or adds a constant,
 or changes one of the mechanism's numbers. Which edits are drawn, and how often, is decided by
@@ -114,9 +120,10 @@ def apply_edit(mechanism: dict, cell, library: list, rng) -> tuple:
                 return None, "no room for a constant"
             r = int(rng.integers(1, nreg))
             r2 = 1 + (r % (nreg - 1))
-            block = [["load", r, int(rng.integers(len(sensors))), int(rng.integers(O.SENSOR_ARGS))]]
+            quiet = [k for k, name in enumerate(sensors) if name != "noise"]     # a new term draws no noise
+            block = [["load", r, int(rng.choice(quiet)), int(rng.integers(O.SENSOR_ARGS))]]
             if kind == "cross":
-                block += [["load", r2, int(rng.integers(len(sensors))), int(rng.integers(O.SENSOR_ARGS))], ["mul", r, r, r2]]
+                block += [["load", r2, int(rng.choice(quiet)), int(rng.integers(O.SENSOR_ARGS))], ["mul", r, r, r2]]
             block += [[str(rng.choice(["mm", "rank", "z"])), r, r, 0], ["scale", r, r, n_theta], ["add", 0, 0, r]]
             if len(prog) + len(block) > limit:
                 return None, "full"
@@ -159,16 +166,17 @@ def apply_edit(mechanism: dict, cell, library: list, rng) -> tuple:
         if kind == "perturb":
             k = int(rng.integers(n_theta))
             g["theta"][k] = float(np.clip(g["theta"][k] + rng.normal(0.0, max(1.0, abs(g["theta"][k])) * 0.5), -50.0, 50.0))
-        else:                                                   # grow: a new constant, read by a new instruction
+        else:                                                   # grow: a new constant that changes nothing until it is learned
             if n_theta >= O.LIMITS["theta"]:
                 return None, "no room for a constant"
-            g["theta"].append(float(rng.normal(0.0, 1.0)))
             target = str(rng.choice(["score", "pick"]))
             if len(g[target]) >= O.LIMITS[target]:
                 return None, "full"
             nreg = O.N_REG if target == "score" else O.N_PREG
-            ins = [str(rng.choice(["scale", "shift"])), 0, int(rng.integers(nreg)), n_theta] if rng.random() < 0.5 else \
-                ["const", int(rng.integers(nreg)), 0, n_theta]
+            r = int(rng.integers(nreg))
+            op = str(rng.choice(["scale", "shift"]))
+            g["theta"].append(1.0 if op == "scale" else 0.0)         # times one, or plus zero, at the start
+            ins = [op, r, r, n_theta]
             g[target].insert(int(rng.integers(len(g[target]) + 1)), ins)
             info["block"] = [ins]
             info["target"] = target
@@ -185,14 +193,12 @@ def apply_edit(mechanism: dict, cell, library: list, rng) -> tuple:
 
 
 def effective(mechanism: dict) -> dict:
-    """The mechanism with the dead instructions of ``score`` and ``pick`` removed (they are never
-    run, see ``design_o.live``) and the values of constants that no live instruction reads set
-    to zero (their number still matters: it is the dimension the learning principle searches)."""
+    """The mechanism with the dead instructions of ``score`` and ``pick`` removed: they are never
+    run (``design_o.live``). Every constant keeps its value, read or not: the learning principle
+    starts from all of them and can mix them (``mean``, ``norm``)."""
     g = copy.deepcopy(mechanism)
     for part in ("score", "pick"):
         g[part] = O.live(g[part])
-    used = {ins[3] for part in ("score", "pick") for ins in g[part] if ins[0] in O.PARAM + ("const",)}
-    g["theta"] = [x if k in used else 0.0 for k, x in enumerate(g["theta"])]
     return g
 
 

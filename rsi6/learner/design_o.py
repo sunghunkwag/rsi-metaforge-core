@@ -35,10 +35,26 @@ After the budget the learner compares, on held-back training problems, its start
 its state register 0 and the best vector of its last population, and keeps the best; on a tie
 it keeps the start.
 
+Random streams are kept apart: the order and the batches of the training problems, the
+learning principle and the constructions each draw from their own stream, and population noise
+is drawn for every coordinate the machine allows and then cut to the constants in use, so that
+an edit which adds a constant leaves the draws of the existing ones unchanged.
+
 Contract and interface are those of the other designs. The prediction form is answered by the
 first design's predictor, unchanged: this design opens the assignment form only, and says so.
 The answer at test time is a construction followed by the first design's local improvement
-with its default settings, so that what differs between designs is what acquisition produced.
+with its default settings.
+
+Generation 0 is not the first design in another machine. It is a reduced linear prior (ten
+constants over the soft and hard changes, usage, the first option-option, variable-option and
+variable-variable relations and the first variable attribute) with cross-entropy search, and it
+differs from the first design's generation 0 in several ways that matter for any comparison of
+the two: one variable is scored per step where the first design scores four (so a construction
+costs about a quarter of the units and acquisition gets about four times the rounds from the
+same budget); the step sizes have a floor of 0.1 (0.02 there); three vectors are compared on
+held-back problems (two there); the hard change is scaled by its range (by its largest value
+there); and it has none of the first design's per-group, remaining-relation, occupancy and
+option-sum terms. A comparison with the first design is therefore made at matched CPU.
 """
 from __future__ import annotations
 
@@ -52,6 +68,10 @@ from rsi6.learner import version as design_a
 from rsi6.learner.learner import Learner, _finish_arbitrarily, _key
 
 TINY = 1e-9
+
+
+class Infeasible(Exception):
+    """A partial answer that no option can extend (possible only on problems with domains)."""
 N_REG, N_PREG, N_AREG, N_WREG = 8, 4, 8, 4                  # score, pick, acquirer and fitness registers
 LIMITS = {"score": 48, "pick": 24, "init": 8, "propose": 16, "update": 24, "theta": 32}
 CONST = (-2.0, -1.0, -0.5, -0.1, 0.0, 0.1, 0.25, 0.5, 0.9, 1.0, 1.1, 1.5, 2.0, 4.0)
@@ -84,10 +104,10 @@ SELECT = ("best_of_3", "state", "last_best")
 # the version record
 # =============================================================================================
 def default() -> dict:
-    """Generation 0 of the open design: a linear policy over a few sensors (the first design's
-    prior, in this machine) and cross-entropy search as its learning principle (the first
-    design's default, in this machine). Every part is ordinary code of the machine and can be
-    rewritten."""
+    """Generation 0 of the open design: a linear policy over a few sensors, starting from the
+    first design's prior weights, and cross-entropy search as its learning principle (see the
+    module text for how it differs from the first design). Every part is ordinary code of the
+    machine and can be rewritten."""
     score = [
         ["load", 1, 0, 0], ["mm", 1, 1, 0], ["scale", 0, 1, 0],          # theta0 * dsoft (scaled to [0, 1])
         ["load", 2, 1, 0], ["step", 3, 2, 0], ["scale", 3, 3, 1],         # theta1 * (a new violation)
@@ -484,11 +504,14 @@ def construct(P, sensors: Sensors, genome: dict, theta, rng, shortlist: int, hol
             o = int(np.argmax(value))
             if best is None or value[o] > best[0]:
                 best = (value[o], int(v), o)
-        if best is None:                                       # no option left for any shortlisted variable
-            v = int(short[0])
-            ok = allowed if P.domain is None else allowed & P.domain[v]
-            o = int(np.flatnonzero(ok)[0]) if ok.any() else int(np.flatnonzero(allowed)[0])
-            best = (0.0, v, o)
+        if best is None:                                       # no option left for any shortlisted variable: take any feasible pair
+            for v in U:
+                ok = allowed if P.domain is None else allowed & P.domain[int(v)]
+                if ok.any():
+                    best = (0.0, int(v), int(np.flatnonzero(ok)[0]))
+                    break
+            if best is None:
+                raise Infeasible("no unassigned variable has an option left")
         _, v, o = best
         P.assign(s, v, o)
         sensors.assigned(s, v, o)
@@ -499,6 +522,14 @@ def construct(P, sensors: Sensors, genome: dict, theta, rng, shortlist: int, hol
 # =============================================================================================
 # the acquirer machine
 # =============================================================================================
+def _draw(rng, kind, rows, d):
+    """Noise for ``rows`` vectors of the ``d`` constants in use, drawn for every coordinate the
+    machine allows and cut: adding a constant leaves the draws of the others as they were."""
+    shape = (rows, max(LIMITS["theta"], d))        # the discoverer's weight vectors are longer than any theta
+    block = rng.standard_normal(shape) if kind == "normal" else rng.uniform(-1.0, 1.0, shape)
+    return block[:, :d]
+
+
 def _avec(op, x, y, c, d, rng):
     if op == "copy":
         return x.copy()
@@ -534,9 +565,9 @@ def _avec(op, x, y, c, d, rng):
     if op == "floor":
         return np.maximum(x, abs(CONST[c]))
     if op == "noise":
-        return rng.standard_normal(d)
+        return _draw(rng, "normal", 1, d)[0]
     if op == "unif":
-        return rng.uniform(-1.0, 1.0, d)
+        return _draw(rng, "uniform", 1, d)[0]
     if op == "zero":
         return np.zeros(d)
     return np.ones(d)                                          # ones
@@ -595,12 +626,12 @@ class Acquirer:
         for op, dst, a, b in program:
             if op in POP_OPS:
                 if op == "rows":
-                    self.C = A[a][None, :] + A[b][None, :] * self.rng.standard_normal((K, d))
+                    self.C = A[a][None, :] + A[b][None, :] * _draw(self.rng, "normal", K, d)
                 elif op == "rowu":
-                    self.C = A[a][None, :] + A[b][None, :] * self.rng.uniform(-1.0, 1.0, (K, d))
+                    self.C = A[a][None, :] + A[b][None, :] * _draw(self.rng, "uniform", K, d)
                 elif op == "anti":
                     half = (K + 1) // 2
-                    eps = self.rng.standard_normal((half, d))
+                    eps = _draw(self.rng, "normal", half, d)
                     self.C = np.concatenate([A[a] + A[b] * eps, A[a] - A[b] * eps])[:K]
                 else:                                           # row
                     self.C[dst % K] = A[a]
@@ -678,8 +709,11 @@ class OpenLearner(Learner):
         for c, theta in enumerate(thetas):
             compiled = (compile_vector_program(self.g["score"], theta), compile_vector_program(self.g["pick"], theta, N_PREG))
             for i, (P, sen) in enumerate(zip(problems, sensors)):
-                totals, _ = construct(P, sen, self.g, theta, rng, self.g["shortlist"], compiled=compiled)
-                keys[c, i] = _key(totals, P)
+                try:
+                    totals, _ = construct(P, sen, self.g, theta, rng, self.g["shortlist"], compiled=compiled)
+                    keys[c, i] = _key(totals, P)
+                except Infeasible:
+                    keys[c, i] = (np.inf, np.inf)
         return keys
 
     def _acquire_open(self, problems, rng):
@@ -687,24 +721,25 @@ class OpenLearner(Learner):
         meter = problems[0].meter
         sensors = [Sensors(P, g) for P in problems]
         n = len(problems)
-        order = rng.permutation(n)
-        n_check = min(max(1, int(round(g["holdback"] * n))), n - 1) if n > 1 else 0
+        rng_order, rng_acq, rng_con = (np.random.default_rng(int(x)) for x in rng.integers(0, 2 ** 63, size=3))
+        order = rng_order.permutation(n)
+        n_check = (min(max(1, int(round(g["holdback"] * n))), n - 1) if n > 1 else 0) if g["select"] == "best_of_3" else 0
         check, fit = order[:n_check], order[n_check:]
         start = np.array(g["theta"], dtype=float)
         report = {"form": "assign", "design": "o", "fit": len(fit), "held_back": len(check), "iterations": 0,
                   "constructions": 0, "failed": None}
         reserve = 3.0 * sum(self._cost(problems[i], g["shortlist"]) for i in check)
         fit_cost = np.array([self._cost(problems[i], g["shortlist"]) for i in fit])
-        acq = Acquirer(g, start, rng)
+        acq = Acquirer(g, start, rng_acq)
         last_best = start.copy()
         try:
             while len(fit) > 0:
                 batch = min(g["batch"], len(fit))
-                chosen = rng.choice(len(fit), size=batch, replace=False)
+                chosen = rng_order.choice(len(fit), size=batch, replace=False)
                 if meter.left() - reserve < acq.K * fit_cost[chosen].sum():
                     break
                 cands = acq.propose()
-                keys = self._rollouts([problems[fit[i]] for i in chosen], [sensors[fit[i]] for i in chosen], cands, rng, meter)
+                keys = self._rollouts([problems[fit[i]] for i in chosen], [sensors[fit[i]] for i in chosen], cands, rng_con, meter)
                 if keys is None:
                     break
                 F = _fitness(keys)
@@ -718,13 +753,14 @@ class OpenLearner(Learner):
         options = {"start": start, "state": acq.A[0].copy(), "last_best": last_best}
         if report["iterations"] == 0:
             report["failed"] = report["failed"] or "decide: the budget did not allow one round of learning"
-        elif n_check == 0 or g["select"] != "best_of_3":
+        elif n_check == 0:                                     # no check: the selection rule names the vector
             chosen_theta, learned = options[g["select"] if g["select"] != "best_of_3" else "state"], True
+            report["held_back"] = 0
         else:
             names = ["start", "state", "last_best"]
             try:
                 keys = self._rollouts([problems[i] for i in check], [sensors[i] for i in check],
-                                      np.stack([options[k] for k in names]), rng, meter)
+                                      np.stack([options[k] for k in names]), rng_con, meter)
                 if keys is None:
                     report["failed"] = "decide: no budget left for the held-back check"
                 else:
@@ -761,6 +797,6 @@ class OpenLearner(Learner):
         hold = []
         try:
             totals, answer = construct(P, Sensors(P, self.g), self.g, theta, rng, shortlist, hold=hold)
-        except BudgetExhausted:
+        except (BudgetExhausted, Infeasible):
             return _finish_arbitrarily(P, hold[0] if hold else None)
         return self._improve(None, P, rng, answer, _key(totals, P))

@@ -1,0 +1,194 @@
+{
+ "what": "amendment 5: the open design of the learner, whose representation and learning principle are programs, and the discovery of its mechanisms by a discoverer that the discovered mechanisms change",
+ "registered_utc": "2026-11-16T06:36:29Z",
+ "why": "the Owner's instructions 11 to 13: the principles of learning, representation, exploration and mechanism discovery as mutable objects; each discovered mechanism allowed to alter how later mechanisms are generated, evaluated and improved; held-out tasks, strong baselines, negative controls",
+ "design": "o",
+ "generation_0": {
+  "version_digest": "765e0e601c9abc8afee847cc91dd590a9294d1dbe06d3cae75cd5940b62a42c0",
+  "files": {
+   "rsi6/learner/design_o.py": "2d437d065b3e322425c5a9419d1f2e74c3d6ed58571804a127245905bb5c0c65",
+   "rsi6/learner/designs.py": "7d47aa5b96b25517de625f7bf1b3de486db1705f097595a2782164e0806d8086",
+   "rsi6/open/edits.py": "8ccba4e5ecb4e66e267dd0d2d88e8b564a7a0a6fdd1c58db758f0fe0dd6270dd",
+   "rsi6/open/discovery.py": "6a918a698e398c34862063941c9bd60207738b3a829a0b004bcc82c2e0345752",
+   "rsi6/open/experiment.py": "b0a8effc709feb8de071ad01fdd7825bfc79f5a64fc8617ba84b99ec1f1b055c",
+   "rsi6/open/evaluate.py": "40b959102899fb9b5514f0203cbc64529a9bc4d235166f85860e9ae2629dfd50",
+   "rsi6/open/report.py": "98f6ee1ce0887efcf50410d485752fe912577764246a7f0470c75bff28936a9c",
+   "rsi6/kernel/run.py": "e9baa6f0d177ad4707e1cbd6fcdd3647642a7f0d907432d521b6336517c81260",
+   "rsi6/kernel/problem.py": "1b74f1af5bab5a20caac0b1d2a5fc21f07d074bd702a86f8e6c47d4943ab28c5"
+  }
+ },
+ "discovery": [
+  "jobshop",
+  "knapsack",
+  "pmedian",
+  "quadassign"
+ ],
+ "heldout": [
+  "binpacking",
+  "partitioning",
+  "setcover"
+ ],
+ "heldout_later": {
+  "categories": [
+   "colouring",
+   "facility",
+   "genassign",
+   "routing",
+   "satisfiability",
+   "tour"
+  ],
+  "when": "after the sealed target test of the earlier processes has run on them; no run of the open design touches them before",
+  "seeds": [
+   8001,
+   8002,
+   8003,
+   8004,
+   8005,
+   8006,
+   8007,
+   8008
+  ]
+ },
+ "arms": [
+  "recursive",
+  "frozen",
+  "uniform",
+  "shuffled",
+  "tune"
+ ],
+ "arms_meaning": {
+  "recursive": "the discoverer's weights over the edit cells are learned by the current parent's own learning principle (its init, propose and update programs), restarted on every accepted mechanism",
+  "frozen": "the same, always with generation 0's learning principle, restarted at the same moments",
+  "uniform": "no learning: edits drawn uniformly (control for the learning of the discoverer)",
+  "shuffled": "generation 0's principle learning from the candidates' values permuted at random (control: the feedback carries no information)",
+  "tune": "edits of generation 0's constants and numbers only, drawn uniformly (control: the same compute spent tuning instead of discovering programs)"
+ },
+ "lineages": 2,
+ "cpu_per_lineage": 6000.0,
+ "cpu_rule": "every lineage is charged the recorded CPU of every run it uses and stops after the step that reaches cpu_per_lineage; a candidate above cpu_ratio times generation 0's CPU on the same seeds is refused at screening and on the other discovery seeds; a confirmed candidate must also stay within 1.10 times its parent's CPU on the confirmation runs",
+ "seed": 5,
+ "knobs": {
+  "kd": 6,
+  "nedit": [
+   0.6,
+   0.3,
+   0.1
+  ],
+  "margin": 0.005,
+  "promote": 0.5,
+  "neutral": 0.005,
+  "z": 1.64
+ },
+ "seeds": {
+  "discovery": [
+   1,
+   2,
+   3
+  ],
+  "confirm_base": 10000,
+  "selection": [
+   20001,
+   20002,
+   20003,
+   20004
+  ],
+  "swap_base": 30000,
+  "swap_confirm_base": 40000,
+  "swap_assess": [
+   50001,
+   50002,
+   50003,
+   50004
+  ],
+  "heldout": [
+   7001,
+   7002,
+   7003,
+   7004,
+   7005,
+   7006
+  ]
+ },
+ "steps_rule": "screen every candidate on the first discovery seed, deciding half of the fresh instances; promote those above zero, the best half, to the other discovery seeds, whose paired mean difference from the parent is their value; confirm the best whose value is at least the margin on the confirming half of the fresh instances (never selected on) with four seeds used once (confirm_base + 1000 * arm + 100 * lineage + 4 * k + j); accept if the paired mean difference over the 16 (category, seed) pairs is at least half the margin and its one-sided z at least knobs.z",
+ "swap": {
+  "replicates": 3,
+  "cpu": 2500.0,
+  "threshold": 0.005,
+  "rule": "only if the selected final mechanism of the recursive arm has a learning principle other than generation 0's: replicates of discovery from generation 0, in pairs on the same seeds, one with the weights learned by that principle and one by generation 0's (both restarted on acceptance on their assigned principle), each until it has used swap.cpu; each final parent is then measured on the confirming half of the discovery categories with swap_assess seeds against generation 0"
+ },
+ "budgets": {
+  "search": {
+   "train": 40.0,
+   "test_c": 2.0,
+   "test_e": 1.0,
+   "n_train": 12,
+   "n_fresh": 24,
+   "part": "A"
+  },
+  "confirm": {
+   "train": 40.0,
+   "test_c": 2.0,
+   "test_e": 1.0,
+   "n_train": 12,
+   "n_fresh": 24,
+   "part": "B"
+  },
+  "run": {
+   "train": 40.0,
+   "test_c": 2.0,
+   "test_e": 1.0,
+   "n_train": 16,
+   "n_fresh": 24
+  }
+ },
+ "cpu_ratio": 1.25,
+ "selection_of_final": "the final mechanism of an arm is the last parent of the lineage with the higher score on the confirming half of the discovery categories with the selection seeds; the held-out categories play no part in the choice",
+ "matching": "o0 and a0 with their training budgets raised until their CPU reaches that of the recursive arm's final mechanism, pair by pair, by the schedule of amendment 4 reading (d); a comparison with a control that did not reach the CPU in every pair, or that received less CPU than the arm in any pair, is void",
+ "statistic": "the smaller of the mean changes of the acquired score and of the gain (means over seeds within a category, then over categories), with a 95% bootstrap interval resampling categories and seeds; with three held-out categories this interval is close to requiring all three categories to agree, and the sign of every category is reported beside it; acquired, untrained and gain are reported separately",
+ "endpoints": {
+  "E1": "held-out: recursive minus o0@recursive at least 0.01 with an interval excluding zero, not void",
+  "E2": "held-out: recursive minus uniform, minus shuffled and minus tune, reported with their intervals (the learning of the discoverer against none, against noise, and against tuning)",
+  "E3": "the recursion: (a) the recursive arm accepted at least one mechanism with a learning principle other than generation 0's and its selected final has one (otherwise the swap test is empty and E3 fails as not exercised); (b) held-out: recursive minus frozen above zero; (c) the swap test: the mean over replicates of discovered minus generation 0 at least swap.threshold",
+  "comparison_a0": "held-out: recursive minus a0@recursive, reported (the first design, given the same CPU)"
+ },
+ "success": "recursive improvement of discovery is reported as observed only if E1, E3(a), E3(b) and E3(c) all hold. Anything less is reported as what it is",
+ "predictions": [
+  {
+   "id": "O1",
+   "text": "every lineage of the recursive arm accepts at least one mechanism in discovery",
+   "criterion": "accepted >= 1 for both recursive lineages"
+  },
+  {
+   "id": "O2",
+   "text": "E1 is not met",
+   "criterion": "recursive minus o0@recursive: void, or below 0.01, or an interval that includes zero"
+  },
+  {
+   "id": "O3",
+   "text": "the learned discoverer shows no advantage over uniform edits on the held-out categories",
+   "criterion": "recursive minus uniform: the interval includes zero"
+  },
+  {
+   "id": "O4",
+   "text": "the recursive arm accepts at least one change of the learning principle",
+   "criterion": "principle changes >= 1 over the recursive lineages"
+  },
+  {
+   "id": "O5",
+   "text": "the swap test shows no advantage of a discovered principle",
+   "criterion": "not exercised, or mean difference below swap.threshold"
+  }
+ ],
+ "development": "on source categories only, on scratch ledgers: smoke runs of generation 0 of both designs on seven pool categories with seed 11 (the experimenter has seen these, the three held-out categories included); development runs of discovery on the four discovery categories; an independent review of the code (audit/review_open_20261116) whose findings were acted on before this registration. No run of the open design on a target or a reserve",
+ "what_cannot_be_removed": [
+  "the fresh instances of a category do not depend on the seed: every held-out seed scores the same fresh instances, and generation 0 of both designs was measured on those of the held-out categories in the smoke runs and, for the first design, in the earlier processes",
+  "generation 0 of the open design starts from the first design's prior weights, and the first design was developed on bin packing and gated on partitioning and set covering",
+  "the instruction set, the sensors and the edit space were written by the experimenter, after the smoke runs"
+ ],
+ "not_claimed": [
+  "that the instruction set is free of human design: what discovery finds is a composition of its instructions",
+  "that generation 0 of the open design is a product of discovery",
+  "anything about the prediction form, which this design does not open",
+  "anything about artificial general intelligence"
+ ]
+}

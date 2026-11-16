@@ -1,0 +1,11 @@
+{
+ "amendment": 5,
+ "utc": "2026-11-16T06:36:29Z",
+ "after": "process c paused in its generation 2 (it resumes after this experiment, under its own registration); before any registered run of the open design",
+ "decisions": [
+  "The open design (rsi6/learner/design_o.py) and the discovery of its mechanisms (rsi6/open/) are registered in rsi6/registry/registration_o.json and run by rsi6/open/experiment.py on the working ledger, stage by stage: discovery, transplant, held-out.",
+  "The open design runs only on categories of the source pool until the sealed target test of the earlier processes has run. Its later held-out stage on the six categories of that test is registered now, with its seeds.",
+  "Process c is not changed. It is stopped while the open experiment runs, because two drivers do not write one ledger, and started again afterwards; every one of its measurements is served from the ledger on the restart."
+ ],
+ "registration_o_sha256": "e4e999432bb326fc45e605eb83665b7a715cde2bc57cc58494dc7bc0c8f5b5a8"
+}

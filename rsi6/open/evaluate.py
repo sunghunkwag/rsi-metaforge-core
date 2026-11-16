@@ -23,6 +23,7 @@ import os
 import shutil
 import sys
 import time
+import zlib
 
 os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
 os.environ.setdefault("OMP_NUM_THREADS", "1")
@@ -52,31 +53,68 @@ def runs(cache, version, envs, seeds, purpose, budget=RUN_BUDGET):
     return cache.get([{"env": e, "version": version, "seed": s, "budget": budget, "purpose": purpose} for e in envs for s in seeds])
 
 
-def matched(cache, version, want: dict, purpose, levels=8):
-    """``version`` with its training budget raised, pair by pair, until its CPU reaches ``want``."""
-    value, last = {pair: RUN_BUDGET["train"] for pair in want}, {}
+def raise_until(cache, version, want: dict, purpose, budget=RUN_BUDGET) -> list:
+    """``version`` with its training budget raised, pair by pair, until its measured CPU reaches
+    ``want`` (the schedule of amendment 4, reading d, as in ``experiments/targets.py``): doubled
+    at first, then by the factor that the measured CPU of the last two levels says is needed with
+    a tenth to spare, at least 2 and at most 64 per level, 64 when the CPU did not rise, at most
+    twelve levels counting the registered budget as the first. A pair still below its CPU after
+    the last level is marked not reached; a comparison with it is void."""
+    value = {pair: budget["train"] for pair in want}
+    last, seen = {}, {pair: [] for pair in want}
     pending = list(want)
-    for _ in range(levels):
+    for _ in range(12):
         if not pending:
             break
-        got = cache.get([{"env": e, "version": version, "seed": s, "budget": dict(RUN_BUDGET, train=value[(e, s)]), "purpose": purpose}
+        got = cache.get([{"env": e, "version": version, "seed": s, "budget": dict(budget, train=value[(e, s)]), "purpose": purpose}
                          for e, s in pending])
         for pair, r in zip(pending, got):
             last[pair] = r
-            value[pair] *= 2.0
+            seen[pair].append((value[pair], cpu(r)))
+            factor = 2.0
+            if len(seen[pair]) >= 2:
+                (v1, c1), (v2, c2) = seen[pair][-2:]
+                slope = (c2 - c1) / (v2 - v1)
+                factor = 64.0 if slope <= 0 else min(64.0, max(2.0, (v2 + (1.1 * want[pair] - c2) / slope) / v2))
+            value[pair] *= factor
         pending = [p for p in pending if cpu(last[p]) < want[p]]
-    return [dict(last[p], reached=cpu(last[p]) >= want[p]) for p in want]
+    return [dict(last[p], reached=cpu(last[p]) >= want[p], levels=len(seen[p]), matched_cpu=want[p]) for p in want]
 
 
-def compare(arm, base, rng) -> dict:
-    acquired, gain = {}, {}
-    for env in sorted({r["env"] for r in base}):
+def matched(cache, version, want: dict, purpose, levels=12):
+    """The development name of ``raise_until``."""
+    return raise_until(cache, version, want, purpose)
+
+
+def compare(arm, base, rng=None, name="", control=False) -> dict:
+    """``arm`` minus ``base``, paired by category and seed: the registered statistic with its
+    interval, the acquired score, the untrained score and the gain separately, the sign of every
+    category, and the CPU of the pairs. When ``base`` is a control (``control=True``) the
+    comparison is ``void`` if the control received less CPU than the arm in any pair or did not
+    reach its matched CPU (registration.json, failure conditions): a void comparison is reported
+    as such, not as evidence. Between two arms of discovery, which had equal discovery CPU and the
+    same cap, the CPU ratio is reported and nothing is voided."""
+    rng = rng if rng is not None else np.random.default_rng(zlib.crc32(name.encode()))
+    cells = {(r["env"], r["seed"]) for r in base}
+    if cells != {(r["env"], r["seed"]) for r in arm} or len(cells) != len(base) or len(cells) != len(arm):
+        raise ValueError(f"{name}: the two sides do not hold one run of every category and seed")
+    acquired, gain, untrained = {}, {}, {}
+    for env in sorted({e for e, _ in cells}):
         b = {r["seed"]: r for r in base if r["env"] == env}
         o = {r["seed"]: r for r in arm if r["env"] == env}
         acquired[env] = np.array([o[s]["acquired"] - b[s]["acquired"] for s in sorted(b)])
         gain[env] = np.array([o[s]["gain"] - b[s]["gain"] for s in sorted(b)])
+        untrained[env] = np.array([o[s]["untrained"] - b[s]["untrained"] for s in sorted(b)])
+    by = {(r["env"], r["seed"]): r for r in base}
+    less = int(sum(cpu(by[(r["env"], r["seed"])]) < cpu(r) for r in arm))
+    unreached = int(sum(1 for r in base if r.get("reached") is False))
     return {"min_change": both_interval(acquired, gain, rng), "acquired_change": blocked_interval(acquired, rng),
-            "per_env": {e: float(v.mean()) for e, v in acquired.items()}}
+            "gain_change": blocked_interval(gain, rng), "untrained_change": blocked_interval(untrained, rng),
+            "per_env": {e: float(v.mean()) for e, v in acquired.items()},
+            "all_categories_positive": bool(all(min(acquired[e].mean(), gain[e].mean()) > 0 for e in acquired)),
+            "cpu_ratio": float(sum(cpu(r) for r in arm) / max(sum(cpu(r) for r in base), 1e-9)),
+            "pairs_base_with_less_cpu": less, "pairs_unreached": unreached, "control": control,
+            "void": bool(control and (less or unreached))}
 
 
 def main() -> int:

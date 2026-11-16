@@ -41,7 +41,7 @@ def main() -> int:
     parser.add_argument("--steps", type=int, default=20)
     parser.add_argument("--migrate", type=int, default=5)
     parser.add_argument("--envs", default="jobshop,knapsack,pmedian,quadassign")
-    parser.add_argument("--seeds", default="1,2")
+    parser.add_argument("--seeds", default="1,2,3")
     parser.add_argument("--confirm", default="101,102")
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
@@ -68,10 +68,16 @@ def main() -> int:
     for t in range(args.steps):
         for L in lineages:
             r = L.step()
-            vals = [c.get("score") for c in r["candidates"]]
-            say(f"{L.name} step {t}: parent {L.parent_score:.4f} candidates",
-                [None if v is None else round(v - r["parent_score"], 4) for v in vals],
-                "accepted" if r["accepted"] else "", f"library {r['library']}")
+            show = []
+            for c in r["candidates"]:
+                if c.get("key") is None:
+                    show.append("-")
+                elif "value" in c:
+                    show.append(f"{c['screen']:+.3f}>{c['value']:+.3f}" + (f">{c['confirmation']:+.3f}" if "confirmation" in c else ""))
+                else:
+                    show.append(f"{c['screen']:+.3f}")
+            say(f"{L.name} step {t}: parent {r['parent_score']:.4f}{' -> %.4f' % r['parent_score_after'] if r['accepted'] else ''}",
+                " ".join(show), f"| library {r['library']} kd {r['knobs']['kd']}")
         if args.migrate and (t + 1) % args.migrate == 0 and len(lineages) > 1:
             discovery.migrate(lineages, rng, ledger)
     for L in lineages:

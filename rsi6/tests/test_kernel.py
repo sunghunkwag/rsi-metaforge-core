@@ -516,6 +516,62 @@ def test_second_design_uses_relations_between_variables():
     assert test.well_formed(answer) and np.all(np.bincount(answer, minlength=4) <= 6)
 
 
+def test_open_design_keeps_the_contract():
+    """The open design: a well-formed answer whatever the budget, the meter is respected, a run
+    repeats exactly, and the incremental sensors equal a computation from the partial answer."""
+    from rsi6.learner import design_o, designs
+    version = designs.default("o")
+    assert designs.design_of(version) == "o" and type(designs.make(version)) is design_o.OpenLearner
+    for fixture in (lambda seed, meter, ordered: _Fixture(8, 5, seed, meter, ordered),
+                    lambda seed, meter, ordered: _Parts(12, 3, seed, meter)):
+        for ordered in (False, True):
+            for limit in (30.0, 2000.0, 60000.0):
+                outcomes = []
+                for _ in range(2):
+                    meter = Meter(limit)
+                    problems = [fixture(seed, meter, ordered) for seed in range(8)]
+                    learner = designs.make(version)
+                    capability, _, report = learner.acquire([view(P) for P in problems], np.random.default_rng(3))
+                    assert meter.used <= limit + 1e-9, (limit, meter.used)
+                    test = fixture(99, Meter(400.0), ordered)
+                    answer = learner.apply(capability, view(test), np.random.default_rng(4))
+                    assert test.well_formed(answer), (ordered, limit)
+                    outcomes.append((json.dumps(capability, sort_keys=True), answer.tolist(), report["iterations"]))
+                assert outcomes[0] == outcomes[1], "the open design does not repeat exactly"
+    # every relation sensor, kept step by step, equals the same quantity computed from the partial answer
+    reads = [["load", 1, 8, 0], ["load", 2, 9, 0], ["load", 3, 14, 0], ["add", 0, 1, 2], ["add", 0, 0, 3]]
+    pick = [["load", 1, 1, 0], ["load", 2, 2, 0], ["add", 0, 1, 2]]
+    probe = dict(version, score=reads, pick=pick)
+    P = _Parts(12, 3, 5, Meter(float("inf")))
+    P.opt_opt = (np.random.default_rng(1).random((3, 3)),)
+    P.var_attr = np.random.default_rng(2).random((12, 1))
+    sensors = design_o.Sensors(P, design_o.validate(probe))
+    sensors.begin()
+    s, rng = P.start(), np.random.default_rng(0)
+    for v in np.random.default_rng(7).permutation(12):
+        D = P.candidates(s, [v])[0]
+        read = sensors.score_sensor(s, int(v), D, -1, 0, rng)
+        on = s["a"] >= 0
+        neigh = np.bincount(s["a"][on], weights=P.var_var[0][v][on], minlength=3)
+        assert np.allclose(read(8, 0), neigh)
+        assert np.allclose(read(9, 0), P.opt_opt[0] @ (s["used"] > 0).astype(float))
+        assert np.allclose(read(14, 0), np.bincount(s["a"][on], weights=P.var_attr[on, 0], minlength=3))
+        U = P.unassigned(s)
+        pick_read = sensors.pick_sensor(s, U, P.allowed(s), rng)
+        assert np.allclose(pick_read(1, 0), P.var_var[0][U] @ on.astype(float))
+        o = int(np.flatnonzero(P.allowed(s))[0])
+        P.assign(s, int(v), o)
+        sensors.assigned(s, int(v), o)
+    # malformed versions are refused
+    for broken in (dict(version, score=[["load", 9, 0, 0]]), dict(version, theta=[]), dict(version, pop=1),
+                   dict(version, update=[["comb", 0, 9, 0]]), dict(version, extra=1)):
+        try:
+            design_o.validate(broken)
+            raise AssertionError(f"accepted {broken}")
+        except ValueError:
+            pass
+
+
 def test_first_design_is_untouched_by_the_dispatch():
     """Versions of the first design go through the frozen modules: same digest, same learner class."""
     from rsi6.learner import designs
