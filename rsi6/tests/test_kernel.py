@@ -113,7 +113,12 @@ def test_role_lock_refuses_everything_but_source():
 def test_draw_is_reproducible_and_complete():
     stored = roles.load()
     again = roles.draw(stored["commit"])
-    assert again["roles"] == stored["roles"] and set(again["roles"]) == set(roles.CANDIDATES)
+    drawn = {c: r for c, r in stored["roles"].items() if c in roles.CANDIDATES}
+    assert again["roles"] == drawn and set(again["roles"]) == set(roles.CANDIDATES)
+    # categories added after the draw (amendment 6) are locked as 'fresh' and listed in registry/fresh.json
+    added = {c: r for c, r in stored["roles"].items() if c not in roles.CANDIDATES}
+    listed = set(json.load(open(os.path.join(os.path.dirname(roles.REGISTRY), "fresh.json")))["categories"]) if added else set()
+    assert all(r == "fresh" for r in added.values()) and set(added) <= listed
     counts = {}
     for role in again["roles"].values():
         counts[role] = counts.get(role, 0) + 1

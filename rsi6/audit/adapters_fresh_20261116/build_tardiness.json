@@ -1,0 +1,114 @@
+{
+ "category": "tardiness",
+ "buildable": true,
+ "files_written": [
+  "<scratch>/fresh/tardiness/repo/rsi6/environments/tardiness.py",
+  "<scratch>/fresh/tardiness/repo/rsi6/environments/manifests/tardiness.json",
+  "<scratch>/fresh/tardiness/repo/rsi6/environments/__init__.py (one line added to REGISTRY: \"tardiness\": (\"rsi6.environments.tardiness\", \"Tardiness\"))",
+  "<scratch>/fresh/tardiness/repo/rsi6/data/tardiness/ (8 files written by rsi6.fetch: wtinfo.html, wt40.txt, wt50.txt, wt100.txt, wtopt40.txt, wtopt50.txt, wtbest100a.txt, wtbest100b.txt)",
+  "<scratch>/fresh/tardiness/work/indep.py",
+  "<scratch>/fresh/tardiness/work/check_kernel.py",
+  "<scratch>/fresh/tardiness/work/check_eval.py",
+  "<scratch>/fresh/tardiness/work/check_zero.py",
+  "<scratch>/fresh/tardiness/work/check_zero_114.py",
+  "<scratch>/fresh/tardiness/work/measure1.py",
+  "<scratch>/fresh/tardiness/work/measure2.py",
+  "<scratch>/fresh/tardiness/work/explore.py",
+  "<scratch>/fresh/tardiness/work/debug_class.py",
+  "<scratch>/fresh/tardiness/work/debug_zeros.py",
+  "<scratch>/fresh/tardiness/work/profile_zero.py",
+  "<scratch>/fresh/tardiness/work/compare_zero.py",
+  "<scratch>/fresh/tardiness/work/zero_v1.py",
+  "<scratch>/fresh/tardiness/work/refetch/ (8 files fetched again with curl, for the hash check) and <scratch>/fresh/tardiness/work/refetch_list.txt",
+  "<scratch>/fresh/tardiness/work/dl_page/wtinfo.html, <scratch>/fresh/tardiness/work/dl_list/listing.html, <scratch>/fresh/tardiness/work/dl_terms/info.html, <scratch>/fresh/tardiness/work/dl_terms/legal.html (pages read as text: the source page, the directory listing, the library's main page and its legal page)"
+ ],
+ "learner_run_on_benchmark_instances": false,
+ "source": "OR-Library (J. E. Beasley), single-machine total weighted tardiness. The page https://people.brunel.ac.uk/~mastjjb/jeb/orlib/wtinfo.html is pinned and parsed by the adapter for: the count of 125 instances per file, the TF and RDD grid, the counts of solved instances, and the lists of unsolved ones. The data are in https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/. The page names the files wt40, wt50, wt100, wtopt40, wtopt50, wtbest100a and wtbest100b; the directory serves them with a .txt suffix. Terms, quoted in the manifest from the library's legal page orlib/legal.html: 'All of the material available from OR-Library is freely available for use. As such the MIT licence ... applies: Copyright (c) (2010) (J E Beasley}'. The weighted tardiness page itself states no terms. rsi6.fetch recorded all 8 SHA-256 hashes on the first fetch. A second, independent curl fetch into the fresh directory work/refetch reproduced all 8. The files wtpack1 to wtpack7 in the same directory are not named by this page and are not used.",
+ "answer_form": "The problem is ordered. The variables are the n positions of the processing order. The options are the n jobs, each with capacity one, so a complete answer is a permutation: answer[k] is the job processed k-th, 0-based. The job at position k finishes at the sum of p over positions 0 to k. This is the page's 'earliest completion time' for the order: all jobs are available at time 0 and nothing else delays a job.\n\nThere is one soft group, [0]: the total weighted tardiness w(j)·max(C(j)−d(j), 0) of the positions given so far. The term of position k reads positions 0 to k and counts as soon as all of them are assigned. For a complete answer it is the published objective. There is no hard group, because every permutation is a valid order, and no detail group, because the objective is a sum.\n\nEvery processing order of the published problem is exactly one answer of the form, and every answer of the form is a processing order. Idle time is not part of a published answer, because the page defines C(j) as the earliest completion time for the given order. If idle time were admitted, leaving it out would lose nothing: removing it moves no job later, and T(j) does not grow when C(j) falls.\n\nExposed arrays: only opt_attr[j] = (p(j), w(j), d(j)), the three integers the file gives each job. Positions have no attributes and no relation between jobs is exposed. The jobs are relabelled with the seed (perm[new] = old); positions are not relabelled. decode(answer) = perm[answer]. The fast _new, _rows and _push keep the finishing time of the jobs placed so far. _rows raises ValueError for any variable other than the next one, as the routing and jobshop adapters do.",
+ "reference": "Each reference value is one integer per instance, in file order: wtopt40 for n = 40, wtopt50 for n = 50 and wtbest100b for n = 100. They are parsed as whitespace-separated integers, and a file without exactly 125 values is refused.\n\n- **Optimal or best known (page):** optimal values are available for 124 instances of n = 40 and 115 of n = 50. The unsolved ones are #19 of n = 40 and #11, 12, 14, 19, 36, 44, 66, 87, 88 and 111 of n = 50. These lists are parsed from the page and checked against those counts. For them the files give 'the best known to Crauwels, Potts & Van Wassenhove (1996)'.\n- **n = 100:** wtbest100b is 'The best known solutions to date', not proven optimal.\n- **wtbest100a:** read only to check that no value of wtbest100b is above it. Eight are lower (instances 111–114, 116, 118–120) and the other 117 are equal.\n- **Totals:** 239 references are optimal and 136 are best known; the method proven() reports which. 53 references are 0 (18, 17 and 18 of the three files).\n- **Answers:** the source publishes values only, no processing orders, so there are no reference answers to score and attainment is not checked.\n- **Consistency check:** run outside the adapter from the page text. On all 375 instances the reference is 0 exactly when the earliest-due-date order has no tardiness.",
+ "score_scale": "score = (Z − V) / (Z − R), cut to [0, 1]. V is the objective of a valid answer and R the reference. Anything that is not a processing order scores 0 and is never repaired. A plain ratio V/R is unusable because R = 0 on 53 instances.\n\n- **Zero point Z:** the expected total weighted tardiness of a processing order drawn uniformly from all n! orders.\n  - It is exact, not sampled: a finite formula over counts of k-subsets of the other jobs by processing-time sum, with a leave-one-out recursion for k up to (n−1)/2 and the complement for larger k, computed in floating point.\n  - Two independent checks found a largest relative difference of 3.2e-16. The first compared it with exact rational arithmetic by direct counting (integers only, a different algorithm) on 5 whole instances of n = 40 and 50, one whole n = 100 instance and 6 single n = 100 jobs. The second compared it with all n! orders of 20 small made-up instances.\n- **Scale behaviour:** the score falls as V grows, is 1 at V = R, and is cut at 1 where R is only best known and an answer beats it (136 instances).\n- **Degenerate-scale rule:** leave an instance out if Z ≤ R. It removes none: the smallest Z − R is 7,128, and Z − R lies between 0.36·Z and Z.\n- **What chance scores:** uniformly random orders score 0.05–0.08 on average after the cut at 0.",
+ "threshold_and_anchor": "Threshold 0.90, set in the first draft of the module before any answer was scored. The anchor is an operating point, not an external fact: on average nine tenths of the way from the exact expected value of a random order to the published value, with an invalid answer counting 0.\n\nContext, measured after the threshold was fixed and not used to set it:\n- At 0.90, a value may exceed R by a median 23% of R (quartiles 13% and 72%) on the 322 instances with R > 0.\n- The earliest-due-date order averages 0.51 and the order by non-increasing w/p averages 0.80.\n- The better of those two rules on each instance averages 0.887 and reaches 0.90 on 54% of instances. By TF, that better-of-two rule averages 0.97 at TF 0.2, 0.89 at 0.4, 0.77 at 0.6, 0.85 at 0.8 and 0.95 at 1.0.",
+ "checks": [
+  {
+   "id": "manifest-hashes",
+   "n": "8 files",
+   "result": "rsi6.fetch recorded the SHA-256 of all 8 files. An independent curl fetch into the empty directory work/refetch matched all 8."
+  },
+  {
+   "id": "fast-equals-slow",
+   "n": "1900 partial states (30 orders, 15 instances of all three sizes, 2 seeds)",
+   "result": "candidates() equals AssignProblem._rows exactly on every state, and totals equals partial_totals exactly. A variable out of order raises. candidates([]) has shape (0, n, 1). Final totals equal the independent objective. A further 200 partial assignments with gaps: partial_totals equals the specification (terms only up to the first unassigned position)."
+  },
+  {
+   "id": "independent-evaluator",
+   "n": "330 valid answers on 11 instances",
+   "result": "The evaluator in indep.py has its own parser, objective and exact rational zero point. Answers: 10 random orders per instance plus the due-date and w/p orders with random perturbations. Largest |score() − independent score| = 3.2e-16. evaluate() of the relabelled answer equals the independent objective on all 330. Scores fall as the objective grows; 248 lie in (0, 1), 10 at 1 and 72 at 0. The independent parse equals the adapter's arrays and references on all 375 instances."
+  },
+  {
+   "id": "invalid-answers",
+   "n": "48 (16 kinds on 3 instances)",
+   "result": "score() is 0 for: all −1, all n, float zeros, a float permutation, too short, too long, NaN, None, a job twice, 2-d, bool, out of range, negative, strings, object dtype. run._valid rejects all of them, and the plain list. The kernel's own evaluate() raises on all except the array-likes it casts (list, and float, string or object arrays holding a permutation); run._valid rejects those. The kernel test's malformed list on instance_ids()[0] is all rejected. score() itself accepts a plain list of ints as an order, as genassign does."
+  },
+  {
+   "id": "reference-answers",
+   "result": "Not applicable: the source publishes values only, no processing orders."
+  },
+  {
+   "id": "reference-consistency",
+   "n": "375",
+   "result": "The reference is 0 exactly when the earliest-due-date order has no tardiness, on all 375 instances, using the independent code."
+  },
+  {
+   "id": "zero-point-exact",
+   "n": "20 small + 5 whole real (n = 40, 50) + 1 whole and 6 jobs (n = 100)",
+   "result": "Largest relative difference 3.2e-16 against exact rationals and against all orders. Monte Carlo with 20,000 orders: +0.95, −0.05 and +3.39 s.e. The +3.39 on wt100 #114 was settled: the exact value over all 100 jobs agrees to 3.2e-16, and two runs of 100,000 orders with other seeds gave −0.37 and −1.25 s.e., so it was chance."
+  },
+  {
+   "id": "decode-relabel",
+   "n": "18 (instance, seed) pairs",
+   "result": "Under 6 seeds on 3 instances: opt_attr[answer] equals the file's rows at decode(answer), and evaluate equals the independent objective of decode(answer). One order in the file's labels, given through 6 relabellings, scores identically. Two instances of one size get different relabellings under run._seed(1, name, iid, 'relabel')."
+  },
+  {
+   "id": "no-reference-in-problem",
+   "n": "375",
+   "result": "With every stored reference, zero point and proven flag replaced in my process, the pickled problem objects of all 375 instances are byte-identical. By coincidence a reference value appears among a problem's numbers on 60 instances (references 0, 2, 4, 8, 22, 27, 47, 98, which also occur as due dates or attributes). This is not a leak, and the first instance (wt100-001, used by the kernel test) is clear."
+  },
+  {
+   "id": "one-layout",
+   "n": "375",
+   "result": "A single layout: ('assign', True, False, False, (False,), (False,), 0, 3, 0, 0, 0, 0, True, True). No padding is needed."
+  },
+  {
+   "id": "view-and-meter",
+   "result": "The view exposes only generic fields; the state keys are a, used, tot, n; arrays are read-only. start charges 1 unit, assign 1, candidates n_opts per variable."
+  },
+  {
+   "id": "split-halves",
+   "result": "split(env, 16, 24): 24 fresh instances from 5 groups (wt100-tf0.2-rdd0.6, wt100-tf0.8-rdd0.2, wt50-tf0.2-rdd1.0, wt50-tf0.4-rdd0.8, wt50-tf0.6-rdd1.0) and 16 training instances from 15 other groups. No group is shared. halves(): 14 instances (wt100-tf0.2-rdd0.6, wt50-tf0.2-rdd1.0, wt50-tf0.4-rdd0.8) and 10 (wt100-tf0.8-rdd0.2, wt50-tf0.6-rdd1.0). 75 groups in all, 5 instances each."
+  },
+  {
+   "id": "construction-units",
+   "result": "The largest instance (n = 100, e.g. wt100-125) costs 10,101 units per construction. Loading the environment costs 6.1–6.7 CPU-s, almost all of it the exact zero points."
+  },
+  {
+   "id": "copy-unchanged",
+   "result": "By modification time, the only files changed since the copy was made are tardiness.py, manifests/tardiness.json, the registry line in environments/__init__.py, and the data fetched into data/tardiness. Bytecode caches written by my runs were removed; later runs used -B."
+  }
+ ],
+ "open_issues": [
+  "The role registry rsi6/registry/roles.json has no entry for 'tardiness', and roles.CANDIDATES does not list it. So roles.role_of('tardiness') raises KeyError, and rsi6/tests/test_kernel.py, which calls role_of for every REGISTRY entry at import, will fail to import until a role is assigned. I was not allowed to change that file.",
+  "The threshold of 0.90 is lenient towards the published values. On instances with R > 0 it allows a value a median 23% above R. The better of the earliest-due-date and w/p orders already averages 0.887 and reaches 0.90 on 54% of instances. I kept the value fixed before any scoring; you may want a higher operating point.",
+  "The groups rest on two inferences from the data that the page does not state. First, the classes are runs of five consecutive instances, ordered with TF changing fastest. Second, due-date draws below zero were written as 0. Both are checked at every load (the 25 runs must be the 25 pairs), with joint margins of at least 22.6 nats; 374 of 375 instances agree on their own. An auditor should still confirm this independently; I did not consult the generator's original paper.",
+  "136 references are best known, not proven: all of n = 100 and the 11 unsolved instances of n = 40 and 50. Answers that beat them are cut to 1. Whether any reference is attained is not checked, because no orders are published.",
+  "Importing rsi6.kernel.run, which was allowed for split, halves, layout and _valid, loads rsi6.learner.designs at module level, and through it the learner, version, design_b and design_o modules. This happened in my check processes. No learner was constructed or called, and no learner function was invoked.",
+  "A leak test based on scalar values would flag 60 instances, whose small reference values also occur among the problem's numbers. That is a coincidence, as the byte-identity test under replaced references shows. The kernel test uses only wt100-001, which is clear.",
+  "Each environment load costs about 6–7 CPU-s for the exact zero points of the 375 instances, in every kernel worker process that loads it."
+ ],
+ "groups": "The groups are the 75 published generation classes (n, TF, RDD), five instances each, named like wt40-tf0.2-rdd0.2. The page does not say where each class lies in a file. The adapter takes each file's runs of five consecutive instances and names each run by the (TF, RDD) pair under which its five due-date vectors are jointly most likely. The generator model is the page's, with draws below 1 recorded as 0, as the files show: no due date is negative, and the share of zeros in each run matches the share of its interval below zero. The adapter refuses the files unless the 25 runs of each file are the 25 pairs, each once.\n\nThe groups reach the kernel's split only, never the problem. Instances of one pair at different n are separate groups: they share generator parameters but no numbers. split(env, 16, 24) and halves() keep whole groups on one side.",
+ "instances_used": 375,
+ "instances_left_out": "None. The size rule (at most 1,000 positions and positions × jobs at most 30,000) passes all 375; the largest, n = 100, has 10,000 cells. The degenerate-scale rule (Z ≤ R) removes none. The wtpack1–7 files are not named by this page and are not used.",
+ "hosts_used": [
+  "people.brunel.ac.uk"
+ ],
+ "cpu_seconds_used_estimate": 150
+}

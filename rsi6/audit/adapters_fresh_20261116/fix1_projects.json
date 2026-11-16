@@ -1,0 +1,100 @@
+{
+ "fixed": [
+  {
+   "finding": "1 (blocking): every valid answer scores 1 on the 240 RS = 1.0 instances, 17 of the 24 fresh ones; random lists passed the threshold",
+   "change": "projects.py: new function earliest() (precedence-only forward pass in the file's topological numbering; returns the critical-path length and whether the earliest-start schedule requests at most R(k) in every period). parse() calls it and raises unless the critical-path length equals the file's MPM-Time (true on 960/960). Projects.__init__ leaves out every instance whose earliest-start schedule fits. The left-out names go to a kernel-only list self.left_out. A new check raises unless the left-out instances are exactly those of the par.sm classes with RS = 1. N_INSTANCES = 720. The class attribute threshold is 0.9864. The module text has a new section 'Instances left out' with the rule, its induction proof, the statement that it reads the instance only, the 240/24-class coincidence and when it was added. All numbers are recomputed on the 720 instances: groups (72), split (fresh j60-2, j60-11, j60-43 with their NC/RF/RS, 30 cut to 24; train 16 of 13 groups; no class number on both sides; halves 16/8), thresholds (fresh 0.9864, halves 0.9876/0.9840, all 720 0.9760, per instance 0.844..0.991), file-order list 0.916/0.948, random lists 0.889 (17.2 %)/0.928 (20.0 %), scale 1.8 %/3.2 % per 0.01, min Z-ref 40, size-rule paragraph. Manifest 'source' states the leave-out. Measured: one random valid list per fresh instance reaches the threshold in 0 of 200 draws (mean 0.9703, max 0.9783); half A and half B: 0 of 100 draws each."
+  },
+  {
+   "finding": "2 (major): the latest-finish-time rule reaches the threshold on the fresh side and the anchor did not say so",
+   "change": "The anchor and the module text's threshold paragraph now say what reaches the threshold on the 24 fresh instances. Random lists in precedence order average 0.970 and never reach it. The textbook latest-finish-time rule reaches it: one backward pass from the critical-path length over the exposed durations and successor relation, ties at random, decoded by the same serial rule. It scores 0.9989 (0.9982 to 0.9996 over 20 draws of the ties) and passes both halves. On the 16 training instances it scores 0.950 against their threshold 0.9726 (random lists 0.887), and over all instances 0.945 (j30) and 0.968 (j60). The text says a pass is therefore not by itself a capability beyond this one-pass rule, and that a higher operating point would have to be fixed again before any learner answer is scored (the adapter does not do that; see not_fixed)."
+  },
+  {
+   "finding": "3 (minor): statement (5) and the text of group [2] wrongly said that a list not in precedence order is not a valid schedule",
+   "change": "Statement (5) now says: a list not in precedence order is an invalid answer; group [2] counts it and the score is 0 whether or not its schedule breaks a precedence relation. It need not break one, because the resources may push the activity past its predecessors. Measured outside the adapter: 51 of 199 adjacent predecessor/successor swaps decode to schedules that meet every published constraint. Nothing reachable is lost, by (2). Group [2] reworded the same way. The code comment in score() now says 'an invalid answer (statement (5))'. No behaviour change. Confirmed: example j3010_1, activity 23 before its predecessor 9, valid schedule, adapter score 0.0, totals [51, 683, 1]."
+  },
+  {
+   "finding": "4 (minor): 46 of the 98 references labelled 'upper bound' equal the critical-path length (MPM-Time) and are optima",
+   "change": "Took the audit's first option. The critical-path length is kept in the kernel-only instance table and never reaches the problem: problem pickles are byte-identical when it changes. reference_kind returns 'optimum' when the library proves the value or when it equals the critical-path length. A new check raises if a reference is below the critical-path length. The module text, anchor and manifest 'reference' now say: over all 960, 382 optima by the library, 46 more by the critical-path length (classes 42-48), 52 upper bounds (28 of classes 1-41, 24 of 42-48). Of the 720 used: 360 j30 optima, 308 j60 optima (282 + 26) and the 52 upper bounds, none of which is left out. The JSON check still compares the library's own 382 proofs."
+  }
+ ],
+ "not_fixed": [
+  {
+   "finding": "2, conditional part: re-fix the threshold above the one-pass textbook rule",
+   "why": "Not done; reported instead. The threshold rule (makespans 5 % above the reference) was fixed by the builder before any answer was scored, and the leave-out changed only which instances are fresh. Choosing a new operating point now would be a choice made after the random and LFT baselines were measured on these exact fresh instances. It would also change what a pass on the category means, which is a decision for whoever owns the registered test, not for a fixer. LFT scores 0.9989 on this fresh side, so a point above it would demand a mean score above about 0.999, roughly 0.35 % of makespan from the reference, which is no longer the stated 5 %. As jobshop's anchor does for dispatching rules, the anchor and text now say plainly that the textbook rule reaches the threshold."
+  }
+ ],
+ "files_changed": [
+  "<scratch>/fresh/projects/repo/rsi6/environments/projects.py",
+  "<scratch>/fresh/projects/repo/rsi6/environments/manifests/projects.json"
+ ],
+ "checks": [
+  {
+   "id": "f_indep I1 (own parser and forward pass, fix1/own.py, no adapter code)",
+   "result": "Critical-path length equals MPM-Time on 960 of 960. Earliest-start schedule fits on 240 instances, exactly the RS = 1 classes 4, 8, ..., 48 of both sets. Adapter load takes 1.3 s CPU."
+  },
+  {
+   "id": "f_indep I2 (references and kinds)",
+   "result": "The adapter's 720 ids are all instances minus the 240 that fit; left_out holds those 240. References equal my own tables and Z equals horizon on all 720. No reference is below the critical-path length. Kinds equal my rule (j30, or LB == UB, or UB == critical path) on all 720. Over 960: 382 by the library, 46 by the critical path {42:5, 43:9, 44:10, 46:2, 47:10, 48:10}, 52 upper bounds. Over 720: 360 j30, 282 + 26 {42:5, 43:9, 46:2, 47:10}, 52 upper bounds (28 in classes 1-41, 24 in 42-48)."
+  },
+  {
+   "id": "f_indep I3 (proof on the left-out instances)",
+   "result": "50 of 50 random lists in precedence order decode to exactly the earliest-start schedule, with makespan = critical path = reference."
+  },
+  {
+   "id": "f_indep I4 (finding 3)",
+   "result": "199 adjacent predecessor/successor swaps; 51 decode to schedules that meet every published constraint. Example j3010_1: adapter score 0.0, evaluate totals [51, 683, 1], run._valid True (well-formed but invalid)."
+  },
+  {
+   "id": "f_indep I5 (nothing new reaches the problem)",
+   "result": "Problem fields are byte-identical when span, kind and left_out are altered, on 3 instances."
+  },
+  {
+   "id": "f_measure M1-M7 (all numbers of the text; own decoder, cross-checked with env.score)",
+   "result": "Split: fresh j60-2, j60-11, j60-43 (24); train 16 instances of 13 groups; halves 16/8; no class number on both sides. Thresholds: fresh 0.9864, halves 0.9876/0.9840, train 0.9726, all 0.9760, per instance 0.844..0.991. Scale: +5 % mean 0.9689 (j30) and 0.9832 (j60); 1.83 % and 3.21 % per 0.01 of score; min Z-ref 40. File order: 0.916/0.948 (env.score equal 720/720). Random lists: 0.889 (17.2 %)/0.928 (20.0 %) (env.score equal 216/216). Fresh random: mean 0.9703, max 0.9783, 0/200 at threshold. Train random: 0.887. LFT: fresh 0.9989 (0.9982-0.9996), halves 0.9990/0.9984, train 0.9504, all 0.945/0.968. 36 s CPU."
+  },
+  {
+   "id": "f_final F0 (manifest)",
+   "result": "Valid JSON; files, URLs, hashes and terms unchanged; only 'source' and 'reference' changed. Each load re-verifies the local files against the pinned hashes."
+  },
+  {
+   "id": "f_final F1 (text matches the built environment)",
+   "result": "Module text and anchor contain the built thresholds, halves, per-instance range, kinds, fresh groups with parameters, training group count and halves sizes. Class attribute threshold is 0.9864."
+  },
+  {
+   "id": "f_final F2 (learner-free checks of test_kernel for this adapter)",
+   "result": "Fast evaluation equals the specification (the test's literal loop on 3 instances). The view hides the adapter. One layout over all 720. Assignment is metered (30 units for 30). Malformed answers are refused. Relabelling differs per instance and keeps the score (9 random valid lists, no learner). No reference in the problem; the reference appears among exposed numbers on 0 of 720. The training flag changes nothing. The split keeps groups apart, fresh 24."
+  },
+  {
+   "id": "builder work/smoke.py and work/scale.py (unchanged, via fix1/runb.py with the learner stubbed)",
+   "result": "720 instances, 72 groups, kinds {j30 optimum 360, j60 optimum 308, j60 upper bound 52}. Threshold 0.9864 fresh, 0.976 over all. One layout; units 931/3661. Scale numbers equal f_measure."
+  },
+  {
+   "id": "builder work/checks_a.py (original)",
+   "result": "Stops, as expected, at line 149: assert (kind == optimum) == (j30 or library-proven). That assertion encodes the labelling finding 4 deliberately changes. Nothing before it failed."
+  },
+  {
+   "id": "fix1/checks_a_fix.py (copy of checks_a.py with marked FIX edits)",
+   "result": "The line-149 assertion now also accepts ref == MPM-Time. Two hard-coded instances that are now left out (j3048_10, j6048_2, class 48, RS = 1) are swapped for j3047_10 and j6047_2. An A0b check is added: the left-out set equals this script's own forward-pass test, and the critical path equals MPM-Time on all 960. Everything passes: A1 (720 references, 382 + 26), A2 (320 valid and 128 invalid answers equal the builder's independent evaluator), A3, A4, A5, A9, A6 (one layout), A7 (split as stated, threshold 0.9864), A8."
+  },
+  {
+   "id": "builder work/checks_b.py (unchanged)",
+   "result": "38 instances, 1380 assignments: totals equal partial_totals; fast candidates() equal the slow rows on 1060 states and 376 assigned or later rows. 13.6 s CPU."
+  },
+  {
+   "id": "builder work/checks_c.py (unchanged)",
+   "result": "C1 with the builder's seed: random 0.888 (17.4 %)/0.928 (19.8 %), consistent with the text's 0.889 (17.2 %)/0.928 (20.0 %); file order 0.916/0.948; thresholds 0.9760/0.9864. C2 and C3 pass. C4 deviations: NC 0.025, RF 0.0083 (text says within 0.025 and 0.009)."
+  },
+  {
+   "id": "builder work/inspect3.py (unchanged, on the pinned data)",
+   "result": "Every file: J = 32/62, 4 renewable resources, topological numbering, supersource/sink empty, request <= capacity, horizon = sum of durations, reference >= MPM-Time; one base file per class; min(horizon - ref) 40/178. inspect1.py and inspect2.py not run: they read j30hrs.sm, which is not a pinned file. show.py not run: it only prints saved pages."
+  },
+  {
+   "id": "discipline",
+   "result": "Every process ran with nice -n 10, python3 -I, OPENBLAS_NUM_THREADS=1 and ulimit -t 60, one at a time; about 85 CPU-s in total. The learner package was stubbed (boot.guard() True in every run); no rsi6.learner or rsi6.meta code was loaded and no learner was constructed. No bytecode was written into the package copy. Nothing was downloaded. Nothing under /home/user, /root/.claude, judge, workdirs or audit1 was read."
+  },
+  {
+   "id": "scope note",
+   "result": "Only the two files were changed. Anything elsewhere that pins the old threshold 0.9830, the count of 960 or a digest of projects.py was not looked for and must be updated by its owner. Scratch scripts are in fix1/ (boot.py, runb.py, own.py, f_indep.py, f_measure.py, f_final.py, checks_a_fix.py), with backups projects.orig.py and projects.orig.json."
+  }
+ ]
+}

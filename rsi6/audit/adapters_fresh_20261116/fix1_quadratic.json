@@ -1,0 +1,64 @@
+{
+ "fixed": [
+  {
+   "finding": "1 (major): the threshold 0.97 is reached by plain non-learning search, while the anchor said plain procedures stay below it",
+   "change": "I took option (b) and left the threshold value (0.97) and threshold_for unchanged. I rewrote the anchor and the 'Threshold 0.97' paragraph of quadratic.py. Both now say that on this category reaching the threshold is NOT evidence of a learned capability, and that only the gain over the untrained answer can be. They also say that plain search reaches the threshold without a single metered call: it reads var_attr and var_var, and an answer is scored whatever produced it. The figures come from my own pinned procedure (fix1/plain.py: steepest one-flip descent from a uniformly random answer, 30 descents per fresh instance, seeded, decoded and scored by the adapter, 0 metered units). One descent: confirming half (be200.3) 0.977 (0.961 to 0.989 over 30 runs), deciding half (be250 and gka-b) 0.841 (0.768 to 0.904). Best of 3: 0.989 and 0.929. Best of 10: 0.995 and 0.978. Best of 30: 0.998 and 0.993. The paragraph adds a table for the whole fresh side, gka-b and be250, the block ranges (best of 3 on the confirming half 0.984 to 0.993 in every block), and the published value reached by the best of 30 on 9 of the 24 fresh instances. It says why option (a), a threshold per set, was not taken: computation on the exposed arrays is unmetered, so the same procedure with more restarts passes any such threshold (best of 30 is at least 0.990 on every fresh set, against 0.890 to 0.989 for the best of 3). It says the registration must record that reaching the threshold is no evidence here. The averages over all 150 instances were re-measured: random 0.030, greedy pass 0.56, best-first 0.93, one descent 0.96, best of 3 0.98. My figures for the deciding half with 10 and 30 restarts (0.978, 0.993) are higher than the audit's (0.939, 0.977). The conclusion is the same, and check_fix.py recomputes every number the text states."
+  },
+  {
+   "finding": "2 (minor), wording parts 1 and 2: the be sets, and some gka sets, share one generator stream per seed across the split and the halves",
+   "change": "I added a 'Shared generator streams' paragraph after Groups. The seeds are parsed from the tex: 1 to 10 for every be class; 10 for gka sets a and b and gka1c; 31 for gka3c, gka1d and gka5d; 34 for gka4c and gka3e; 47 for gka4d and gka6d; 8 for gka5c; none for beasley. My own measurements (fix1/streams.py) use common runs of 6 listed values and, where ranges differ, common runs of 48 up/down steps. They found: all 280 same-number be pairs share runs and no pair of different numbers does; row-1 values are the same; patterns of equal n are nested (0.987 to 0.994 against about 0.79); the gka pair counts; bqp50-1..10 share with bqp100-1..4 (13 pairs) and bqp250 shares none. The paragraph lists by name the 10 fresh and 7 training instances in 12 cross-split pairs (1,174 to 4,781 runs; k-th values equal for 0.414 to 0.974). It lists the cross-half pairs: be250.k with be200.3.k for k = 1, 2, 4, 5, 7, 10, and eight gka-b files with be200.3.10 by up/down runs only (8 to 1,074). It shows that no other pair crosses. It states that the matrices differ entry-wise: 0.0 to 1.6 percent equal values outside the first row, against about 1.0 percent by chance. This corrects the audit's 'only chance level' in one place: the first rows of be120.3.5 and be200.3.5 (both of density 0.3) coincide, 33 of 33 common positions, 6.7 percent overall."
+  },
+  {
+   "finding": "3 (minor): the manifest misquoted the gka paragraph of the page",
+   "change": "The 'terms' field now quotes the two sentences separately and verbatim. Beasley: 'The datasets can be obtained from this site or from the OR-Library'. Gka: 'Also these datasets can be obtained from this website or from the OR-Library'. Nothing else in the manifest changed, and all 152 hashes still verify."
+  }
+ ],
+ "not_fixed": [
+  {
+   "finding": "2, fix part 3: define group() by generator seed (be<...>.k to 'seed-k'; gka-a, gka-b and gka1c to seed 10; gka5c to seed 8)",
+   "why": "This is not a wording or one-line correction in effect. It changes the split, both halves and every figure measured on them. It is also conditional ('if the protocol applies the bin-packing rule'), and no registration in the copy applies that rule to this category: registration.json states it as a fix for bin packing only. The proposed grouping is incomplete. Seeds 31, 34 and 47 link gka-c to gka-d and gka-e, and bqp50 shares with bqp100. It would also put files of one published class on both sides, against the kernel's rule that whole published groups go to one side. A grouping closed under shared streams merges all 80 be and 40 gka instances into a single group of 120 (checked in fix1/closure.py). The decision is left to the registration, and the module text says so."
+  },
+  {
+   "finding": "1, option (b): 'record in the registration that reaching the threshold is not evidence and only the gain counts'",
+   "why": "The registration is outside the two files I may change. The adapter's anchor and module text now state it plainly. The registration of any test that uses this category still has to record it."
+  }
+ ],
+ "files_changed": [
+  "<scratch>/fresh/quadratic/repo/rsi6/environments/quadratic.py",
+  "<scratch>/fresh/quadratic/repo/rsi6/environments/manifests/quadratic.json"
+ ],
+ "checks": [
+  {
+   "id": "builder check_quadratic.py (rerun unchanged via fix1/run_builder.py, no bytecode written)",
+   "result": "PASS: 17 of 17, 0 failed. Output identical to the builder's work/check.out apart from CPU times. Covers the reference parse, the evaluator against the spec, malformed answers, relabelling, fast against slow rows, no reference leak, the view, layout, split and halves, units, metering, score 1 at the reference, and the zero point."
+  },
+  {
+   "id": "builder registry_probe.py, split_probe.py, verify_hashes.py",
+   "result": "PASS: loads through the registry (threshold 0.97, 150 instances). Split 16/24 with groups disjoint; halves 15 (be250, gka-b) and 9 (be200.3). All 152 manifest hashes confirmed."
+  },
+  {
+   "id": "fix1/check_fix.py 1: code unchanged",
+   "result": "PASS: the AST equals the original's once the module docstring and the anchor's wording are removed. The module is ASCII; new or changed lines are at most 120 characters."
+  },
+  {
+   "id": "fix1/check_fix.py 2: behaviour unchanged",
+   "result": "PASS: equal to the original module on instance ids, references, groups, split, halves, problem arrays, decode, scores of 600 answers, threshold 0.97 and threshold_for."
+  },
+  {
+   "id": "fix1/check_fix.py 3: threshold text",
+   "result": "PASS: 'stay below' is gone, and 'NOT evidence' and 'only the gain' are stated. Every number in the table, the anchor, the sentences after the table and the orientation averages equals a fresh recomputation; all procedures used 0 metered units."
+  },
+  {
+   "id": "fix1/check_fix.py 4: stream statements",
+   "result": "PASS: the names, pair counts and ranges in both bullets equal the recomputation, and no unlisted pair crosses the split or the halves. Also as stated: the seeds parsed from the tex, the gka and beasley statements, nesting, first values, positional equality, the first-row exception and the chance levels."
+  },
+  {
+   "id": "fix1/check_fix.py 5: manifest",
+   "result": "PASS: only 'terms' changed and the JSON format is kept. The three quotes are the page's words, each in its own section; fetch verifies and does not rewrite the manifest."
+  },
+  {
+   "id": "side effects and compute",
+   "result": "No __pycache__ in the repo copy; only the two permitted files are newer than the start. No learner was imported or constructed. rsi6.kernel.run was used only for split, halves, layout and _valid. Nothing was downloaded. About 1.5 CPU-minutes in all, each process under 10 s."
+  }
+ ]
+}

@@ -1,0 +1,30 @@
+{
+ "what": "categories no process had used before 2026-11-16, built and audited by independent agents (audit/adapters_fresh_20261116)",
+ "role": "fresh",
+ "categories": {
+  "tardiness": {
+   "module": "rsi6.environments.tardiness",
+   "class": "Tardiness",
+   "admitted": true,
+   "sha256": "4551ab69f62f38ebc031aefea724928babfc07879ffadcd275d8ec3ca5b36717"
+  },
+  "quadratic": {
+   "module": "rsi6.environments.quadratic",
+   "class": "Quadratic",
+   "admitted": true,
+   "sha256": "46eec54730b67e402db0018da3ec3e7a51f20dbda7c79ed9dfa00645b30c2b56"
+  },
+  "projects": {
+   "module": "rsi6.environments.projects",
+   "class": "Projects",
+   "admitted": true,
+   "sha256": "2e7530dbf3a2c5076d500e669814bbd81f19a0bbe35af1a4dc0a0fa7a3751f2a"
+  },
+  "clique": {
+   "module": "rsi6.environments.clique",
+   "class": "Clique",
+   "admitted": true,
+   "sha256": "601d067666b5303f1bc4f3e955e3590337756df2f318561aaf515c4599fe24d4"
+  }
+ }
+}

@@ -35,6 +35,10 @@
   "facility": "target",
   "tour": "reserve",
   "colouring": "reserve",
-  "genassign": "reserve"
+  "genassign": "reserve",
+  "tardiness": "fresh",
+  "quadratic": "fresh",
+  "projects": "fresh",
+  "clique": "fresh"
  }
 }
