@@ -1,0 +1,1295 @@
+{
+ "name": "quadassign",
+ "category": "quadassign",
+ "source": "QAPLIB (Burkard, Karisch, Rendl), as hosted at coral.ise.lehigh.edu: the 128 instances that have both a data file and a solution file",
+ "terms": "no licence text on the index page. Fetched by hash, not redistributed here.",
+ "reference": "the value in the first line of each solution file (optimal or best known), and the permutation that follows it (kernel only)",
+ "files": [
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/bur26a.dat",
+   "path": "bur26a.dat",
+   "sha256": "bcc4b7ddd80b49b4a2657ed36ecac9a81786c6ff570e4a35c18c43704b7ba5b1"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/bur26a.sln",
+   "path": "bur26a.sln",
+   "sha256": "4a9c25e9cf36d078fdbf1ba36c348459ebba4835c51cf82a57c07bdec3a29542"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/bur26b.dat",
+   "path": "bur26b.dat",
+   "sha256": "ce22dbeb3d2dc84062dc67baac875c73a7bf99b7488f71e4656cac3cbfd60cd3"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/bur26b.sln",
+   "path": "bur26b.sln",
+   "sha256": "05a961430920267bae26a8191e1a0f829b5bad3b889a1823479fc2da0235eef5"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/bur26c.dat",
+   "path": "bur26c.dat",
+   "sha256": "84800fdbeb7adddc11628512d632444ead1454e8c63472eff4cc0281a2bb0bcd"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/bur26c.sln",
+   "path": "bur26c.sln",
+   "sha256": "0629a9d505e7432870561d1c4c98a0a7d8a608b0fdc1c71283362850d4107994"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/bur26d.dat",
+   "path": "bur26d.dat",
+   "sha256": "dd4a5caa91d503d85e11796690326c392132796900e1574f49bb8fe628ba3bb8"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/bur26d.sln",
+   "path": "bur26d.sln",
+   "sha256": "b96b14b4b4772d269803304ab2df0a9c7f8291adce4516cc20a6a2dd20e27f16"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/bur26e.dat",
+   "path": "bur26e.dat",
+   "sha256": "7ad46f4fac5cae24eaacac2870baba1fe12fbb080ebf8d5ba2769882d178b0e0"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/bur26e.sln",
+   "path": "bur26e.sln",
+   "sha256": "c987d34dd4ecdb8e9e91a9789e6358806ece09cb8606522e5e27f79de04ca058"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/bur26f.dat",
+   "path": "bur26f.dat",
+   "sha256": "8f9593f19812537a1ceaf9d741ecc932f2634b1904d60b78fee86bc75fa73d9c"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/bur26f.sln",
+   "path": "bur26f.sln",
+   "sha256": "6b82a8b6bc10bdcfaa36799947434d14ac4af31b5a8526fe1f44e684ecde4af0"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/bur26g.dat",
+   "path": "bur26g.dat",
+   "sha256": "d5b9a1968e3a99acbd35252c8370a36901b7e0cadf7adfa311abf146595b1fab"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/bur26g.sln",
+   "path": "bur26g.sln",
+   "sha256": "e8a942153c43bafbd8708329c5fce0c4a41e9c513eb65756246c8e19532a0524"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/bur26h.dat",
+   "path": "bur26h.dat",
+   "sha256": "59f25c5116f66c034c0bc96d8f27a6f60367830a94ca05887672cf924302b1f6"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/bur26h.sln",
+   "path": "bur26h.sln",
+   "sha256": "acaa90afe99cd3ccf4abe2c82e968fb32a99fc36af252c8eb30a83fe1c0a1868"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/chr12a.dat",
+   "path": "chr12a.dat",
+   "sha256": "fcfa6ecd04a8d54590677755d0a463f020a3bda1137f3bd62020a19bcedcbfb1"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/chr12a.sln",
+   "path": "chr12a.sln",
+   "sha256": "56ccd60cd39bd7dd9a31b62948cb58d954effbf54740ebcadcf9496a5cb279d3"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/chr12b.dat",
+   "path": "chr12b.dat",
+   "sha256": "7e46fa75ca5d7607845cadd2b9f80635349fd7750e44ca59cbfda1cf8edf623a"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/chr12b.sln",
+   "path": "chr12b.sln",
+   "sha256": "2e2e3794252da0e3ef1bc19fb99c0e20f3bed845f460eb1ea75d585af6985996"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/chr12c.dat",
+   "path": "chr12c.dat",
+   "sha256": "3baebb29e783e752bc43d3a92045666e69d5775ad54468d4ef8d4ab1cb8f9fe6"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/chr12c.sln",
+   "path": "chr12c.sln",
+   "sha256": "ca818716278be5d39bdf5324bf2b721024e6c9ff86da3ea9148662ce03cdd3fd"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/chr15a.dat",
+   "path": "chr15a.dat",
+   "sha256": "76f11323c1a90b601f6cba1d0bc669bf282f0c1352a3c9ec485d5de2ed844078"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/chr15a.sln",
+   "path": "chr15a.sln",
+   "sha256": "ff8b7ac5e40f492cd17ef5ff7dfbfaffeb5d6b3c0feb39f881e67c5fe8308c55"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/chr15b.dat",
+   "path": "chr15b.dat",
+   "sha256": "51af271b4bd3dfbcc2d6805d1f07e044290900c09eb1431ef6f7c674e2e4c761"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/chr15b.sln",
+   "path": "chr15b.sln",
+   "sha256": "6b97d5491d03ce491d35b09444570561bfcd5ad10839ebe87a004f1bccc9c78f"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/chr15c.dat",
+   "path": "chr15c.dat",
+   "sha256": "61b307b61269d6a7aac1eb3750b5d056e426106b68bf1736a92615b6f1371e7b"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/chr15c.sln",
+   "path": "chr15c.sln",
+   "sha256": "4e06e0f158b2378c26427a6bd9838e44023603dbf6bce9bba5137ef339afaada"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/chr18a.dat",
+   "path": "chr18a.dat",
+   "sha256": "dbe39078792488c9d1e09e44c3653be818dfee42d8aada23f74c010acb19d583"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/chr18a.sln",
+   "path": "chr18a.sln",
+   "sha256": "a68f264f4fcee7b413ff386a94b61c4ff6ee9a390aa73dcb02e634d2a1d9ba01"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/chr18b.dat",
+   "path": "chr18b.dat",
+   "sha256": "7400d871613c545ed62cef649018d76fa7aff9ea317518cce3f38082831db723"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/chr18b.sln",
+   "path": "chr18b.sln",
+   "sha256": "d64b15a0cb9a35dc0b2624c03d2b91b81edf252130343bb454311b1b5e4c4bd3"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/chr20a.dat",
+   "path": "chr20a.dat",
+   "sha256": "cb502ab86e5a75eafd3f76f6437ff8c225e0102f77dd97876a16759214a1cd35"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/chr20a.sln",
+   "path": "chr20a.sln",
+   "sha256": "66426c85eb16e1185e6efc46db8c5575d0c41919cf6b7179a899173023e812d0"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/chr20b.dat",
+   "path": "chr20b.dat",
+   "sha256": "5982959046627fd558ee825f0920f70609f07841e4ea4d67c6236f4e870c3505"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/chr20b.sln",
+   "path": "chr20b.sln",
+   "sha256": "9be351276d1f75280fc63d2e1dc34a4e167ea9ca99fc650f3da94d1cdfc845f2"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/chr20c.dat",
+   "path": "chr20c.dat",
+   "sha256": "70172ff3f29498a5508d8494b3bf63f47ef39c7df3930539a5420a5c9d8bffbd"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/chr20c.sln",
+   "path": "chr20c.sln",
+   "sha256": "7188916ca1161e37ad956cac0f0d57d7d067498ccec82c893e10aac0c64506e0"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/chr22a.dat",
+   "path": "chr22a.dat",
+   "sha256": "cc60a1117a2bf6776d0c807da1ecea178d4b706d98152527e821f3566b505fb4"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/chr22a.sln",
+   "path": "chr22a.sln",
+   "sha256": "73d7d43b3a0f691cee0b5b7fbf5072580ce691b43c2aa8406ae86fd817805c7c"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/chr22b.dat",
+   "path": "chr22b.dat",
+   "sha256": "a7f5d0c107e39b69d4e31d7ffa49c0ec34f32b792d6181fb44804c5935024e4e"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/chr22b.sln",
+   "path": "chr22b.sln",
+   "sha256": "fd2fe1bfe10e74dcb5f9f63a1878e17ad2dd9533d1c84fa6f9c94e0786ea2292"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/chr25a.dat",
+   "path": "chr25a.dat",
+   "sha256": "e840425ca03bd14822e63d4c2b8055fad0ddb1b6ef504095fc0abcb87a472bc8"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/chr25a.sln",
+   "path": "chr25a.sln",
+   "sha256": "cffd04ce663a9f3490919818f055915d6fc83dd48ff01e13d86e5b21d0a53a57"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/els19.dat",
+   "path": "els19.dat",
+   "sha256": "649de7f196439afdd098bd5c2c2aa175e8046e59059ee9a84f8637e2dff8d4d3"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/els19.sln",
+   "path": "els19.sln",
+   "sha256": "46220ed204b44f0ec66138d4c04645d0f3f801e0e90fc07bafb1300a93a25fb3"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc128.dat",
+   "path": "esc128.dat",
+   "sha256": "0c95fd15b8ce0e2aa6a9c0d4693eb3da037a3b5295c429ef68f0130130a8cf10"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/esc128.sln",
+   "path": "esc128.sln",
+   "sha256": "877eb4d77acd6b477dc50b5a28af108409b13d26012c2a3dcb65933088f26384"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc16a.dat",
+   "path": "esc16a.dat",
+   "sha256": "43d87cba944821dd094f4e49ad0b465077406df9dfe2ffcfc3528d573f43dfc9"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/esc16a.sln",
+   "path": "esc16a.sln",
+   "sha256": "2d531a61aee98dcc09aa070c4a4ad4c30ead66631c3fded7dc5c10d7b8d48261"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc16b.dat",
+   "path": "esc16b.dat",
+   "sha256": "cdd1c1a90c7457ed0cc62aa3f6628cc009b26d531c8e43857df18de17f061292"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/esc16b.sln",
+   "path": "esc16b.sln",
+   "sha256": "31c3b2fbd21d67a958941e4ab3b2e440b656695b45f86935bd5161e21897c1da"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc16c.dat",
+   "path": "esc16c.dat",
+   "sha256": "bfc4d0433462430397e22a6fb54a031d6c4237ab864c6b6e605c6a906ea8c587"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/esc16c.sln",
+   "path": "esc16c.sln",
+   "sha256": "6fcb3847bbd32814f148407cd4fe0f36aabbeb0b4b7afc6b0b31c589a05c23f1"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc16d.dat",
+   "path": "esc16d.dat",
+   "sha256": "c773c5327b8da35cf3de40c9f6ab1befa9becbb70cbe153778141f12b154d55d"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/esc16d.sln",
+   "path": "esc16d.sln",
+   "sha256": "6cbed9d1c70f752745632c245d7aec244d21e1632aaab00b387ab1bb69441ec7"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc16e.dat",
+   "path": "esc16e.dat",
+   "sha256": "8d3e191192d25982912a925d9448460b05ccca7f03ae2f22b2f1fef2f6514b82"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/esc16e.sln",
+   "path": "esc16e.sln",
+   "sha256": "6f4e21a6fa32c280bdba26d4bc9d4cb9d2e2aeec67d4ef8bd570ab4018b3b062"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc16f.dat",
+   "path": "esc16f.dat",
+   "sha256": "57435637d52cccbef3287b0ef4fd720b37ce61abac91a6ef39c07306a7c02122"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/esc16f.sln",
+   "path": "esc16f.sln",
+   "sha256": "cbd9296c1c65bc9669810421726d6981ac9109f3fd12ffbcf59579d218148511"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc16g.dat",
+   "path": "esc16g.dat",
+   "sha256": "3c9fa3cfd4556460eea72bbb9172542fb7b5b04994fe1bffcccf49b34a7aa136"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/esc16g.sln",
+   "path": "esc16g.sln",
+   "sha256": "72b39767bf8655e9e715e9a3e3acd1f7f72c2dbf41ecebef7cda75cb7f7f46d7"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc16h.dat",
+   "path": "esc16h.dat",
+   "sha256": "468151e74eb4aa35ac799e923d027f181666995abe828f045b5fe4f4634de39c"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/esc16h.sln",
+   "path": "esc16h.sln",
+   "sha256": "129625d28f533a004db6c91dc1ccbf05ee6782259723382f548abffc5d8fb1d9"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc16i.dat",
+   "path": "esc16i.dat",
+   "sha256": "0a407d13c14307591f77422276219b07eac4a0643e22c808cfff6aeecc387604"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/esc16i.sln",
+   "path": "esc16i.sln",
+   "sha256": "d1ccf7125c5056583ae3c5c127a147ef046a44c0c970424d6e4441425ee75fb9"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc16j.dat",
+   "path": "esc16j.dat",
+   "sha256": "231127dcfdd681905eb2013b44a9dc1d966e5be4c65b7ccdf782023fe5c1c163"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/esc16j.sln",
+   "path": "esc16j.sln",
+   "sha256": "df57db9056d46f3174cb5a0f9d408c05edb407303b11e058530530b5f7c4a573"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc32a.dat",
+   "path": "esc32a.dat",
+   "sha256": "52185fb0f9cb61e4fdd1b6722f23a3f9a79fd91a905596696c63b254568e48d4"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/esc32a.sln",
+   "path": "esc32a.sln",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc32b.dat",
+   "path": "esc32b.dat",
+   "sha256": "0e0b494e7af80a25c7a16dd38c51032858ef35babb0929a78b170b7f125f8220"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/esc32b.sln",
+   "path": "esc32b.sln",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc32c.dat",
+   "path": "esc32c.dat",
+   "sha256": "6c1bc2241c85dac403eefc2854bf1ac2f0743ad2aeb75dcd6b6ef0fb3cc3662d"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/esc32c.sln",
+   "path": "esc32c.sln",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc32d.dat",
+   "path": "esc32d.dat",
+   "sha256": "7d7fb2c141a94c08103b032a0c0017163e5cb0b7229d0100c6e8a7de83368869"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/esc32d.sln",
+   "path": "esc32d.sln",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc32e.dat",
+   "path": "esc32e.dat",
+   "sha256": "d67e89575654700ddf894c8902bc89b4dfdd21f69554c0a5bcb2448c99f38c14"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/esc32e.sln",
+   "path": "esc32e.sln",
+   "sha256": "59b1b8892a914ac7e0adbcd88c78eecb4150d9bcee0199621ae89fb313f4b16b"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc32g.dat",
+   "path": "esc32g.dat",
+   "sha256": "6454a5d29bb2b6cce2bdd044d7ea1050e8704764bcc82f360694c4580ca55436"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/esc32g.sln",
+   "path": "esc32g.sln",
+   "sha256": "4c7ff9a10aa4aa5343e7589255f1305ddc7829ed524b1311b9a30490d8630416"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/esc64a.dat",
+   "path": "esc64a.dat",
+   "sha256": "a8aa36d0a4c9d442ae33fbe445c7c3f755d1bdf550a5f133ae9f57947f02dce7"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/esc64a.sln",
+   "path": "esc64a.sln",
+   "sha256": null,
+   "missing": true
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/had12.dat",
+   "path": "had12.dat",
+   "sha256": "f449f4e5af533a23ae5170c8781cdd92ddfec6fdf8f648115e2608349c078be7"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/had12.sln",
+   "path": "had12.sln",
+   "sha256": "09dcbe26cc493602001edd7125f3d3e6d868fe931fc7e6f4f3405408a5f312ed"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/had14.dat",
+   "path": "had14.dat",
+   "sha256": "4d369dbfdd598a7d45f504267772f8d05540dddcb1207e5f764318a36fbe292b"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/had14.sln",
+   "path": "had14.sln",
+   "sha256": "5bae5894d101d1967b807713a79434c28b1b0d5f7dfb0950bae0112446f143f9"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/had16.dat",
+   "path": "had16.dat",
+   "sha256": "13a6f5e3318b8a50adaa0e44e1c540ba9431befe292e49962da044e9004f41bb"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/had16.sln",
+   "path": "had16.sln",
+   "sha256": "b976e79bdeb455079038db9dc7187a3f3746902b5ea9addddf67b21d401468f7"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/had18.dat",
+   "path": "had18.dat",
+   "sha256": "1e4e743ec5a8583d1578dc170ecce125daedd9c0c6e9960df019f770cfd84ff3"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/had18.sln",
+   "path": "had18.sln",
+   "sha256": "27fe92e36941bda5ce56f547ecae5f9d96d7f8943c0a4068fc8cef776fcb9397"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/had20.dat",
+   "path": "had20.dat",
+   "sha256": "7fcf5045bd3918f543bc7a6c91108b44096dd3e3f09101854a29f8107a02c42b"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/had20.sln",
+   "path": "had20.sln",
+   "sha256": "737e9649ca920e0628dffde985bca31652510d9f201ac9de10b7444fdd2a157d"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/lipa20a.dat",
+   "path": "lipa20a.dat",
+   "sha256": "3e0346b250c7060b82f9d8f57604defffb8fc913f725ab4f6525e65b00cd5433"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/lipa20a.sln",
+   "path": "lipa20a.sln",
+   "sha256": "22e97cb1f057e961bb80fe8fd4187302df69db9c670426a84b194b218db60061"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/lipa20b.dat",
+   "path": "lipa20b.dat",
+   "sha256": "9cd89b2f6dc2ca982006b00921cd934a3ab4619ae699f295dbcfd7711c51a192"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/lipa20b.sln",
+   "path": "lipa20b.sln",
+   "sha256": "f713b99fb0dc621366c75c9866929f5d538fa4d63c15d8d2a4072fbe2da63157"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/lipa30a.dat",
+   "path": "lipa30a.dat",
+   "sha256": "c04d6028774a2fe24d911901db2cf0be18fa7ef06087b85dd00eecc4f83776a2"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/lipa30a.sln",
+   "path": "lipa30a.sln",
+   "sha256": "82c5b1510ac0c53086db9bc638039c08733d3b5f61eed85ae026db6291b22652"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/lipa30b.dat",
+   "path": "lipa30b.dat",
+   "sha256": "dc6ba6f02c6f4e0918352ed3365cf0cf0f6c5142a37fee5afe21b2097f7d9622"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/lipa30b.sln",
+   "path": "lipa30b.sln",
+   "sha256": "59e59e5da772fa619adb385db433fe1b8e847b92eb40fb09499d9735617d6ec5"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/lipa40a.dat",
+   "path": "lipa40a.dat",
+   "sha256": "af7dd326e3b6037e27a0b5554c4420184262459f999cfadfd9a51118826bdc5e"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/lipa40a.sln",
+   "path": "lipa40a.sln",
+   "sha256": "1432e69a6cb87f7c8a2b3df8054f6b274722b6673c2cb7a154ad0217cb70f4ef"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/lipa40b.dat",
+   "path": "lipa40b.dat",
+   "sha256": "da4b86feee53bc815f7b04cf84706ec469f664b08b4530c96fe2328f32eed9ff"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/lipa40b.sln",
+   "path": "lipa40b.sln",
+   "sha256": "15d7fdef5f3458017ebf4dd6fddf28082cba6e4a176a1948e435172795baefe3"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/lipa50a.dat",
+   "path": "lipa50a.dat",
+   "sha256": "c4691880bd5a8910a50eb521d631a5c90b58935432af0abc8bdf5a4d20fdeff4"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/lipa50a.sln",
+   "path": "lipa50a.sln",
+   "sha256": "5ee83f68baf657ee84a386d797706c99be26262ac049184749d648bd99309595"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/lipa50b.dat",
+   "path": "lipa50b.dat",
+   "sha256": "d05f42c264866a078c9443fdaaeb8219dd5ab1e2d61d05865a03fafb8fc25125"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/lipa50b.sln",
+   "path": "lipa50b.sln",
+   "sha256": "48a9badfcfbfa7289a1df7acb71023760f0b68439e8ae0915da20e9de8c05770"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/lipa60a.dat",
+   "path": "lipa60a.dat",
+   "sha256": "bc1f1aa3d35a82b91e816e5c9c20def9c6ab6161edc149f983e9aa7dfa9877c6"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/lipa60a.sln",
+   "path": "lipa60a.sln",
+   "sha256": "2712e23e6e17a28d7481d9d8204bfcd94d632640ea4a94fb111cf4263c7f79f9"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/lipa60b.dat",
+   "path": "lipa60b.dat",
+   "sha256": "27268ae2429a53e3b8cadbde6989892dc70e7de0bc76d519c06f5070014fb3d5"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/lipa60b.sln",
+   "path": "lipa60b.sln",
+   "sha256": "8492126d6ea6e1e1eb061edb6eb15792d5bf079ce57139b95a8842a1de044362"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/lipa70a.dat",
+   "path": "lipa70a.dat",
+   "sha256": "9291885647c09b688f6a186a875eeeea5c059b7989a4ccd199f54aa062825dce"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/lipa70a.sln",
+   "path": "lipa70a.sln",
+   "sha256": "a2518504ce17b89d1230485f099091d19d16f6fc4dc10917c9c94c0458724fcc"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/lipa70b.dat",
+   "path": "lipa70b.dat",
+   "sha256": "8e671d6df985f88df8da41811283e596f69a5fa686ee55220f0a1d33c7969f4f"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/lipa70b.sln",
+   "path": "lipa70b.sln",
+   "sha256": "e296b131bd7f25bd64f987268cdf98c1975f2a49459f4e3ff083847de64aa25b"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/lipa80a.dat",
+   "path": "lipa80a.dat",
+   "sha256": "63e1b3a9663b282174b9cdb01d1bc28685d734d60950c6038c25535de314fe6e"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/lipa80a.sln",
+   "path": "lipa80a.sln",
+   "sha256": "9fb6939b8870cdb4d865f81b6c8357d39f8c18f34eeff1e92bf0612a15c1d949"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/lipa80b.dat",
+   "path": "lipa80b.dat",
+   "sha256": "dbcff9d4e95aa34c01d44cd883f2c203a83d5fbcb68d6c3b1223453e1c89cff1"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/lipa80b.sln",
+   "path": "lipa80b.sln",
+   "sha256": "865cc8369db2be82359c672a747fb852103a759b093abdfc42e4839a24eb654f"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/lipa90a.dat",
+   "path": "lipa90a.dat",
+   "sha256": "8448c98c34e4811fc19eec0f7d0df0c60bee7044224fb6cbc1b5b2bc1377e9b3"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/lipa90a.sln",
+   "path": "lipa90a.sln",
+   "sha256": "a82a69cba3e0c7270510a60f3a1e37486efd1cbcee0e7e58eefbdff704ef4e95"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/lipa90b.dat",
+   "path": "lipa90b.dat",
+   "sha256": "05c8ba34f8d7eb7aed447633821f9d79a94164709409df24c67d3a308869f8ba"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/lipa90b.sln",
+   "path": "lipa90b.sln",
+   "sha256": "a4a636b5ec3e07c40ba4058ba7c8e4eed3c5abf8dccb2c73ea43cf58f2ee4972"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/nug12.dat",
+   "path": "nug12.dat",
+   "sha256": "15ad1047d3d39e2820466349dc75ce8cc560443e125c4f67ff06223d735f47b6"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/nug12.sln",
+   "path": "nug12.sln",
+   "sha256": "9d94c144dc4015f6233bc4738b6ca166bc5dad2f972cdc9fe5fb4028ac0cbd83"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/nug14.dat",
+   "path": "nug14.dat",
+   "sha256": "ffa06e53e4ffde301651f2a3c627ff1350b9282d53fdd8b76f388c76d0ec0ed0"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/nug14.sln",
+   "path": "nug14.sln",
+   "sha256": "76b1dc2ac6ae52eeb7b7a809b718bf93d473a6756622a95878b0517695cd72dd"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/nug15.dat",
+   "path": "nug15.dat",
+   "sha256": "3b38058a5e721e059739ab5a3f66c81792d575a41a93673ecb88b108f976c149"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/nug15.sln",
+   "path": "nug15.sln",
+   "sha256": "13b668437d157a65a8e2d29af665d6d73cc801f1d3d3ac445edfc6208abb471a"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/nug16a.dat",
+   "path": "nug16a.dat",
+   "sha256": "3c7d75160f74e589229a82b4d08f24a62c1e6ceba947810fc32cce48811de8f7"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/nug16a.sln",
+   "path": "nug16a.sln",
+   "sha256": "634b17184b2db28df639614c2a9db52d6a9a95fe5f83b4c4d6343837f88fcc0e"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/nug16b.dat",
+   "path": "nug16b.dat",
+   "sha256": "563c86cdd61da5a46e78e134daed837199671cfc9a81f86762b9d2e9572578e6"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/nug16b.sln",
+   "path": "nug16b.sln",
+   "sha256": "67faf4b34a970e6daf94df2f749725591187a3fb4166e3dcc97350deb5eb9259"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/nug17.dat",
+   "path": "nug17.dat",
+   "sha256": "d5cbe356fe81388225e0af527077dd69d37ad79a46121bb58cb7669087fbd59a"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/nug17.sln",
+   "path": "nug17.sln",
+   "sha256": "802d39ad1236184f1c6ce8a5f6a19a5fe128d42161308dd47d4835ea4e106bc2"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/nug18.dat",
+   "path": "nug18.dat",
+   "sha256": "607e4a0575b4e2c12549f343c2ed38e5ebcaa4daffa7ffe309d3c2a247902382"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/nug18.sln",
+   "path": "nug18.sln",
+   "sha256": "994bee3d8e55b5ce0715646a747b5adaa577f1a09e8afaaf06fccb53f39f8d1c"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/nug20.dat",
+   "path": "nug20.dat",
+   "sha256": "a82316ada09e9c8d7fe40591306cfe0a2505b44254f37da54f2916ea81f1ecf1"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/nug20.sln",
+   "path": "nug20.sln",
+   "sha256": "8ee356ac206af5d3f77a587d047f97cee01cdf471fae23ff8c2a5736329bcf7c"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/nug21.dat",
+   "path": "nug21.dat",
+   "sha256": "f3842d64ce29c99603b7a80227ba218a57f8787d6ca2e9f92bade94f9dc0f202"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/nug21.sln",
+   "path": "nug21.sln",
+   "sha256": "b10f42a128b39581035915f8c8428394f397a38477f73aa4e94496d1e6e871fd"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/nug22.dat",
+   "path": "nug22.dat",
+   "sha256": "406aa5df910fbbeac01660dd96963ffa7f5a1670786a74822d17241dfe2850c8"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/nug22.sln",
+   "path": "nug22.sln",
+   "sha256": "de533312591fb6681ac68e8e579acbae92be80f709416fb1dab40c7eae5d2b87"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/nug24.dat",
+   "path": "nug24.dat",
+   "sha256": "2d25e7b435571b58b653ad47000bc182ee25c1016613ac3c7f58aa80c3bb992a"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/nug24.sln",
+   "path": "nug24.sln",
+   "sha256": "dbfd41d7367f1b550f5ed9d1ea65e0c321473391f16f7c918ad1c943929803d1"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/nug25.dat",
+   "path": "nug25.dat",
+   "sha256": "c8c62f0ec01dd5c0eb8ddfdd3c8a353086e5a9b245d11ea902628f0a210d2015"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/nug25.sln",
+   "path": "nug25.sln",
+   "sha256": "bf9b6ebb6ea1163e8a50155a08bbc52deefd0f5738ac37231cdc4286157b59c0"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/nug27.dat",
+   "path": "nug27.dat",
+   "sha256": "7f170dc6e40274bc40227aa3c6d69ca06fbd8f0ada63e3664ddd12bfe3067cfd"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/nug27.sln",
+   "path": "nug27.sln",
+   "sha256": "ca27ea70115faf5d506f99b936420accb99603ecc5eb9ae2d5f87dadc2bc3051"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/nug28.dat",
+   "path": "nug28.dat",
+   "sha256": "22c6adabf44141432aa76693cd0d5fa9d98bb2a262e6ef8a7097b072cdc12c30"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/nug28.sln",
+   "path": "nug28.sln",
+   "sha256": "6ef37cb2c1347e8b1766551568f4744cd0da8a32701839f4c8b6eda80b0da22b"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/nug30.dat",
+   "path": "nug30.dat",
+   "sha256": "7c8e1001b1fb13e93417193707f4975c968bd2ff2d27451b8c4fccbd76645c09"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/nug30.sln",
+   "path": "nug30.sln",
+   "sha256": "2f29aab37f086bf9b8745800b8da6e47591988e76b1bb824bfbbb10310a016e2"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/rou12.dat",
+   "path": "rou12.dat",
+   "sha256": "3f3f465b80a8b684d146e3e2cf6f315bf70d102ef110e0fe2a42866c070987a2"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/rou12.sln",
+   "path": "rou12.sln",
+   "sha256": "020531add17fab8fe72c58f8d2924be97da2a8854be3432c10a37679251a5a5e"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/rou15.dat",
+   "path": "rou15.dat",
+   "sha256": "7631c0017c53061e2e3587adaefe138ab11dfac2f70736ab9744c5c00037a549"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/rou15.sln",
+   "path": "rou15.sln",
+   "sha256": "47ec9df1648e6e5a56fecd02015df89ccb6b191b954a33d4b4574368243b4846"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/rou20.dat",
+   "path": "rou20.dat",
+   "sha256": "7a2c7acf9ee38b256fa75ef027d4906bca3334fdddd5b64c09b572a014479833"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/rou20.sln",
+   "path": "rou20.sln",
+   "sha256": "e599a60e2fab92b1d30955040c52072e8790b96af5eb8d69a66c74eeaa03ffc6"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/scr12.dat",
+   "path": "scr12.dat",
+   "sha256": "794f032e7ed99ce9c5f356c5fce9e409d463733c481648f28e90448e8986b6b7"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/scr12.sln",
+   "path": "scr12.sln",
+   "sha256": "0378ad26ac5d3d365f7a2c2d7618f48093c6523122ab43a5386bbfe03ef09eb7"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/scr15.dat",
+   "path": "scr15.dat",
+   "sha256": "82c331582812c7615e03d2304205fe1b4a47fe8fba361d932fd4fcf8eb69d6ee"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/scr15.sln",
+   "path": "scr15.sln",
+   "sha256": "6eaa6b1552dfbe2dea2fc4fdd4b8603dec2ddc739366e7fd616f71be04d33d6a"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/scr20.dat",
+   "path": "scr20.dat",
+   "sha256": "2511fcaae6de80b2d7aaeb29c5469e13a46201d754bdc807e8a61b8b723daf33"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/scr20.sln",
+   "path": "scr20.sln",
+   "sha256": "6954037fa1bdbc25ddf120310de7afa9e9d0ef82c8c2e1dec8c18024e9951283"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/sko100a.dat",
+   "path": "sko100a.dat",
+   "sha256": "bd25a54fe4761df0aa4fa0ee888b3893233293c9f15734677ef8fa86792e649c"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/sko100a.sln",
+   "path": "sko100a.sln",
+   "sha256": "ba2a58e38aba8dc14b5aa621cb213a8aeabe561fa75d569c5a4b3ba4731369b6"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/sko100b.dat",
+   "path": "sko100b.dat",
+   "sha256": "ab0c805adf06e5db952a2bcc4dbfe61cbf1bc353bb22c71f4dc6a89ffae32a88"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/sko100b.sln",
+   "path": "sko100b.sln",
+   "sha256": "e42d4b24c4279e6040d9b9400297e417ff38afdf40ee0e029fff3b01718aed24"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/sko100c.dat",
+   "path": "sko100c.dat",
+   "sha256": "1b4050f8c75d43f3552df3a6ae1fd78116048b558fbdf5a8ab5abbe692887424"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/sko100c.sln",
+   "path": "sko100c.sln",
+   "sha256": "31b28976ee930d48050b8feaa12dc2fdbf91a1a30d221ed1c555a5884e0d3ffd"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/sko100d.dat",
+   "path": "sko100d.dat",
+   "sha256": "c0cb7ad4c2b2c6fe9b72c638f214084aa6fae78f15b4619b69114469f5d57ecf"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/sko100d.sln",
+   "path": "sko100d.sln",
+   "sha256": "15f755ecd2b83f80ff920316c834e36f368868742f004ff11bc06e8098b23e53"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/sko100e.dat",
+   "path": "sko100e.dat",
+   "sha256": "7d8a66283ba4780a612b1e22b7b4829b3659e0c6ce192e9fda7110a990aaec3d"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/sko100e.sln",
+   "path": "sko100e.sln",
+   "sha256": "39c4a8de4ae3b7c5a426470b62813b45b8ef505fb45579871348d6e33148875a"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/sko100f.dat",
+   "path": "sko100f.dat",
+   "sha256": "8eecea5e5c6045af008021dcfdfce206833d1b0b7fab937206f76513f9d57ec5"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/sko100f.sln",
+   "path": "sko100f.sln",
+   "sha256": "3e0ebe6350b2845923b9489af419a0d95a548a06c5835e7d2c3641662abf2c6b"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/sko42.dat",
+   "path": "sko42.dat",
+   "sha256": "fd3887537642630295bb6d0c24755dcdc39848202ad3065f394645beafba49d0"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/sko42.sln",
+   "path": "sko42.sln",
+   "sha256": "b34362c6ffaf30a2046dd8af3bc1419155b71a8945a0d29f32f5cc4d6c148c81"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/sko49.dat",
+   "path": "sko49.dat",
+   "sha256": "6b363fb280df946a292830a1bf8335272bb0c8462fdb8fc6928a74837b79b255"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/sko49.sln",
+   "path": "sko49.sln",
+   "sha256": "d15df7209fd33169754b566c16c7cbd7159a9d8d9ce412864d1933ac93fc53bc"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/sko56.dat",
+   "path": "sko56.dat",
+   "sha256": "581b41269fd70985f2dabfbf543070014b40548a356a676658a5f76f194e4cc2"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/sko56.sln",
+   "path": "sko56.sln",
+   "sha256": "33db29aee63ed73ead21e072cea14084c678143ea2ab3a32ebe36aba612a7c8d"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/sko64.dat",
+   "path": "sko64.dat",
+   "sha256": "fc1a95a121c50da5e221a19b4694cfc4bad33631615626ab2bf404cbc31905e4"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/sko64.sln",
+   "path": "sko64.sln",
+   "sha256": "b54ac55e0c49392d7ddecc876d8e78b6d76e433b63f78af0a4923c0a88d8c071"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/sko72.dat",
+   "path": "sko72.dat",
+   "sha256": "1d28250962c4f12b97c847209409e39a0ca5763a95299cd9862ab584920709c8"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/sko72.sln",
+   "path": "sko72.sln",
+   "sha256": "7ab4b0b3be1ece8861464e1b5e576b1cdff2027e17741eb88e63aebca0554b95"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/sko81.dat",
+   "path": "sko81.dat",
+   "sha256": "40aae61081c6076a6a5f6ace32f9d2ef0770777746d66de2a7b791b01e0524c8"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/sko81.sln",
+   "path": "sko81.sln",
+   "sha256": "cd06c7815da15284a33efcd390c5f10fc4a821584f147c74af99793d7e29f142"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/sko90.dat",
+   "path": "sko90.dat",
+   "sha256": "4fb7cf51a0f351bf78f26de308d86f974f1be47469d532ea92c8f7279f108cd9"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/sko90.sln",
+   "path": "sko90.sln",
+   "sha256": "12fc601ab479ce775b8f0819a1920385bd66dc8fe379f3d5801223d272666f1f"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/ste36a.dat",
+   "path": "ste36a.dat",
+   "sha256": "0dc451cb75985a53dd7964860e58fd7ad809316a2c4758d2fe328beaceab50fa"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/ste36a.sln",
+   "path": "ste36a.sln",
+   "sha256": "73a06b4d0bf9de1519a6fb395ab1d83d5e5d24ae1048bea88a0579b183980359"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/ste36b.dat",
+   "path": "ste36b.dat",
+   "sha256": "d3e953a6eb8a7794317375326c3ce56817a51c7f9002a3b9ebe7efb3848086eb"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/ste36b.sln",
+   "path": "ste36b.sln",
+   "sha256": "1304deeb6b91faaf3dce56957082cc4ffe55cee914571d356469b5e6b6ef336d"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/ste36c.dat",
+   "path": "ste36c.dat",
+   "sha256": "9071556e17b7461d5bae15d829a2605a2969b440ea6c28d2575f3debd328a2ff"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/ste36c.sln",
+   "path": "ste36c.sln",
+   "sha256": "d63e85304bd6d94733a9f9b804c6137e17edf2633c7c3cf13956b8b26b2957e9"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai100a.dat",
+   "path": "tai100a.dat",
+   "sha256": "de053a8df4044c71d3d3da8b86a6e3bf32b1ac3053ab1970e6d81098a26a0895"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai100a.sln",
+   "path": "tai100a.sln",
+   "sha256": "6d98fd048962d4f80ac75bc71e2c2cd47f364e2bcf82fa21200b1c71c2e34f3b"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai100b.dat",
+   "path": "tai100b.dat",
+   "sha256": "eb79163d5fac8230042584ad94b28d0b266a4aeeae8a5e5667a9a7954304a4f5"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai100b.sln",
+   "path": "tai100b.sln",
+   "sha256": "afd9526c973922c61ed1ff9b2999eb44a748a6449a139cc98870504594802ed6"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai12a.dat",
+   "path": "tai12a.dat",
+   "sha256": "3a9fa8069e82f9fd7806c37175e9c568a66ffcf9798935bf1f7336df81938318"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai12a.sln",
+   "path": "tai12a.sln",
+   "sha256": "3712673378ac1d18440b715beccc7476eda82482d9e5bcaa2e54b78d67b4add6"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai12b.dat",
+   "path": "tai12b.dat",
+   "sha256": "b1a9cccd03c6ca1a6e6481f9887a8c3478993745367addeb5719050931c71f02"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai12b.sln",
+   "path": "tai12b.sln",
+   "sha256": "0a3c77248a0bddfb432a5bc2e1951cb7525d30a0d72a0b47ba346d4da3660956"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai150b.dat",
+   "path": "tai150b.dat",
+   "sha256": "47360f940c4e80b2670c38a5efff196830e97e2bc6b32c03ba5ef5bef2eaf464"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai150b.sln",
+   "path": "tai150b.sln",
+   "sha256": "2ebbe92d7e232025d32a805fb7ceef8249276f52a12f7b2ea519b34735774ecd"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai15a.dat",
+   "path": "tai15a.dat",
+   "sha256": "374f8225097d01ab29bd933dfa41a2c1b8d753bcc5deb05cd3179faf97b9fb65"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai15a.sln",
+   "path": "tai15a.sln",
+   "sha256": "51eb6befec4c22087b1e62d91a83104e8567cf7e6523cd94cc60e404e80aea11"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai17a.dat",
+   "path": "tai17a.dat",
+   "sha256": "8a1a0ea94d3a8c4d23ec64cacf48613aee1b1448ea1a2f37ca7fc5b9f4c4358d"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai17a.sln",
+   "path": "tai17a.sln",
+   "sha256": "9ae9ee2e880cdd4e9b4fd62dac4d554984d0288ea591a6677c98a1ab386f37aa"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai20a.dat",
+   "path": "tai20a.dat",
+   "sha256": "39eeebc193ffa134e7be20ca32d4ffacadcadda7f75268ef0dee142d27a1fb74"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai20a.sln",
+   "path": "tai20a.sln",
+   "sha256": "1220c5f9a2c9b6c159b0cae0d9d3df948cad23fe89dc5af7ccd104eec0a9a56e"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai20b.dat",
+   "path": "tai20b.dat",
+   "sha256": "99efd6bc04aae2f8d27cce380165867497c9fe807fca798e53131d25c09831f5"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai20b.sln",
+   "path": "tai20b.sln",
+   "sha256": "798a09e8e8d11ec8d8624001f46d0c7a3b96d8261d80f1ed96d4502e2a8e47b8"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai256c.dat",
+   "path": "tai256c.dat",
+   "sha256": "e7d72083d49f4768e5a15a02ee33fde038a794e7407e5e485c3c110f1509fafd"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai256c.sln",
+   "path": "tai256c.sln",
+   "sha256": "066452382541a9139b2de34113105afbfaf14949a367fe5acef468d80556dcb0"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai25a.dat",
+   "path": "tai25a.dat",
+   "sha256": "90cf743e9027fccb9dccd28c38988d9e148e7cec709fb41525a4732ea15b67ad"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai25a.sln",
+   "path": "tai25a.sln",
+   "sha256": "00149032e24ff8b8ec9328c9b1e8945e2c5d61e356b3345c7b0462bd7617ca34"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai25b.dat",
+   "path": "tai25b.dat",
+   "sha256": "0b9a91ce5f626b1570a482bf78186d631961defa26c51be83881f48f2ef11b77"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai25b.sln",
+   "path": "tai25b.sln",
+   "sha256": "5d9a2dea669125b883e4487b5360bf6709f7c4a7530bb1a40334ca6ac52abfe7"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai30a.dat",
+   "path": "tai30a.dat",
+   "sha256": "45cf69409dfbba614c4908203d47b543ce9880d6874c2d04f4b3f0740123439c"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai30a.sln",
+   "path": "tai30a.sln",
+   "sha256": "d7801c391320e271cf232f5702ef67e9f25a00266d48163071bd4a225f8eea36"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai30b.dat",
+   "path": "tai30b.dat",
+   "sha256": "1044b3c6fc0d0aa6e435da5b8754df322d27f6587d4ec7b0952a4d1da8d90504"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai30b.sln",
+   "path": "tai30b.sln",
+   "sha256": "bdea34bf0cf64f851047c80c0b57c55990f8db8bc89e678ac64063af3aea6f0a"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai35a.dat",
+   "path": "tai35a.dat",
+   "sha256": "78ac8afe13129e9074a1431e5358ad670d5daacfa944222b7d2f420f94679316"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai35a.sln",
+   "path": "tai35a.sln",
+   "sha256": "d1f06d79f69f01278e5174366208676c5b9f7a860215774df4d121763575f87f"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai35b.dat",
+   "path": "tai35b.dat",
+   "sha256": "7082b75870365c9e313b095f13ff9d6f6b851e6063934fb4b2dcf302d4febeaf"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai35b.sln",
+   "path": "tai35b.sln",
+   "sha256": "67cba8265884417c2431d0f184856c3d0b2e9e31e81822d64107c1201e77a0c4"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai40a.dat",
+   "path": "tai40a.dat",
+   "sha256": "4920f20750ebb667cec1963ce0c85b9e55538971de7237d4e370e1c80ab3b3c5"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai40a.sln",
+   "path": "tai40a.sln",
+   "sha256": "67f84cf7ea0f15517e48f0ae9548b2c389ba1bfd77ecd90990a41b7e79cbd670"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai40b.dat",
+   "path": "tai40b.dat",
+   "sha256": "79556456114f22843af8e3ffcfd48017f1d529c23066d37635f0d56e3c025f7a"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai40b.sln",
+   "path": "tai40b.sln",
+   "sha256": "1b2a5d383d832ee0dc878168da07cf12465ec1cdca6ecfb1bd1712b3e5f1dc16"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai50a.dat",
+   "path": "tai50a.dat",
+   "sha256": "3ff7b0cc5cbc28d0cafbc37fea4ac61d490db81bb20453757fad557ec468bf9c"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai50a.sln",
+   "path": "tai50a.sln",
+   "sha256": "c04410c53e0623d96976760aa0c86dfa26c548671571580da12c4c9f9f35ef3f"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai50b.dat",
+   "path": "tai50b.dat",
+   "sha256": "4977aa11a530a0699bf0a91eb3ca1962687782fd317accdf63b054fcaf7df288"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai50b.sln",
+   "path": "tai50b.sln",
+   "sha256": "c4c9836f9036ec0709b254c6fcb0bb4329faea6e44549c4b77d81fbd2f1a2eba"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai60a.dat",
+   "path": "tai60a.dat",
+   "sha256": "b32cae60a3539c788e1e228a10f5581ee1c31dbaa58930c697d80c7947c054a1"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai60a.sln",
+   "path": "tai60a.sln",
+   "sha256": "50d2446c6ea49d35b83ef28d21485893169fbd98a613c8844ce75c63b91df32e"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai60b.dat",
+   "path": "tai60b.dat",
+   "sha256": "a417c51bd1b0c602120048abf256101541f73dd31820f2983de0eedb49b4fb3a"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai60b.sln",
+   "path": "tai60b.sln",
+   "sha256": "9ab82d7a840620bfb2a8c90ea07abd49e7585976edb6fbba900f954f588cf2f5"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai64c.dat",
+   "path": "tai64c.dat",
+   "sha256": "23933647c59ae5e4b73bc17a672a6d325c938eaabcd650636d93d2be5e1f55ad"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai64c.sln",
+   "path": "tai64c.sln",
+   "sha256": "837d1c15179cdafed9879decce55dc5aa000a275ed711ca295a4fa1506da8249"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai80a.dat",
+   "path": "tai80a.dat",
+   "sha256": "99a401c93d7294429383823dfab749e6e74cdd9d0208ed0cf9e52bcb18d1681a"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai80a.sln",
+   "path": "tai80a.sln",
+   "sha256": "b94a15dc36aa6a9d8976fa07edf6d262fe9c1e4fd9c6f490e05531eb2401165a"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tai80b.dat",
+   "path": "tai80b.dat",
+   "sha256": "cea03ad8f4fd1755922d86f084c3a3d6bf10bc3525f40ce34d584b8705f5cd0a"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tai80b.sln",
+   "path": "tai80b.sln",
+   "sha256": "f4136f7b501e88a6d04e0c70b06a7a0d15baafc767d50b0f9b2000368d50639c"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tho150.dat",
+   "path": "tho150.dat",
+   "sha256": "40136bc14aa404f92e7928c386e93218cf64437bd9c15f95830222701728690f"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tho150.sln",
+   "path": "tho150.sln",
+   "sha256": "f7ae15e68b8e33d706d5ad6cf800199f4cadbb8b5bac7d48ab79fd54d347c53d"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/tho40.dat",
+   "path": "tho40.dat",
+   "sha256": "2701531cf5f9e03d5ba267f206db6ff94f354fcdd5d8e2112fc5d90571b0c73e"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/tho40.sln",
+   "path": "tho40.sln",
+   "sha256": "a2045ff9cb921f23b40cb4c5eea5338f463d346852f75715dafc25e2125b58d3"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/wil100.dat",
+   "path": "wil100.dat",
+   "sha256": "9477abe6459def2fc664ee49f612a592bba7b59c2a3027c4a0382d068c6aa4ca"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/wil100.sln",
+   "path": "wil100.sln",
+   "sha256": "54b4f1a8acc5e719d7372c650ef718c4e87dff1417bcae55cf6d14ec8881f043"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/data.d/wil50.dat",
+   "path": "wil50.dat",
+   "sha256": "ad67fae8ff5e78aadded6004e101baa252f4eeac5a786a56e353f71b07bcb2f7"
+  },
+  {
+   "url": "https://coral.ise.lehigh.edu/wp-content/uploads/2014/07/soln.d/wil50.sln",
+   "path": "wil50.sln",
+   "sha256": "490e68e8b2e4651cafa38bde7a1c874b5b96a6dd22364fa2358a6f480574eef1"
+  }
+ ],
+ "allow_missing": true
+}

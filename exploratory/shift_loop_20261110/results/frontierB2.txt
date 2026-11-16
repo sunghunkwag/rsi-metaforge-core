@@ -1,0 +1,10 @@
+gen0     budget   10000 held-out  27 {'fresh2': 24, 'compose24': 3} | 34 s
+best     budget   10000 held-out  38 {'fresh2': 29, 'compose24': 9} | 43 s
+symbols  budget   10000 held-out  34 {'fresh2': 27, 'compose24': 7} | 30 s
+gen0     budget  100000 held-out  45 {'fresh2': 35, 'compose24': 10} | 303 s
+best     budget  100000 held-out  42 {'fresh2': 33, 'compose24': 9} | 479 s
+symbols  budget  100000 held-out  50 {'fresh2': 40, 'compose24': 10} | 408 s
+gen0     budget  251479 held-out  50 {'fresh2': 40, 'compose24': 10} | 849 s
+best     budget  251479 held-out  46 {'fresh2': 37, 'compose24': 9} | 1112 s
+symbols  budget  251479 held-out  51 {'fresh2': 41, 'compose24': 10} | 703 s
+exit 0

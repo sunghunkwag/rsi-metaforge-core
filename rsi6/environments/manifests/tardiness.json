@@ -1,0 +1,49 @@
+{
+ "name": "tardiness",
+ "category": "tardiness",
+ "source": "OR-Library (J. E. Beasley), single-machine total weighted tardiness: the files wt40, wt50 and wt100 (125 instances each, n = 40, 50 and 100 jobs; integer processing times, weights and due dates, generated as the page wtinfo.html describes, five instances for each of the 25 pairs of RDD and TF), with the page wtinfo.html, which states the problem, the generator, the file format and which instances remain unsolved, and the solution-value files the page names: wtopt40, wtopt50, wtbest100a and wtbest100b (served with the suffix .txt, as the directory listing of orlib/files shows)",
+ "terms": "OR-Library's legal page (orlib/legal.html, read on 2026-11-16): 'All of the material available from OR-Library is freely available for use. As such the MIT licence, reproduced below, applies: Copyright (c) (2010) (J E Beasley} Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files ...'. The weighted tardiness page itself states no terms. Fetched by hash, not committed.",
+ "reference": "one value per instance, in file order: wtopt40 and wtopt50 (the page: optimal values, except for the instances it lists as unsolved, whose values are 'the best known to Crauwels, Potts & Van Wassenhove (1996)'), wtbest100b (the page: 'The best known solutions to date' for n = 100, not proven optimal). Read by score and reference only (kernel only). wtbest100a (the older best known values of Crauwels, Potts & Van Wassenhove 1998) is read only to check that wtbest100b is nowhere above it. The source publishes values only, no processing orders",
+ "files": [
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/wtinfo.html",
+   "path": "wtinfo.html",
+   "sha256": "6eec9124421174717eb482cc5fe653d634160a4ddb1c3f1519511b6d2b4a176c"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/wt40.txt",
+   "path": "wt40.txt",
+   "sha256": "5dd427983a38dc76a0ce585e66c33d682010d3ec19c498a917cb7583544c8128"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/wt50.txt",
+   "path": "wt50.txt",
+   "sha256": "2a04fea5345466522eaa53c7d2f8a6838d37b8b908cb47db241dda2724ed67c3"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/wt100.txt",
+   "path": "wt100.txt",
+   "sha256": "3006b17b6b438f1bc35b8400100171565d44ca34629089e876890813c2a86930"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/wtopt40.txt",
+   "path": "wtopt40.txt",
+   "sha256": "666da14a606fc9c1efaff15f60632d815ae3cfc1a149a1e8428e75c003e6e8bf"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/wtopt50.txt",
+   "path": "wtopt50.txt",
+   "sha256": "a1927ef03a996f5cc56bb0603d866ddde78e5fa2336cea2c73bd563fcdc6cbcf"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/wtbest100a.txt",
+   "path": "wtbest100a.txt",
+   "sha256": "d44b37aef7a615deea6238de64d72ceb366c6075d765b3d606958e9730741fb9"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/wtbest100b.txt",
+   "path": "wtbest100b.txt",
+   "sha256": "5b6035ddbc904f2f3b379ef31c278d2c1f793b6736dfbecb1a3305667402395f"
+  }
+ ]
+}

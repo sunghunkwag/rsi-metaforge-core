@@ -1,0 +1,116 @@
+{
+ "summary": "No blocking defect found in external.py or recursion.py: with stubs in place of the measurements, both drivers write what registration_c.json and amendment_4.json prescribe. The defects are around them: nothing stops two drivers writing the ledger at once, the four post-process drivers default to two different ledger files, and a few narrow kill windows and record shapes are handled wrongly.\n\nNo learner was run on any category. recursion.py was run for real only with --dev 30 on a copy of the development ledger (0 generations compared, second start appended nothing). Everything else used stubs for rounds.search, gate and confirm.\n\n**Q1 (external.py against the registration): conforms.**\n- The freeze record is the first record written; its version, digest and adoption list match the last adopt record of process c.\n- The gate call has generation 0 as incumbent, the final version as nominee, envs colouring and tour, seeds 4001 to 4006, the registered run budget, bootstrap seed 300; the confirmation uses seeds 5001 to 5006.\n- \"passed\" is `gate adopted and confirmation mean_min > 0`, which is reading (a).\n- With no adoption it writes a freeze at generation 0 and an external_gate record with passed false and run false; no reassign, unlock or run on a reserve.\n\n**Q2 (roles and restarts): one narrow restart defect.**\n- The order is freeze, reassign colouring, reassign tour, unlock adoption:4, gate, confirm, external_gate, release. No learner can reach a reserve through this driver before the freeze.\n- After the release tour and colouring have the role source, as continued.py did with its gate categories.\n- Kills between the two reassign records and inside the confirmation were simulated; a second start left no duplicate. A measured gate with a missing record is recomputed from cached runs.\n- A kill between the external_gate record and the release leaves the release unwritten for good.\n\n**Q3 (recursion.py against amendment 4): conforms.**\n- On a synthetic ledger with made-up generations 2 to 6, all 26 calls (10 searches, 8 gates, 8 confirmations) matched conditions I derived independently from the registered texts.\n- That covers start version, light categories, seeds, search budget, limit 1500, objective breadth, improver generation 0 with seed 3000+g, random proposer with seed 4000+g, set-aside categories, gate and confirmation seeds, bootstrap seed 200+g.\n- \"current\" was the start version of every generation, including after adoptions by other techniques and generations without adoption.\n- Purposes beginning \"recursion:\" are counted neither by targets.spent_by_process_c nor by report's process c section.\n\n**Q4 (D_g and the summary record): correct, without cross-checks.**\n- A missing nominee counts as 0. recursion_done is written once; a kill inside a gate and a second start gave the same summary with no duplicate tags.\n- The driver does not check that the climb's gate record belongs to the climb's nominee or to the tracked start version.\n\n**Q5 (lineage and other readers): no lineage change; two readers misread.**\n- Neither driver writes an adopt record (counts unchanged in the tests).\n- report.search_section and replay.py do not handle the recursion search records.\n\nOne disclosure: my first helper called rounds.pool(), which instantiates every adapter in the registry, target adapters included. No learner ran and no job executed, but it did not return within about 100 s and I stopped it.\n\nScripts and outputs are in <review>/work_b (t_ext.py, t_rec.py, t_rec2.py, t_rec2.out).",
+ "checks_run": [
+  "Read external.py, recursion.py, alternating.py, meta/rounds.py, kernel/roles.py, kernel/ledger.py, kernel/run.py, continued.py, space.VersionProblem and Meter, the selecting parts of targets.py and report.py, replay.py, registration_c.json, amendments 2 to 4, roles.json",
+  "Listed role, freeze, amendment, adopt and process c records of rsi6/ledger/main.jsonl and dev_ledger.jsonl (types, tags, purposes; env equals category in every run)",
+  "Ran recursion.py --dev 30 twice on a copy of the development ledger: amendment and recursion_done (compared 0) appended once; second start appended 0 records",
+  "t_ext.py: external.py non-dev path with stubbed rounds.gate, rounds.confirm and environments.load for tour and colouring, on a ledger built from the development ledger plus made-up generations 2 to 6: record order, freeze content, gate and confirm arguments, roles after release, second start",
+  "t_ext.py: simulated kills before the release, before the second reassign and inside the confirmation, each followed by a restart; and the case where process c adopted nothing",
+  "t_rec2.py: recursion.py with stubbed rounds.search, gate and confirm on a ledger with made-up generations 2 to 6: 26 calls compared with independently derived conditions (0 mismatches), tracking of the start version, D values, record types written, adopt and freeze counts unchanged, second start (0 records, 0 calls)",
+  "t_rec2.py: kill inside the third gate call and restart: one recursion_done, same summary as the uninterrupted run, no duplicate tags",
+  "Applied the targets.spent_by_process_c regex and report's prefix rule to recursion and external purposes: neither counted; report.process_c_section and score_predictions_c run on the synthetic ledger (C5 scored from recursion_done)",
+  "sha256 of amendment_3.json compared with record_sha256 of its ledger record (equal: earlier amendment records hash the file bytes)",
+  "Not done: no real learner run; report.search_section not completed (did not return within the time limit on the synthetic ledger); the cause of the slow rounds.pool() call not investigated"
+ ],
+ "findings": [
+  {
+   "severity": "major",
+   "file": "rsi6/experiments/recursion.py",
+   "line": "65-66 (with kernel/ledger.py 36-45 and external.py 86-89)",
+   "what": "Nothing prevents two drivers from appending to the same ledger at once. recursion.py only requires the freeze record of process c, and external.py writes that record at its start, before its gate and confirmation are measured. targets.py does not look at recursion at all, so recursion.py and targets.py can also overlap.",
+   "why_it_matters": "Each Ledger object numbers records from its own in-memory copy. Two live drivers write records with the same idx and prev; the next Ledger() load raises 'ledger chain broken' and the append-only file cannot be repaired without rewriting it. Overlap would also disturb the CPU-seconds that the recursion searches (limit 1500) and the matched arms are budgeted in.",
+   "evidence": "ledger.py:38-39 sets idx = len(self.records) and prev = self.head() from memory, with no lock and no re-read. external.py:86-89 appends the freeze before any measurement. recursion.py:65 checks only registration_c and the freeze. The docstring (recursion.py:19) says the driver refuses to start before process c is frozen, which invites starting it once the freeze is visible. Not reproduced with two real processes; the conclusion follows from the code.",
+   "suggested_fix": "Take an exclusive lock on the ledger file for the lifetime of every driver (for example fcntl.flock on a sidecar file in Ledger.__init__ when opened for writing). In addition, make recursion.py require the external_gate record of process c, and make targets.py refuse while a recursion search has no recursion_done."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/experiments/external.py",
+   "line": "46, 65 (recursion.py 41, 56; targets.py 66; report.py 24)",
+   "what": "The drivers that follow process c default to different ledger files. external.py and recursion.py default to ledger/live.jsonl; targets.py and report.py default to ledger/main.jsonl. No code copies live.jsonl to main.jsonl.",
+   "why_it_matters": "With defaults, targets.py on main.jsonl refuses (no freeze of process c), which is safe. If main.jsonl is refreshed from live.jsonl after the external gate and then recursion.py and targets.py are each run with defaults, the chain forks: recursion records in live, the target test in main. A later checkpoint copy in either direction loses one of them (possibly the once-only target test), and report.py on main sees no recursion_done, so C5 is reported as not run. Confidence that the code behaves this way: high. Whether it happens depends on the operator.",
+   "evidence": "external.py:46 and 65 (default=LIVE); recursion.py:41 and 56 (default=LIVE); targets.py:66 LEDGER = main.jsonl used as the --ledger default; report.py:24 LEDGER = main.jsonl. grep for live.jsonl finds only alternating.py:184-185, which copies MAIN to LIVE when LIVE is missing.",
+   "suggested_fix": "Give all four drivers the same default, or have each refuse when live.jsonl and main.jsonl both exist and neither is a prefix of the other. Write the live-to-main checkpoint step as code that verifies the prefix relation."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/experiments/external.py",
+   "line": "91-93, 123-128",
+   "what": "If the driver is killed between the external_gate record (line 123) and the release record (line 128), the release is never written. Every later start returns at lines 91-93 because the external_gate record exists.",
+   "why_it_matters": "tour and colouring then keep the role adoption:4 (still unlocked) instead of source. targets.py:214 builds the memory arms of all three processes from rounds.pool(ledger), so those arms would acquire on 9 earlier categories instead of 11, depending on a restart artefact. The window is two consecutive appends, so the probability is very small.",
+   "evidence": "Stub test t_ext.py, case 2: after a simulated kill before the release and a second start, the ledger ends with external_gate and no release; effective roles are tour adoption:4 and colouring adoption:4; categories with role source are 9. The uninterrupted run gives 11.",
+   "suggested_fix": "On the early-return path, append the release if the external_gate record has run true and no release of that role exists. Alternatively write the release before the external_gate record, as continued.py writes it before round_done."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/experiments/recursion.py",
+   "line": "68-70",
+   "what": "The amendment 4 record is written in a different shape from the three amendment records already in the ledger, and it is looked up by a key the earlier records do not have. Neither external.py nor targets.py writes or requires this record, although readings (a) to (d) of amendment 4 govern them.",
+   "why_it_matters": "amendment_4.json says its record is appended when the driver of process c has ended. If that is done in the established shape, recursion.py's lookup by number=4 misses it and appends a second amendment 4 record with a different hash. If it is left to recursion.py, the record lands after the external gate's runs on the reserves, while the amendment says its readings were fixed before any run on a reserve. In the new record the key 'amendment' holds a dict where the earlier ones hold an integer.",
+   "evidence": "Earlier records (main.jsonl idx 1297, 1298, 2195) have keys amendment (integer), record, record_sha256, utc, what. record_sha256 of amendment 3 equals sha256sum of amendment_3.json. recursion.py:69-70 looks up type=amendment, number=4 and writes number, digest (ledgers.digest of the parsed JSON) and amendment (the whole dict). The dev run on rec1.jsonl wrote exactly that.",
+   "suggested_fix": "Write the record in the established shape (amendment: 4, record, record_sha256 of the file bytes, utc, what) and look it up by amendment=4. Append it in external.py before the freeze, and let recursion.py and targets.py require it."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/experiments/recursion.py",
+   "line": "98-99 (read by report.py 108-155 and replay.py 55-64)",
+   "what": "The recursion search records (type search, round c<g>, name recursion:gen0 or recursion:random, tag recursion:c<g>:<name>) are picked up by two readers that loop over every search record and do not understand them.",
+   "why_it_matters": "report.search_section drops a recursion search when its nominee, start and round equal those of a search already listed (including both having no nominee) and calls it the same search under another name. For those it keeps, it looks up the gate under an unchanged tag and reports no gate value although the gate exists under tag + ':gate'. replay.py computes g - 1 on a string round, so it already fails on the b1 and c1 records and will on these too. No scored prediction of process c reads these tables; C5 comes from recursion_done, which is correct.",
+   "evidence": "report.py:110-112 skip condition; report.py:151-152 uses tag.replace('search', 'gate'), a no-op for 'recursion:c2:gen0', while recursion.py:104 writes the gate under tag + ':gate'. replay.py:55-63 has no filter, takes g = record['round'] and formats f'search:{g - 1}:self'. search_section was not run to completion: it did not return within the time limit on the synthetic ledger with 27 search records, and each recursion search adds to that loop.",
+   "suggested_fix": "Give the recursion search records their own type (for example recursion_search), or make report.search_section and replay.py skip records with diagnostic == 'recursion'. Hoist the registration lookup out of the loop at report.py:115."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/experiments/alternating.py",
+   "line": "195-196, 235-240 (relied on by external.py 84-85 and recursion.py 74, 86-88)",
+   "what": "If alternating.py is killed between the adopt record (line 235) and the c_generation_done record (line 239), a restart reruns the same generation from the newly adopted version. The old gate and confirm records are found by tag, the single, remeasure and combine nominees are recomputed from the new version, and a second adopt record for the same round can be written for a version that was never gated. external.py and recursion.py do not detect this.",
+   "why_it_matters": "A lineage would contain an ungated adoption. external.py would freeze adoptions[-1], and recursion.py's dict by round would keep the last one. The window is two consecutive appends, so it is very unlikely, but generations 2 to 6 are still to run. Separately, recursion.py takes the climb's gate value by tag without checking that it belongs to the climb's nominee or to the tracked start version.",
+   "evidence": "alternating.py:195-196 sets current from all adopt records before the loop; line 199 skips only on c_generation_done; lines 218-226 reuse gate and confirm by tag; lines 231-236 adopt the freshly computed nominee. recursion.py:86-91 reads search:c<g>:climb and gate:c<g>:climb without comparing climb['start'], own_gate['incumbent'] or own_gate['nominee']. Derived by reading; not executed.",
+   "suggested_fix": "In alternating.py, skip the adoption step when an adopt record for round g exists, and take the start version from adopt records with round < g. In recursion.py, assert climb['start'] == digest(current), own_gate['incumbent'] == digest(current), own_gate['nominee'] == climb['nominee'], and at most one adopt record per round. In external.py, assert the same uniqueness."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/experiments/external.py",
+   "line": "84-90, 111-112",
+   "what": "On a restart external.py does not compare an existing freeze record, or an existing gate:c:external record, with the final version it computes from the adopt records. alternating.py does not look for the freeze, so `--generations 7` after the freeze would run a seventh generation and could adopt.",
+   "why_it_matters": "After such a late adoption the freeze (read by targets.py as c:self) and the version put through the external gate could differ, and the log line 'process c is frozen at ...' would print the new digest, not the frozen one. It needs a deliberate non-default command, so it should not occur here.",
+   "evidence": "external.py:85 final = adoptions[-1]['version']; lines 86-89 write the freeze only if absent; line 90 prints digest(final). alternating.py:197 last = args.generations or reg['generations_planned'], with no check of a freeze record.",
+   "suggested_fix": "In external.py, stop if an existing freeze digest differs from digest(final) or an existing gate record's nominee differs from it. In alternating.py, refuse to start a generation when a freeze of process c exists or g exceeds generations_planned."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/experiments/external.py",
+   "line": "102-108, 127-128 (with roles.py 69-82 and targets.py 214)",
+   "what": "Role path of tour and colouring: reserve, then adoption:4 by reassign, then unlocked, then source by release. This is what continued.py:146 and the first two rounds did with their gate categories. The consequence is that targets.py takes them into the memory arms of all three processes, and only if process c adopted something.",
+   "why_it_matters": "The registered arms 'skills' and 'memory' of the first two processes acquire on tour and colouring when process c adopted (it did in generation 1) and not otherwise. That fits roles.py ('after round g the pair joins the source pool') but should be stated with the result. The unlock of adoption:4 is permanent, as for the other adoption roles.",
+   "evidence": "t_ext.py case 1: after the run the roles are tour source, colouring source, genassign reserve, and 11 categories have role source. Case 4 (no adoption): no reassign, unlock or release; tour and colouring stay reserve; 9 categories. targets.py:214 earlier = rounds.pool(ledger) minus targets. The reassign record carries amendment 3 and the category name, which equals the adapter's category (tour.py:282, colouring.py:181).",
+   "suggested_fix": "No code change needed. State in the report which earlier categories fed the memory arms."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/experiments/recursion.py",
+   "line": "89-91, 100-101, 118-119, 125-128",
+   "what": "D_g is computed as registered, with a missing nominee as 0. As a result a climb that named no nominee is counted as better (D > 0) whenever the other improver's nominee has a negative value at the gate.",
+   "why_it_matters": "This is the registered statistic, not a defect. The log wording 'climb better than generation 0 as improver in N' can include generations where the climb found nothing, and C5 is scored on that count.",
+   "evidence": "t_rec2.out, generation 6: self 0.0 (no nominee), random -0.006, D_random +0.006, counted in better_than_random. Lines 127-128 count D > 0 strictly. report.py scores C5 as better_than_gen0 <= compared / 2.",
+   "suggested_fix": "Report, next to the counts, how many compared generations had a climb nominee at all."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/experiments/recursion.py",
+   "line": "76, 96-97",
+   "what": "The limit of the two extra searches is the same 1500 measured CPU-seconds as the climb's, charged from the CPU recorded in each run. Versions already in the ledger are charged at the CPU measured when process c ran; new versions are measured under whatever load the machine has when recursion.py runs.",
+   "why_it_matters": "If recursion.py runs beside another driver, new evaluations may cost more CPU-seconds than the climb's did, giving generation 0 as improver and the random proposer fewer evaluations within the same limit. That would bias D_g upward. Confidence that the effect is material: low to moderate.",
+   "evidence": "space.py:98-101 adds the cpu returned by cost(); rounds.py:80-84 takes it from the cached or new run records. Generation 1's climb used 1485.4 of 1500 CPU-seconds for 60 evaluations (main.jsonl, search:c1:climb).",
+   "suggested_fix": "Run recursion.py alone on the machine, with the same number of workers as process c, and record that in the log."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/meta/rounds.py",
+   "line": "61-64 (called from targets.py 214)",
+   "what": "rounds.pool(ledger) instantiates every adapter in environments.REGISTRY, the target adapters included. In this copy of the repository one such call did not return within about 100 s of CPU and I stopped it.",
+   "why_it_matters": "targets.py calls it before any arm is measured. If an adapter is slow or stalls at construction, the target test stalls there. The cause may be particular to this copy (target data are absent); I did not investigate, to avoid touching the target adapters again.",
+   "evidence": "First version of t_ext.py printed rounds.pool(L) after external.main() had finished (all 8 new records were in ext1.jsonl); the process was still running at the 120 s limit. With that line replaced by roles.effective_role over roles.CANDIDATES, the whole script finished within the 100 s limit.",
+   "suggested_fix": "Time environments.load(name) for each admitted adapter once before the target test; if one is slow, compute the pool from roles.effective_role over category names without loading adapters."
+  }
+ ]
+}

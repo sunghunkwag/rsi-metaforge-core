@@ -1,0 +1,221 @@
+{
+ "summary": "Scope: rsi6/open/discovery.py, rsi6/open/edits.py, the changed parts of rsi6/learner/design_o.py and their use in rsi6/open/experiment.py. I checked them by reading the code and running stub checks (fake ledger and fake cache, no learner run, about 2.5 CPU-minutes). Scripts are in <review>/work_a/ (stub.py, null_far.py, arms.py, seeds_misc.py).\n\n(1) Prior findings. Most are fixed: the behaviour key now keeps every constant; growth edits are neutral and draw no noise; design_o draws noise per coordinate; the screen seed is left out of the promoted value; confirmation runs on part B with a z threshold; CPU is paired with the parent at confirmation; records and the principle hash are complete; the library harvests only live blocks; n_check is fixed. Some are partly fixed: the fallback still crashes at apply, the CPU cap is not computed on the same seeds, and confirmation seeds are not checked for disjointness. Some are not fixed: dead code in the learning programs, the mixed fitness footing, and the aliasing note.\n\n(2) Pure-noise stub (registered knobs; acquired = 0.5 + N(0, 0.01) per run, deterministic per run key):\n- 400 recursive lineages of 13 steps. A step reaches confirmation with probability 0.200 (1038/5200), and a confirmation passes with probability 0.052 (54/1038).\n- False acceptance per step is 1.04% (54/5200, 95% CI about 0.8 to 1.3%). Per 13-step lineage it is 13.5% (54/400).\n- Over the 10 discovery lineages, the chance that at least one accepts noise is about 1 - 0.865^10, about 77%.\n- With SD 0.02 (the dev ledger shows a per-seed SD of 0.009 to 0.036 for generation 0 on jobshop, pmedian and quadassign) the rate is 2.3% per step and 29% per lineage.\n- So a lineage does not rarely accept noise.\n\n(3) Arms. recursive, frozen, shuffled, uniform and the swap lineages do what arms_meaning says, and they keep their assigned principle on acceptance. tune can also grow the programs. The arms also differ in their random stream, and the swap pairs do too. Confirmation seeds are disjoint from each other and from all fixed seed sets for up to 25 confirmations per lineage, with no assertion.\n\n(4) CPU. A run used through two different memo keys is charged twice: 12 runs at the start and 12 more per acceptance. The overshoot is at most one step. The cap reference is the mean per seed over the three discovery seeds, not the same seeds.\n\n(5) Replay agreed in the stub, including in another interleaving order, and I found no case where append_once refuses a legitimate replay. The dev logs exercised replay only on step 0 of each lineage.\n\nOther defects: a learning-program edit that only draws noise into an unread register is a reseed, yet it counts as a principle change. The part-B instances are reused by every confirmation, by the selection stage and by the swap assessment.",
+ "checks_run": [
+  "Read discovery.py (all), edits.py (all), design_o.py lines 1-135, 286-355, 476-802, experiment.py (all), kernel/run.py 60-180, kernel/ledger.py append/select/canon, learner.py _finish_arbitrarily, registration_o.json, the review and verification JSONs, and dev_e2e.log / dev_resume1.log / dev_resume2.log",
+  "null_far.py 400 13 recursive (SD 0.01): P(confirm reached)=1038/5200=0.1996, P(pass|reached)=54/1038=0.052, P(step accepts)=54/5200=0.0104, P(lineage accepts >=1 in 13 steps)=54/400=0.135; 92.7 CPU-s",
+  "null_far.py 150 13 recursive 0.02: P(step accepts)=45/1950=0.0231, P(lineage)=43/150=0.287",
+  "Dev ledger dev_e2e.jsonl, generation-0 runs: per-seed SD of acquired is jobshop A 0.0094 / B 0.0209, knapsack 0, pmedian 0.0287 / 0.0224, quadassign 0.0140 / 0.0358; CPU per run varies by about 10-20% (jobshop 4.8-7.6 s)",
+  "arms.py CPU charge (cpu=1 per run): spent 116 vs 92 unique runs after a step with an acceptance (over-charge 24), staying 24 on later steps; a second lineage sharing the memo is charged 12 for generation-0 runs that the first lineage measured",
+  "arms.py principle tracking with a bonus for principle-changing mechanisms: recursive D.source == principle(new parent); frozen and shuffled D.source == principle(gen0); frozen with principle_source=X keeps principle(X) after acceptance; uniform weights never move; tune uses only TUNE_CELLS, which include ('theta','grow')",
+  "arms.py recursive vs frozen with the same random stream and no principle-changing acceptance: o_step records identical except mode; experiment.py arm stream terms are distinct (984, 660, 768, 849, 444; swap 1064 vs 1116)",
+  "arms.py replay: 2 lineages x 6 steps replayed on the same ledger with a fresh memo: 17 records before and after, spent equal, accepts equal; also agreed with the lineages replayed in reversed order",
+  "seeds_misc.py: confirmation seed sets of 10 discovery and 6 swap lineages are pairwise disjoint and disjoint from the discovery, selection, swap, swap_assess, heldout and heldout_later seeds for 13 and 25 confirmations per lineage; 9 overlapping pairs at 26",
+  "seeds_misc.py tune with a bonus per constant: 4 acceptances; score 26->29 and pick 11->14 instructions, theta 10->16",
+  "seeds_misc.py reseed: propose with ['noise',7,0,0] prepended changes principle() and behaviour(), register 7 is never read, and the population differs for the same stream; 118/4000 random insert edits into init/propose/update add a noise/unif draw into a register that gen0's programs do not read",
+  "Synthetic _finish_arbitrarily on a state where construct raises Infeasible: IndexError",
+  "grep: no environment under rsi6/environments sets a domain"
+ ],
+ "fixed": [
+  {
+   "finding": "learner#0 (major): behaviour key zeroed unread constants",
+   "status": "fixed",
+   "evidence": "edits.py 195-202: effective() only replaces score/pick by O.live(); every theta keeps its value, and the docstring names mean/norm as the reason."
+  },
+  {
+   "finding": "learner#1 (major): generation 0 of design o described as the first design in another machine",
+   "status": "fixed",
+   "evidence": "design_o.py 48-57 now lists the differences (shortlist 1 vs 4, floor 0.1 vs 0.02, three vs two held-back vectors, hard change scaled by its range, missing per-group/remaining/occupancy/option-sum terms) and says comparisons are made at matched CPU."
+  },
+  {
+   "finding": "learner#2 (minor): fallback could assign an option outside the domain and crash",
+   "status": "partly_fixed",
+   "evidence": "construct (design_o.py 507-514) now searches every unassigned variable for an allowed in-domain option and raises Infeasible otherwise. _rollouts catches it (715), and so does _apply_open (800). _apply_open then calls _finish_arbitrarily (learner.py 333-344), which computes the same empty set and raises IndexError (synthetic check: 'IndexError index 0 is out of bounds'). kernel/run.py 103 calls learner.apply outside the try, so the run would still crash. Latent: no environment sets a domain."
+  },
+  {
+   "finding": "learner#3 (minor): counted units do not bound CPU",
+   "status": "partly_fixed",
+   "evidence": "The CPU guards stay mandatory (discovery.py 224, 236, 258-259) and the CPU of every candidate is recorded in its o_step row (cpu_screen, cpu_promote, cpu_ratio_to_parent). There is no internal CPU-proportional counter (optional in the finding)."
+  },
+  {
+   "finding": "learner#4 (note): held-back problems reserved but unused when select != best_of_3",
+   "status": "fixed",
+   "evidence": "design_o.py 726: n_check=0 unless select=='best_of_3'; 756-758: no check, report held_back=0."
+  },
+  {
+   "finding": "learner#5 (note): sensors depend on aliasing of 'a'/'used'",
+   "status": "not_fixed",
+   "evidence": "kernel/problem.py 255-261 is unchanged: _sync refreshes only tot and n, and the in-place requirement is not documented. Note only."
+  },
+  {
+   "finding": "learner#6 (note): W registers not clipped",
+   "status": "not_fixed",
+   "evidence": "design_o.py 650-652 clips A and C only. The finding said no fix was needed."
+  },
+  {
+   "finding": "discovery#0 (major): acceptance driven by noise (winner's curse, sign-only confirmation)",
+   "status": "partly_fixed",
+   "evidence": "The promoted value now uses only the seeds after the screen seed (212, 233-237). Confirmation requires mean >= margin/2 and z >= 1.64 over 16 part-B pairs (250-259). The pure-noise stub still gives 1.04% per step and 13.5% per 13-step lineage (SD 0.01), or 2.3% and 29% (SD 0.02). The z is a t statistic with 15 df compared with a normal quantile (alpha about 6.1%, observed 5.2%). No null calibration is recorded with the registration."
+  },
+  {
+   "finding": "discovery#1 (major): confirmation scored the same part-A instances",
+   "status": "partly_fixed",
+   "evidence": "CONFIRM_BUDGET has part 'B' (54) and is used at 252-254. But every confirmation of every lineage, the selection stage (experiment.py 139) and the swap assessment (experiment.py 168) all score the same part-B instances, because the seed does not change them (run.py 80-82). Part B is selected on from the first confirmation onward; see the defects."
+  },
+  {
+   "finding": "discovery#2 (major): growth edits not neutral",
+   "status": "fixed",
+   "evidence": "_draw (design_o.py 525-530) draws (rows, max(32, d)) and cuts to d, so adding a constant leaves the existing draws unchanged. Term/cross loads exclude 'noise' (edits.py 123). grow starts at 1.0 for scale and 0.0 for shift (178). The construction rng draws depend only on len(U) and n_opts (design_o.py 491, 503). Remaining caveat: mean/norm in learning programs mix the new coordinate into the others."
+  },
+  {
+   "finding": "discovery#3 (major): behaviour key / shared memo merges different mechanisms",
+   "status": "fixed",
+   "evidence": "The key keeps theta (edits.py 195-207). The memo key is (behaviour, envs, seeds, part) (discovery.py 171). Residual: behaviour-equal mechanisms with different digests share records, the records carry the digest measured first, and the o_step row records only the candidate's digest (see note)."
+  },
+  {
+   "finding": "discovery#4 (major): CPU guard only against the start, parent CPU discarded",
+   "status": "partly_fixed",
+   "evidence": "Confirmation now requires cpu(candidate)/cpu(parent) <= 1.10 on the same runs (258-259), and the gen-0 cap applies at screen and promote (216, 224, 236). The cap compares against gen 0's mean per seed over all three discovery seeds, not 'on the same seeds' as cpu_rule says (see defect). The docstring (34-35) claims a gen-0 check at confirmation that the code does not make."
+  },
+  {
+   "finding": "discovery#5 (major): parent_score is the selected promoted value, used as baseline and for migration",
+   "status": "fixed",
+   "evidence": "Decisions use paired differences against the parent's own records on the same seeds (215, 225, 233-237). Migration is gone. parent_score is used only in reports, labelled final_score_on_discovery_seeds (report.py 44). The new parent's discovery-seed records are the ones it was selected on, which makes later acceptances harder (conservative). In the null stub no lineage accepted twice (54 acceptances in 54 lineages)."
+  },
+  {
+   "finding": "discovery#6 (major): records insufficient to audit",
+   "status": "fixed",
+   "evidence": "Rows hold digest, behaviour prefix, edits, cells, screen and promoted values, CPU and reason, plus confirmation seeds, mean, sd, z, n and cpu ratio (227-228, 238-239, 260-262). o_step holds seeds per stage, promoted, learner_input after floor and permutation, principle_used taken before the rebuild (206), principle_now, weights and spent. o_accept holds the mechanism."
+  },
+  {
+   "finding": "discovery#7 (minor): dead code in init/propose/update not stripped",
+   "status": "not_fixed",
+   "evidence": "edits.py 199-201 applies liveness only to score and pick. This now matters more, because principle() hashes the verbatim learning programs (see the reseed defect)."
+  },
+  {
+   "finding": "discovery#8 (minor): memo key without envs/budget; stride 2; no disjointness check",
+   "status": "partly_fixed",
+   "evidence": "The memo key includes envs and part (171), and the stride is 4 (250). Nothing asserts disjointness. The registered formula keeps seeds disjoint only up to 25 confirmations per lineage (seeds_misc.py: 9 overlapping pairs at 26)."
+  },
+  {
+   "finding": "discovery#9 (minor): library harvests blocks deleted or dead in the accepted mechanism",
+   "status": "fixed",
+   "evidence": "accept() lines 280-287 keep a block only if every instruction is in the live score/pick program, or anywhere in the learning program. The check is membership anywhere, not position."
+  },
+  {
+   "finding": "discovery#10 (note): report principle-changing acceptances per arm",
+   "status": "fixed",
+   "evidence": "principle_changed is recorded in L.accepted and in o_accept (293-299)."
+  },
+  {
+   "finding": "discovery#11 (note): no path to held-out categories",
+   "status": "fixed",
+   "evidence": "Still true: discovery.py and edits.py read only the given envs."
+  },
+  {
+   "finding": "discovery#12 (note): fitness mixes screen-only and promoted values",
+   "status": "not_fixed",
+   "evidence": "Line 243: F mixes 1-seed screen values (non-promoted candidates) with 2-seed promoted values, floors refused candidates at min-0.01, and subtracts neutral from exact zeros."
+  }
+ ],
+ "defects": [
+  {
+   "severity": "major",
+   "file": "rsi6/open/discovery.py",
+   "line": "246-264",
+   "what": "The acceptance rule still accepts pure noise at a rate that is not rare over a lineage. The registered knobs are margin 0.005, z 1.64, promote 0.5 and kd 6.",
+   "why_it_matters": "O1 and O4 count acceptances, E3(a) needs a principle-changing acceptance in the recursive arm, and that acceptance triggers the swap test. With about 13 steps per lineage and 10 discovery lineages, noise acceptances are expected: P(at least one) is about 77% at SD 0.01, and higher at the SD the dev ledger shows.",
+   "evidence": "Pure-noise stub (null_far.py), 400 recursive lineages x 13 steps, SD 0.01: per-step false acceptance 54/5200 = 1.04% (95% CI about 0.8-1.3%), per lineage 54/400 = 13.5%. At SD 0.02: 2.3% per step and 28.7% per lineage. Generation 0's per-seed SD in dev_e2e.jsonl is 0.009-0.036 on three of the four discovery categories. The z at line 257 is a t statistic with 15 df compared with the normal quantile 1.64: alpha is about 6.1% (observed 5.2% of confirmations pass).",
+   "suggested_fix": "Calibrate before registering. Use the t quantile, and either correct for the expected number of confirmations per lineage (for example z of about 2.6), or require a second independent confirmation. Record the null false-acceptance rate, measured with this stub or with reseed-only candidates, in the registration."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/open/discovery.py",
+   "line": "79-82 (principle), 293 (principle_changed); edits.py 195-202",
+   "what": "A 'principle change' can be a pure reseed of the learner. principle() hashes the verbatim init/propose/update programs, and the learning programs get no liveness analysis. An inserted noise or unif instruction that writes a register no program reads changes the hash and shifts every later draw of rng_acq, but adds no mechanism.",
+   "why_it_matters": "With the false-acceptance rate above, a reseed edit can be accepted as a 'principle change' with no new mechanism behind it. It then satisfies E3(a) and O4 and makes the swap test compare generation 0 against a reseeded generation 0. That reads noise as recursion.",
+   "evidence": "seeds_misc.py: propose with ['noise',7,0,0] prepended gives principle != gen0's and behaviour != gen0's. Register 7 is read by no program, yet the population for the same stream differs. 118 of 4000 random insert edits into init/propose/update are noise/unif draws into a register that gen0's programs do not read.",
+   "suggested_fix": "Extend live() to the A/W registers of init/propose/update, drop dead instructions (including dead noise draws) before running and before hashing, and define principle() and principle_changed on the live learning programs."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/open/discovery.py",
+   "line": "30-32, 54, 252; experiment.py 139, 168",
+   "what": "Part B is not 'never selected on'. Every confirmation of every lineage and arm scores the same part-B fresh instances, as do the selection stage and the swap assessment, because seeds change only relabelling and learner randomness, not the instances.",
+   "why_it_matters": "Acceptance is a selection on part B. After the first confirmation, accepted mechanisms are adapted to those instances. The selection of the finals and E3(c), a success endpoint measured on part B of the discovery categories with swap_assess seeds, are then measured on instances already used to select. The docstring and the registration's steps_rule ('never selected on') are false.",
+   "evidence": "run.py 80-82: split(env, n_train, n_fresh) takes no seed, and halves() picks the same half B. CONFIRM_BUDGET part 'B' is used at discovery.py 252-254, at experiment.py 139 (selection) and at 168 (swap assess).",
+   "suggested_fix": "State it in the registration and the docstrings. Better, split part B so that confirmation, selection and swap assessment use disjoint instance sets, or move selection and the swap assessment to instances that no acceptance has seen."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/open/discovery.py",
+   "line": "168-177, 165, 215, 233, 278",
+   "what": "Some runs are charged twice. The charge is per memo key (behaviour, envs, seeds tuple, part), so the same runs requested under (1,2,3) and under (1,) or (2,3) are charged again. This happens for generation 0 at the start, and for every accepted mechanism in accept().",
+   "why_it_matters": "'Every run charged once' does not hold. Each acceptance costs the lineage about 12 extra runs (about 100 CPU-s at about 8 s per run), so arms that accept more get fewer steps from the same budget.",
+   "evidence": "arms.py with cpu=1 per run: after a step with an acceptance, spent=116 against 92 unique runs used. The over-charge of 24 is 12 at the start plus 12 per acceptance.",
+   "suggested_fix": "Charge by run key: keep a set of record['key'] per lineage and add the CPU only for keys not yet charged."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/open/discovery.py",
+   "line": "216, 224, 236; docstring 33-35",
+   "what": "The screen and promote CPU cap compares against gen 0's mean CPU per seed over all three discovery seeds, not against gen 0 on the same seeds. The docstring also claims that a confirmed candidate is checked against generation 0's CPU, which the code does not do.",
+   "why_it_matters": "The registered cpu_rule says 'on the same seeds'. When per-seed CPU differs, a candidate can pass at above 1.25 times gen 0 on its own seed.",
+   "evidence": "ref_cpu = cpu_of(records(reference, self.seeds))/len(self.seeds). Example: with gen-0 seed CPUs of 1.0, 1.4 and 1.4, a candidate at 1.5 on seed 1 (1.5x) passes, since 1.5 <= 1.25*1.267.",
+   "suggested_fix": "Use cpu_of(self.records(self.reference, screen, ...)) and cpu_of(self.records(self.reference, rest, ...)) as the references, and correct the docstring."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/open/discovery.py",
+   "line": "57 (TUNE_CELLS); edits.py 169-182",
+   "what": "The tune arm includes ('theta','grow'), which inserts new scale or shift instructions into the score and pick programs. That changes the programs, not only generation 0's constants and numbers.",
+   "why_it_matters": "arms_meaning says tune edits 'generation 0's constants and numbers only'. As built, tune can change the representation, for example a learnable shift before a step instruction. E2's 'against tuning' is then mislabelled (in the conservative direction).",
+   "evidence": "seeds_misc.py, tune lineage with a bonus per constant: 4 acceptances; score 26->29 and pick 11->14 instructions, theta 10->16.",
+   "suggested_fix": "Restrict TUNE_CELLS to ('theta','perturb') and the scalar cells, or amend arms_meaning before registering."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/open/experiment.py",
+   "line": "69",
+   "what": "Arms do not 'differ only as stated': each arm has its own random stream (the rng is seeded with sum(map(ord, arm))). The swap pairs 'discovered' and 'generation0' also have different streams, although the registration calls them pairs on the same seeds.",
+   "why_it_matters": "With the same stream, recursive and frozen stay identical until the first principle-changing acceptance. As run, E3(b) and the swap differences carry the full between-stream variance on top of any principle effect, which weakens a comparison already made with 2 lineages and 3 replicates.",
+   "evidence": "arms.py: recursive and frozen with the same stream gave identical o_step records (no field differs except mode) over 8 steps with 1 acceptance. Stream terms: recursive 984, frozen 660, discovered 1064, generation0 1116.",
+   "suggested_fix": "Seed the lineage rng by (stage, k), not by arm, so arms and swap pairs share their streams and diverge only where the stated difference acts."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/learner/design_o.py",
+   "line": "799-801 (with learner.py 337-342)",
+   "what": "The fallback that 'cannot crash' still crashes at apply. When construct raises Infeasible, _finish_arbitrarily recomputes the same empty set of free in-domain options and raises IndexError, and kernel/run.py 103 does not catch it.",
+   "why_it_matters": "A mechanism could crash a whole run on a problem with domains or with tight capacities. It is latent: no environment in rsi6/environments sets a domain.",
+   "evidence": "Synthetic state with capacity used and domains excluding the free options: _finish_arbitrarily raises 'IndexError index 0 is out of bounds for axis 0 with size 0'.",
+   "suggested_fix": "In _apply_open, on Infeasible return an answer that is well formed even if it violates constraints (any option), or catch the error and score 0 explicitly."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/open/discovery.py",
+   "line": "152, 250; experiment.py 134, 166",
+   "what": "Nothing asserts that confirmation seeds are disjoint. Each lineage has a 100-seed window, which holds 25 confirmations of 4 seeds.",
+   "why_it_matters": "If a lineage made more than 25 confirmations, its seeds would reuse those of the next lineage of the same arm. Unlikely at about 13 steps per lineage, but nothing checks it.",
+   "evidence": "seeds_misc.py: all confirmation sets are disjoint from each other and from the discovery, selection, swap, swap_assess, heldout and heldout_later seeds at 13 and 25 confirmations per lineage; 9 overlapping lineage pairs at 26.",
+   "suggested_fix": "Assert that len(seeds) is at most 100 per lineage, or use a stride of 1000 per lineage, and check seeds against a global used set."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/open/experiment.py",
+   "line": "76-86",
+   "what": "A lineage overshoots its budget by at most one step, but a step is large and unequal across arms. Dev step 0 cost 372-512 CPU-s without an acceptance and 885-902 with one; run budgets were not scaled in dev, so registered steps are the same size.",
+   "why_it_matters": "The arms get the same budget but not the same CPU: actual spend can differ by up to about 15% of 6000.",
+   "evidence": "dev_e2e.log: 'spent 902 of 300' (recursive1, accepted) against 383-512 for the others.",
+   "suggested_fix": "Report the actual spent per lineage beside every arm comparison (it is in o_lineage_done)."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/open/discovery.py",
+   "line": "60-71, 171-176",
+   "what": "On replay and determinism I found no defect. Replays agreed in the stub, append_once compares canonical JSON (exact for Python floats and Infinity), and no ordering of sets or dicts enters a decision. Two caveats. The memo is keyed by behaviour while runs are keyed by digest, so a lineage can be served the runs of another behaviour-equal digest, and the row records only its own digest. The dev logs exercised replay only for step 0 of each lineage: the 'replay of discovery' in dev_e2e.log just exits on o_stage_done, and dev_resume2.log replays 4 one-step lineages.",
+   "why_it_matters": "Multi-step replay on real runs is untested. Audit links from rows to runs can name a different digest than the runs.",
+   "evidence": "arms.py: replay of 2 lineages x 6 steps gave 17 records before and after, spent equal, accepts equal; it also agreed in reversed interleaving order. dev_resume2.log lines 1-4 share one timestamp, so they were served from the ledger.",
+   "suggested_fix": "Record the run keys used for each candidate in the o_step row. Run a dev resume test that stops after more than one step per lineage."
+  }
+ ]
+}

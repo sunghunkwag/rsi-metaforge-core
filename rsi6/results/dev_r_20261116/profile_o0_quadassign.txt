@@ -1,0 +1,37 @@
+o0 quadassign {'acquire': 19.788, 'apply': 1.077} 0.4517045098902089
+         18005910 function calls (18005684 primitive calls) in 22.221 seconds
+
+   Ordered by: cumulative time
+   List reduced from 503 to 28 due to restriction <28>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.010    0.010   22.221   22.221 <repo>/rsi6/kernel/run.py:76(measure)
+     3484    2.458    0.001   20.978    0.006 <repo>/rsi6/learner/design_o.py:476(construct)
+        1    0.000    0.000   20.321   20.321 <repo>/rsi6/learner/design_o.py:749(acquire)
+        1    0.004    0.004   20.321   20.321 <repo>/rsi6/learner/design_o.py:772(_acquire_open)
+       54    0.032    0.001   20.259    0.375 <repo>/rsi6/learner/design_o.py:757(_rollouts)
+   148858    2.795    0.000   11.781    0.000 <repo>/rsi6/learner/design_o.py:328(run)
+   675087    1.862    0.000    5.429    0.000 <repo>/rsi6/learner/design_o.py:242(f)
+    76171    0.116    0.000    2.595    0.000 <repo>/rsi6/kernel/problem.py:274(assign)
+    76171    0.299    0.000    2.202    0.000 <repo>/rsi6/kernel/problem.py:135(assign)
+    76171    0.700    0.000    1.857    0.000 <repo>/rsi6/environments/quadassign.py:81(_push)
+  1846465    1.727    0.000    1.727    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+        4    0.004    0.001    1.657    0.414 <repo>/rsi6/kernel/run.py:98(scores)
+       80    0.000    0.000    1.616    0.020 <repo>/rsi6/learner/design_o.py:832(apply)
+       80    0.001    0.000    1.616    0.020 <repo>/rsi6/learner/design_o.py:837(_apply_open)
+   457026    0.776    0.000    1.605    0.000 <repo>/rsi6/learner/design_o.py:398(read)
+   408332    0.919    0.000    1.243    0.000 /usr/local/lib/python3.13/site-packages/numpy/_core/numeric.py:97(zeros_like)
+    76171    0.073    0.000    1.196    0.000 <repo>/rsi6/kernel/problem.py:271(candidates)
+   680323    0.341    0.000    1.191    0.000 {method 'min' of 'numpy.ndarray' objects}
+   155826    0.967    0.000    1.164    0.000 /usr/local/lib/python3.13/site-packages/numpy/_core/numeric.py:905(outer)
+   163579    0.320    0.000    1.138    0.000 /usr/local/lib/python3.13/site-packages/numpy/_core/numeric.py:675(flatnonzero)
+   680460    0.326    0.000    1.097    0.000 {method 'max' of 'numpy.ndarray' objects}
+    76171    0.149    0.000    1.066    0.000 <repo>/rsi6/kernel/problem.py:128(candidates)
+    76171    0.071    0.000    0.929    0.000 <repo>/rsi6/kernel/problem.py:265(unassigned)
+   680323    0.252    0.000    0.849    0.000 /usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:43(_amin)
+    76171    0.732    0.000    0.824    0.000 <repo>/rsi6/environments/quadassign.py:76(_rows)
+    76171    0.252    0.000    0.810    0.000 <repo>/rsi6/kernel/problem.py:116(unassigned)
+   680460    0.232    0.000    0.771    0.000 /usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:39(_amax)
+       80    0.095    0.001    0.708    0.009 <repo>/rsi6/learner/learner.py:583(_improve)
+
+

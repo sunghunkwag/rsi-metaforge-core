@@ -1,0 +1,49 @@
+new@deploy 100000 {'fresh3': 115, 'fresh2': 50, 'compose24': 15} 507 s
+new@student 10000 {'fresh3': 81, 'fresh2': 33, 'compose24': 9} 54 s
+new@deploy verified {'fresh3': 115, 'fresh2': 50, 'compose24': 15} sound {'fresh3': 101, 'fresh2': 37, 'compose24': 15}
+new@student verified {'fresh3': 81, 'fresh2': 33, 'compose24': 9} sound {'fresh3': 67, 'fresh2': 24, 'compose24': 9}
+FRESH-3 new@1e5 vs gen0 any: {'trained': 101, 'control': 64, 'trained_only': 47, 'control_only': 10, 'p_one_sided': 0.0}
+FRESH-3 new@1e5 vs old@1e5: {'trained': 101, 'control': 71, 'trained_only': 34, 'control_only': 4, 'p_one_sided': 0.0}
+FRESH-3 new@1e4 vs gen0 any: {'trained': 67, 'control': 64, 'trained_only': 26, 'control_only': 23, 'p_one_sided': 0.38772}
+FRESH-3 new@1e4 vs old@1e5: {'trained': 67, 'control': 71, 'trained_only': 22, 'control_only': 26, 'p_one_sided': 0.76456}
+held-out B new@1e5 vs gen0 any (rows of Addendum 7, without its student row): {'trained': 52, 'control': 37, 'trained_only': 19, 'control_only': 4, 'p_one_sided': 0.0013}
+held-out B new@1e5 vs old@1e5: {'trained': 52, 'control': 44, 'trained_only': 12, 'control_only': 4, 'p_one_sided': 0.03841}
+held-out B new@1e4 vs gen0 any: {'trained': 33, 'control': 37, 'trained_only': 12, 'control_only': 16, 'p_one_sided': 0.82754}
+routine: tasks new old gen0any
+  modulo-k                    34  16   8   7
+  mult-k                      32  19  19  19
+  append-k                    31  23   1   2
+  prepend-k                   30  17  15  17
+  slice-k-n                   29   8   9   1
+  identify-k                  28  14  13  11
+  rotate-k                    27   2   0   0
+  replace-all-k-with-n        26  11   6   6
+  remove-mod-k                24  14  12   7
+  intersperse-k               23   0   0   2
+  replace-index-k-with-n      22   1   0   0
+  add-k                       21  12  12  13
+  identify-geq-k              21  10   8   9
+  identify-is-mod-k           20  11   7   7
+  has-k                       19   0   0   0
+  repeat-k                    19   2   2   2
+  drop-k                      16   1   3   2
+  is-mod-k                    14   1   1   0
+  positions                   13   0   0   1
+  count-k                     12   0   0   0
+  keep-mod-k                  11   5   4   0
+  identify-is-prime           11   8   6   5
+  dedup                       10   0   0   0
+  sort                        10   0   0   0
+  dup                          9   0   0   0
+  reverse                      9   6   0   0
+  sum                          9   1   2   1
+  is-squares                   9   0   0   0
+  pow-base-k                   8   2   2   2
+  take-k                       8   4   4   4
+  uniq                         7   0   0   0
+  len                          6   3   2   4
+  head                         6   4   4   3
+  is-evens                     6   1   0   1
+  is-primes                    5   0   0   0
+  pow-k                        3   0   0   0
+  is-odds                      1   0   0   0

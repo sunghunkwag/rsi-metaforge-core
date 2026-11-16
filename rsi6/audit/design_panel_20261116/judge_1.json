@@ -1,0 +1,137 @@
+{
+ "scores": [
+  {
+   "proposal": "statistics",
+   "power": 2,
+   "rigor": 4,
+   "novelty": 1,
+   "feasibility": 4,
+   "honesty": 5,
+   "fatal_flaws": [
+    "It does not change what limited design o. The recursion is design o's, unchanged. By the proposal's own pessimistic fit, the one that matches 4 confirmations in 29 steps, it gives about 0.2 acceptances per lineage, and it predicts E3(a) fails in at least 2 of 3 recursive lineages. The likely product is a sharper negative about design o, which is close to the repackaging that instruction 14 warns against.",
+    "E3(c), the generation test, has 3 replicate pairs. Its detectable difference of about 0.002 treats the ~165 first-look survivors per arm as independent, but candidates within a replicate share one learned weight trajectory, so the effective n is near 3. A 95% interval over candidates would overstate the evidence for the recursion. Conditioning on first-look survival also selects on the outcome.",
+    "Race-pool parent runs are shared by every lineage that has the same parent (seeds keyed by behaviour), and panels are reused up to 4 times. Each test stays valid marginally (Bonferroni), but the 9 lineages are not independent replicates for 'acceptances per lineage'.",
+    "The uniform and shuffled discovery arms are dropped. Discovery then has no randomized-discoverer control, which instruction 14 asks for; uniform survives only as a generator in the held-out generation test.",
+    "The fitted effect mixture and the simulated acceptance table come from scripts outside the readable scope (work/statistics/*.py), so they could not be checked."
+   ],
+   "best_parts": [
+    "Efficiency arithmetic checked: variance x CPU of the 3-category mean is 0.0071 at the registered layout, 0.0034 without knapsack and 0.0015 at 8:3:1 (the Neyman optimum is 0.00144). Panel SE is 0.0015, so the smallest acceptable mean is 0.0039, against 0.0179 in the same units.",
+    "Confirmation runs on fresh panel seeds with a known-variance z at alpha 0.005 and variance max(1.1 x pooled, own). The null is calibrated by resampling recorded pairs.",
+    "It measures transfer per accepted step (M3) and rho-hat instead of assuming them, and uses bin packing as a panel-only category.",
+    "It accepts on the min(acquired, gain) family of statistics, like the held-out endpoint, where design o accepted on acquired only (confirmed in discovery.paired).",
+    "It states plainly that no new principle is claimed and that a negative is likely. The kernel and all pinned files stay unchanged."
+   ],
+   "justification": "This is the best-grounded measurement redesign. Every number I could check matches the brief and the code. Examples: knapsack's share of CPU is about 50%, CPU is charged outside the training-instance scoring in run.py, and design o accepts on acquired while its held-out statistic is min(acquired, gain). Rigor is high but not top: E3(c) is powered at the candidate level rather than the replicate level, the 'registered statistic' it tests is defined per category, and the randomized discovery controls are dropped. Power for the target question is low because the mechanism that would have to recurse is design o's, which the proposal expects not to be exercised. Novelty is minimal, and the proposal says so."
+  },
+  {
+   "proposal": "generator",
+   "power": 2,
+   "rigor": 2,
+   "novelty": 3,
+   "feasibility": 3,
+   "honesty": 4,
+   "fatal_flaws": [
+    "The central forecast (about 2 acceptances per lineage, 8 per arm) is an unsimulated analytic approximation. It rests on kept single edits averaging about 0 with sd 0.004 and adding linearly. The measured screening means of the non-destructive cells are mostly negative (init/replace -0.005, propose/mutop -0.010, pick/delete -0.011, update/swap -0.004, init/mutarg -0.020, score/term -0.006), and program edits interact through registers. At -0.001 per edit the proposal's own figure falls to 0.03 per step.",
+    "The meta-stage contrasts do not isolate recursion. G_R0's prior-only composer is predicted at -0.05, so G* > G_R0 follows from avoiding destructive cells, which is trivially learnable. G* vs G0 confounds learned knowledge with macro size and variance (up to 8 edits against 1 to 3). There is no on-policy/off-policy or accumulation control, so a positive E_meta shows that accumulated edit statistics help, not recursive improvement (instruction 6.3). G_R0 is also ambiguous: with n = 0, k_max(0) = 1.",
+    "E_meta's power (0.84 at +0.005, SE 0.0019) ignores the category level of its own registered bootstrap over episodes and then categories. With 4 categories and category-specific effects, the real interval is much wider.",
+    "It drops design o's self-referential route and replaces it with a fixed, human-written hierarchical Gaussian generator. R's four lineages share one posterior, so the learning effect has no independent replication.",
+    "Bin packing replaces knapsack in every screen and takes about 70% of each mechanism-seed's CPU (about 25 of 36 s) while carrying the least information per CPU-second."
+   ],
+   "best_parts": [
+    "It identifies a real defect: the registered t uses the sample sd over heterogeneous (category, seed) pairs, so between-category heterogeneity raises the bar (0.0147, and about 0.018 for macros). Arithmetic checked: pooled sd 0.0226, SE 0.0056.",
+    "It decomposes the screening variance correctly. Nearly all of the 0.034 spread comes from the destructive cells' means (checked against the cell table).",
+    "Predictions are recorded before measurement, and confirmation data enter the model only after the decision. Discovery seeds are distinct per lineage, which removes design o's shared seed-61 parent offset.",
+    "The meta stage asks the right question: does the frozen generator discover better on unseen categories at matched CPU?"
+   ],
+   "justification": "The diagnosis is useful and the meta stage targets the Owner's question. But the forecast depends on an optimistic, unmeasured mean per edit, and the numbers were not simulated. The recursion endpoint is confounded and its power is overstated, and the self-referential part of design o is removed. Through my lens a positive result would not survive an accumulation control, and the controls given cannot separate 'learned to avoid destructive cells' from improved discovery."
+  },
+  {
+   "proposal": "level",
+   "power": 2,
+   "rigor": 3,
+   "novelty": 3,
+   "feasibility": 3,
+   "honesty": 4,
+   "fatal_flaws": [
+    "The in-run acceptance carries the whole design and repeats design q's failure point. Each candidate is judged after one learning round, which cannot evaluate a learning-principle edit, on 6+6 of 18 training problems, across about 15 selections per run. The '5% or less per step' false-acceptance rate is a target checked only by a noisy retrospective test on 6 reserved problems. q's in-run switches measured q0 - o0 = -0.002 to -0.003 on noise.",
+    "The power planning borrows paired sd 0.021 from q vs o0 at train 40. Design r at 12x budget, with about 15 stochastic acceptances per run, will vary more between runs. The authors' own powers are already low: 0.25 for E1r and 0.15 for R - Z.",
+    "The in-run improvement step is capped at 2 constructions, while test time allows about 80 constructions' worth of n_vars^2 units on binary layouts. Two of the four held-out categories (UBQP, clique) are binary, so in-run selection is misaligned with the scored answer there.",
+    "The cross-generation 'recursion' is amortised pooled cell means (w0), blocks (L0) and a margin (m0), with no accumulation or off-policy control. The authors concede that R - Z may only measure a learned proposal distribution. Success also needs an adoption in each chain, predicted at 0.5 per chain."
+   ],
+   "best_parts": [
+    "Moving discovery inside acquisition makes every held-out (category, seed) run a replicate of the whole process, and category-specific effects become usable instead of cancelling.",
+    "The controls map onto the Owner's list: Z (reset), K (skills only), F (frozen principle), O@R and Q@R (compute-matched by raise_until), and R*.",
+    "It keeps the strict registered statistic (categories and seeds resampled). Untrained answers equal o0's, so delta gain equals delta acquired against the o0 family. It has a development stop rule.",
+    "Its CPU figures match the measured o0 CPU per run (JS 5.0, QAP 1.8, PM 9.2, KP 16.3, BP 35.4 s)."
+   ],
+   "justification": "The placement is well chosen and the held-out comparisons are well designed. But the decisive inner rule is uncalibrated at registration and sits exactly where design q's measured gains were noise. Several framing facts are overstated or misapplied (rho of about 0 for design o, 'the effects are the signal', 49/112). R - Z's detectability ignores its own category bootstrap. Its controls cannot separate recursion from accumulated statistics, and the authors expect E1r and E3 to fail."
+  },
+  {
+   "proposal": "unconventional",
+   "power": 3,
+   "rigor": 4,
+   "novelty": 3,
+   "feasibility": 3,
+   "honesty": 5,
+   "fatal_flaws": [
+    "Fidelity is measured in one regime and exploited in another. D4 takes rank correlation over 24 random W-cell mechanisms, but candidates are the top of about 1,000 simulated values, and that top preferentially picks up k-NN table errors. Real keys are plateaued, lexicographic and tie-heavy under rank fitness, while the surrogate interpolates, and the simulator does not model test-time local improvement. The formula rho x 3.2 x sd assumes the correlation holds in the extreme tail. Real gating protects the false-acceptance rate but not this forecast.",
+    "The recursion's only powered test (S1) runs inside the simulator, with 3 real pairs and a 'two of three positive' check. The real held-out recursion contrast (H2) is a point estimate, and the recursion goes unexercised with stated probability about 0.35 to 0.45.",
+    "All representation edits are excluded (score/pick, theta/grow, shortlist), so it cannot address the joint evolution of representation and discovery operators that instruction 14 asks for.",
+    "The primary held-out statistic becomes a fixed-category mean, which supports claims about these 4 categories only. The gate gives every category 16 seeds, so bin packing (about 35 s per run, sd about 0.005) takes about 69% of each 1,630 CPU-s confirmation for little gain in variance.",
+    "The independent 20-problem table for the swap may not exist if a training pool is small (the proposal says 'fewer if a pool is smaller')."
+   ],
+   "best_parts": [
+    "Real gate arithmetic checked: stratified SE 0.0028, smallest accepted mean 0.0065, power 0.18, 0.42, 0.70, 0.89 and 0.99 at effects of 0.004 to 0.013. Confirmation seeds are used by nothing else, so a confirmed mean is unbiased on these categories.",
+    "It has the richest control set, each tied to one channel: W-frozen (generation), W-static (evaluator refit), W-shuffled (evaluator negative control and an empirical false-acceptance check), real-only R at equal CPU, retain-theta (skills only), and a paired swap.",
+    "No leakage by construction. Tables come from training-pool instances only, env.score and env.reference are monkeypatched to raise, and simulation and refit CPU are charged to each lineage.",
+    "D2 and D4 gate registration, with a stop-and-report rule. Products are ordinary design-o versions, so no file pinned by registration_o changes. The simulator mirrors _acquire_open's meter arithmetic and three random streams, as the code allows.",
+    "It is candid that this is surrogate-assisted meta-optimisation, not a new principle."
+   ],
+   "justification": "This is the strongest attempt to make design o's principle recursion exercised and measurable within budget while keeping every claim behind a real, unbiased gate. Its controls isolate generation, evaluation and evaluator noise better than any other proposal. Its main validity risk is Goodhart on the surrogate: that costs power rather than producing false claims, and the H3 and D4 checks would expose it. Rigor loses a point for the tail-fidelity assumption, the simulator-only powered recursion test and the fixed-category primary statistic."
+  },
+  {
+   "proposal": "decisive",
+   "power": 4,
+   "rigor": 5,
+   "novelty": 2,
+   "feasibility": 4,
+   "honesty": 5,
+   "fatal_flaws": [
+    "The mechanism is modest. It is human-written adaptive operator selection, a per-cell prior from mean rank differences, on top of design q's inner search, which measured slightly harmful against o0 (-0.002 to -0.003). It cannot test the discovery of learning principles, which the authors exclude explicitly, so even a pass answers a narrower question than instruction 13.",
+    "The shuffled placebo is anti-informative, not uninformative. The derangement moves the clipped -2 weights of destructive cells onto other cells and gives destructive cells the mild cells' weights. E-R2 therefore confounds 'information' with 'the placebo hurts', and it is gated behind E-R1.",
+    "The decisive 0.007 bound depends on a guessed chain-to-chain sd (tau = 0.008), to be re-derived in development. The recursion contrast E-R4 is powered only at about 0.009, and the authors predict it is about 0.",
+    "A raised prior on mild cells may increase q's noise-driven switches on 4-problem training batches (overfitting inside acquisition). L3 would show this, but it could make relay < frozen."
+   ],
+   "best_parts": [
+    "It replicates at the right unit: 32 meta-training chains, with t on chain means. Power arithmetic checked: SE 0.0019, rejection at 0.0047, power 0.18, 0.55, 0.88 and 1.00 at 0.003 to 0.010. The futility look and Holm-corrected secondaries are sound.",
+    "The off-policy arm (same 12 acquisitions, empty memories) isolates recursion from mere accumulation, which is instruction 6.3. frozen@4B names the limit of a negative, and o0@matched covers compute.",
+    "Untrained answers are identical across arms. design_q._apply_open with no program falls back to design_o with o0's programs and theta and the same apply stream, so the registered min statistic reduces to delta acquired.",
+    "The memory is built from training-problem statistics only. The new r_memory record is needed because Cache returns no memory and run records keep only memory_in (verified in run.py). Alpha spending across attempts is pre-registered.",
+    "Its framing numbers match the measurements: 209 pairs for +0.005, about 3,600 for +0.0012, 192,000 CPU-s for a powered swap, q's 15/62 switches, and the q - o0 sd of 0.0206, or 0.029 on job shop and QAP."
+   ],
+   "justification": "This is the most rigorous causal design. It answers one well-posed question at a pre-registered decisive threshold, its controls survive the obvious alternative explanations (peakedness, accumulation, compute, ceiling), and it reports the likely negative together with a named limit. Its weaknesses are the narrow, conventional mechanism, an anti-informative rather than neutral placebo, a guessed tau, and one overstated family-wise risk figure. It is ranked first on rigor and validity, not on ambition."
+  }
+ ],
+ "ranking": [
+  "decisive",
+  "unconventional",
+  "statistics",
+  "level",
+  "generator"
+ ],
+ "errors_in_proposals": [
+  "statistics: calls '8:3:1 runs per 36-CPU-s cycle' the Neyman allocation. With the brief's paired sds (QAP 0.039, JS 0.021, PM 0.006) and o0's CPU per run in q_compare1/2 (QAP about 1.7-2.0 s, JS about 5 s, PM about 9 s), Neyman (n proportional to sd/sqrt(cpu)) gives about 16:5:1. 8:3:1 is a near-optimal integer allocation (variance x CPU 0.00152 against the optimum 0.00144). Its efficiency figures 0.0071, 0.0034 and 0.0015 and the panel SE 0.0015 are correct.",
+  "statistics: stat_G takes min(change of acquired, change of gain) per category and the proposal calls it 'the registered held-out statistic'. The registered statistic (experiments/report.py both_interval) is the min of the two category-averaged means, so the panel tests a different, more conservative statistic.",
+  "statistics: 'R and F share every run until the first accepted change of principle'. Panels are per (arm, lineage, parent index), so R and F can reach different decisions on the same candidate. Design o's recursive0 and frozen0 confirmed the same candidate at -0.008 and +0.0015 on their own seeds. They share runs only until their first differing acceptance; this affects only the machine-time estimate.",
+  "statistics: calls bin packing 'a confirmation category that no selection saw'. Process c's generation 1 searched on it (report_main_4505.txt: 'searched on [binpacking, jobshop, quadassign, setcover]'), and it is one of registration_o's held-out categories. It is unseen only by design o's selection.",
+  "generator: bin packing's paired sd of 0.0064 is derived as sqrt(2) x run sd 0.0045. On every category with both figures the paired sd is below the run sd (JS 0.021 < 0.033, QAP 0.039 < 0.046, PM 0.006 < 0.019), and q - o0 on bin packing (q_compare2) has sd 0.0047. The derivation runs against the measured pattern, although its error is on the conservative side.",
+  "generator, level, unconventional: 'per-category effects nearly uncorrelated (as measured)', 'the mean between-category correlation is about 0' and 'cross-category correlation of effects about 0' are applied to design o's edits. Fact 1 concerns designs a and b. notes/transfer_bound.json gives, over 439 design-o candidates, disattenuated cross-category correlations of 0.15 to 0.80 with all six intervals above 0 (e.g. jobshop~pmedian 0.47 [0.31, 0.69], jobshop~quadassign 0.15 [0.05, 0.39]), and degenerate estimates for the mild cells. For design o the claim is not measured, and the all-candidate data contradict it.",
+  "generator: 'Design o's own route ... was never exercised in 29 steps'. Generation 0's principle updated the edit weights at every step (o_step records learner_input and weights; discovery.Lineage.step calls D.learn). What never happened is a rebuild on an adopted principle, because nothing was accepted.",
+  "generator: E_meta's power (0.84 at +0.005, from SE 0.0019 = 0.0095/sqrt(24)) leaves out the category level of its own registered 'bootstrap over episodes, then categories'. With 4 categories resampled and category-specific effects, the interval and the detectable effect are much larger.",
+  "level: 'Inside one category the effects are the signal: design q's in-run switches moved job shop by -0.068 to +0.035 and bin packing by +0.004 at sd 0.004'. q - o0 on job shop (q_compare2: +0.035, -0.005, -0.068, +0.014; mean -0.006, sd 0.044) is within paired noise (0.021-0.029), and the brief attributes q's switches to noise. Bin packing at +0.004 with sd 0.0047 over 4 seeds gives t of about 1.7.",
+  "level: 'q with a weaker rule switched in 49 of 112 program rounds'. 49/112 pools both development runs: 34 of 50 under the one-batch rule (q_compare1) and 15 of 62 under the two-batch rule (q_compare2).",
+  "level: 'R - Z is detectable only from about +0.007 to +0.008' uses se 0.0026 over 64 fixed pairs. E3r(b) requires the registered category-and-seed bootstrap interval, for which the proposal itself says about +0.015, consistent on 3 categories, is needed (E1r).",
+  "decisive: 'Inside design o alone, at 0.08 to 0.13 false acceptance per lineage ..., at least one false acceptance has probability about 0.5 to 0.6' (likewise 'a 6,000 CPU-s lineage expects about 0.1 acceptances'). The 0.108-0.133 per 13-step lineage is registration_o's worst-case stub, in which every step reaches confirmation. Measured, 4 of 29 steps confirmed, which gives about 0.014 per ~10-step lineage and about 0.13 over ten lineages.",
+  "unconventional: 'cell means range from -0.040 to +0.011' for edits that do not break the mechanism. propose/insert at +0.0185 (n = 2) lies outside that range. This is minor."
+ ]
+}

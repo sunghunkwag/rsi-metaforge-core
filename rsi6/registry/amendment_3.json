@@ -1,0 +1,13 @@
+{
+ "amendment": 3,
+ "utc": "2026-11-12T23:53:50Z",
+ "after": "the two registered rounds and round b1 of the continued process (six nominees, no adoption); both processes frozen; the Owner's instruction 9",
+ "decisions": [
+  "Process c is registered in rsi6/registry/registration_c.json and run by rsi6/experiments/alternating.py: four techniques of self-modification name a nominee in every generation; a nominee is adopted, provisionally, if it passes the registered gate and a positive confirmation on three categories of the pool that the generation's search did not see; six generations are planned.",
+  "The targets stay sealed and the reserves stay unused until process c has ended. The target test is then run once for all processes. The target adapters that were built after the freeze of the first two processes (satisfiability and routing: built, not audited; flow shop: not buildable from the source the work order named; facility: cut off) stay outside the package until they are audited; no learner has been run on any target category, and the role lock stays.",
+  "Success is defined before the run (registration_c.json, 'decision'): at least two adopting generations, the final version passing an external gate on the reserves tour and colouring, and the registered margin with an interval excluding zero on the sealed targets, not behind the compute-matched arm.",
+  "The run writes to a working copy of the ledger (rsi6/ledger/live.jsonl) that starts as a copy of main.jsonl and extends its chain; main.jsonl is replaced by verified copies of it at checkpoints."
+ ],
+ "why_adoptions_inside_the_process_are_provisional": "the categories set aside in one generation are searched on in others, and up to four nominees are tested per generation: a version can pass by repeated testing. The process is a way of finding a candidate, not a test of it.",
+ "registration_c_sha256": "1f5b9441edea96ffc9f32955a32ffa86276b522ef3c6564b81fc7eb95c1bdc8a"
+}

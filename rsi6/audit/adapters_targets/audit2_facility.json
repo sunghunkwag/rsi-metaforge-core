@@ -1,0 +1,113 @@
+{
+ "verdict": "admit",
+ "summary": "Audit 2 of the \"facility\" adapter (uncapacitated warehouse location, OR-Library, 15 files). No blocking or major finding. Everything was checked with my own parser, my own evaluator and my own search, sharing no code with the adapter; nothing under REPO was modified; the learner was never run on a benchmark instance (only on made-up random instances, both designs; Layout was constructed for descriptor names only). Host used: people.brunel.ac.uk only.\n\nWhat holds: (1) the 16 manifest files are byte-identical to my own download (SHA-256); (2) the adapter's arrays equal the file fields exactly, the exposed data are exactly the cost matrix (var_opt[0]) and the fixed costs (opt_attr[:,0]); capacities, demands, names, reference are not exposed; (3) Environment.score, partial_totals, evaluate, and the start/candidates/assign/totals path agree with my evaluator to 1e-15 relative on all 15 instances (both groups; group \"1000\" has only 3 instances, all used); (4) the reference is attainable in the answer form for all 15 instances (my complete enumeration proves optimality for sets VII and X; my add/drop/exchange search reaches the published value for XIII, A, B, C; optimality there rests on the source, as the module says); (5) the observable fingerprint of all instances is byte-identical in a copy whose uncapopt.txt holds random values; (6) one layout and one descriptor-name tuple for all instances; (7) the builder's decision not to present the capacitated problem is correct (cap41 = cap71 number for number apart from capacity; demand 12,912 > capacity 5,000, so capopt values need divided demand); (8) kernel and learner files are untouched (mtimes 21:53, before the adapter's).\n\nThe main caveat, which is a property of the benchmark and not a correctable defect of the adapter: the kernel's split gives 12 training instances (one body of data: 3 nested cost matrices x 4 fixed-cost levels, group \"50\") and only 3 fresh instances (capa, capb, capc, group \"1000\"), halves [capb, capc] | [capa]. The fresh instances are mutually independent and independent of training (0 shared columns, correlations < 0.1), which is what audit 1 asked for, but a mean over 3 instances with a one-instance confirming half is a coarse measurement; it can separate gross differences (a random answer scores 0.08-0.14 there, threshold 0.95) but not fine ones. The module text says this plainly; the anchor does not. The experimenter should report this category with n_fresh = 3 stated beside the result.\n\nScale: plain ratio reference/value, correct (random answer 0.08-0.41 < 0.5 everywhere). Threshold 0.95 is worded as an operating point. Cost: largest instance 1000 x 100 = 101,001 units per construction, test limit 1,202,002 units per answer; on made-up instances of the same shapes acquire takes 0.4 s (design a) / 2.2 s (design b) CPU and each fresh answer 0.2 s, so a run is cheap.\n\nFiles: scripts in <scratch>/targets/facility/audit2/scripts (audit.py, attain.py, fp.py, iface.py); outputs <scratch>/targets/facility/audit2/audit.out, attain.out, fp_repo.out, fp_copy.out, iface.out; downloads in audit2/dl; altered copy in audit2/copy.",
+ "checks": [
+  {
+   "id": "1 no hidden solver",
+   "what_was_run": "Read rsi6/environments/facility.py in full (227 lines).",
+   "result": "PASS. Code is parse(), value_of() (sum of indexed costs + fixed costs of np.unique(a)), FacilityProblem (partial_totals, _new, _rows, _push with a per-warehouse count), Facility (load, group, problem with two random permutations, score). No search, no sort/rank by objective, no optimisation call, no table beyond the instance. The only constants: file list, size rule (1000, 100000), tolerance 0.001."
+  },
+  {
+   "id": "2 no privileged information",
+   "n": "15 instances x 3 (seed, training) settings",
+   "what_was_run": "audit2/scripts/fp.py run in REPO and in audit2/copy (uncapopt.txt replaced by random values 1e5..3e7, manifest hash adjusted): SHA-256 over all public view fields, construction_units, evaluate on 3 fixed answers, decode, and candidates/allowed/assign/totals/state along a fixed path, meter counts, attribute names.",
+   "result": "PASS. FINGERPRINT 027826ad73a7ad6cff3ba1d9d982a1867374bdb45fed2675fb58543282f6022c in both; references differ (932615.75 vs 15182528.831 for cap71) and scores differ (cap71 fixed answer 0.4930 vs 1.0; capa 0.0818 vs 0.1042), so the reference was really altered and reaches score() only."
+  },
+  {
+   "id": "3 traceability",
+   "n": "15",
+   "what_was_run": "audit.py [3], [4]: adapter arrays vs my parse; view fields under relabelling.",
+   "result": "PASS. max diff 0.0. var_opt[0][j,i] = the m numbers after the demand in customer j's record; opt_attr[i,0] = second number of warehouse i's line. var_attr has 0 columns, no var_var/opt_opt/occ_attr, capacity None, domain None, start_answer None. Problem object's own attributes: ['cost', 'fixed'] only. Nothing untraceable."
+  },
+  {
+   "id": "4 relabelling",
+   "n": "15 instances x 3 seeds",
+   "what_was_run": "audit.py [4]: permutations recovered from decode alone (constant answers for warehouses, base-m digit answers for customers), then exposed arrays compared with file arrays under those permutations; evaluate(a) vs my value of decode(a).",
+   "result": "PASS. Isomorphic exactly (max diff 0.0); permutations differ between seeds in 60 of 60 cases; training flag changes nothing; evaluation equal through decode (2.1e-16)."
+  },
+  {
+   "id": "5 evaluator agreement",
+   "n": "15 instances (12 in group '50', all 3 of group '1000'); 375 complete answers for score, 468 partial answers, 459 sampled candidate states, 150 invalid answers",
+   "what_was_run": "audit.py [5a][5b][5c]; attain.py (own enumeration for m=16, 25 by split-table minimum; own add/drop/exchange for m=50, 100).",
+   "result": "PASS. score = min(1, ref/my value): largest diff 1.1e-16. Invalid answers (wrong length, value m, -1, float, bool, 2-D, nan, None, str): all 0.0. partial_totals/totals vs mine: 2.6e-15 relative; candidates vs change of my value: 7.3e-16; candidates vs AssignProblem._rows on small instances equal. The source publishes no reference answers; I exhibited one per instance: all 15 reach the published value within 0.0006 (e.g. cap101 796648.4375 vs 796648.437; capa 17156454.4783 vs .478; capb 12979071.5814 vs .582; capc 11505594.3288 vs .329) and score exactly 1.0; a corrupted version (one customer moved) scores ref/value < 1 (0.922-0.993). Enumeration of all 2^16 and 2^25 open sets proves optimality for cap71-74 and cap101-104; for XIII, A, B, C optimality rests on the source (stated in the module). Reference is attainable, not a bound."
+  },
+  {
+   "id": "6 leak scan of task files",
+   "n": "15 files",
+   "what_was_run": "audit.py [6]: every token of every instance file compared with the reference (within 1.0); non-numeric and trailing tokens listed.",
+   "result": "PASS. No token within 1.0 of the reference; only non-numeric token is the word 'capacity' (capa, capb, capc), read as absent and not exposed; 0 trailing tokens. The files print no optimum or bound."
+  },
+  {
+   "id": "7 one layout",
+   "n": "15 instances x 2 seeds",
+   "what_was_run": "audit.py [7]: run.layout(P) and tuple(Layout(view(P), version.default()).names).",
+   "result": "PASS. One layout: ('assign', False, True, True, (False,), (False,), 0, 1, 0, 0, 1, 0, True, True); one descriptor-name tuple (7 names). No zero-padding is used or needed."
+  },
+  {
+   "id": "8 split",
+   "what_was_run": "audit.py [8]: split(env, 16, 24), run.halves; my own check of shared data (cost columns, demands, fixed costs) and correlations.",
+   "result": "PASS on separation, with a caveat on size. Training 12 in group ['50']; fresh 3 ['capb', 'capa', 'capc'] in group ['1000']; halves ['capb', 'capc'] | ['capa']. Shared cost columns: 66 pairs, all inside group '50'; 0 between training and fresh; 0 among capa/capb/capc (correlations of cost matrices 0.0005-0.008, demands <= 0.03, fixed costs |r| < 0.1). The fresh set is 3 instances against the 24 the kernel asks for: coarse (see finding 1)."
+  },
+  {
+   "id": "9 instances left out / traces",
+   "what_was_run": "Size rule in code (MAX_VARS 1000, MAX_PAIRS 100000) vs module text; grep of the builder's scratch (*.py, checks.out) for acquire/apply/measure/run.run/Learner/greedy/baseline/heuristic; cmp/parse of cap41 vs cap71 and cap51 vs cap73.",
+   "result": "PASS. No instance of the page is left out; the rule is a size rule. The 25 capacitated-only files are duplicates without capacities (cap41 vs cap71: fixed equal True, rows equal True; cap51 vs cap73 likewise). Learner calls in the builder's scratch (probe_g.py, checks.py section g) are on FacilityProblem objects built from g.integers random numbers only; no baseline or heuristic score on benchmark instances is printed; the builder's local search prints only the attained optimum. No trace of a choice made with knowledge of scores."
+  },
+  {
+   "id": "10 threshold anchor",
+   "what_was_run": "Read Facility.threshold / anchor and the module text.",
+   "result": "PASS. 0.95, anchor: 'an operating point, not an external fact: a mean ratio of the published optimal value of the uncapacitated problem (attainable, not a bound) to the cost of the answer of 0.95'. Worded as what it is; it does not say that the mean is over 3 instances (finding 1)."
+  },
+  {
+   "id": "11 cost",
+   "n": "made-up: 12 training problems 50 x 16/25/50, 3 fresh 1000 x 100, designs a and b",
+   "what_was_run": "audit.py [8] units; audit2/scripts/iface.py a b (random uniform numbers, kernel budgets: train 40 x sum of construction units = 752,480; test limit 1,202,002 per answer).",
+   "result": "PASS. Units per construction: 851 (50x16), 1301 (50x25), 2551 (50x50), 101,001 (capa/capb/capc, the largest). Design a: acquire 384,198 of 752,480 units, 0.4 s CPU, 1 iteration, learned True. Design b: 735,043 units, 2.2 s, 47 iterations, learned True. Every fresh-shaped answer: 0.1-0.2 s CPU, valid and exactly evaluated, meter 1,202,401 of 1,202,002 (the learner runs into the limit and handles it). 24 answers on training shapes: 0.1-0.2 s. A run cannot be unreasonably slow."
+  },
+  {
+   "id": "0 data integrity",
+   "n": "16 files",
+   "what_was_run": "Own curl download (client research-data-check/1.0) of uncapinfo.html, capinfo.html, uncapopt.txt, capopt.txt and the 15 instance files plus cap41, cap51; SHA-256 against the manifest; cmp against REPO/rsi6/data/facility.",
+   "result": "PASS. All 16 manifest hashes equal my download; all 16 repo data files byte-identical to mine. Format read from uncapinfo.html matches the parser (m, n; capacity, fixed cost; demand, m costs)."
+  }
+ ],
+ "findings": [
+  {
+   "severity": "minor",
+   "where": "rsi6/environments/facility.py: group(), anchor; kernel split",
+   "what": "The fresh set is 3 instances (capa, capb, capc) in one group, the confirming half is a single instance (capa), and the training side is 12 instances that are one body of data (3 nested cost matrices x 4 fixed-cost levels) against the 16/24 the kernel asks for and the 40 instances / 3 groups of R6. The benchmark has no more (15 files; the 25 capacitated-only files are duplicates), so R6's condition 'if the benchmark has them' is met and the module text says it plainly, but the anchor does not, and a pass or fail at 0.95 can turn on one instance (each weighs 1/3).",
+   "evidence": "audit.py: '[8] PASS split(16, 24): training 12 in groups ['50'], fresh 3 ['capb', 'capa', 'capc'] in groups ['1000']; halves ['capb', 'capc'] | ['capa']'. Data check: 'pairs sharing a cost column 66 ; small-big pairs sharing 0 ; big-big pairs sharing 0'; 'VII first16 of X: True ; X cols within XIII: True ; same demands small: 1'.",
+   "suggested_fix": "Not correctable inside the benchmark. Add to the anchor that the mean is over the 3 fresh instances the benchmark provides, and report any result on this category with n_fresh = 3 (decide on 2, confirm on 1) stated beside it. No re-audit needed for a wording change of the anchor."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/environments/facility.py: MAX_PAIRS = 100000 (size rule)",
+   "what": "The size rule was changed after audit 1 from 30,000 to 100,000 customer-warehouse pairs, a value equal to the size of capa/capb/capc, i.e. fitted to admit exactly them, and 3.3 times the preferred 'about 30,000'. The change is by size and by data independence, not by any score, and no learner had met the category; the module text records the change and its reason. The cost reason behind the preference does not bite.",
+   "evidence": "Module text lines 95-104; builder scratch holds facility.before_audit1.py and patch1.py/patch2.py; no learner call on benchmark instances found by grep. iface.py: each answer on a made-up 1000 x 100 instance takes 0.1-0.2 s CPU within the limit of 1,202,002 units."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/environments/facility.py: group() names '50' and '1000'",
+   "what": "With two groups, which one becomes the fresh side is decided by the kernel's hash of the group names. The chosen names put the large class on the fresh side, which is the outcome the builder argues for; other plausible names would have flipped it. The names follow the existing convention of pmedian.py (str of the count), and I found no trace that they were chosen for the order, but this cannot be proved either way. Under the flipped split training would be capa/capb/capc (12.1 million units of training budget) and the fresh side the 12 mutually dependent small instances.",
+   "evidence": "audit.py: 'kernel order of the group names: ['1000', '50']'; for comparison ('n50','n1000') -> n1000 fresh, ('small','large') -> small, ('VII-XIII','A-C') -> VII-XIII, ('16-50','100') -> 16-50, ('50x','1000x') -> 1000x. pmedian.py line 95: 'return str(len(self.instances[instance_id][\"c\"]))'."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/environments/facility.py: answer form (R1)",
+   "what": "Two kinds of published answers cannot be written in the answer form: an answer that opens a warehouse and leaves it idle, and (in the published linear formulation) an answer that divides a customer's supply. Each is matched by a writable answer of no greater value (fixed costs >= 0 is checked at load; with no capacities the cheapest open warehouse is always at least as good), so the optimum and the value of every writable answer are exact. The first case is stated in the module text; the second is not mentioned. I accept this as exact for the purpose of R1.",
+   "evidence": "Module text lines 42-48; __init__ raises unless fixed.min() >= 0 and cost.min() >= 0. My enumeration over all open sets (attain.py) gives exactly the published optimum for the 8 instances of sets VII and X."
+  },
+  {
+   "severity": "note",
+   "where": "reference (uncapopt.txt) and PRINTED tolerance",
+   "what": "Optimality of the reference is proved independently only for sets VII and X (complete enumeration); for XIII, A, B, C it rests on the source, attainability being shown by my search. The printed values differ from attainable values by up to 0.0006 (four values 0.0005 low, capb 0.0006 high); the tolerance of 0.001 covers this and cannot change a score by more than 1e-9.",
+   "evidence": "attain.out: 'cap101: complete enumeration: open 15 of 25; my value 796648.4375; published 796648.437; difference +0.0005; score 1.0'; 'capb: add/drop/exchange: open 7 of 100; my value 12979071.5814; published 12979071.582; difference -0.0006; score 1.0'; 'ATTAIN PASS'."
+  },
+  {
+   "severity": "note",
+   "where": "interface on made-up instances (not an adapter defect)",
+   "what": "On made-up instances of the real shapes, design a completes only one learning iteration (64 constructions) inside the training budget of 752,480 units, and both designs spend the whole test budget on a 1000 x 100 instance (the meter ends 399 units over the limit: BudgetExhausted is raised and handled by the learner). The answers are valid. This informs how a result here should be read; it says nothing about how the learner scores on the benchmark, which was not measured.",
+   "evidence": "iface.out: 'design a: acquire used 384198 of 752480 units, cpu 0.4s, report {'iterations': 1, 'constructions': 64, 'learned': True, 'failed': None}'; 'design b: acquire used 735043 of 752480 units, cpu 2.2s, report {'iterations': 47, 'constructions': 543, ...}'; every fresh line 'units 1202401 of 1202002 ... valid True, exactly evaluated True'."
+  }
+ ]
+}

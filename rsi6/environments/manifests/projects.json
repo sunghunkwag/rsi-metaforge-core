@@ -1,0 +1,59 @@
+{
+ "name": "projects",
+ "category": "projects",
+ "source": "PSPLIB, the project scheduling problem library (R. Kolisch, A. Sprecher; https://www.om-db.wi.tum.de/psplib/), single-mode resource-constrained project scheduling: the sets j30 (480 instances of 30 jobs) and j60 (480 instances of 60 jobs) as the archives of the data page getdata.php?mode=sm, with its solution files (j30opt.sm: optimal makespans; j60hrs.sm: best known makespans; j60lb.sm: lower bounds), the site's JSON summaries of both sets, the parameter file par.sm (the 48 generation classes of each set by NC, RF and RS), the data page itself and the library page. The adapter leaves out the 240 instances whose precedence-only earliest-start schedule already meets every capacity (on the pinned files exactly those of the 24 classes with resource strength RS = 1): on them every valid answer is optimal and scores 1; 720 instances are used, 360 of each set. The sets j90 and j120 of the same page are left out: this category is defined as j30 and j60",
+ "terms": "PSPLIB states no licence. Its library page (library.php, pinned here) says: 'The data sets may be used for the evaluation of solution procedures for single- and multi-mode resource-constrained project scheduling problems.' and 'Researchers may download the benchmark sets to evaluate their algorithms, and they may send their results to be added to the library.' It names the paper that describes the library: Kolisch, R. and A. Sprecher (1996): PSPLIB - A project scheduling library, European Journal of Operational Research, Vol. 96, pp. 205--216. Fetched by hash; the data are not committed. The solution files, the JSON summaries and the two pages are kept up to date by the site (its news page: solution upload re-enabled on 06.05.2026), so a later fetch may not reproduce the pinned hashes",
+ "reference": "j30: the 480 optimal makespans of j30opt.sm (the data page: 'OPT (Optimal Solutions): Solutions for which optimality has been formally proven', j30 '480 instances (fully optimal)'). j60: the 480 best known makespans of j60hrs.sm ('HRS (Heuristic Solutions): Best known feasible solutions obtained by heuristic methods. These solutions are not guaranteed to be optimal'), values of valid schedules, that is upper bounds; proven optimal by the library on the 382 instances where j60lb.sm gives an equal lower bound (the data page: '382/480 proven optimal'); on 46 more (of classes 42 to 48, for which j60lb.sm gives no bound) the value equals the critical-path length of the instance (the field MPM-Time, recomputed by the adapter), a lower bound of every schedule, so it is optimal too; upper bounds only on the other 52. Of the 720 instances used: 360 j30 optima, 308 j60 optima (282 by the library, 26 by the critical-path length) and the 52 upper bounds. In each file the third number of every line that begins with three whole numbers (class, instance, value); checked against the JSON summaries. Values only: the source publishes no schedule. Read by the kernel only (score, threshold_for, reference)",
+ "files": [
+  {
+   "url": "https://www.om-db.wi.tum.de/psplib/getdata.php?mode=sm",
+   "path": "getdata_sm.html",
+   "sha256": "b171d5b19b99e3003cd7208cf5769b9e72aa4979bc1f8c846997351488dbf028"
+  },
+  {
+   "url": "https://www.om-db.wi.tum.de/psplib/library.php",
+   "path": "library.html",
+   "sha256": "bd3a315302fbdf2370d1b3241ac780ebc67a0150222814440da4fa27d7b27e22"
+  },
+  {
+   "url": "https://www.om-db.wi.tum.de/psplib/files/unsorted%20files/par.sm",
+   "path": "par.sm",
+   "sha256": "7c72cbddf6c292e3b5ab953a6186ef14b174cf618e34dac811f307a0e4b0b314"
+  },
+  {
+   "url": "https://www.om-db.wi.tum.de/psplib/download_dataset.php?set=j30&mode=sm&format=tgz",
+   "path": "j30.sm.tgz",
+   "sha256": "c18202a56588e3cdf3c1aebc5fa59d06b22ee634c74ddf554b6df6bc100044ff"
+  },
+  {
+   "url": "https://www.om-db.wi.tum.de/psplib/download_solution.php?set=j30&mode=sm&type=opt",
+   "path": "j30opt.sm",
+   "sha256": "9036456d909d5d2102975c13dd6fe36fe503b3ed1df5b91fa652aa7dc9648ee3"
+  },
+  {
+   "url": "https://www.om-db.wi.tum.de/psplib/download_merged.php?set=j30&mode=sm",
+   "path": "j30.json",
+   "sha256": "8f2c005cdf81bf0c962e2930c9c241ed327ba832202ff579d953c4e93f39029e"
+  },
+  {
+   "url": "https://www.om-db.wi.tum.de/psplib/download_dataset.php?set=j60&mode=sm&format=tgz",
+   "path": "j60.sm.tgz",
+   "sha256": "45e5e13393bf925466f57dc3beb757e221faf107695f134cebd78fa4848d7f6f"
+  },
+  {
+   "url": "https://www.om-db.wi.tum.de/psplib/download_solution.php?set=j60&mode=sm&type=hrs",
+   "path": "j60hrs.sm",
+   "sha256": "20d9a9ef4525bf7c50d34895a4b9b4f89f2a4dcf5fec4b31fab03fa8a31b6d1e"
+  },
+  {
+   "url": "https://www.om-db.wi.tum.de/psplib/download_solution.php?set=j60&mode=sm&type=lb",
+   "path": "j60lb.sm",
+   "sha256": "a4107cb3cfc23ecc7880ab2324b94b060e28721f4d62b12f3de44b05c292c528"
+  },
+  {
+   "url": "https://www.om-db.wi.tum.de/psplib/download_merged.php?set=j60&mode=sm",
+   "path": "j60.json",
+   "sha256": "773a270b3f132ed705c866ff21a030c7488e4b9ed27a978a2f4f8696e687875f"
+  }
+ ]
+}

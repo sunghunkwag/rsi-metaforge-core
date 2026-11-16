@@ -1,0 +1,39 @@
+1. the kernel's check: when is an uneven environment refused?  (made-up prediction fixture)
+   training ids ['i02', 'i04', 'i09', 'i06'] fresh ids ['i10', 'i01', 'i08', 'i03']
+   all instances alike: no exception; learner calls before the end: {'acquire': 1, 'apply': 16}
+   second TRAINING instance has another layout: RuntimeError: audit-columns-fixture: instances of one environment must have the same generic layout (raised in run.py:89 measure); learner calls before the end: {'acquire': 0, 'apply': 0}
+   third FRESH instance has another layout: RuntimeError: audit-columns-fixture: instances of one environment must have the same generic layout (raised in run.py:101 scores); learner calls before the end: {'acquire': 1, 'apply': 2}
+2. the frozen learner, called directly, on made-up problems whose layouts differ (no kernel check in between)
+   sizes of the learner's parameter vector per problem: [10, 14, 10, 14, 12, 10, 14, 12]
+   assignment form, attribute columns 2/4/2/4/3/2/4/3: ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 3 is different from 4) (raised in learner.py:302 construct)
+   assignment form, 3 attribute columns everywhere: no exception
+   prediction form, columns 2/3/2/3/4/2/3/4: ValueError: all the input array dimensions except for the concatenation axis must match exactly, but along dimension 1, the array at index 0 has size 20 and the a (raised in shape_base.py:290 vstack)
+   prediction form, 3 columns everywhere: no exception
+3. problems that differ only in the largest capacity (1 or 2): same kernel layout, different learner descriptors?
+   kernel layout equal: True | learner descriptor lists: [['opt:dsoft', 'opt:vo[0]', 'var1:va[0]', 'var2:feasible', 'var2:best', 'var2:regret'], ['opt:dsoft', 'opt:usage', 'opt:vo[0]', 'opt:optsum[0]', 'var1:va[0]', 'var2:feasible', 'var2:best', 'var2:regret']]
+   run.measure on such an environment: no exception ; learner calls: {'acquire': 1, 'apply': 16}
+4. registered numbers against the code
+   run.BUDGET == registration budgets.run: True {'train': 40.0, 'test_c': 2.0, 'test_e': 1.0, 'n_train': 16, 'n_fresh': 24}
+   rounds.RULES == registration rules: True {'margin': 0.005, 'cpu_ratio': 1.15, 'search_cpu_ratio': 1.25, 'bootstrap': 2000, 'level': 0.9}
+5. test_padded_columns_are_exact_and_learnable, repeated with its report printed (made-up numbers)
+   budget of the test: 5160.0 units; the learner's cost of one construction per problem: [127.0, 127.0, 127.0, 127.0, 127.0, 127.0]; held back 2; reserve 762.0; one round of learning needs pop*batch*cost = 8128.0 units; available 4398.0
+   report of acquire: {'iterations': 0, 'constructions': 0, 'learned': False, 'failed': 'decide: the budget did not allow one round of learning', 'fit': 4, 'held_back': 2}
+   units used by acquire: 0.0 | capability learned: False | non-zero weights: {'opt:dsoft': -1.0, 'opt:viol': -6.0, 'opt:dhard': -3.0}
+   answer well formed: True
+7. width as a free choice, on made-up generic fixtures (not the form of either environment's data)
+   prediction form, 3 real columns shown in 3: learned False, coefficients None, coefficients of the zero columns None
+   prediction form, 3 real columns shown in 4: learned False, coefficients None, coefficients of the zero columns None
+   prediction form, 3 real columns shown in 5: learned False, coefficients None, coefficients of the zero columns None
+   prediction form, 3 real columns shown in 8: learned False, coefficients None, coefficients of the zero columns None
+   predictions with width 4 against width 3: identical bit for bit True, largest absolute difference 0.000e+00 (targets are of order 20.35)
+   predictions with width 5 against width 3: identical bit for bit True, largest absolute difference 0.000e+00 (targets are of order 20.35)
+   predictions with width 8 against width 3: identical bit for bit True, largest absolute difference 0.000e+00 (targets are of order 20.35)
+   assignment form, 2 real attribute columns + 0 zero columns: parameters 10, iterations 1, learned False
+   assignment form, 2 real attribute columns + 1 zero columns: parameters 12, iterations 1, learned False
+   assignment form, 2 real attribute columns + 2 zero columns: parameters 14, iterations 1, learned True
+   learned weights of the common descriptors with 1 zero column(s) against none: identical True; largest difference 0.000
+   learned weights of the common descriptors with 2 zero column(s) against none: identical False; largest difference 0.831
+6. the three new tests, called one by one (not the suite)
+   test_layout_is_the_same_for_every_instance: PASS; learner calls: {'acquire': 0, 'apply': 0}
+   test_kernel_refuses_instances_with_different_layouts: PASS; learner calls: {'acquire': 0, 'apply': 0}
+   test_padded_columns_are_exact_and_learnable: PASS; learner calls: {'acquire': 1, 'apply': 1}

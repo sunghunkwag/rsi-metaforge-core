@@ -1,0 +1,521 @@
+[
+{
+"name": "((add-k (dyn . 0) (static . -2)))",
+"map_shaped": true,
+"points": 15,
+"original": {
+"match": true,
+"solved": true,
+"candidates": 38,
+"program": "(lambda x0: int. ((sub x0) 2))",
+"seconds": 0.0
+},
+"restored": {
+"match": true,
+"solved": true,
+"candidates": 61,
+"program": "(lambda x0: int. ((sub x0) 2))",
+"seconds": 0.0
+},
+"registered": {
+"original": 1799,
+"restored": 7615
+}
+},
+{
+"name": "((add-k (dyn . 0) (static . 10)))",
+"map_shaped": true,
+"points": 14,
+"original": {
+"match": false,
+"solved": false,
+"candidates": null,
+"program": null,
+"seconds": 1.1
+},
+"restored": {
+"match": true,
+"solved": true,
+"candidates": 2007,
+"program": "(lambda x0: int. ((add x0) ((mul 2) 5)))",
+"seconds": 0.0
+},
+"registered": {
+"original": null,
+"restored": 199569
+}
+},
+{
+"name": "((append-k (dyn . 0) (static . -2)))",
+"map_shaped": false,
+"registered": {
+"original": null,
+"restored": null
+}
+},
+{
+"name": "((append-k (dyn . 0) (static . 10)))",
+"map_shaped": false,
+"registered": {
+"original": null,
+"restored": null
+}
+},
+{
+"name": "((has-k (dyn . 0) (static . 10)))",
+"map_shaped": false,
+"registered": {
+"original": null,
+"restored": null
+}
+},
+{
+"name": "((identify-geq-k (dyn . 0) (static . 3)))",
+"map_shaped": true,
+"points": 12,
+"original": {
+"match": true,
+"solved": true,
+"candidates": 5845,
+"program": "(lambda x0: int. (((if ((gt x0) 1)) 1) 0))",
+"seconds": 0.1
+},
+"restored": {
+"match": true,
+"solved": true,
+"candidates": 24616,
+"program": "(lambda x0: int. (((if ((gt x0) 1)) 1) 0))",
+"seconds": 1.0
+},
+"registered": {
+"original": 142578,
+"restored": null
+}
+},
+{
+"name": "((identify-geq-k (dyn . 0) (static . 7)))",
+"map_shaped": true,
+"points": 15,
+"original": {
+"match": false,
+"solved": false,
+"candidates": null,
+"program": null,
+"seconds": 1.1
+},
+"restored": {
+"match": true,
+"solved": true,
+"candidates": 82138,
+"program": "(lambda x0: int. ((div ((add x0) 3)) ((mul 2) 5)))",
+"seconds": 4.3
+},
+"registered": {
+"original": null,
+"restored": null
+}
+},
+{
+"name": "((identify-is-mod-k (dyn . 0) (static . 2)))",
+"map_shaped": true,
+"points": 10,
+"original": {
+"match": true,
+"solved": true,
+"candidates": 720,
+"program": "(lambda x0: int. ((mod ((sub x0) -1)) 2))",
+"seconds": 0.2
+},
+"restored": {
+"match": true,
+"solved": true,
+"candidates": 1942,
+"program": "(lambda x0: int. ((mod ((sub x0) -1)) 2))",
+"seconds": 0.0
+},
+"registered": {
+"original": 29912,
+"restored": 198932
+}
+},
+{
+"name": "((identify-is-mod-k (dyn . 0) (static . 3)))",
+"map_shaped": true,
+"points": 16,
+"original": {
+"match": false,
+"solved": false,
+"candidates": null,
+"program": null,
+"seconds": 1.2
+},
+"restored": {
+"match": true,
+"solved": true,
+"candidates": 79142,
+"program": "(lambda x0: int. (length (range ((sub 1) ((mod x0) 3)))))",
+"seconds": 4.9
+},
+"registered": {
+"original": null,
+"restored": null
+}
+},
+{
+"name": "((identify-is-mod-k (dyn . 0) (static . 7)))",
+"map_shaped": true,
+"points": 12,
+"original": {
+"match": false,
+"solved": false,
+"candidates": null,
+"program": null,
+"seconds": 1.4
+},
+"restored": {
+"match": true,
+"solved": true,
+"candidates": 95461,
+"program": "(lambda x0: int. (((if (is_square ((add x0) 2))) 1) 0))",
+"seconds": 4.1
+},
+"registered": {
+"original": null,
+"restored": null
+}
+},
+{
+"name": "((identify-is-prime (dyn . 0)))",
+"map_shaped": true,
+"points": 15,
+"original": {
+"match": false,
+"solved": false,
+"candidates": null,
+"program": null,
+"seconds": 1.4
+},
+"restored": {
+"match": true,
+"solved": true,
+"candidates": 1815,
+"program": "(lambda x0: int. (((if (is_prime x0)) 1) 0))",
+"seconds": 0.0
+},
+"registered": {
+"original": null,
+"restored": 203860
+}
+},
+{
+"name": "((identify-k (dyn . 0) (static . -2)))",
+"map_shaped": true,
+"points": 9,
+"original": {
+"match": true,
+"solved": true,
+"candidates": 682,
+"program": "(lambda x0: int. (length (range ((sub -1) x0))))",
+"seconds": 0.0
+},
+"restored": {
+"match": true,
+"solved": true,
+"candidates": 1929,
+"program": "(lambda x0: int. (length (range ((sub -1) x0))))",
+"seconds": 0.0
+},
+"registered": {
+"original": 30083,
+"restored": 200024
+}
+},
+{
+"name": "((identify-k (dyn . 0) (static . 1)))",
+"map_shaped": true,
+"points": 10,
+"original": {
+"match": true,
+"solved": true,
+"candidates": 5581,
+"program": "(lambda x0: int. (((if ((eq x0) 1)) x0) 0))",
+"seconds": 0.1
+},
+"restored": {
+"match": true,
+"solved": true,
+"candidates": 23666,
+"program": "(lambda x0: int. (((if ((eq x0) 1)) x0) 0))",
+"seconds": 1.0
+},
+"registered": {
+"original": 139105,
+"restored": null
+}
+},
+{
+"name": "((identify-k (dyn . 0) (static . 10)))",
+"map_shaped": true,
+"points": 15,
+"original": {
+"match": false,
+"solved": false,
+"candidates": null,
+"program": null,
+"seconds": 1.2
+},
+"restored": {
+"match": false,
+"solved": false,
+"candidates": null,
+"program": null,
+"seconds": 4.8
+},
+"registered": {
+"original": null,
+"restored": null
+}
+},
+{
+"name": "((identify-k (dyn . 0) (static . 3)))",
+"map_shaped": true,
+"points": 11,
+"original": {
+"match": true,
+"solved": true,
+"candidates": 25419,
+"program": "(lambda x0: int. ((mod ((div 2) ((add x0) -1))) 2))",
+"seconds": 0.3
+},
+"restored": {
+"match": true,
+"solved": true,
+"candidates": 27068,
+"program": "(lambda x0: int. (((if ((eq x0) 3)) 1) 0))",
+"seconds": 1.2
+},
+"registered": {
+"original": 615832,
+"restored": null
+}
+},
+{
+"name": "((intersperse-k (dyn . 0) (static . -2)))",
+"map_shaped": false,
+"registered": {
+"original": null,
+"restored": null
+}
+},
+{
+"name": "((intersperse-k (dyn . 0) (static . 0)))",
+"map_shaped": false,
+"registered": {
+"original": null,
+"restored": null
+}
+},
+{
+"name": "((intersperse-k (dyn . 0) (static . 1)))",
+"map_shaped": false,
+"registered": {
+"original": null,
+"restored": null
+}
+},
+{
+"name": "((mult-k (dyn . 0) (static . -2)))",
+"map_shaped": true,
+"points": 15,
+"original": {
+"match": true,
+"solved": true,
+"candidates": 214,
+"program": "(lambda x0: int. (neg ((add x0) x0)))",
+"seconds": 0.0
+},
+"restored": {
+"match": true,
+"solved": true,
+"candidates": 633,
+"program": "(lambda x0: int. (neg ((add x0) x0)))",
+"seconds": 0.0
+},
+"registered": {
+"original": 6626,
+"restored": 32662
+}
+},
+{
+"name": "((mult-k (dyn . 0) (static . 10)))",
+"map_shaped": true,
+"points": 14,
+"original": {
+"match": false,
+"solved": false,
+"candidates": null,
+"program": null,
+"seconds": 1.2
+},
+"restored": {
+"match": true,
+"solved": true,
+"candidates": 2013,
+"program": "(lambda x0: int. ((mul x0) ((mul 2) 5)))",
+"seconds": 0.0
+},
+"registered": {
+"original": null,
+"restored": 199711
+}
+},
+{
+"name": "((positions (dyn . 0)))",
+"map_shaped": false,
+"registered": {
+"original": null,
+"restored": null
+}
+},
+{
+"name": "((prepend-k (dyn . 0) (static . -2)))",
+"map_shaped": false,
+"registered": {
+"original": 373,
+"restored": 1147
+}
+},
+{
+"name": "((prepend-k (dyn . 0) (static . 10)))",
+"map_shaped": false,
+"registered": {
+"original": 144604,
+"restored": 1315
+}
+},
+{
+"name": "((replace-all-k-with-n (dyn . 0) (static . 1) (static . 2)))",
+"map_shaped": true,
+"points": 11,
+"original": {
+"match": true,
+"solved": false,
+"candidates": 726,
+"program": "(lambda x0: int. ((add x0) ((div 1) x0)))",
+"seconds": 0.0
+},
+"restored": {
+"match": true,
+"solved": false,
+"candidates": 2035,
+"program": "(lambda x0: int. ((add x0) ((div 1) x0)))",
+"seconds": 0.0
+},
+"registered": {
+"original": null,
+"restored": null
+}
+},
+{
+"name": "((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)))",
+"map_shaped": true,
+"points": 14,
+"original": {
+"match": false,
+"solved": false,
+"candidates": null,
+"program": null,
+"seconds": 1.3
+},
+"restored": {
+"match": false,
+"solved": false,
+"candidates": null,
+"program": null,
+"seconds": 5.3
+},
+"registered": {
+"original": null,
+"restored": null
+}
+},
+{
+"name": "((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)))",
+"map_shaped": true,
+"points": 14,
+"original": {
+"match": false,
+"solved": false,
+"candidates": null,
+"program": null,
+"seconds": 1.5
+},
+"restored": {
+"match": false,
+"solved": false,
+"candidates": null,
+"program": null,
+"seconds": 5.5
+},
+"registered": {
+"original": null,
+"restored": null
+}
+},
+{
+"name": "((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)))",
+"map_shaped": false,
+"registered": {
+"original": 182,
+"restored": 565
+}
+},
+{
+"name": "((replace-index-k-with-n (dyn . 0) (static . 2) (static . 10)))",
+"map_shaped": false,
+"registered": {
+"original": null,
+"restored": null
+}
+},
+{
+"name": "((replace-index-k-with-n (dyn . 0) (static . 3) (static . -2)))",
+"map_shaped": false,
+"registered": {
+"original": null,
+"restored": null
+}
+},
+{
+"name": "((replace-index-k-with-n (dyn . 0) (static . 5) (static . 0)))",
+"map_shaped": false,
+"registered": {
+"original": null,
+"restored": null
+}
+},
+{
+"name": "((rotate-k (dyn . 0) (static . -2)))",
+"map_shaped": false,
+"registered": {
+"original": null,
+"restored": null
+}
+},
+{
+"name": "((rotate-k (dyn . 0) (static . 10)))",
+"map_shaped": false,
+"registered": {
+"original": null,
+"restored": null
+}
+},
+{
+"name": "((uniq (dyn . 0)))",
+"map_shaped": false,
+"registered": {
+"original": null,
+"restored": null
+}
+}
+]

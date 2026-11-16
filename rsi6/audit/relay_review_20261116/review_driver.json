@@ -1,0 +1,36 @@
+{
+ "findings": [
+  {
+   "file": "<scratch>/repo/rsi6/open/relay.py",
+   "line": 240,
+   "severity": "major",
+   "summary": "The CPU projection never counts frozen raised to relay's CPU. item_cost gives items 1 and 2 only their relay and frozen runs. When frozen_matched_everywhere is set (D2(f): 'plan frozen@matched for every held-out category'), plan_of's T_c lowering (line 258), the kept list and every re-projection (lines 410-417) leave out the frozen@relay levels that cpu_rule then runs (lines 341-347, 366-368). The re-projection before item 2 also ignores the part-b frozen@relay runs that part a's r_cpu_rule has already fixed. The registered heldout.plan_rule text (make_registration_r.py line 146) repeats the omission, and so does make_dev_r's D4 call to plan_of.",
+   "scenario": "J=64, S=2, four categories, o0 at 39 s per run at T=200, r0/o0=1.26, frozen_matched_everywhere=true, H_cap=70,000. plan_of keeps T=200 for every category, kept=[1,2], projection 57,867 <= H_cap, so no category is lowered (checked by calling plan_of). Part a costs relay plus frozen (28,934 machine CPU-s), plus frozen@relay's second level at 2T for the roughly half of the pairs whose frozen run used less CPU than relay (+14,467), so spent is about 43,400. Before item 2 the re-projection is 43,400 + 28,934 = 72,335 > 70,000. r_cap stops the stage before primary-b, and E-R1 is left on 32 of its 64 chains, so it is not met. A plan that counted frozen@matched (primary about 86,800 > H_cap) would instead have lowered T_c of the costliest category and run the whole primary. With H_cap=80,000, item 2 passes the re-projection, and its own unprojected frozen@relay (about 14,500) takes the stage to about 86,800, past H_cap and into the reserve.",
+   "fix": "In item_cost, when frozen_matched_everywhere is set, add the frozen@matched levels to items 1 and 2 on every category (the extra levels at relay's CPU per pair, the first level being the frozen run). In the re-projection before item 2, add them on the categories listed in part a's r_cpu_rule. Write this into heldout.plan_rule and use it in make_dev_r's D4 plan."
+  },
+  {
+   "file": "<scratch>/repo/rsi6/open/relay.py",
+   "line": 361,
+   "severity": "minor",
+   "summary": "Paired arms are not submitted as one interleaved batch, which spec 6.2(3) requires ('each item is submitted as one interleaved batch'). primary() calls arm('relay') and then arm('frozen'), two separate cache.get batches (lines 361-362). Item 11 likewise runs o0@ref and then a0@ref as two batches (lines 385-386).",
+   "scenario": "Item 1 at J=64, S=2: all 256 relay runs execute first on the 4 workers (about 50 minutes), each co-scheduled only with other relay runs, and only then the 256 frozen runs. The per-category ratio of summed relay CPU to summed frozen CPU decides the 1.10 CPU rule (cpu_rule, line 340) and sets the matched targets. That ratio therefore compares process CPU measured in two disjoint time windows under different co-scheduling. Machine drift between the windows, or the extra contention of relay's longer programs running beside each other, enters the ratio directly and can push a category over or under 1.10, which changes E-R1's comparator for that category. dev_r_d2.py measures D2(f)'s ratio the same way.",
+   "fix": "Build one job list per item, with the relay and frozen jobs (for item 11, the o0 and a0 jobs) interleaved per (j, c, s). Submit it with a single cache.get and split the returned rows by arm before add()."
+  },
+  {
+   "file": "<scratch>/notes/make_dev_r.py",
+   "line": 108,
+   "severity": "minor",
+   "summary": "D2(b) reads 'drop the library: libonly, prioronly and E-R5 are removed, and the Owner's comparison 3 then coincides with frozen'. make_dev_r only removes the arms (dropped_arms). relay_changes never sets lib_per_run or lib_max to 0, so make_registration_r's RELAY0 assertion (lines 34-37) passes, and the registered r0 keeps extracting and splicing library blocks while its controls are removed.",
+   "scenario": "D2's median library size is 1. dropped_arms becomes [libonly, prioronly], relay.py skips items 6 and 8, and the report drops E-R5 and sets e5=True (relay_report.py line 526). The on-policy memories still carry r_lib blocks, and the relay arm's splice cells stay active. libonly would therefore not coincide with frozen as the rule states, and T2 ('beyond accumulation and beyond retained blocks') can be declared on E-R2 and E-R4 alone, with the library channel active and uncontrolled.",
+   "fix": "When lib_median < 2, also put lib_per_run=0 (or lib_max=0) into relay_changes. RELAY0 then has to be changed before registering, and prioronly equals relay and libonly equals frozen, as the rule says."
+  },
+  {
+   "file": "<scratch>/repo/rsi6/open/relay.py",
+   "line": 377,
+   "severity": "minor",
+   "summary": "With J=48 (what D2(a) selects at the planning values: power of (48,2) is 0.89 at sigma 0.03, tau 0.008), a futility stop leaves relay and frozen only on chains 0-23. Items 4 and 7 still run after the stop and are registered on chains below 32. Item 4 builds o0@relay only from the existing relay rows, so it silently covers 24 chains (192 of 256 pairs). Item 7 (line 381) runs frozen@ceiling on sec=range(32), including chains 24-31, which have no frozen pair. item_cost and the re-projection still charge both items for 32 chains.",
+   "scenario": "Registered J=48, S=2, futility t < 0.5. Item 2 is cancelled, so arms['relay'] and arms['frozen'] hold chains 0..23 only. Item 4's matched() receives relay rows with chain_of < 32, which here means chains below 24, so L1 and E-R3 are measured on 24 instead of 32 chains, a deviation from item 4's 'j < 32, s < 2'. Item 7 submits 8 chains x 4 categories = 32 frozen@ceiling runs at 4*T_c (about 32 x 3.8 x 49 s, roughly 6,000 recorded CPU-s) that L2 cannot pair with any frozen run.",
+   "fix": "Under a futility stop, restrict items 4 and 7 (and their item_cost) to chains below min(J/2, secondary_chains). Alternatively, run relay and frozen for chains J/2..31 before item 4. Register which of the two applies when J/2 < 32."
+  }
+ ]
+}

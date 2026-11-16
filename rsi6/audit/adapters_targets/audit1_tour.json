@@ -1,0 +1,138 @@
+{
+ "verdict": "admit",
+ "summary": "Audit 1 of the \"tour\" adapter (TSPLIB95 symmetric TSP): no blocking or major finding; one minor finding and several notes.\n\nI re-downloaded all 67 files myself and wrote my own parser, distance functions and evaluator (pure Python, no code shared with the adapter). Everything the adapter exposes and computes agrees with them on all 43 instances:\n- **Data:** my downloads have the SHA-256 values pinned in the manifest. The named http addresses return 503 and STSP.html is a 404 over https, as the builder reported; the same host serves the files over https.\n- **Instances:** the 43 used are exactly the names on the source's list with n*n <= 30,000 (smallest left out is si175).\n- **Reference:** all 23 published optimal tours reproduce the listed length under my distance functions and score exactly 1, in own labels and in the relabelled problem form. My exact subset DP confirms burma14, ulysses16 and gr17. My own 2-opt found no tour shorter than a listed optimum on any instance.\n- **GEO departure:** truncating the degrees is the only reading that reproduces the listed lengths; it is stated plainly in the module text.\n- **Form:** AssignProblem with city -> position on a cycle, capacity 1, one soft group. It is exact: evaluate, partial_totals, candidates and totals equal my evaluator everywhere, and the fast rows equal the kernel's slow default.\n- **Layout, relabelling, leaks:** one layout and one learner descriptor name set for all instances; relabelling is an isomorphism with equal evaluation; nothing observable changes when the references are replaced; no name, class or reference value in the problem object.\n- **Split:** 16 training instances from 9 groups, 22 fresh from 9 other groups, halves 11 and 11, no group on both sides.\n- **Cost:** negligible; both learner designs acquire and answer made-up instances of the real sizes in seconds.\n- **No learner contact:** neither the builder's scratch directory nor my audit ran the learner on a benchmark instance.\n\nThe minor finding is about what the score scale does to the threshold. The random-to-optimum scale was triggered by one instance (ulysses16 at 0.5265 on the ratio; the mean over fresh is 0.18). It makes four instances of at most 29 cities carry 50.5 % of the fresh mean's sensitivity, so the \"10 % too long\" threshold can be met with every other fresh tour 20 % too long. The choice follows R2 as written and the anchor is literally true, so I did not rate it major; the module text should state the consequence, or the owner should decide the scale before the sealed test.\n\nFiles are in <scratch>/targets/tour/audit1:\n- src/own.py\n- src/c1_data.py\n- src/c2_adapter.py\n- src/c3_ref.py\n- src/c4_time.py\n- src/c5_prop.py\n- c2.out\n- c3.out\n- c4a.out\n- c4b.out",
+ "checks": [
+  {
+   "id": "0-data",
+   "what_was_run": "curl -A research-data-check/1.0 of TSP-BEST.html, 43 <name>.tsp.gz and 43 <name>.opt.tour.gz from https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/ (http probes first); then python3 -I audit1/src/c1_data.py REPO",
+   "n": "67 files, 43 instances",
+   "result": "PASS. http://.../STSP.html and http://.../tsp/burma14.tsp.gz return 503; https STSP.html returns 404; https TSP-BEST.html returns 200. 20 opt.tour.gz return 404, the same 20 the manifest marks missing. 'manifest files not missing: 67, hash mismatches vs my download: []'; 'repo data vs manifest mismatches: []'; all urls on the named host and path. Types by my parser: EUC_2D 25, GEO 5, ATT 1, EXPLICIT 12 (UPPER_ROW 2, FULL_MATRIX 2, LOWER_DIAG_ROW 8). All 43 listed values equal the values I recall from the literature."
+  },
+  {
+   "id": "1-no-solver",
+   "what_was_run": "Read rsi6/environments/tour.py in full",
+   "n": "354 lines",
+   "result": "PASS. The module only parses, computes the published distance functions, builds the cycle successor matrix and evaluates. No search over answers, no ordering or pruning by the objective, no optimisation call, no table beyond the instance. np.argmax is applied to the 0/1 successor matrix only. The G table is incremental evaluation state hidden behind the view."
+  },
+  {
+   "id": "2-no-privileged-information",
+   "what_was_run": "c2_adapter.py part C: SHA-256 over all public fields of view(problem) plus feedback of candidates/assign/totals/evaluate on a fixed panel (3 walks per instance), before and after replacing references",
+   "n": "43 instances",
+   "result": "PASS. 'references altered on 43 instances; observables differing: []'. Through the loader with the listed values altered for the 20 instances without a published tour: 'references changed 20, observables differing: []' (only the threshold moves, 0.974213 -> 0.973148, which the learner never sees). With every listed value altered the loader stops: 'RuntimeError tour: 20 usable instances, 43 expected' (see the note on the load-time check)."
+  },
+  {
+   "id": "3-traceability",
+   "what_was_run": "c2_adapter.py part B: every public field compared with my own data",
+   "n": "43 instances x 2 seeds",
+   "result": "PASS, 0 mismatches. var_var[0] equals my distance matrix (NODE_COORD_SECTION through the EDGE_WEIGHT_TYPE function, or EDGE_WEIGHT_SECTION) under the city relabelling, diagonal 0. opt_opt[0] equals the successor relation of a cycle of n positions under the position relabelling (the definition of a tour; holds only n). capacity is all ones. var_attr and opt_attr have 0 columns; var_opt and occ_attr are empty; domain, start_answer and start_totals are None. Nothing is untraceable. Coordinates, NAME, COMMENT and DISPLAY_DATA are not exposed."
+  },
+  {
+   "id": "4-relabelling",
+   "what_was_run": "c2_adapter.py: city and position permutations recovered from decode alone (black box), isomorphism checked, the same own-label answer evaluated under two seeds",
+   "n": "43 instances, seeds 3 and 20261113",
+   "result": "PASS. 'iso/trace': 0, 'decode': 0, 'relabel-equal': 0, 'relabel-differs': 0. Both permutations differ between seeds and the evaluation is equal."
+  },
+  {
+   "id": "5-evaluator-agreement",
+   "what_was_run": "c2_adapter.py part B against own.py (answer_len, partial_len, chance); c5_prop.py (fast rows vs AssignProblem._rows); c3_ref.py (exact subset DP and my own 2-opt)",
+   "n": "344 random complete answers, 1204 partial states with every option of 3 variables, 172 full step-by-step walks, 23 published tours, 847 fast-vs-slow steps; all 43 instances, so every group is covered in full",
+   "result": "PASS, total mismatches 0 (score, evaluate, partial_totals, candidates, totals, final). The 23 published tours score exactly 1.0 in own labels, also rotated and reversed, and evaluate to the listed length in the relabelled form (46 of 46). Corrupted answers (duplicate, out of range, -1, float dtype, wrong length, wrong shape, None) all score 0.0 without raising. Score is cut to 1.0 when the reference is beaten. run._valid rejects every malformed answer tried. Attainability: 23 by published tours; my DP gives burma14 3323, ulysses16 6859, gr17 2085, equal to the listed values; my 2-opt found no tour shorter than the listed optimum (found/listed 1.000 to 1.089 over all 43; 1.000 to 1.074 on the 20 without a published tour)."
+  },
+  {
+   "id": "6-leak-scan",
+   "what_was_run": "c1_data.py: COMMENT fields and sections of all files; c2_adapter.py part E and c5_prop.py: attributes and pickle of the problem objects",
+   "n": "43 files, 43 problems x 2 seeds",
+   "result": "PASS. No file states an optimum or bound; the COMMENTs are descriptions such as '127 Biergaerten in Augsburg'. Sections present: NODE_COORD 31, EDGE_WEIGHT 12, DISPLAY_DATA 4 (not exposed). No string attribute on the problem object; the reference value is not an element, a column sum or a total of any array; 'instance name bytes inside a pickled problem object: []'. One hit of my crude first scan (u159) was a false positive of searching for the one-letter group 'u' in binary data; the precise scan is clean."
+  },
+  {
+   "id": "7-one-layout",
+   "what_was_run": "run.layout(P) and tuple(Layout(view(P), version.default()).names) for every instance and two seeds",
+   "n": "43 instances",
+   "result": "PASS. One layout: ('assign', False, False, False, (False,), (False,), 0, 0, 1, 1, 0, 0, True, True). One set of learner descriptor names (8 names). One set of public view fields. No padding with zero columns is used."
+  },
+  {
+   "id": "8-split",
+   "what_was_run": "split(env, 16, 24) and run.halves(env, fresh)",
+   "n": "43 instances, 21 groups",
+   "result": "PASS with a note. Training: 16 instances from burma, ch, dantzig, eil, fri, gr, hk, lin, swiss (sizes 14 to 150). Fresh: 22 from bay 2, berlin 1, brazil 1, kro 7, pr 6, rat 1, rd 1, st 1, ulysses 2 (sizes 16 to 152). No common group. Halves 11 and 11 with no common group; threshold_for gives 0.970702 and 0.977724 on them, equal to my computation. Fresh is 22, not 24, because the kernel's split stops at half of 43. No pair of instances in different groups shares data. 22 instances in 9 groups is enough to mean something, but see the minor finding on effective weights and the note on nested instances."
+  },
+  {
+   "id": "9-instances-left-out",
+   "what_was_run": "My own reading of TSP-BEST.html; grep of the builder's scratch directory for learner, acquire, apply, measure, run.run, heuristics; read explore.py and the end of checks.out",
+   "n": "110 listed names",
+   "result": "PASS. 'listed names with n*n<=30000 by name: 43 == adapter's 43: True'; smallest left out are si175, brg180, rat195, d198. dsj1000 has two entries and is out by size anyway. The builder's scratch runs the learner only in checks.py part (g), on made-up random instances, both designs. No measure or run call, no heuristic, no score of any algorithm on a benchmark instance. env.score is called there only on random answers, published tours and corrupted answers."
+  },
+  {
+   "id": "10-anchor",
+   "what_was_run": "Read Environment.anchor and the module text; recomputed the threshold",
+   "n": "22 fresh",
+   "result": "PASS. The anchor says 'an operating point, not an external fact: the mean score that tours one tenth longer than the optimal tour length TSPLIB lists would have on the same instances (...)'. env.threshold is 0.9742132741311121 and my own computation on the fresh set gives the same number. The wording is literally true; the minor finding covers what it does not say."
+  },
+  {
+   "id": "11-cost",
+   "what_was_run": "c4_time.py with designs.make(designs.default('a')) and designs.make(designs.default('b')) on made-up random-point instances of the training sizes and fresh sizes (no benchmark instance loaded)",
+   "n": "16 made-up training problems, 44 made-up applies per design",
+   "result": "PASS. Largest instance u159: 159*160+1 = 25,441 units per construction; training limit 4,800,560 units. Design a: acquire 0.9 CPU-s (2,887,974 units used), 44 applies 1.1 CPU-s. Design b: acquire 3.9 CPU-s (4,412,644 units used), 44 applies 1.0 CPU-s; slowest single apply 0.06 s. All 44 answers per design are well-formed and their totals equal my evaluator. A run cannot be unreasonably slow."
+  },
+  {
+   "id": "repo-untouched",
+   "what_was_run": "find REPO -newermt '2026-11-13 00:30' -not -name '*.pyc'; mtimes of kernel and learner files",
+   "result": "PASS. I changed no source or data file under REPO. Kernel and learner files carry the copy time (23:54); only tour.py, tour.json and environments/__init__.py are later (00:04 to 00:08)."
+  }
+ ],
+ "findings": [
+  {
+   "severity": "minor",
+   "where": "rsi6/environments/tour.py, module text (Score, Threshold) and Tour.score / threshold_for",
+   "what": "The random-to-optimum scale was adopted for all 43 instances because of one small instance, and it makes the fresh mean depend mostly on four tiny instances. Those four (ulysses16, ulysses22, bayg29, bays29) are two underlying city sets. The stated meaning of the threshold, 'tours 10 % too long', can therefore be met with tours 20 % too long on the other 18 fresh instances. The choice follows R2 as written and the anchor is literally true, so this is not a defect of exactness; but the consequence is not stated in the module text.",
+   "evidence": "c2_adapter.py: 'listed/expected-random, top 4: ulysses16 0.5265, burma14 0.498, gr17 0.4466, ulysses22 0.422 | mean over fresh: 0.182 | mean over all: 0.2065 | instances above 0.5: 1'. c3_ref.py: 'share of the fresh mean's sensitivity carried by the 4 instances of at most 29 cities: 0.505 | by the 13 kro+pr: 0.291'; 'a learner optimal on those 4 reaches the threshold with every other fresh tour this much too long: 0.202'; 'a learner optimal on the 18 larger ones fails the threshold once the 4 small tours are this much too long: 0.198'. On the plain ratio a tour 10 % too long scores 0.9091 on every instance.",
+   "suggested_fix": "At the least, add to the module text that an instance's weight in the mean is listed/(chance - listed), that the four instances of at most 29 cities carry about half of the fresh mean's sensitivity, and what that implies for reading the threshold. Alternatively the owner may decide, before anything is scored, to read the R2 rule per environment (mean ratio of a random tour 0.18) and use the plain ratio with a threshold of 1/1.1; that would need a re-audit of score and threshold only."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/environments/tour.py, module text, Score paragraph",
+   "what": "The text gives burma14 as 0.498, just under 0.5. That is listed length over expected random length. The expected ratio of a random tour is above 0.5 on burma14 as well, so two instances exceed 0.5 rather than one. It does not change the scale decision.",
+   "evidence": "c2_adapter.py, 40,000 random tours each: 'ulysses16 mean of listed/length 0.5303, P(listed/length > 0.5) 0.721'; 'burma14 mean of listed/length 0.5044, P 0.485'; 'gr17 0.4508'. The exact expected length matches the Monte Carlo mean (13028.3 vs 13031.7; 6672.2 vs 6665.7).",
+   "suggested_fix": "Say which quantity the figures are (listed / expected length), or give both."
+  },
+  {
+   "severity": "note",
+   "where": "Fresh side of split(env, 16, 24)",
+   "what": "Several fresh instances are not independent data. kroA150 contains all 100 cities of kroA100; kroB150 contains all 100 of kroC100; kroE100 shares 50 cities each with kroA150 and kroB150; ulysses22 contains ulysses16; bayg29 and bays29 are the same 29 cities. All such pairs are inside one group, on one side of the split and in one half, so nothing leaks between training and fresh or between the deciding and confirming halves. The 22 fresh instances are about 18 distinct city sets, and 13 of the 22 come from two families (kro 7, pr 6).",
+   "evidence": "c3_ref.py: 'pairs of instances in DIFFERENT groups sharing data: []'; 'pairs in the SAME group sharing points: bayg29/bays29 29, eil76/eil101 6, kroA100/kroA150 100, kroC100/kroB150 100, kroE100/kroA150 50, kroE100/kroB150 50, ulysses16/ulysses22 16'. c2_adapter.py: 'fresh per group: st 1, bay 2, berlin 1, ulysses 2, kro 7, pr 6, rat 1, rd 1, brazil 1'.",
+   "suggested_fix": "None needed in the adapter; the grouping by family already handles it. Mention the nesting in the Groups paragraph so a reader of the results knows the effective number of independent fresh data sets."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/environments/tour.py, Tour.__init__ (the 'continue' after the published-tour length check) and the module text ('would be left out')",
+   "what": "The loader contains a path that drops an instance depending on its reference: a published tour that does not reproduce the listed length. It is inert, since all 23 reproduce it, and it cannot shrink the set silently because the count check raises. But the text says such an instance 'would be left out', while in fact loading stops. R6 allows a size rule only.",
+   "evidence": "c2_adapter.py part C, loader with every listed value shifted by 1: 'RuntimeError tour: 20 usable instances, 43 expected'.",
+   "suggested_fix": "Replace the 'continue' with an explicit error naming the instance, and word the text as a load-time consistency check rather than a rule for leaving instances out."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/environments/manifests/tour.json",
+   "what": "The manifest uses https and TSP-BEST.html instead of the http addresses and STSP.html named in the task; I confirmed this is necessary. It also carries one stray entry, st70.opt.tour (unpacked), marked missing, although st70.opt.tour.gz is served and pinned. Of the 21 entries marked missing, 20 are tours the source does not publish.",
+   "evidence": "My probes: http STSP.html 503, http burma14.tsp.gz 503, https STSP.html 404, https TSP-BEST.html 200; the 20 missing opt.tour.gz all return 404. grep st70 in tour.json shows lines 418-419 (st70.opt.tour.gz, pinned) and 465-466 (st70.opt.tour, missing).",
+   "suggested_fix": "Remove the stray st70.opt.tour entry. Optional."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/environments/tour.py, GEO distance (geo_radians with truncation)",
+   "what": "The adapter departs from the printed text of tsp95.pdf (deg = nint(x)) and truncates the degrees. I confirm independently that truncation is the only reading that reproduces the source's own listed lengths. The departure is stated plainly in the module text. This is a verification, not a defect.",
+   "evidence": "c1_data.py with my own GEO function: 'gr96 tour=55209 listed=55209 (nint-degrees gives 56120)', 'ulysses16 6859 / 6859 (7030)', 'ulysses22 7013 / 7013 (7230)'. c3_ref.py: exact optimum by my subset DP with truncation: burma14 3323 and ulysses16 6859, both equal to the listed values."
+  },
+  {
+   "severity": "note",
+   "where": "Reference of the 20 instances without a published tour (R7)",
+   "what": "For these the source publishes only the length, so attainability rests on the source's statement that all problems are solved to optimality; the module text says so. I verified burma14 and gr17 exactly. For the other 18 I could only check consistency: my own local search never found a tour shorter than the listed value, and every listed value equals the optimum I recall from the literature. gr137 (GEO) uses the distance function verified on gr96 and both ulysses instances.",
+   "evidence": "c3_ref.py: 'instances where my search found a tour SHORTER than the listed optimum: []'; 'of the 20 without a published tour, found/listed range: 1.0 1.0738'. c1_data.py: 'listed values differing from the values the auditor recalls from the literature: {}'."
+  },
+  {
+   "severity": "note",
+   "where": "Builder's scratch: work/checks.py part (g) and work/checks.out",
+   "what": "The builder ran both learner designs on made-up random instances (up to 60 cities) and printed tour lengths without and with the capability on a made-up 40-city problem. That is permitted and involves no benchmark instance. The module text says the 10 % figure was fixed before any algorithm was run on these instances; file times cannot prove the order, but nothing in the scratch directory shows a score of the learner on a benchmark instance or a threshold tuned to one.",
+   "evidence": "grep of work/*.py for learner, acquire, apply, measure, run.run, designs: hits only in checks.py lines 362-413, on problems built by made_up(). checks.out ends 'ALL CHECKS PASSED' with lines such as 'totals 4155 and 3111 ... (a random answer is worth about 9818)' for a made-up 40-city problem."
+  }
+ ]
+}

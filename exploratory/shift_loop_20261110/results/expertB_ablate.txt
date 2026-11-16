@@ -1,0 +1,4 @@
+all              budget   10000 learn 147 held-out  26 {'train': 25, 'near': 75, 'validation': 8, 'far': 6, 'far2': 13, 'fresh1': 20, 'fresh2': 26, 'compose24': 0} | 81 s
+no-depth-2       budget   10000 learn 147 held-out  27 {'train': 25, 'near': 75, 'validation': 8, 'far': 6, 'far2': 13, 'fresh1': 20, 'fresh2': 27, 'compose24': 0} | 76 s
+no-cycle-1       budget   10000 learn 124 held-out  23 {'train': 20, 'near': 63, 'validation': 7, 'far': 5, 'far2': 9, 'fresh1': 20, 'fresh2': 23, 'compose24': 0} | 65 s
+exit 0

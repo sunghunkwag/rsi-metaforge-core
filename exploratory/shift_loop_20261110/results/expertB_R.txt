@@ -1,0 +1,2 @@
+all+R            budget   10000 learn 147 held-out  38 {'train': 25, 'near': 75, 'validation': 8, 'far': 6, 'far2': 13, 'fresh1': 20, 'fresh2': 30, 'compose24': 8} | 77 s
+exit 0

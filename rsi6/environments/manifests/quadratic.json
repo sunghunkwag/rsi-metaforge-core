@@ -1,0 +1,769 @@
+{
+ "name": "quadratic",
+ "category": "quadratic",
+ "source": "Biq Mac Library (A. Wiegele, Alpen-Adria-Universitaet Klagenfurt), https://biqmac.aau.at/biqmaclib.html: the quadratic 0-1 part 'Biq: min x'Qx s.t. x in {0,1}^n' with its three sets beasley (Beasley 1998, bqp<n>-<i>), gka (Glover, Kochenberger and Alidaee 1998, sets a to f) and be (Billionnet and Elloumi 2007), in the sparse format of the page; and the library's description biqmaclib.tex (September 2007), which states the problem and gives in its tables the optimal values, or bounds where the optimum is not known. Only the instances with a stated optimal value are fetched: bqp50, bqp100, bqp250 (10 each), gka sets a to e (40), the 8 be classes (80); left out and not fetched: bqp500-1..10 and gka1f..gka5f (the tables give an upper bound and a lower bound only), bqp1000-* and bqp2500-* (served in the folder, absent from the tables), and the .mat files (the same matrices in full form; the sparse form is the only one served for every set; the .mat files of the 120 gka and be instances used were compared once, outside the adapter, with the symmetric completion of their sparse files and are equal)",
+ "terms": "The Biq Mac pages state no licence or terms of use. The page biqmaclib.html says: 'This site offers a collection of Max-Cut instances and quadratic 0-1 programming problems of medium size ... The instances are mainly ment to be used for testing exact solution methods for quadratic 0-1 programming or Max-Cut problems'; of the beasley sets: 'The datasets can be obtained from this site or from the OR-Library'; of the gka sets: 'Also these datasets can be obtained from this website or from the OR-Library'. Fetched by hash, parsed as text, never executed, not redistributed by this package",
+ "reference": "the optimal values printed in the tables of biqmaclib.tex (pinned as a data file and parsed; kernel only), in the library's convention: values of min x'Qx for the matrices of the library's files (the OR-Library states the beasley and gka problems as maximisation; the library's values are the minima of its own files). Values with '\\le' are bounds and are not used. The source publishes values only, no solution vectors",
+ "files": [
+  {
+   "url": "https://biqmac.aau.at/biqmaclib.tex",
+   "path": "biqmaclib.tex",
+   "sha256": "71c82e7c7b7a8467d9ad71e3417acb502b7d3f0b6fe3520afb2d305d11b5e175"
+  },
+  {
+   "url": "https://biqmac.aau.at/biqmaclib.html",
+   "path": "biqmaclib.html",
+   "sha256": "7e5dae6e302095a510ee274b651421538fb8285195e157aefd81a2b826a80d12"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp50-1.sparse",
+   "path": "beasley/bqp50-1.sparse",
+   "sha256": "9da10210b1cfdcc9bc3bbca18aee2a10c8df2d4d495969cfda8b60a4f8ed3617"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp50-2.sparse",
+   "path": "beasley/bqp50-2.sparse",
+   "sha256": "483566469ae3f617e08c2614f624b27a71837c13f8c94fe1330da14cd7a6bea1"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp50-3.sparse",
+   "path": "beasley/bqp50-3.sparse",
+   "sha256": "290fd41bca44fcc008ac1b3e4c150e2b7075cdd01c32d212617e1d5c35142d0b"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp50-4.sparse",
+   "path": "beasley/bqp50-4.sparse",
+   "sha256": "cc624b1ff45083d87110f0a1478920c481f6a21b2ed8d39f86e1e4ad002e92fe"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp50-5.sparse",
+   "path": "beasley/bqp50-5.sparse",
+   "sha256": "977f95c9db3dd5c0a00f9103463ee3fe03e542b8047f07cb95e49d5007983471"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp50-6.sparse",
+   "path": "beasley/bqp50-6.sparse",
+   "sha256": "508ba604eb403aae997db4535967bb21e2e2f57d0875c91486354a919c0a86a9"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp50-7.sparse",
+   "path": "beasley/bqp50-7.sparse",
+   "sha256": "c7a56a65ff71ec05d9106d6c5539b579569dde076dd9cae45b82d4d5fca1527e"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp50-8.sparse",
+   "path": "beasley/bqp50-8.sparse",
+   "sha256": "0f2bb6b47fa6ecdd2f73f65ea02115360b0059a081ca34a326ebcc87218e5fb2"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp50-9.sparse",
+   "path": "beasley/bqp50-9.sparse",
+   "sha256": "48ca8e3fc9b93ac487508a1ffdc5e146db10167d173db15451ddb4b4a010ee92"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp50-10.sparse",
+   "path": "beasley/bqp50-10.sparse",
+   "sha256": "6a5d9a86bde2fac7a3b5ebf8cc31cb056b254d669a4137c01541bd276a03c0c6"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp100-1.sparse",
+   "path": "beasley/bqp100-1.sparse",
+   "sha256": "1cfc3d8a2362179d32be019ab50734698f7bed765f570995675859409501ff2e"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp100-2.sparse",
+   "path": "beasley/bqp100-2.sparse",
+   "sha256": "49d8139bd1fbd2066eb07256f2ac58153fe9efa7425edc5b56ed1886ed2ebbfc"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp100-3.sparse",
+   "path": "beasley/bqp100-3.sparse",
+   "sha256": "368c1e3f6ffdd95575214c25237179f689398e1f3d6295438a5b5597a452b140"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp100-4.sparse",
+   "path": "beasley/bqp100-4.sparse",
+   "sha256": "3a5d5661adc10f5b5f56b70198ac64161f8f2718ca8f3dbe6d5d9a82a40f89e4"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp100-5.sparse",
+   "path": "beasley/bqp100-5.sparse",
+   "sha256": "9d7b496532ef5f831c83476da0c534bd4900b7c50af9522114323b33bf894ab9"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp100-6.sparse",
+   "path": "beasley/bqp100-6.sparse",
+   "sha256": "aede64477a28112a02a6cffdee8875e64a66731c51d59ff4277f7e9044b64719"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp100-7.sparse",
+   "path": "beasley/bqp100-7.sparse",
+   "sha256": "ff53f90a3bf7d2309cd7cb67eca216b22141c7dae4b1a52c7013511a45b879ce"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp100-8.sparse",
+   "path": "beasley/bqp100-8.sparse",
+   "sha256": "0271222efee34f059229369f4d207cf1d41679b7b19d5687eda4fb7e622995dc"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp100-9.sparse",
+   "path": "beasley/bqp100-9.sparse",
+   "sha256": "84a2315ab0480feedbd25f7ffe44c2927615717ebb4976e41159febdf7a81d40"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp100-10.sparse",
+   "path": "beasley/bqp100-10.sparse",
+   "sha256": "f3a8b9107221ead7b9a21adae483468ee0e71b4551ecff5a7556d3a946e83e04"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp250-1.sparse",
+   "path": "beasley/bqp250-1.sparse",
+   "sha256": "1edea4ca6930167283c0241aea1683d89da7a1464172edc61fe8d37d93b8fa20"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp250-2.sparse",
+   "path": "beasley/bqp250-2.sparse",
+   "sha256": "bd26c7d9e3a93698c977f1ea2efafb090968f465859a5687c3fed4cff2e160bb"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp250-3.sparse",
+   "path": "beasley/bqp250-3.sparse",
+   "sha256": "335a5a48e94d09fe151a31b18083b09783a0615af850bb054a9b4c9b2cd8ddf3"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp250-4.sparse",
+   "path": "beasley/bqp250-4.sparse",
+   "sha256": "3e16f94b77910aed2ae2003d611a95ca39637a98851a235715c610e159e44714"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp250-5.sparse",
+   "path": "beasley/bqp250-5.sparse",
+   "sha256": "4e027861fc35c144d2d85c1daba65c5f18f9f9466f581286b0f2db2aa270e050"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp250-6.sparse",
+   "path": "beasley/bqp250-6.sparse",
+   "sha256": "4eb850bc075fdd0f976a5e19b0c65eab2bbbfef00d6cb38cd7cbbcb9c48a7fb6"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp250-7.sparse",
+   "path": "beasley/bqp250-7.sparse",
+   "sha256": "518ef7704581a4196ad2543da992e0d19e5ec499dee83e897467a4c630037a29"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp250-8.sparse",
+   "path": "beasley/bqp250-8.sparse",
+   "sha256": "bb1adbd5a3f3aa17dfe2fc984359398973c254afcec2c21e4125bd2e27b2924b"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp250-9.sparse",
+   "path": "beasley/bqp250-9.sparse",
+   "sha256": "c6ced4adb15fc092b94d35697a4d1dd0b4f04afad9f99182b4253fd3ff265770"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/beasley/bqp250-10.sparse",
+   "path": "beasley/bqp250-10.sparse",
+   "sha256": "66a77c0d323e7923adefd64fa60d00ac3b86caf953536d9a181c8b09dbd85174"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka1a.sparse",
+   "path": "gka/gka1a.sparse",
+   "sha256": "a9fd8c6c838083b5d092841611fb4abdbd291553ef456ccf49f71c4f47de4e72"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka2a.sparse",
+   "path": "gka/gka2a.sparse",
+   "sha256": "554c32ab815772bd0863784180d1d61a52139e410b702e2e5863fea7c321ba1d"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka3a.sparse",
+   "path": "gka/gka3a.sparse",
+   "sha256": "c7ca22ac4ecd17ef55f888b8317add8200e4e8a65c3fa6c9bea088f6376b4a15"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka4a.sparse",
+   "path": "gka/gka4a.sparse",
+   "sha256": "84aba8237f508725af89a9ea09cd706afa4255d60e55779723f23d42884697ce"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka5a.sparse",
+   "path": "gka/gka5a.sparse",
+   "sha256": "28c4d777aecd371d8a8bf893732080b1f28ad7076b5cddb7b06c4007d3bb3c7a"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka6a.sparse",
+   "path": "gka/gka6a.sparse",
+   "sha256": "6936e390b2a256276c9c621407264fecbafa4afb95536f2d8c6d6a4229e7bd97"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka7a.sparse",
+   "path": "gka/gka7a.sparse",
+   "sha256": "3f18aed941cb70f33890987a0c8835fc9da0a770a435793ab6b95c6a6388e250"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka8a.sparse",
+   "path": "gka/gka8a.sparse",
+   "sha256": "6b7e12dfd961b7e5b5c2baf8fc797172a437825acbd659f3a4c5d7a4712e8211"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka1b.sparse",
+   "path": "gka/gka1b.sparse",
+   "sha256": "fc01183f519761e86aee4c66fb1312756d048913e5d65f628a66540d56b111df"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka2b.sparse",
+   "path": "gka/gka2b.sparse",
+   "sha256": "f9881fd6ddd97e5a1bd3192702674986889ac731d6aab38c0f5eb1dbdaf6f7a1"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka3b.sparse",
+   "path": "gka/gka3b.sparse",
+   "sha256": "8fb930469cda15f33383cb085214c6874e7fa6b4203d4cdb8bd506b5fe9efa62"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka4b.sparse",
+   "path": "gka/gka4b.sparse",
+   "sha256": "7b448038faaf657923e195adf3ccf392bdddeed01d333a13c237cc0acba6d99c"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka5b.sparse",
+   "path": "gka/gka5b.sparse",
+   "sha256": "cb587c2180e0054eb0fd9b5b3080900db3e37aead96fad5d29ed931ca4f41d19"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka6b.sparse",
+   "path": "gka/gka6b.sparse",
+   "sha256": "03ffbd8fc4d1264e96813181d32d2e2c8fafbba01037354db8764ff458861af4"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka7b.sparse",
+   "path": "gka/gka7b.sparse",
+   "sha256": "a6cb0de689fa41e95cdcfe7e9054dc98010cce98f0b1fba734f836a5b15f5419"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka8b.sparse",
+   "path": "gka/gka8b.sparse",
+   "sha256": "4b5376d6ae216d6742cc6d45ad2eeedbca1834d03995811418b38364609aea71"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka9b.sparse",
+   "path": "gka/gka9b.sparse",
+   "sha256": "a6df9b021226a1194af00e179e5a7acc98843147626478fdc27fced3da28d619"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka10b.sparse",
+   "path": "gka/gka10b.sparse",
+   "sha256": "43c23a42ed1a72958d47dfd16287d9e8aff23ffd9f312490354760a93a6f8203"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka1c.sparse",
+   "path": "gka/gka1c.sparse",
+   "sha256": "32a260ac9424e85b8f8f5a0db012a70ee751b0650bb0e212c23eab0d24430da2"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka2c.sparse",
+   "path": "gka/gka2c.sparse",
+   "sha256": "94c455696ba6d44b3604d72d3a5380342cfbef2ef94ac096c7f95f41093e5efa"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka3c.sparse",
+   "path": "gka/gka3c.sparse",
+   "sha256": "26d43b5dd676a3adaa5ee620e00f08402da4e69eb50c2f633a3d747f6bd4bd78"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka4c.sparse",
+   "path": "gka/gka4c.sparse",
+   "sha256": "36d3c85401d73a0a1b0d036d224396c12ba800fdff514721005d8656c9fb5da4"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka5c.sparse",
+   "path": "gka/gka5c.sparse",
+   "sha256": "5ea1c4bede261a0eccc0c71696c1dbac310a29f8cf115525c47d868c309bce1f"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka6c.sparse",
+   "path": "gka/gka6c.sparse",
+   "sha256": "bbb6bd62eb6d60b82c5a7ab61f333f01650a5e50c8a3223060091ec02cea3aac"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka7c.sparse",
+   "path": "gka/gka7c.sparse",
+   "sha256": "e1b27096563bf4637821eefef6865f8aaec1a54fe2ca38547582a76196ed7ad6"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka1d.sparse",
+   "path": "gka/gka1d.sparse",
+   "sha256": "5aa51b6f46b9c7ce9f29574b1068cb8b0228ed9d5f09f871220df0d0577d6cd6"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka2d.sparse",
+   "path": "gka/gka2d.sparse",
+   "sha256": "64131061842038da52f8680b10c5d9a88c93c88c0c65a9bba0aae205794d5e78"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka3d.sparse",
+   "path": "gka/gka3d.sparse",
+   "sha256": "8c7b57b293e9c2df38afd0ed75c512ae585d16e83f6779839c4d4dd7f1988727"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka4d.sparse",
+   "path": "gka/gka4d.sparse",
+   "sha256": "a3b7a3a1552f801a4825e629c01abb1f4d58a6f4bab6ab2960c8bcfd050789c0"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka5d.sparse",
+   "path": "gka/gka5d.sparse",
+   "sha256": "758c483d6f8e82b9caac9487f226cef69e6ecae3214bfd3c77439930cc665203"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka6d.sparse",
+   "path": "gka/gka6d.sparse",
+   "sha256": "a9bbc034427211a304c7a9c5956caef106ed208c5cccb75b0b77971fd860e948"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka7d.sparse",
+   "path": "gka/gka7d.sparse",
+   "sha256": "d063ad90639adfd80a2963e3dd075510855677d9e827372c2ad27ef381e5f015"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka8d.sparse",
+   "path": "gka/gka8d.sparse",
+   "sha256": "299ef805b6b608442ff53c96f056c0a3c380e8333f3c1f33b6abd17ba92bef36"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka9d.sparse",
+   "path": "gka/gka9d.sparse",
+   "sha256": "95ead131a2bf49b6d3f962d6b072482e85be17f7e9a54e2440a50eeb3a549144"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka10d.sparse",
+   "path": "gka/gka10d.sparse",
+   "sha256": "96b4dfda1f9b118af0dac7c752c7eb8d025b30ce3db5af04dfea21d628bcd129"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka1e.sparse",
+   "path": "gka/gka1e.sparse",
+   "sha256": "c5135748c842387784800bf0f413938dbfcf382a842644429383e55553286de9"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka2e.sparse",
+   "path": "gka/gka2e.sparse",
+   "sha256": "1c983b53c40bbbc07a2335cb6d8eb344da8822b623d8e9bcbad7e975053781e9"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka3e.sparse",
+   "path": "gka/gka3e.sparse",
+   "sha256": "fbc65871bba4f2259af90651045d88955c4cb0cd9b96053f6a55c72c1faf2f7f"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka4e.sparse",
+   "path": "gka/gka4e.sparse",
+   "sha256": "268e6d87eab7c08c94211091455d8b032bcb0588d08c5126db331c8501084669"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/gka/gka5e.sparse",
+   "path": "gka/gka5e.sparse",
+   "sha256": "46a7e2fe7e18ed749cc7ba9ae070f7f89c4fdaded2f40694445955b3e8448c26"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be100.1.sparse",
+   "path": "be/be100.1.sparse",
+   "sha256": "f5fce11d408278abbd4d8d6a8bf100fb589c7a23b6256ebee2bccba7f5a357af"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be100.2.sparse",
+   "path": "be/be100.2.sparse",
+   "sha256": "c045d3b4f57a7de3e9425b28f9184424078331238b2efb101aa5da78d9724b4a"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be100.3.sparse",
+   "path": "be/be100.3.sparse",
+   "sha256": "483053e210fd2e888104b116e7c6a3e4115b86553fa9dad0fb8399bd8c23af83"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be100.4.sparse",
+   "path": "be/be100.4.sparse",
+   "sha256": "97dfab3da3341786ef0240ef9b52d1f6b30ea2aa581899cbaa4dd624ac6ed527"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be100.5.sparse",
+   "path": "be/be100.5.sparse",
+   "sha256": "5247d2c583e5cffed9314ab1d2ba58d7cb8c374e402718e42a1f3a7c986e89fb"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be100.6.sparse",
+   "path": "be/be100.6.sparse",
+   "sha256": "c7d15e66be523c4ee4b83e4b23e88b5f52e51cb5f52796982f3764243f094021"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be100.7.sparse",
+   "path": "be/be100.7.sparse",
+   "sha256": "a5fedb3fee26d937a1765f324fabee0af353e4d43b0a2efc44f141b6bd88997c"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be100.8.sparse",
+   "path": "be/be100.8.sparse",
+   "sha256": "ebccf42c3ec4b858a70f9a707deee351dc6f1a4d55e055ad30875598b54e4476"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be100.9.sparse",
+   "path": "be/be100.9.sparse",
+   "sha256": "21c9f2005669297561d3569b777758fccc39ef5e8617675d71eeaf7ac3b7d36b"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be100.10.sparse",
+   "path": "be/be100.10.sparse",
+   "sha256": "ef47ed8156c4b81a1ee66e371c0d560d45d7905781800092f9b3699dbbc0d407"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be120.3.1.sparse",
+   "path": "be/be120.3.1.sparse",
+   "sha256": "630450ad7fab005866926d6589a338c89ecacd249801863deaee654bba0a803e"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be120.3.2.sparse",
+   "path": "be/be120.3.2.sparse",
+   "sha256": "e65db5d4c8573b25d56a130d8aae16e24e12f25a692d0c02e946ae4c27afa9c0"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be120.3.3.sparse",
+   "path": "be/be120.3.3.sparse",
+   "sha256": "110d761415ae6d3834033a8d393e60e2a530cd57c9918a673c564f1ca058bfd2"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be120.3.4.sparse",
+   "path": "be/be120.3.4.sparse",
+   "sha256": "fc85edbb14a5c9b90800c262e59905e2247964254529e9d77bc73d9d1a579c08"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be120.3.5.sparse",
+   "path": "be/be120.3.5.sparse",
+   "sha256": "1aeeb5353829fce6b9e7ea460b54ee0a9d2fa651b6b9c2cce964276cbe7aa32e"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be120.3.6.sparse",
+   "path": "be/be120.3.6.sparse",
+   "sha256": "69111b0b3871569f9d06db1b7b29d127a08c0401d2064b2b5744d1f5704814a7"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be120.3.7.sparse",
+   "path": "be/be120.3.7.sparse",
+   "sha256": "acfeb5974dfde4e23d5fb7bcae9bf973700f1fb455fb7cdc56b3d2c11a40e602"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be120.3.8.sparse",
+   "path": "be/be120.3.8.sparse",
+   "sha256": "e4f0219f18d7946b209b5b2b85c1d245889139a2e3f8efb6177e11780f8a89ba"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be120.3.9.sparse",
+   "path": "be/be120.3.9.sparse",
+   "sha256": "3df931d1a9003f377d56be5e2126bf6a63538545cf0d3867f881767ddcd6f9a5"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be120.3.10.sparse",
+   "path": "be/be120.3.10.sparse",
+   "sha256": "55895ddf67622682b9cf390c4123d3e1e91493d9dbdba197571072318157e301"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be120.8.1.sparse",
+   "path": "be/be120.8.1.sparse",
+   "sha256": "da31cbd50d139c911f11e64206a1302950d7694c5c602b681507d76e788afad3"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be120.8.2.sparse",
+   "path": "be/be120.8.2.sparse",
+   "sha256": "2be63a5293ee54beb1756d8e1768a0e9a101d8743f8d95a5a27e679f638a53fa"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be120.8.3.sparse",
+   "path": "be/be120.8.3.sparse",
+   "sha256": "201cb53587ba1177290a06d47b30e381cf596d5295c464abb618da3504aabb94"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be120.8.4.sparse",
+   "path": "be/be120.8.4.sparse",
+   "sha256": "95ab9f2f57fedfae2d4c59e4c65c5fa2e8f9eb82320e2869a198930d09b53cc7"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be120.8.5.sparse",
+   "path": "be/be120.8.5.sparse",
+   "sha256": "9c542c2af20e015da188adf5466660678af8adc91bb1ff3686da35d67f4828c4"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be120.8.6.sparse",
+   "path": "be/be120.8.6.sparse",
+   "sha256": "444c666d4351979bf6649b3c5275efe27d09ab24fad80643f929fe2ce46d1a69"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be120.8.7.sparse",
+   "path": "be/be120.8.7.sparse",
+   "sha256": "12e9a7ef4630369afab63e0ac85e24cee107b8316a7dbeb290c22ece7933c2e8"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be120.8.8.sparse",
+   "path": "be/be120.8.8.sparse",
+   "sha256": "7091c299972f147fe97e477322e54bffdd87a20a65a17827d1a62e3a71b2d484"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be120.8.9.sparse",
+   "path": "be/be120.8.9.sparse",
+   "sha256": "49dcb333272f72a7b36d87f7d63baa59194d62785b1ce7205fa2f19d5585869e"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be120.8.10.sparse",
+   "path": "be/be120.8.10.sparse",
+   "sha256": "a3f17ac84cf7f9c2924a3b2e7a4bec7d66c29c6ed3321fae47580cda01269ba6"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be150.3.1.sparse",
+   "path": "be/be150.3.1.sparse",
+   "sha256": "62783083d253d4a48a87da5e83074a9e809f53979b3e25dcc9088b8e8f2fa6f2"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be150.3.2.sparse",
+   "path": "be/be150.3.2.sparse",
+   "sha256": "41c34adfb50f926237345e23db9bc8b644aa2d9b4d87e1bfe427693cfb18e41f"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be150.3.3.sparse",
+   "path": "be/be150.3.3.sparse",
+   "sha256": "cac4c4e3897703f9a7e02e36a6b8e4b8927ab706641dd0845857057f623c25a5"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be150.3.4.sparse",
+   "path": "be/be150.3.4.sparse",
+   "sha256": "b210f952ddc0071bdff494f84a324b868359ffab9e084072de11934174568b15"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be150.3.5.sparse",
+   "path": "be/be150.3.5.sparse",
+   "sha256": "f29aeb6cf713df3e927651141877f503168efbf52061223a2bcffacfe641cc76"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be150.3.6.sparse",
+   "path": "be/be150.3.6.sparse",
+   "sha256": "8445b02f4377e0833489232d7504eb1fd63de9b936ac920efa2db362febd72a3"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be150.3.7.sparse",
+   "path": "be/be150.3.7.sparse",
+   "sha256": "5150433fc29d1b5b9909221bf259cb7a0d1d7192f478f8a6aaa3bde362e34284"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be150.3.8.sparse",
+   "path": "be/be150.3.8.sparse",
+   "sha256": "9fade2775757d12cba966b3217bf368ab8875eaffd9de2a9d950f2321b6d17e8"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be150.3.9.sparse",
+   "path": "be/be150.3.9.sparse",
+   "sha256": "53a6c7ea571ff5973065a2c6eb6c617e0c72f085e49edd9aa2395db1d142cbd3"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be150.3.10.sparse",
+   "path": "be/be150.3.10.sparse",
+   "sha256": "31453396f84b6dc4079895b7eee4f7a1b4c0f2e5778814c97bfa2fe4cc83a9c7"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be150.8.1.sparse",
+   "path": "be/be150.8.1.sparse",
+   "sha256": "b0219c5fcee481d7277f00b2f35720be671e725c57b31ce5b12733ebf940df72"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be150.8.2.sparse",
+   "path": "be/be150.8.2.sparse",
+   "sha256": "b1fb3bec21df399032e5203f287d6231ea9df7897100372c9bc7059416b35b66"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be150.8.3.sparse",
+   "path": "be/be150.8.3.sparse",
+   "sha256": "009ecc652d98cef12f491f35ab9c479d74b8f0191fa566b706d8abfa16ea72f1"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be150.8.4.sparse",
+   "path": "be/be150.8.4.sparse",
+   "sha256": "cffdce3c26cf594ee7b1fa8bae84c5f6d4cd2106cc65ca5689c1cee2bf7531c8"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be150.8.5.sparse",
+   "path": "be/be150.8.5.sparse",
+   "sha256": "32588c1c313bec8bbd94a09744c29098a85b40948def7711f38136b1e3e72fcb"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be150.8.6.sparse",
+   "path": "be/be150.8.6.sparse",
+   "sha256": "7603d24e274c39a59d9206f4d8c719b190ee93d0a1da35cec2a48a0679511b25"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be150.8.7.sparse",
+   "path": "be/be150.8.7.sparse",
+   "sha256": "fe2d55b56c51908b54c9b4d247cb7ab69ab37358dd807a0e5f43d13cd7e1e370"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be150.8.8.sparse",
+   "path": "be/be150.8.8.sparse",
+   "sha256": "983500999ba7c547042dc32e7888697c253ea2440e5c68776b3f70d4123a78a1"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be150.8.9.sparse",
+   "path": "be/be150.8.9.sparse",
+   "sha256": "60fda5038fed5d9adf32aba3a10edb11058d046bd27ef77358c54435e1ed8c04"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be150.8.10.sparse",
+   "path": "be/be150.8.10.sparse",
+   "sha256": "384f3a4155627617593d2bcee69e3694df0d015ccd03ba55f8f8dcc473349c7d"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be200.3.1.sparse",
+   "path": "be/be200.3.1.sparse",
+   "sha256": "bb50d4b42ecf350f6c4b63394f7a8894b07205bf87cfdd0de3b7f9487b9e1712"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be200.3.2.sparse",
+   "path": "be/be200.3.2.sparse",
+   "sha256": "371bfffda3f70c3679167c7ca58205eb7de2b522dbd6117876bc14244e541287"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be200.3.3.sparse",
+   "path": "be/be200.3.3.sparse",
+   "sha256": "88ed9439c26e7408c7c0271787d0c86db79d4de8f5a0d40aa155b9a4cae7516c"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be200.3.4.sparse",
+   "path": "be/be200.3.4.sparse",
+   "sha256": "42a752fa0e9d9d38d3db6ac9006b561fad11e1f0e05baaf8aafd89003ef9185a"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be200.3.5.sparse",
+   "path": "be/be200.3.5.sparse",
+   "sha256": "8ba9a8760594b49e55911321ea9cb21440dacb6f9949c3e95be6a0766a40c38a"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be200.3.6.sparse",
+   "path": "be/be200.3.6.sparse",
+   "sha256": "8250650032636f64f755524aa6649a5e769916c9191cf49d2a2559a21caa3bb9"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be200.3.7.sparse",
+   "path": "be/be200.3.7.sparse",
+   "sha256": "e6a795679402ac8d5c12aad460d0a0a9a62105f6e5906bb1646de7363fb24b6f"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be200.3.8.sparse",
+   "path": "be/be200.3.8.sparse",
+   "sha256": "d4c8eb96dbe06643c1cd34097e297d0ed82c43f963d8c8a1b6acc731fa3c9aef"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be200.3.9.sparse",
+   "path": "be/be200.3.9.sparse",
+   "sha256": "85906614263badc3691d7b87f39e0a0ea314276d98325f7d06a7118c2dfd041c"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be200.3.10.sparse",
+   "path": "be/be200.3.10.sparse",
+   "sha256": "2fd895eca4672f89c735c423ce673d289a33c961892242b11e3781f6a39ec2f2"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be200.8.1.sparse",
+   "path": "be/be200.8.1.sparse",
+   "sha256": "d3b9d9e6b5c65102559164eddc58d39adda483e2470abc859f44e6013f6045df"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be200.8.2.sparse",
+   "path": "be/be200.8.2.sparse",
+   "sha256": "1f790063cde739bbb6e624f4244a7b3ffebbd524234c02b13784089c7c00fa55"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be200.8.3.sparse",
+   "path": "be/be200.8.3.sparse",
+   "sha256": "7c56cef005058515f3b6cdc114d6eac30b92717ba4866261c42439d845297b1e"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be200.8.4.sparse",
+   "path": "be/be200.8.4.sparse",
+   "sha256": "ffd931b54a43643a0a04ebcae481ae0185c588167da57b4b398355d84ef8bc90"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be200.8.5.sparse",
+   "path": "be/be200.8.5.sparse",
+   "sha256": "7f4e45b93e7e76806e57612b01e4181b0dc75756b8091aa140ebdc3fe8abe6f6"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be200.8.6.sparse",
+   "path": "be/be200.8.6.sparse",
+   "sha256": "e4a5218506e59acc862ccaf967d0ddb13d3fe2b9264594a68545aaf1ebc58cca"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be200.8.7.sparse",
+   "path": "be/be200.8.7.sparse",
+   "sha256": "8bcc5c7b8c465c5890372e2874fc27c96878db55926dd609fc987ecbb618e855"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be200.8.8.sparse",
+   "path": "be/be200.8.8.sparse",
+   "sha256": "7dbb9329c79c898fca90ef240aff261c3fb6092f374ff0bebb65d0c857670e3d"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be200.8.9.sparse",
+   "path": "be/be200.8.9.sparse",
+   "sha256": "dae69447bb6ab35bd02f994544641d98c44be40c3fe057400137474c5dc0b15a"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be200.8.10.sparse",
+   "path": "be/be200.8.10.sparse",
+   "sha256": "89175a3c7b319e5235fbf87c772f9b0389766afa5c6b76af9ef81819bd987be1"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be250.1.sparse",
+   "path": "be/be250.1.sparse",
+   "sha256": "d0f1ffeab14afc4d9410a12d2c5eab64161bbd4008484e9d3b9832e999504a89"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be250.2.sparse",
+   "path": "be/be250.2.sparse",
+   "sha256": "8360783c034a653383299820f3ed055f5d076d68815b244190122f43dee47715"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be250.3.sparse",
+   "path": "be/be250.3.sparse",
+   "sha256": "52b6112afdd8dc196b200ccc063c725ea94cad6beb02e9881c9524f672f7c2ab"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be250.4.sparse",
+   "path": "be/be250.4.sparse",
+   "sha256": "5a6df4745a71909c4a2adaec28c137c870e096b64aede82e050b3befb99f60d7"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be250.5.sparse",
+   "path": "be/be250.5.sparse",
+   "sha256": "ce5e3e5caee95bf0399822c37ab955bafe65af43ec016dde047b15ae00adc1a8"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be250.6.sparse",
+   "path": "be/be250.6.sparse",
+   "sha256": "a4b9bda4cf471aded0b49755b12622e2cc4bb524807e760f2a90c80d170aaa73"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be250.7.sparse",
+   "path": "be/be250.7.sparse",
+   "sha256": "cdefa5034ecc24cf21be86fba05184eb1c3123a69f931e3a1d5477d2d41b0548"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be250.8.sparse",
+   "path": "be/be250.8.sparse",
+   "sha256": "b4e0f4a31edd8112121393b05a4688b882966fc0714ca241368c6f115b1b55b7"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be250.9.sparse",
+   "path": "be/be250.9.sparse",
+   "sha256": "42a697afca64a0106a1d0998695428d008bbd2a28ef34a68528fa84296945971"
+  },
+  {
+   "url": "https://biqmac.aau.at/library/biq/be/be250.10.sparse",
+   "path": "be/be250.10.sparse",
+   "sha256": "d4678661caeec2f49c806f675bc04d7f5ca014dae8ff8b7213c2b42d2176f9fe"
+  }
+ ]
+}

@@ -1,0 +1,61 @@
+{
+ "source": "https://raw.githubusercontent.com/microsoft/PythonProgrammingPuzzles/main/puzzles/puzzles.json",
+ "source_sha256": "d3b61141ea0d935c389d602867ba2c154db1854df9ff4402daaa947ad880d8bb",
+ "licence": "MIT (data/p3/LICENSE)",
+ "retrieved": "2026-11-11",
+ "seed": "rsi6:p3:split:20261111",
+ "kept_fields": [
+  "name",
+  "module",
+  "sat",
+  "ans_type",
+  "sol_header"
+ ],
+ "dropped_fields": [
+  "sol_bodies",
+  "sol_docstring",
+  "notes",
+  "weight"
+ ],
+ "splits": {
+  "development": {
+   "modules": [
+    "tutorial.py",
+    "study.py",
+    "trivial_inverse.py",
+    "basic.py"
+   ],
+   "puzzles": 97,
+   "instances": 336,
+   "sha256": "0456f594d7ed9c11a6d5684990ff6332385467b7f19e58ac618c36b8c0891ce2"
+  },
+  "validation": {
+   "modules": [
+    "IMO.py",
+    "human_eval.py"
+   ],
+   "puzzles": 170,
+   "instances": 825,
+   "sha256": "3fd8758ee6f18c86e50a8816ed7ebba4e067d7f9c2463c9847f73d241dc27c71"
+  },
+  "evaluation": {
+   "modules": [
+    "ICPC.py",
+    "algebra.py",
+    "chess.py",
+    "classic_puzzles.py",
+    "codeforces.py",
+    "compression.py",
+    "conways_game_of_life.py",
+    "games.py",
+    "graphs.py",
+    "lattices.py",
+    "number_theory.py",
+    "probability.py"
+   ],
+   "puzzles": 130,
+   "instances": 554,
+   "sha256": "323614ddfb5926851c9d136225f55b3121e17a6713b07e3e8eb553f5f89aed4f"
+  }
+ }
+}

@@ -1,0 +1,47 @@
+FRESH-3: 300 tasks, digest 4da13e671411da8c
+training ceiling 127280000 candidates; control budgets {'heldB': {'C2': 1126452, 'C1': 413254}, 'fresh3': {'mid': 228969, 'C2': 524267}}
+gen0@C2:heldB            budget  1126452 {'fresh2': 40, 'compose24': 10} | spent 78595897 of 139680048 | 806 s
+gen0@C1:heldB            budget   413254 {'fresh2': 40, 'compose24': 10} | spent 29792264 of 51243496 | 415 s
+trained@deploy           budget   100000 {'fresh2': 45, 'compose24': 10, 'fresh3': 86} | spent 23638250 of 42400000 | 304 s
+gen0@deploy              budget   100000 {'fresh2': 35, 'compose24': 10, 'fresh3': 68} | spent 27027415 of 42400000 | 319 s
+trained@student:fresh3   budget    10000 {'fresh3': 72} | spent 1987644 of 3000000 | 25 s
+gen0@student:fresh3      budget    10000 {'fresh3': 57} | spent 2238361 of 3000000 | 25 s
+gen0@mid:fresh3          budget   228969 {'fresh3': 71} | spent 42392238 of 68690700 | 591 s
+gen0@C2:fresh3           budget   524267 {'fresh3': 78} | spent 89459943 of 157280100 | 1117 s
+combination@deploy:fresh3 budget   100000 {'fresh3': 91} | spent 17044494 of 30000000 | 235 s
+
+gen0@C2:heldB              verified {'fresh2': 40, 'compose24': 10} sound {'fresh2': 27, 'compose24': 10}
+gen0@C1:heldB              verified {'fresh2': 40, 'compose24': 10} sound {'fresh2': 27, 'compose24': 10}
+trained@deploy             verified {'fresh2': 45, 'compose24': 10, 'fresh3': 86} sound {'fresh2': 34, 'compose24': 10, 'fresh3': 71}
+gen0@deploy                verified {'fresh2': 35, 'compose24': 10, 'fresh3': 68} sound {'fresh2': 25, 'compose24': 10, 'fresh3': 54}
+trained@student:fresh3     verified {'fresh3': 72} sound {'fresh3': 58}
+gen0@student:fresh3        verified {'fresh3': 57} sound {'fresh3': 45}
+gen0@mid:fresh3            verified {'fresh3': 71} sound {'fresh3': 55}
+gen0@C2:fresh3             verified {'fresh3': 78} sound {'fresh3': 61}
+combination@deploy:fresh3  verified {'fresh3': 91} sound {'fresh3': 75}
+heldB: trained@deploy vs gen0@equal          sound 44 against 35; only trained 11, only control 2; one-sided p 0.01123
+heldB: trained@deploy vs gen0@C2             sound 44 against 37; only trained 11, only control 4; one-sided p 0.05923
+heldB: trained@deploy vs gen0@C1             sound 44 against 37; only trained 11, only control 4; one-sided p 0.05923
+heldB: trained@deploy vs gen0@any            sound 44 against 38; only trained 10, only control 4; one-sided p 0.08978
+fresh3: trained@deploy vs gen0@equal         sound 71 against 54; only trained 24, only control 7; one-sided p 0.00166
+fresh3: trained@deploy vs gen0@mid           sound 71 against 55; only trained 25, only control 9; one-sided p 0.00452
+fresh3: trained@deploy vs gen0@C2            sound 71 against 61; only trained 21, only control 11; one-sided p 0.05509
+fresh3: trained@deploy vs gen0@any           sound 71 against 64; only trained 18, only control 11; one-sided p 0.13247
+fresh3: trained@student vs gen0@student      sound 58 against 45; only trained 23, only control 10; one-sided p 0.01754
+heldB: trained@student vs gen0@student       sound 30 against 22; only trained 12, only control 4; one-sided p 0.03841
+pooled: trained@deploy vs gen0@C2            sound 115 against 98; only trained 32, only control 15; one-sided p 0.00931
+pooled: trained@deploy vs gen0@any           sound 115 against 102; only trained 28, only control 15; one-sided p 0.033
+fresh3: combination@deploy vs gen0@any       sound 75 against 64; only trained 20, only control 9; one-sided p 0.03071
+fresh3: trained@deploy vs gen0@any           only trained {'no public match': 13, 'rejected': 4, 'verified, not sound': 1}; only control {'no public match': 5, 'rejected': 6}; budget-bound {'trained_only': 13, 'control_only': 5, 'p_one_sided': 0.04813}
+heldB: trained@deploy vs gen0@any            only trained {'no public match': 7, 'verified, not sound': 3}; only control {'no public match': 2, 'verified, not sound': 2}; budget-bound {'trained_only': 7, 'control_only': 2, 'p_one_sided': 0.08984}
+strata: {"with a divisibility-family stage": {"trained": 29, "control": 22, "trained_only": 13, "control_only": 6, "p_one_sided": 0.08353, "tasks": 104}, "without one": {"trained": 42, "control": 42, "trained_only": 5, "control_only": 5, "p_one_sided": 0.62305, "tasks": 196}, "list outputs": {"trained": 62, "control": 55, "trained_only": 14, "control_only": 7, "p_one_sided": 0.09462, "tasks": 213}, "integer and boolean outputs": {"trained": 9, "control": 9, "trained_only": 4, "control_only": 4, "p_one_sided": 0.63672, "tasks": 87}}
+clusters: {"by first-stage routine": {"for_trained": {"divisibility family": 7, "drop-k": 1, "slice-k-n": 8}, "for_control": {"add-k": -1, "append-k": -1, "identify-is-prime": -1, "intersperse-k": -2, "mult-k": -1, "positions": -1, "prepend-k": -2}, "level": 0, "p_one_sided": 0.94531}, "by second-stage routine": {"for_trained": {"divisibility family": 3, "head": 1, "identify-is-prime": 2, "identify-k": 2, "mult-k": 1, "sum": 1}, "for_control": {"identify-geq-k": -1, "len": -2}, "level": 0, "p_one_sided": 0.14453}}
+leave one routine out: largest p 0.66819 without slice-k-n
+trained-only tasks by learned symbol: {"c1_2": 8, "c2_1": 7, "c3_1": 5, "c2_2": 5, "c1_3": 5, "c3_2": 3}
+FRESH-3 on the whole input pool: {"trained": 61, "control": 53, "trained_only": 20, "control_only": 12, "p_one_sided": 0.10766}
+loop: verdicts read 3098 | seconds in compression [0.4, 0.4, 2.1, 0.4, 0.6]
+predictions: {"Q1": "PASS", "Q2": "PASS", "Q3": "PASS", "Q4": "PASS", "Q5": "PASS", "Q6": "PASS", "Q7": "PASS", "Q8": "FAIL", "Q9": "FAIL", "Q10": "PASS"}
+flags: {"missing": "", "accepted": true, "lead": true, "significant": false, "outside_family": "none", "budget_bound_lead": true, "reductions": true, "held_out_b": true}
+OUTCOME: not established: a lead on FRESH-3 that the sign test does not separate from chance
+on verified counts: not established: a lead on FRESH-3 that the sign test does not separate from chance
+exit 0

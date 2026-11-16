@@ -1,0 +1,11 @@
+budget=2000 mode=full solved 202/336 instances  how={None: 134, 'climb': 8, 'enum': 194}
+per module {'study.py': (30, 7), 'basic.py': (115, 49), 'trivial_inverse.py': (186, 143), 'tutorial.py': (5, 3)}
+families with >=1 solved 55 / 97  all instances solved 45
+median calls per solve 16 total calls 281501 wall 13.8
+unsolved families: ArithmeticSequence BasicStrCounts CompleteParens ConcatStrings EngineerNumbers GeometricSequence LineIntersection ListDistinctSum ListIndex2 ListPosSum ListSetLen ListSlice StrIn2 StrSplit Study_1 Study_10 Study_11 Study_12 Study_13 Study_15 Study_16 Study_18 Study_19 Study_2 Study_21 Study_22 Study_23 Study_25 Study_26 Study_28 Study_29 Study_3 Study_30 Study_5 Study_7 Study_8 Study_9 SublistSum SumOfDigits Tutorial4 Tutorial5 ZipStr
+Terminated
+budget=2000 mode=enum solved 203/336 instances  how={None: 133, 'climb': 7, 'enum': 196}
+per module {'study.py': (30, 7), 'basic.py': (115, 50), 'trivial_inverse.py': (186, 143), 'tutorial.py': (5, 3)}
+families with >=1 solved 56 / 97  all instances solved 45
+
+[exited with code 0]

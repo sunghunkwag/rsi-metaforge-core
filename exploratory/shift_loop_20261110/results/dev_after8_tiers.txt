@@ -1,0 +1,18 @@
+Development measurements after Addendum 8 (2026-11-11). FRESH-4 became a development set when its registered run ended. Not evidence.
+A merged library (the 19 symbols of Addendum 8 and the 9 of Addendum 7) at 10^4 candidates per task; generation 0 at any of five budgets is the stored control (125 sound, 112 on the whole pool).
+
+union-P 10000 verified {'fresh3': 90, 'fresh2': 30, 'compose24': 12, 'fresh4': 169} | 175 s
+  FRESH-4 sound: 158 vs 125 (69 vs 36, p=0.00083) | pool: 135 vs 112 (54 vs 31, p=0.00825) | routes {'re+map+search': 55, 're+map+fused': 54, 'map+fused': 34, 'map+search': 8, 'filter+fused': 1, 're+filter+search': 8, 'symbols': 2, 'search': 5, 'filter+search': 1, 're+filter+fused': 1}
+  FRESH-3 sound 76 pool 58 | held-out B sound 39
+new-list+old-P 10000 verified {'fresh3': 99, 'fresh2': 39, 'compose24': 14, 'fresh4': 175} | 332 s
+  FRESH-4 sound: 164 vs 125 (76 vs 37, p=0.000155) | pool: 141 vs 112 (61 vs 32, p=0.00173) | routes {'re+map+search': 55, 're+map+fused': 51, 'search': 14, 'map+fused': 34, 'map+search': 8, 'filter+fused': 1, 're+filter+search': 8, 'symbols': 2, 'filter+search': 1, 're+filter+fused': 1}
+  FRESH-3 sound 85 pool 67 | held-out B sound 46
+union-listP 10000 verified {'fresh3': 101, 'fresh2': 41, 'compose24': 14, 'fresh4': 180} | 334 s
+  FRESH-4 sound: 169 vs 125 (80 vs 36, p=2.7e-05) | pool: 146 vs 112 (65 vs 31, p=0.000337) | routes {'re+map+search': 55, 're+map+fused': 51, 'search': 15, 'map+fused': 34, 'map+search': 8, 'filter+fused': 1, 're+filter+search': 8, 'symbols': 6, 'filter+search': 1, 're+filter+fused': 1}
+  FRESH-3 sound 88 pool 70 | held-out B sound 46
+union-list 10000 verified {'fresh3': 103, 'fresh2': 40, 'compose24': 13, 'fresh4': 168} | 419 s
+  FRESH-4 sound: 159 vs 125 (70 vs 36, p=0.00062) | pool: 139 vs 112 (58 vs 31, p=0.00277) | routes {'re+map+search': 52, 're+map+fused': 40, 'search': 25, 'map+fused': 34, 'map+search': 8, 'filter+fused': 1, 're+filter+search': 7, 'filter+search': 1}
+  FRESH-3 sound 85 pool 65 | held-out B sound 46
+
+The 19 symbols alone, in the list space only (deepen2_eval.py --scope list), under the whole-pool reading:
+  FRESH-4 sound 138, pool 117; generation 0 at any budget 125 / 112; the registered state at 10^4 126 / 105

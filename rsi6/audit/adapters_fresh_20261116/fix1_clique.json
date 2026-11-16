@@ -1,0 +1,67 @@
+{
+ "fixed": [
+  {
+   "finding": "major: The confirming half is passed by a rule with no learning (Ham + PHat; greedy 0.918-0.920 against 0.90; the run record carried only 0.90)",
+   "change": "clique.py now overrides threshold_for, the only adapter value the run record carries: run.py:120 writes threshold_for(fresh_ids), and fresh_ids is the half when budget part is B. The value is 0.90 on every set except one holding only hamming, johnson and p_hat graphs (CONFIRMING = Ham, Joh, PHat). On such a set each hamming and johnson graph counts at 1 (AT_MAXIMUM, where greedy reaches the published maximum in every run) and each p_hat graph at 0.90, and the threshold is their mean, computed exactly as threshold + (1 - threshold) * share. On the registered split: confirming half 0.936364, deciding half 0.90, whole fresh set 0.90, training set 0.90. Greedy scores 0.9179 on the confirming half with the builder's seeds and 0.9204-0.9220 with three more seeds; its best single run is 0.9279, so no greedy run passes. Johnson is included for robustness: had san1000 been put in SanR, the confirming half would be {Ham 4, Joh 2, PHat 6}. There greedy (0.935) would pass a Ham/PHat-only rule's fallback of 0.90, but not this rule's 0.95. The docstring's Threshold paragraph and the anchor state the rule, the numbers, and that it was set knowing greedy's score and no learner result. Both also say that whether a pass must exceed the untrained score by a margin is for the registration. Problem, score and answer form are unchanged."
+  },
+  {
+   "finding": "minor: The two fresh Johnson graphs score 1 for every maximal clique (not stated)",
+   "change": "Stated in the docstring ('What the fresh instances can show') and in the anchor. It follows from the contents.tex definition, quoted verbatim ('adjacent if and only if their hamming distance is at least $d$', d = 4): a clique is a set of disjoint pairs, and a maximal one has n/2 = reference vertices. I checked that both files equal that definition (vertex k is the k-th weight-2 vector in increasing value), that all 105 maximal cliques of johnson8-2-4 have 4 vertices, and that 200 random relabelled maximal cliques score 1 on each graph. The text also says the four hamming graphs give 1 to greedy in every run, and that the deciding half rests on the 11 brock graphs, which must average 0.8818 (stated as 'about 0.882')."
+  },
+  {
+   "finding": "minor: The SanR quote also fits san1000, and the quote is altered ('differenct')",
+   "change": "The quote now has the source's spelling, marked as such. The text adds that san1000 carries byte-identical DESCRIPTION lines (only san1000 and the four sanr files have them) but stays in San. The reasons given are its table row 'san1000.clq&(San)&1000&250500&15', its line '1000 vertices 250500 edges 15 max clique', and its six-number parameter line 'c 1000 249000 985 1499 40473 7'. Every san graph has a six-number line; every sanr graph has 'random graph ... edges' and a three-number line such as 'c 200 0.300000 3769'. Every quoted string was checked verbatim against the pinned files."
+  },
+  {
+   "finding": "part of finding 3 is wrong: 'San and SanR are both on the training side, so the split is unaffected'; the docstring's own split sentence was also wrong",
+   "change": "Answered with evidence and corrected in the paragraph the audit asked me to amend; this is a one-line factual correction that goes beyond the audit's list. The split's group order is [Bro, Ham, Joh, SanR, PHat, CFat, Stein, San, Kel]. The fresh pool is therefore Bro, Ham, Joh, SanR and PHat (29 graphs), and the cut to 24 drops brock200_2, johnson32-2-4, johnson8-4-4 and both sanr graphs, so no SanR graph is used. The training pool is CFat, Kel, San and Stein. The old text said the fresh side was Bro, Ham, Joh and PHat (27 graphs) and that training was drawn from a pool including SanR; it now states the facts above. With san1000 in SanR, san1000 would become a fresh instance of the deciding half in place of p_hat500-1, training would swap san1000 for san200_0.7_2, and the confirming half would gain the two johnson graphs. So the grouping does matter to the split. It stays as the table's code sets it."
+  }
+ ],
+ "not_fixed": [
+  {
+   "finding": "major (owner's part): the registration must say how the confirming half is read (a margin over the untrained score, or not using clique where an independent confirming half is required)",
+   "why": "Only the owner can decide this in the registration. The adapter now makes the run record carry a threshold (0.936) that greedy does not reach on that half. A margin over the untrained score cannot be expressed in an adapter. The docstring and anchor say this is left to the registration."
+  },
+  {
+   "finding": "minor (consequence, not asked): on the deciding half the two johnson graphs carry no signal, so the brock graphs pass at 0.8818, not 0.90",
+   "why": "The audit asked only for wording, which is done. Changing the deciding half's threshold would change the main decision criterion, which this fix does not do; it stays 0.90, against greedy's 0.783. The asymmetry with the confirming half is stated plainly in the docstring for the owner to weigh."
+  },
+  {
+   "finding": "manifest clique.json",
+   "why": "None of the findings concern it (it has no threshold or groups text). It is unchanged and its hashes are untouched."
+  }
+ ],
+ "files_changed": [
+  "<scratch>/fresh/clique/repo/rsi6/environments/clique.py"
+ ],
+ "checks": [
+  {
+   "id": "builder check_clique.py (work/)",
+   "result": "0 failures; output identical to the builder's check2.log apart from CPU time (references 56/56, decode 56/56, fast rows = slow rows, evaluator agreement, 39 published answers score 1, malformed answers 0, reference not in the problem, one layout, split and halves). Log: fix1/check_after.log"
+  },
+  {
+   "id": "builder smoke.py",
+   "result": "exit 0; 56 instances, 9 groups, same claims and left-out list. Log: fix1/smoke_after.log"
+  },
+  {
+   "id": "builder baseline.py",
+   "result": "identical before and after the edits: random 0.602 fresh; greedy 0.845 fresh, 0.783 deciding, 0.918 confirming; by fresh group, greedy Ham 1.0000 (min 1.0), Joh 1.0000, PHat 0.8710, Bro 0.7437. Logs: fix1/baseline_before.log, fix1/baseline_after.log"
+  },
+  {
+   "id": "builder compare_hashes.py",
+   "result": "104/104 refetched files reproduce the manifest hashes; 16/16 volume copies byte-identical"
+  },
+  {
+   "id": "fix1/fix_checks.py (new)",
+   "result": "37 ok, 0 FAIL, CPU 2.1 s. threshold_for: fresh 0.90, deciding 0.90, confirming 0.936364, train/all/empty 0.90; p_hat-only exactly 0.90; any set with a graph outside Ham/Joh/PHat gets 0.90; independent of container and order. Greedy is below the threshold on all three sets, including every single run on the confirming half under 3 extra seeds (best 0.9279). Every quoted string was found verbatim in the pinned files. The split facts are as stated, and so is the san1000-in-SanR counterfactual (its confirming half: greedy 0.9352, threshold 0.95). Problems are byte-identical around threshold_for. Log: fix1/fix_checks.log"
+  },
+  {
+   "id": "fix1/johnson.py (new)",
+   "result": "all 4 johnson files equal the contents.tex definition (vertex k = k-th weight-w vector by value); all 105 maximal cliques of johnson8-2-4 have 4 vertices; 200 random relabelled maximal cliques score 1.0 on johnson8-2-4 and johnson16-2-4. Log: fix1/johnson.log"
+  },
+  {
+   "id": "conduct",
+   "result": "Only clique.py changed in the repo copy (find -newer check2.log); manifest untouched; no __pycache__ written (-B and dont_write_bytecode); no learner, meta, measure or run used; no downloads; total CPU about 30 s. rsi6/tests/test_kernel.py was not run because it imports rsi6.learner; check_clique.py covers its non-learner checks."
+  }
+ ]
+}

@@ -1,0 +1,7 @@
+registered restored at 10000 {'train': 17, 'near': 40, 'validation': 3, 'far': 3, 'far2': 7, 'fresh1': 4, 'fresh2': 15, 'compose24': 0} total 89
+-     {'train': 17, 'near': 40, 'validation': 3, 'far': 3, 'far2': 7, 'fresh1': 4, 'fresh2': 15, 'compose24': 0} total 89 | held-out 32 | learn 57 | routes {'search': 89} | rejected 10 | 74 s
+S     {'train': 19, 'near': 61, 'validation': 7, 'far': 5, 'far2': 10, 'fresh1': 10, 'fresh2': 17, 'compose24': 0} total 129 | held-out 49 | learn 80 | routes {'filter+search': 9, 'search': 50, 'map+search': 70} | rejected 11 | 42 s
+SC    {'train': 19, 'near': 61, 'validation': 7, 'far': 5, 'far2': 10, 'fresh1': 10, 'fresh2': 16, 'compose24': 0} total 128 | held-out 48 | learn 80 | routes {'filter+search': 9, 'search': 50, 'map+search': 69} | rejected 12 | 35 s
+SF    {'train': 21, 'near': 62, 'validation': 7, 'far': 5, 'far2': 10, 'fresh1': 20, 'fresh2': 26, 'compose24': 0} total 151 | held-out 68 | learn 83 | routes {'filter+search': 9, 'search': 50, 'fused': 11, 'map+search': 70, 'map+fused': 11} | rejected 28 | 37 s
+SCF   {'train': 21, 'near': 62, 'validation': 7, 'far': 5, 'far2': 10, 'fresh1': 20, 'fresh2': 27, 'compose24': 0} total 152 | held-out 69 | learn 83 | routes {'filter+search': 9, 'search': 50, 'fused': 11, 'map+search': 69, 'map+fused': 13} | rejected 28 | 33 s
+exit 0

@@ -1,0 +1,142 @@
+FRESH-4: 60 tasks, digest cbd03b56534f1007
+loop: 19 symbols, library digest 7b8e1ef31a09a95e, training ceiling 189239903; as in development: None
+training ceilings {'new': 1500000, 'old': 600000}; control budgets {'fresh4': {'C2old': 30000, 'C2new': 45000, 'top': 60000}, 'heldB': {'r30000': 30000, 'top': 60000, 'C1new': 11775}}
+gen0@top:heldB             budget    60000 {'fresh2': 34, 'compose24': 4} | spent 5172656 of 7440000 | 78 s
+gen0@r30000:heldB          budget    30000 {'fresh2': 27, 'compose24': 4} | spent 2688184 of 3720000 | 31 s
+gen0@C1new:heldB           budget    11775 {'fresh2': 24, 'compose24': 4} | spent 1101330 of 1460100 | 15 s
+gen0@top:fresh4            budget    60000 {'fresh4': 18} | spent 2580198 of 3600000 | 41 s
+gen0@C2new:fresh4          budget    45000 {'fresh4': 18} | spent 1943698 of 2700000 | 29 s
+gen0@C2old:fresh4          budget    30000 {'fresh4': 18} | spent 1307198 of 1800000 | 14 s
+gen0@deploy:heldB          budget    20000 {'fresh2': 27, 'compose24': 4} | spent 1805184 of 2480000 | 23 s
+gen0@student:heldB         budget    10000 {'fresh2': 24, 'compose24': 3} | spent 947245 of 1240000 | 13 s
+new@deploy:heldB           budget    20000 {'fresh2': 41, 'compose24': 13} | spent 1358300 of 2480000 | 35 s
+new@student:heldB          budget    10000 {'fresh2': 37, 'compose24': 13} | spent 730690 of 1240000 | 16 s
+old@deploy:heldB           budget    20000 {'fresh2': 35, 'compose24': 8} | spent 1601512 of 2480000 | 23 s
+old@student:heldB          budget    10000 {'fresh2': 30, 'compose24': 8} | spent 840720 of 1240000 | 14 s
+gen0@deploy:fresh4         budget    20000 {'fresh4': 18} | spent 888138 of 1200000 | 11 s
+gen0@student:fresh4        budget    10000 {'fresh4': 17} | spent 459178 of 600000 | 6 s
+new@deploy:fresh4          budget    20000 {'fresh4': 27} | spent 762974 of 1200000 | 16 s
+new@student:fresh4         budget    10000 {'fresh4': 20} | spent 448265 of 600000 | 9 s
+old@deploy:fresh4          budget    20000 {'fresh4': 17} | spent 852559 of 1200000 | 12 s
+old@student:fresh4         budget    10000 {'fresh4': 16} | spent 451008 of 600000 | 7 s
+new@deploy:fresh3          budget    20000 {'fresh3': 13} | spent 577619 of 800000 | 15 s
+new@student:fresh3         budget    10000 {'fresh3': 10} | spent 310681 of 400000 | 7 s
+gen0@teacher2:learn        budget   436734 {'train': 0, 'near': 0, 'validation': 0, 'far': 0, 'far2': 0, 'fresh1': 0} | spent 19903442 of 21399966 | 362 s
+gen0@teacher3:learn        budget   578378 {'train': 0, 'near': 0, 'validation': 0, 'far': 0, 'far2': 0, 'fresh1': 0} | spent 19869936 of 21399986 | 303 s
+new-without-recursive@student budget    10000 {'train': 28, 'near': 80, 'validation': 10, 'far': 9, 'far2': 18, 'fresh1': 20, 'fresh2': 33, 'compose24': 12} | spent 1540454 of 3380000 | 29 s
+new-without-recursive@student:fresh4 budget    10000 {'fresh4': 17} | spent 466663 of 600000 | 8 s
+new-without-cycle1-lineage@student budget    10000 {'train': 19, 'near': 61, 'validation': 7, 'far': 5, 'far2': 10, 'fresh1': 19, 'fresh2': 24, 'compose24': 3} | spent 2029949 of 3380000 | 33 s
+new-without-cycle1-lineage@student:fresh4 budget    10000 {'fresh4': 17} | spent 459178 of 600000 | 6 s
+new-without-cycle1-only@student budget    10000 {'train': 22, 'near': 66, 'validation': 7, 'far': 6, 'far2': 15, 'fresh1': 21, 'fresh2': 29, 'compose24': 4} | spent 1832647 of 3380000 | 46 s
+new-without-cycle1-only@student:fresh4 budget    10000 {'fresh4': 25} | spent 410442 of 600000 | 8 s
+cycle1@student:fresh4      budget    10000 {'fresh4': 17} | spent 466663 of 600000 | 8 s
+
+gen0@top:heldB               verified {'fresh2': 34, 'compose24': 4} sound {'fresh2': 24, 'compose24': 4}
+gen0@r30000:heldB            verified {'fresh2': 27, 'compose24': 4} sound {'fresh2': 21, 'compose24': 4}
+gen0@C1new:heldB             verified {'fresh2': 24, 'compose24': 4} sound {'fresh2': 19, 'compose24': 4}
+gen0@top:fresh4              verified {'fresh4': 18} sound {'fresh4': 17}
+gen0@C2new:fresh4            verified {'fresh4': 18} sound {'fresh4': 17}
+gen0@C2old:fresh4            verified {'fresh4': 18} sound {'fresh4': 17}
+gen0@deploy:heldB            verified {'fresh2': 27, 'compose24': 4} sound {'fresh2': 21, 'compose24': 4}
+gen0@student:heldB           verified {'fresh2': 24, 'compose24': 3} sound {'fresh2': 19, 'compose24': 3}
+new@deploy:heldB             verified {'fresh2': 41, 'compose24': 13} sound {'fresh2': 32, 'compose24': 13}
+new@student:heldB            verified {'fresh2': 37, 'compose24': 13} sound {'fresh2': 28, 'compose24': 13}
+old@deploy:heldB             verified {'fresh2': 35, 'compose24': 8} sound {'fresh2': 27, 'compose24': 8}
+old@student:heldB            verified {'fresh2': 30, 'compose24': 8} sound {'fresh2': 22, 'compose24': 8}
+gen0@deploy:fresh4           verified {'fresh4': 18} sound {'fresh4': 17}
+gen0@student:fresh4          verified {'fresh4': 17} sound {'fresh4': 16}
+new@deploy:fresh4            verified {'fresh4': 27} sound {'fresh4': 24}
+new@student:fresh4           verified {'fresh4': 20} sound {'fresh4': 18}
+old@deploy:fresh4            verified {'fresh4': 17} sound {'fresh4': 16}
+old@student:fresh4           verified {'fresh4': 16} sound {'fresh4': 15}
+new@deploy:fresh3            verified {'fresh3': 13} sound {'fresh3': 12}
+new@student:fresh3           verified {'fresh3': 10} sound {'fresh3': 9}
+gen0@teacher2:learn          verified {'train': 0, 'near': 0, 'validation': 0, 'far': 0, 'far2': 0, 'fresh1': 0} sound {'train': 0, 'near': 0, 'validation': 0, 'far': 0, 'far2': 0, 'fresh1': 0}
+gen0@teacher3:learn          verified {'train': 0, 'near': 0, 'validation': 0, 'far': 0, 'far2': 0, 'fresh1': 0} sound {'train': 0, 'near': 0, 'validation': 0, 'far': 0, 'far2': 0, 'fresh1': 0}
+new-without-recursive@student verified {'train': 28, 'near': 80, 'validation': 10, 'far': 9, 'far2': 18, 'fresh1': 20, 'fresh2': 33, 'compose24': 12} sound {'train': 28, 'near': 78, 'validation': 10, 'far': 9, 'far2': 18, 'fresh1': 16, 'fresh2': 24, 'compose24': 12}
+new-without-recursive@student:fresh4 verified {'fresh4': 17} sound {'fresh4': 15}
+new-without-cycle1-lineage@student verified {'train': 19, 'near': 61, 'validation': 7, 'far': 5, 'far2': 10, 'fresh1': 19, 'fresh2': 24, 'compose24': 3} sound {'train': 19, 'near': 61, 'validation': 7, 'far': 5, 'far2': 10, 'fresh1': 17, 'fresh2': 19, 'compose24': 3}
+new-without-cycle1-lineage@student:fresh4 verified {'fresh4': 17} sound {'fresh4': 16}
+new-without-cycle1-only@student verified {'train': 22, 'near': 66, 'validation': 7, 'far': 6, 'far2': 15, 'fresh1': 21, 'fresh2': 29, 'compose24': 4} sound {'train': 22, 'near': 66, 'validation': 7, 'far': 6, 'far2': 15, 'fresh1': 18, 'fresh2': 23, 'compose24': 4}
+new-without-cycle1-only@student:fresh4 verified {'fresh4': 25} sound {'fresh4': 23}
+cycle1@student:fresh4        verified {'fresh4': 17} sound {'fresh4': 15}
+heldB: new@deploy vs gen0@student                              sound 45 against 22; only first 25, only second 2; one-sided p 0.0
+heldB: new@deploy vs gen0@equal                                sound 45 against 25; only first 24, only second 4; one-sided p 9e-05
+heldB: new@deploy vs gen0@r30000                               sound 45 against 25; only first 24, only second 4; one-sided p 9e-05
+heldB: new@deploy vs gen0@top                                  sound 45 against 28; only first 22, only second 5; one-sided p 0.00076
+heldB: new@deploy vs gen0@C1new                                sound 45 against 23; only first 24, only second 2; one-sided p 1e-05
+heldB: new@deploy vs gen0@any                                  sound 45 against 29; only first 22, only second 6; one-sided p 0.00186
+heldB: new@student vs gen0@student                             sound 41 against 22; only first 24, only second 5; one-sided p 0.00027
+heldB: new@student vs gen0@any                                 sound 41 against 29; only first 21, only second 9; one-sided p 0.02139
+heldB: old@deploy vs gen0@student                              sound 35 against 22; only first 13, only second 0; one-sided p 0.00012
+heldB: old@deploy vs gen0@equal                                sound 35 against 25; only first 13, only second 3; one-sided p 0.01064
+heldB: old@deploy vs gen0@r30000                               sound 35 against 25; only first 13, only second 3; one-sided p 0.01064
+heldB: old@deploy vs gen0@top                                  sound 35 against 28; only first 13, only second 6; one-sided p 0.08353
+heldB: old@deploy vs gen0@C1new                                sound 35 against 23; only first 12, only second 0; one-sided p 0.00024
+heldB: old@deploy vs gen0@any                                  sound 35 against 29; only first 12, only second 6; one-sided p 0.11894
+heldB: old@student vs gen0@student                             sound 30 against 22; only first 12, only second 4; one-sided p 0.03841
+heldB: old@student vs gen0@any                                 sound 30 against 29; only first 11, only second 10; one-sided p 0.5
+heldB: new@deploy vs old@deploy                                sound 45 against 35; only first 16, only second 6; one-sided p 0.02624
+heldB: new@student vs old@student                              sound 41 against 30; only first 15, only second 4; one-sided p 0.00961
+fresh4: new@deploy vs gen0@student                             sound 24 against 16; only first 8, only second 0; one-sided p 0.00391
+fresh4: new@deploy vs gen0@equal                               sound 24 against 17; only first 8, only second 1; one-sided p 0.01953
+fresh4: new@deploy vs gen0@C2old                               sound 24 against 17; only first 8, only second 1; one-sided p 0.01953
+fresh4: new@deploy vs gen0@C2new                               sound 24 against 17; only first 8, only second 1; one-sided p 0.01953
+fresh4: new@deploy vs gen0@top                                 sound 24 against 17; only first 8, only second 1; one-sided p 0.01953
+fresh4: new@deploy vs gen0@any                                 sound 24 against 17; only first 8, only second 1; one-sided p 0.01953
+fresh4: new@student vs gen0@student                            sound 18 against 16; only first 5, only second 3; one-sided p 0.36328
+fresh4: new@student vs gen0@any                                sound 18 against 17; only first 5, only second 4; one-sided p 0.5
+fresh4: old@deploy vs gen0@student                             sound 16 against 16; only first 1, only second 1; one-sided p 0.75
+fresh4: old@deploy vs gen0@equal                               sound 16 against 17; only first 1, only second 2; one-sided p 0.875
+fresh4: old@deploy vs gen0@C2old                               sound 16 against 17; only first 1, only second 2; one-sided p 0.875
+fresh4: old@deploy vs gen0@C2new                               sound 16 against 17; only first 1, only second 2; one-sided p 0.875
+fresh4: old@deploy vs gen0@top                                 sound 16 against 17; only first 1, only second 2; one-sided p 0.875
+fresh4: old@deploy vs gen0@any                                 sound 16 against 17; only first 1, only second 2; one-sided p 0.875
+fresh4: old@student vs gen0@student                            sound 15 against 16; only first 2, only second 3; one-sided p 0.8125
+fresh4: old@student vs gen0@any                                sound 15 against 17; only first 1, only second 3; one-sided p 0.9375
+fresh4: new@deploy vs old@deploy                               sound 24 against 16; only first 9, only second 1; one-sided p 0.01074
+fresh4: new@student vs old@student                             sound 18 against 15; only first 6, only second 3; one-sided p 0.25391
+fresh4: old@deploy vs gen0 up to C2old                         sound 16 against 17; only first 1, only second 2; one-sided p 0.875
+fresh3 (development set): new@deploy vs gen0@any of Addendum 7 sound 12 against 64; only first 4, only second 56; one-sided p 1.0
+fresh3 (development set): new@deploy vs old@deploy of Addendum 7 sound 12 against 71; only first 2, only second 61; one-sided p 1.0
+PRIMARY (list outputs): {"trained": 23, "control": 17, "trained_only": 7, "control_only": 1, "p_one_sided": 0.03516, "tasks": 56} | other outputs: {"trained": 1, "control": 0, "trained_only": 1, "control_only": 0, "p_one_sided": 0.5, "tasks": 4}
+new against old (list outputs): {"trained": 23, "control": 16, "trained_only": 8, "control_only": 1, "p_one_sided": 0.01953, "tasks": 56} | old against generation 0 at any budget: {"trained": 16, "control": 17, "trained_only": 1, "control_only": 2, "p_one_sided": 0.875, "tasks": 56}
+fresh4, list outputs: new@deploy vs gen0@any only new {'no public match': 7}; only control {'verified, not sound': 1}; budget-bound {'trained_only': 7, 'control_only': 0, 'p_one_sided': 0.00781}
+provenance: {"both stage instances are learning tasks": 25, "one": 30, "none": 5, "with a routine no learning task has": 5}
+  stratum with a routine of the earlier symbols (slice-k-n or the divisibility family): {"trained": 7, "control": 5, "trained_only": 3, "control_only": 1, "p_one_sided": 0.3125, "tasks": 16, "reading": "not testable"}
+  stratum without one: {"trained": 16, "control": 12, "trained_only": 4, "control_only": 0, "p_one_sided": 0.0625, "tasks": 40, "reading": "not testable"}
+  stratum a dream computes the task or composes its pair of routines: {"trained": 18, "control": 13, "trained_only": 6, "control_only": 1, "p_one_sided": 0.0625, "tasks": 26, "reading": "not testable"}
+  stratum no dream does: {"trained": 5, "control": 4, "trained_only": 1, "control_only": 0, "p_one_sided": 0.5, "tasks": 30, "reading": "not testable"}
+  stratum a routine the loop never solved alone: {"trained": 1, "control": 0, "trained_only": 1, "control_only": 0, "p_one_sided": 0.5, "tasks": 21, "reading": "not testable"}
+  stratum both stage instances are learning tasks: {"trained": 6, "control": 4, "trained_only": 3, "control_only": 1, "p_one_sided": 0.3125, "tasks": 22, "reading": "not testable"}
+  stratum one stage instance is a learning task: {"trained": 15, "control": 11, "trained_only": 4, "control_only": 0, "p_one_sided": 0.0625, "tasks": 30, "reading": "not testable"}
+  stratum no stage instance is a learning task: {"trained": 2, "control": 2, "trained_only": 0, "control_only": 0, "p_one_sided": 1.0, "tasks": 4, "reading": "not testable"}
+  stratum not both stage instances are learning tasks: {"trained": 17, "control": 13, "trained_only": 4, "control_only": 0, "p_one_sided": 0.0625, "tasks": 34, "reading": "not testable"}
+  stratum a routine no learning task has: {"trained": 0, "control": 0, "trained_only": 0, "control_only": 0, "p_one_sided": 1.0, "tasks": 5, "reading": "not testable"}
+  new against old, with a routine of the earlier symbols (slice-k-n or the divisibility family): {"trained": 7, "control": 5, "trained_only": 3, "control_only": 1, "p_one_sided": 0.3125, "tasks": 16, "reading": "not testable"}
+  new against old, without one: {"trained": 16, "control": 11, "trained_only": 5, "control_only": 0, "p_one_sided": 0.03125, "tasks": 40, "reading": "significant"}
+  new against old, a dream computes the task or composes its pair of routines: {"trained": 18, "control": 12, "trained_only": 7, "control_only": 1, "p_one_sided": 0.03516, "tasks": 26, "reading": "significant"}
+  new against old, no dream does: {"trained": 5, "control": 4, "trained_only": 1, "control_only": 0, "p_one_sided": 0.5, "tasks": 30, "reading": "not testable"}
+  new against old, a routine the loop never solved alone: {"trained": 1, "control": 0, "trained_only": 1, "control_only": 0, "p_one_sided": 0.5, "tasks": 21, "reading": "not testable"}
+  new against old, both stage instances are learning tasks: {"trained": 6, "control": 4, "trained_only": 3, "control_only": 1, "p_one_sided": 0.3125, "tasks": 22, "reading": "not testable"}
+  new against old, one stage instance is a learning task: {"trained": 15, "control": 10, "trained_only": 5, "control_only": 0, "p_one_sided": 0.03125, "tasks": 30, "reading": "significant"}
+  new against old, no stage instance is a learning task: {"trained": 2, "control": 2, "trained_only": 0, "control_only": 0, "p_one_sided": 1.0, "tasks": 4, "reading": "not testable"}
+  new against old, not both stage instances are learning tasks: {"trained": 17, "control": 12, "trained_only": 5, "control_only": 0, "p_one_sided": 0.03125, "tasks": 34, "reading": "significant"}
+  new against old, a routine no learning task has: {"trained": 0, "control": 0, "trained_only": 0, "control_only": 0, "p_one_sided": 1.0, "tasks": 5, "reading": "not testable"}
+more than re-pairing of trained instances (a significant lead where no stage is a learning task or a routine has no learning task): False
+routines removed until the lead is not separated: {"routines_removed": ["append-k"], "tasks_removed": 11, "tasks_left": 45, "left": {"trained": 17, "control": 16, "trained_only": 2, "control_only": 1, "p_one_sided": 0.5}, "lead_per_task_in_the_removed_tasks": 0.4545, "lead_per_task_in_the_tasks_left": 0.0222, "reading": "the count of routines is not evidence of narrowness"} | standardised to the mix of FRESH-2, per 100 tasks: 13.1
+clusters: {"by first-stage routine": {"for_trained": {"append-k": 4, "divisibility family": 1, "replace-index-k-with-n": 1, "reverse": 1}, "for_control": {"prepend-k": -1}, "level": 0, "p_one_sided": 0.1875}, "by second-stage routine": {"for_trained": {"append-k": 1, "divisibility family": 1, "identify-geq-k": 1, "identify-k": 2, "rotate-k": 1}, "for_control": {}, "level": 0, "p_one_sided": 0.03125}}
+leave one routine out: largest p 0.5 without append-k
+by routine: {"add-k": {"tasks": 6, "new": 4, "old": 4, "gen0_any": 4}, "append-k": {"tasks": 11, "new": 6, "old": 1, "gen0_any": 1}, "dedup": {"tasks": 1, "new": 0, "old": 0, "gen0_any": 0}, "drop-k": {"tasks": 2, "new": 1, "old": 1, "gen0_any": 1}, "dup": {"tasks": 3, "new": 0, "old": 0, "gen0_any": 0}, "identify-geq-k": {"tasks": 7, "new": 3, "old": 2, "gen0_any": 2}, "identify-is-mod-k": {"tasks": 4, "new": 2, "old": 2, "gen0_any": 3}, "identify-is-prime": {"tasks": 4, "new": 3, "old": 4, "gen0_any": 3}, "identify-k": {"tasks": 9, "new": 8, "old": 5, "gen0_any": 6}, "intersperse-k": {"tasks": 7, "new": 0, "old": 0, "gen0_any": 0}, "keep-mod-k": {"tasks": 3, "new": 0, "old": 0, "gen0_any": 0}, "modulo-k": {"tasks": 6, "new": 4, "old": 1, "gen0_any": 1}, "mult-k": {"tasks": 8, "new": 5, "old": 5, "gen0_any": 5}, "pow-base-k": {"tasks": 2, "new": 0, "old": 0, "gen0_any": 0}, "pow-k": {"tasks": 1, "new": 0, "old": 0, "gen0_any": 0}, "prepend-k": {"tasks": 7, "new": 4, "old": 3, "gen0_any": 5}, "remove-mod-k": {"tasks": 2, "new": 1, "old": 1, "gen0_any": 1}, "repeat-k": {"tasks": 5, "new": 0, "old": 0, "gen0_any": 0}, "replace-all-k-with-n": {"tasks": 7, "new": 2, "old": 2, "gen0_any": 2}, "replace-index-k-with-n": {"tasks": 3, "new": 1, "old": 0, "gen0_any": 0}, "reverse": {"tasks": 2, "new": 1, "old": 0, "gen0_any": 0}, "rotate-k": {"tasks": 5, "new": 1, "old": 0, "gen0_any": 0}, "slice-k-n": {"tasks": 1, "new": 0, "old": 1, "gen0_any": 0}, "sort": {"tasks": 2, "new": 0, "old": 0, "gen0_any": 0}, "uniq": {"tasks": 2, "new": 0, "old": 0, "gen0_any": 0}}
+new-only tasks by learned symbol: {"s23_1": 6, "s5_1": 3, "s11_1": 1, "s3_1": 1} | with a symbol built on a symbol: 6 | with a symbol no learning program uses: 0
+accepted symbols: {"s1_1": {"real_tasks": 1, "depth": 1, "cycle": 1, "on_the_tie_break": false}, "s2_1": {"real_tasks": 8, "depth": 1, "cycle": 1, "on_the_tie_break": false}, "s3_1": {"real_tasks": 1, "depth": 1, "cycle": 1, "on_the_tie_break": false}, "s4_1": {"real_tasks": 1, "depth": 1, "cycle": 1, "on_the_tie_break": false}, "s5_1": {"real_tasks": 1, "depth": 1, "cycle": 1, "on_the_tie_break": false}, "s6_1": {"real_tasks": 1, "depth": 1, "cycle": 1, "on_the_tie_break": false}, "s7_1": {"real_tasks": 3, "depth": 1, "cycle": 1, "on_the_tie_break": false}, "s9_1": {"real_tasks": 1, "depth": 1, "cycle": 1, "on_the_tie_break": false}, "s10_1": {"real_tasks": 1, "depth": 1, "cycle": 1, "on_the_tie_break": false}, "s11_1": {"real_tasks": 7, "depth": 1, "cycle": 1, "on_the_tie_break": false}, "s12_1": {"real_tasks": 3, "depth": 1, "cycle": 1, "on_the_tie_break": false}, "s13_1": {"real_tasks": 4, "depth": 1, "cycle": 1, "on_the_tie_break": false}, "s15_1": {"real_tasks": 3, "depth": 1, "cycle": 1, "on_the_tie_break": false}, "s17_1": {"real_tasks": 2, "depth": 1, "cycle": 1, "on_the_tie_break": false}, "s18_1": {"real_tasks": 2, "depth": 1, "cycle": 1, "on_the_tie_break": false}, "s22_1": {"real_tasks": 1, "depth": 2, "cycle": 2, "on_the_tie_break": false}, "s23_1": {"real_tasks": 11, "depth": 2, "cycle": 2, "on_the_tie_break": false}, "s24_1": {"real_tasks": 1, "depth": 2, "cycle": 2, "on_the_tie_break": false}, "s25_1": {"real_tasks": 1, "depth": 2, "cycle": 2, "on_the_tie_break": false}}
+dreamt: {"dream_programs": 1115, "pairs_of_routine_families_dreamt": 676, "fresh4_tasks_a_dream_computes": 6, "fresh4_tasks_whose_routine_pair_was_dreamt": 29, "fresh4_tasks_with_a_routine_the_loop_never_solved_alone": 21} | thin evidence: {}
+FRESH-4, sound and right on the whole input pool: {"trained": 17, "control": 13, "trained_only": 5, "control_only": 1, "p_one_sided": 0.10938}
+recursion: {"discovery_by_cycle": {"2": {"budget": 436734, "tasks": 49, "teacher_sound_with_a_symbol_where_generation_0_has_no_match": ["far/count-head-in-tail", "far2/remove-index-k with k=3", "fresh1/((append-k (dyn . 0) (static . -2)))", "fresh1/((append-k (dyn . 0) (static . 10)))", "near/append-index-k with k=2", "near/append-index-k with k=5", "near/append-k with k=2", "near/append-k with k=3", "near/append-k with k=5", "near/pow-k with k=5", "near/slice-k-n with k=3 and n=5", "train/append-index-k with k=1", "train/append-k with k=4"], "generation_0_sound_where_the_teacher_has_no_match": []}, "3": {"budget": 578378, "tasks": 37, "teacher_sound_with_a_symbol_where_generation_0_has_no_match": ["far2/remove-index-k with k=4", "near/slice-k-n with k=3 and n=4", "near/slice-k-n with k=3 and n=5", "validation/slice-k-n with k=3 and n=3"], "generation_0_sound_where_the_teacher_has_no_match": []}}, "recursive_symbols": ["s22_1", "s23_1", "s24_1", "s25_1"], "with_the_symbols_defined_through_them": ["s22_1", "s23_1", "s24_1", "s25_1"], "ablations": {"without-recursive": {"symbols_removed": ["s22_1", "s23_1", "s24_1", "s25_1"], "fresh4_sound_solves_lost": 5, "fresh4_sound_solves_gained": 2}, "without-cycle1-lineage": {"symbols_removed": ["s10_1", "s11_1", "s12_1", "s13_1", "s15_1", "s17_1", "s18_1", "s1_1", "s22_1", "s23_1", "s24_1", "s25_1", "s2_1", "s3_1", "s4_1", "s5_1", "s6_1", "s7_1", "s9_1"], "fresh4_sound_solves_lost": 5, "fresh4_sound_solves_gained": 3}, "without-cycle1-only": {"symbols_removed": ["s10_1", "s11_1", "s12_1", "s13_1", "s15_1", "s17_1", "s18_1", "s1_1", "s2_1", "s3_1", "s4_1", "s5_1", "s6_1", "s7_1", "s9_1"], "fresh4_sound_solves_lost": 0, "fresh4_sound_solves_gained": 5}}}
+criteria on held-out B (a development set): {"R1_held_out_B_by_cycle": [{"label": "report0", "verified": 27, "sound": 22}, {"label": "report1", "verified": 45, "sound": 36}, {"label": "report2", "verified": 50, "sound": 41}], "R1": {"verified": true, "sound": true}, "R2_detail": {"gains_after_cycle_1": 5, "of_those_built_with_a_recursive_symbol": 5, "of_those_lost_without_the_recursive_symbols": 5, "of_those_also_lost_without_the_first_cycle_and_what_is_defined_through_it": 5, "holds": true}, "R2": true, "R3_new_student_vs_gen0_any_on_held_out_B": {"trained": 41, "control": 29, "trained_only": 21, "control_only": 9, "p_one_sided": 0.02139}, "R3": true, "R4": true}
+criteria on FRESH-4: {"R1_sound_by_generation": [["generation 0", 16], ["cycle 1", 15], ["cycle 2", 18]], "R1": false, "R2_detail": {"gains_after_cycle_1": 5, "of_those_built_with_a_recursive_symbol": 5, "of_those_lost_without_the_recursive_symbols": 5, "of_those_also_lost_without_the_first_cycle_and_what_is_defined_through_it": 5, "holds": true}, "R2": true, "R3_new_student_vs_gen0_any": {"trained": 18, "control": 17, "trained_only": 5, "control_only": 4, "p_one_sided": 0.5}, "R3": true, "R3_separated": false, "R4": true, "all_four": false}
+loop: verdicts read 8311 | seconds in compression and dreaming 456.7 | training ceiling 189239903 spent 103919484
+predictions: {"D1": "PASS", "D2": "PASS", "D3": "FAIL", "D4": "not scored (stratum not testable)", "D5": "PASS", "D6": "FAIL", "D7": "not scored (stratum not testable)", "D8": "not scored (stratum not testable)", "D9": "PASS", "D10": "not scored (stratum not testable)", "D11": "FAIL", "D12": "PASS", "D13": "PASS", "D14": "FAIL", "thresholds": {"D3_lead": 50}}
+flags: {"missing": "", "scope": "for list outputs (56 of 60 tasks)", "accepted": true, "lead": true, "significant": true, "outside_earlier": {"trained": 16, "control": 12, "trained_only": 4, "control_only": 0, "p_one_sided": 0.0625, "tasks": 40, "reading": "not testable"}, "over_old": {"trained": 23, "control": 16, "trained_only": 8, "control_only": 1, "p_one_sided": 0.01953, "tasks": 56, "reading": "significant"}, "budget_bound": {"trained": 7, "control": 0, "trained_only": 7, "control_only": 0, "p_one_sided": 0.00781, "tasks": 56, "reading": "significant"}, "undreamt": {"trained": 5, "control": 4, "trained_only": 1, "control_only": 0, "p_one_sided": 0.5, "tasks": 30, "reading": "not testable"}, "beyond_learning_tasks": {"trained": 17, "control": 13, "trained_only": 4, "control_only": 0, "p_one_sided": 0.0625, "tasks": 34, "reading": "not testable"}}
+OUTCOME: for list outputs (56 of 60 tasks): confirmed on FRESH-4 against everything generation 0 solves at any budget run; outside the routines of the earlier symbols not testable (40 tasks, 4 that only one arm solves); and more than the earlier loop's vocabulary at the same deployment budget; with reach beyond the budget; where no dream computed the task or composed its pair of routines not testable (30 tasks, 1 that only one arm solves); where a stage is not one of its learning tasks not testable (34 tasks, 4 that only one arm solves)
+on verified counts: for list outputs (56 of 60 tasks): confirmed on FRESH-4 against everything generation 0 solves at any budget run; outside the routines of the earlier symbols not testable (40 tasks, 4 that only one arm solves); and more than the earlier loop's vocabulary at the same deployment budget; with reach beyond the budget; where no dream computed the task or composed its pair of routines not testable (30 tasks, 1 that only one arm solves); where a stage is not one of its learning tasks not testable (34 tasks, 4 that only one arm solves)

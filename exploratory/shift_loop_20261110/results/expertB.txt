@@ -1,0 +1,50 @@
+run  1 student0       budget  10000 learn 121 families 32/53 score  26.58 held-out 20 {'train': 19, 'near': 61, 'validation': 7, 'far': 5, 'far2': 10, 'fresh1': 19, 'fresh2': 20, 'compose24': 0} lib 0 | 93 s
+run  2 teacher0       budget 100000 learn 134 families 34/53 score  29.51 held-out None {'train': 20, 'near': 64, 'validation': 7, 'far': 6, 'far2': 18, 'fresh1': 19} lib 0 | 328 s
+     symbol c1_1: (lambda x0: int. (lambda x1: int. (lambda x2: list[int]. ((map (lambda x3: int. ((mod ((sub x3) x0)) x1))) x2))))  score 24 tasks 8 families 2
+     symbol c1_2: (lambda x0: list[int]. (lambda x1: int. ((map (lambda x2: int. ((index x2) x0))) (range x1))))  score 21 tasks 7 families 2
+     symbol c1_3: (lambda x0: int. (lambda x1: list[int]. ((filter (lambda x2: int. (is_empty (range ((mod x2) x0))))) x1)))  score 17 tasks 5 families 2
+run  3 student1.1     budget  10000 learn 135 families 33/53 score  28.61 held-out 22 {'train': 21, 'near': 69, 'validation': 8, 'far': 6, 'far2': 12, 'fresh1': 19, 'fresh2': 22, 'compose24': 0} lib 3 | 94 s
+     accepted: score 26.584 -> 28.612, learn 121 -> 135, held-out 20 -> 22
+run  4 teacher1       budget 100000 learn 151 families 35/53 score  30.66 held-out None {'train': 25, 'near': 75, 'validation': 8, 'far': 6, 'far2': 18, 'fresh1': 19} lib 3 | 350 s
+     symbol c2_1: (lambda x0: list[int]. (tail (tail x0)))  score 16 tasks 14 families 3
+     symbol c2_2: (lambda x0: bool. (((if x0) 1) 0))  score 10 tasks 7 families 4
+     symbol c2_3: ((mul 2) 5)  score 9 tasks 6 families 6
+run  5 student2.1     budget  10000 learn 140 families 34/53 score  28.46 held-out 22 {'train': 23, 'near': 71, 'validation': 8, 'far': 6, 'far2': 13, 'fresh1': 19, 'fresh2': 22, 'compose24': 0} lib 6 | 65 s
+     symbol c2_1: (lambda x0: list[int]. (tail (tail (tail x0))))  score 16 tasks 10 families 2
+     symbol c2_2: (lambda x0: int. (lambda x1: list[int]. ((filter (lambda x2: int. ((gt ((mod x2) x0)) 0))) x1)))  score 7 tasks 3 families 2
+     symbol c2_3: ((add -1) -1)  score 5 tasks 4 families 4
+run  6 student2.2     budget  10000 learn 142 families 32/53 score  28.87 held-out 22 {'train': 24, 'near': 73, 'validation': 8, 'far': 6, 'far2': 12, 'fresh1': 19, 'fresh2': 22, 'compose24': 0} lib 6 | 64 s
+     accepted: score 28.612 -> 28.867, learn 135 -> 142, held-out 22 -> 22
+run  7 teacher2       budget 100000 learn 155 families 36/53 score  32.20 held-out None {'train': 26, 'near': 77, 'validation': 8, 'far': 7, 'far2': 18, 'fresh1': 19} lib 6 | 344 s
+     symbol c3_1: (lambda x0: bool. (lambda x1: int. (((if x0) x1) 0)))  score 4 tasks 8 families 4
+     symbol c3_2: (lambda x0: int. ((mul x0) 5))  score 4 tasks 7 families 6
+     symbol c3_3: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. x0)) x1)))  score 3 tasks 7 families 3
+run  8 student3.1     budget  10000 learn 144 families 33/53 score  29.08 held-out 25 {'train': 25, 'near': 74, 'validation': 8, 'far': 6, 'far2': 13, 'fresh1': 18, 'fresh2': 25, 'compose24': 0} lib 9 | 80 s
+     accepted: score 28.867 -> 29.083, learn 142 -> 144, held-out 22 -> 25
+run  9 teacher3       budget 100000 learn 150 families 35/53 score  30.46 held-out None {'train': 25, 'near': 77, 'validation': 8, 'far': 6, 'far2': 15, 'fresh1': 19} lib 9 | 261 s
+     symbol c4_1: (lambda x0: int. ((cons x0) nil))  score 3 tasks 6 families 2
+     symbol c4_2: (lambda x0: list[int]. ((c1_2 x0) 3))  score 3 tasks 6 families 2
+     symbol c4_3: (lambda x0: list[int]. ((c1_2 x0) 4))  score 3 tasks 6 families 2
+run 10 student4.1     budget  10000 learn 144 families 33/53 score  29.22 held-out 26 {'train': 25, 'near': 73, 'validation': 8, 'far': 6, 'far2': 13, 'fresh1': 19, 'fresh2': 26, 'compose24': 0} lib 12 | 90 s
+     accepted: score 29.083 -> 29.217, learn 144 -> 144, held-out 25 -> 26
+run 11 teacher4       budget 100000 learn 150 families 35/53 score  30.46 held-out None {'train': 25, 'near': 77, 'validation': 8, 'far': 6, 'far2': 15, 'fresh1': 19} lib 12 | 294 s
+     symbol c5_1: (lambda x0: int. (lambda x1: list[int]. (((c1_1 -1) x0) x1)))  score 2 tasks 6 families 2
+     symbol c5_2: (lambda x0: int. ((mod x0) 5))  score 2 tasks 5 families 4
+     symbol c5_3: (lambda x0: int. (is_empty (range x0)))  score 2 tasks 5 families 4
+run 12 student5.1     budget  10000 learn 147 families 33/53 score  29.95 held-out 26 {'train': 25, 'near': 75, 'validation': 8, 'far': 6, 'far2': 13, 'fresh1': 20, 'fresh2': 26, 'compose24': 0} lib 15 | 84 s
+     accepted: score 29.217 -> 29.95, learn 144 -> 147, held-out 26 -> 26
+run 13 teacher5       budget 100000 learn 150 families 35/53 score  30.46 held-out None {'train': 25, 'near': 77, 'validation': 8, 'far': 6, 'far2': 15, 'fresh1': 19} lib 15 | 294 s
+     symbol c6_1: (lambda x0: list[int]. ((c2_2 2) x0))  score 2 tasks 5 families 4
+     symbol c6_2: (lambda x0: list[int]. ((c1_2 x0) 2))  score 2 tasks 5 families 2
+     symbol c6_3: (lambda x0: list[int]. (c2_1 (tail x0)))  score 2 tasks 5 families 2
+run 14 student6.1     budget  10000 learn 146 families 33/53 score  29.91 held-out 26 {'train': 25, 'near': 74, 'validation': 8, 'far': 6, 'far2': 13, 'fresh1': 20, 'fresh2': 26, 'compose24': 0} lib 18 | 77 s
+     symbol c6_1: (lambda x0: list[int]. (is_empty ((c2_2 2) x0)))  score 2 tasks 3 families 2
+     symbol c6_2: (lambda x0: int. ((add x0) -1))  score 1 tasks 4 families 2
+     symbol c6_3: (lambda x0: int. ((eq x0) 3))  score 1 tasks 4 families 4
+run 15 student6.2     budget  10000 learn 147 families 34/53 score  29.76 held-out 28 {'train': 26, 'near': 75, 'validation': 8, 'far': 6, 'far2': 13, 'fresh1': 19, 'fresh2': 28, 'compose24': 0} lib 18 | 82 s
+cycle 6: nothing accepted: stop
+run 16 teacher_final  budget 100000 learn 150 families 35/53 score  30.46 held-out None {'train': 25, 'near': 77, 'validation': 8, 'far': 6, 'far2': 15, 'fresh1': 19} lib 15 | 310 s
+
+student at 10000: learn 121 -> 147, families 32 -> 33 of 53, score 26.584 -> 29.95, held-out 20 -> 26
+teacher at 100000: learn [134, 151, 155, 150, 150, 150, 150], families [34, 35, 36, 35, 35, 35, 35]; screened out 13; equal budget per real task 533195
+exit 0

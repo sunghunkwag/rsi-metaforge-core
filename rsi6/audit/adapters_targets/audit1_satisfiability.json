@@ -1,0 +1,142 @@
+{
+ "verdict": "admit",
+ "summary": "The satisfiability adapter is exact and leak-free on every check I ran; there is no blocking or major finding, so I admit it. One thing the owner should know before the sealed test: under the registered test budget the fresh scores will very probably sit at 0 for any method, so this category may be unable to show a gain.\n\n**What was checked.** I used my own parser and evaluator, sharing no code with the adapter, on archives whose SHA-256 match the manifest (two re-downloaded by me from www.cs.ubc.ca, the only host used). Scripts left by the cut-off earlier audit were read and checked before reuse.\n\n- **Evaluation:** `score`, `partial_totals`, `evaluate` and the step-by-step path agree with my evaluator on all 108 instances for scoring and on 54 (6 per group, 2 seeds) for the step path; zero mismatches.\n- **Reference:** all 108 instances have a satisfying assignment that my evaluator verifies, so the reference is attainable in the answer form.\n- **Relabelling:** variable permutation plus per-variable negation gives exactly isomorphic arrays and equal evaluation.\n- **No leak:** everything observable is byte-identical with the references replaced by random numbers.\n- **Layout:** one layout and one set of 13 descriptor names across all 108 instances.\n- **Split:** 16 training instances from 7 sets; 24 fresh instances are uf175-753 and uf250-1065 whole, one set per half.\n- **Cost:** on made-up formulae of the registered sizes, acquire took 5.3 s CPU (design a) and 14.3 s (design b); apply took at most 0.1 s.\n\n**The floor risk (not an adapter defect).** The all-or-nothing score follows R2 and the work order's definition of validity. But the test budget pays for about 181 evaluated answers at n=175 and 256 at n=250. My own WalkSAT (not the learner) needed a median of 7,176 and 13,202 flips on the fresh instances, and 0 of 120 runs finished within that many flips. Untrained and acquired will then both read 0, and the 0.90 threshold (22 of 24 solved) is unlikely to be reachable. The only alternative scale I can see is graded: the share of the way from 7/8 of the clauses to all of them. It would credit answers the work order calls invalid, so I do not recommend it. Whether to register the category as it stands is the owner's call.\n\n**Minor wording points.** The anchor says \"a mean of 1 is attainable\" without saying this means the answer form, not the budget. The module text and manifest quote the page as saying \"all satisfiable\" for these nine sets, where the page actually says \"all sat/unsat\" and the description page says \"test-sets uf* contain only satisfiable instances\".\n\nI did not run the learner on any benchmark instance, did not open `learner.py`, and did not modify REPO. I did not run `rsi6/tests/test_kernel.py`: importing it would load four environments whose data are not in this copy and trigger fetches from other hosts.\n\nFiles are in <scratch>/targets/satisfiability/audit1:\n- src/own.py\n- src/audit_main.py\n- src/scan.py\n- src/madeup.py\n- src/flips.py\n- main.out\n- madeup.out",
+ "checks": [
+  {
+   "id": "0 data integrity",
+   "n": "9 archives, 2 re-downloaded",
+   "result": "pass: all nine SHA-256 in REPO/rsi6/data/satisfiability equal the manifest and the audit copy in audit1/dl; my fresh downloads of uf75-325 (f879d4f6...) and uf250-1065 (ebe9b90d...) match. Archives hold 2,700 regular-file members and nothing else.",
+   "what_was_run": "sha256sum on REPO data and audit1/dl; curl -A research-data-check/1.0 of two archives from www.cs.ubc.ca into audit1/dl2; src/scan.py (tarfile in memory, python3 -I)"
+  },
+  {
+   "id": "1 no hidden solver or heuristic",
+   "n": "257 source lines",
+   "result": "pass: the source only parses, counts and evaluates. No sorting or ranking by the objective, no optimisation call, no scipy, no search loop; the only `sorted` is over instance ids and the only random numbers are the relabelling. No table beyond the instance. The fast `_rows` also answers for already-assigned variables, which equals the default specification exactly.",
+   "what_was_run": "read rsi6/environments/satisfiability.py in full; grep for sort/argmin/argmax/optimi/scipy/heap/while"
+  },
+  {
+   "id": "2 no privileged information",
+   "n": "108 instances",
+   "result": "pass: digest of all public view fields plus candidates/assign/totals on half a construction plus three evaluate calls per instance is 9069a3d4489b8b33 with true references and 9069a3d4489b8b33 with reference() replaced by random numbers and fake reference/name entries added to the loaded instances. No string and no value equal to m in any view field. Exposed arrays are read-only (0 writable of 48 tried).",
+   "what_was_run": "src/audit_main.py section E/E2; inline check of write protection"
+  },
+  {
+   "id": "3 traceability",
+   "n": "4 exposed arrays",
+   "result": "pass: var_opt[0] is the count of clauses containing each literal; var_var[0..2] are counts of clauses containing the literal pairs (+,+), (+,-), (-,-). All four recomputed from the clause lines by my own loops and equal on 54 instances x 2 seeds (0 mismatches of 432). Sums check: var_opt sums to 3m, pair arrays to 6m. No var_attr, opt_attr, opt_opt, occ_attr, capacity, domain or start answer. The clause triples themselves have no generic field (disclosed in the module text).",
+   "what_was_run": "src/audit_main.py section D (own_arrays); inline sum checks on 12 instances"
+  },
+  {
+   "id": "4 relabelling",
+   "n": "54 instances x 2 seeds",
+   "result": "pass: arrays are exactly the permuted and polarity-swapped images of my own arrays; decode maps answers back so that evaluate, partial_totals and score agree with my evaluator in the instance's own labels (0 mismatches of 864). Relabellings differ between seeds in 54 of 54; 47% to 56% of variables are negated; the same seed gives a byte-identical problem whether training is True or False.",
+   "what_was_run": "src/audit_main.py section D; inline pickle comparison on 12 instances"
+  },
+  {
+   "id": "5 evaluator agreement and attainability",
+   "n": "108 instances for score; 54 for the step path",
+   "result": "pass: score vs own evaluator, 0 mismatches over 432 random assignments, 108 satisfying assignments (score 1), 864 one- or two-variable corruptions (28 still satisfying, scored 1; the rest 0) and 1,188 malformed answers (all 0, no exception). Step path: 0 mismatches over 16,200 assigns and 2,364 candidate states, including already-assigned variables, against both the default _rows and my evaluator. No reference answers are published; a satisfying assignment verified by my evaluator exists for 108 of 108 (candidates taken from the builder's models.json as untrusted data; my own WalkSAT also re-solved the 24 fresh instances).",
+   "what_was_run": "src/audit_main.py sections A to D; src/flips.py"
+  },
+  {
+   "id": "6 leak scan of the task files",
+   "n": "108 selected files",
+   "result": "pass: the only comment lines are 'c This Formular is generated by mcnf', 'c horn? no', 'c forced? no', 'c mixed sat? no', 'c clause length = 3' and bare 'c'; the only line after '%' is '0'. No solution, model, optimum or bound text. Headers equal the set's (n, m) and the clause count in every file; every clause has 3 distinct in-range variables; every variable is used. None of the comment text reaches the problem object.",
+   "what_was_run": "src/scan.py over audit1/dl with my own parser"
+  },
+  {
+   "id": "7 one layout",
+   "n": "108 instances, training and fresh form",
+   "result": "pass: one layout, ('assign', False, True, True, (True,), (False,), 0, 0, 3, 0, 1, 0, True, True); Layout(view(problem), version.default()).names is one tuple of 13 names for all 108. No padding is needed: every instance has the same column counts.",
+   "what_was_run": "src/audit_main.py sections F/F2 (Layout constructed only; learner.py not opened)"
+  },
+  {
+   "id": "8 split",
+   "n": "16 training / 24 fresh",
+   "result": "pass with a caveat: training is uf50-218 x3, uf75-325 x2, uf100-430 x3, uf125-538 x1, uf150-645 x2, uf200-860 x2, uf225-960 x3; fresh is uf175-753 x12 and uf250-1065 x12; no group or id overlap; halves are one whole set each; threshold_for is 0.9 for both the whole and a half (22 of 24, 11 of 12). The size is adequate, but with 0/1 scores the mean moves in steps of 1/24 and is likely at the floor (see findings).",
+   "what_was_run": "src/audit_main.py section G"
+  },
+  {
+   "id": "9 instances left out; builder's scratch",
+   "n": "2,592 left out",
+   "result": "pass: the only rule is 'instances numbered 1 to 12 of each set', stated in the module text; my own selection by that rule gives the same 108 ids. Nothing is left out for size. The adapter file was last written 22:01:49, before the builder's WalkSAT output (22:03:15) and checks (22:05:11). The builder's scratch runs acquire/apply only on made-up 14-variable formulae; no measure/run call and no score-based choice found. REPO holds no answer table: only the adapter, registry entry, manifest and nine archives changed.",
+   "what_was_run": "grep of work/*.py for acquire/apply/measure/run/designs/threshold; find -newermt on REPO; ls of work"
+  },
+  {
+   "id": "10 threshold anchor",
+   "n": "1",
+   "result": "pass with a minor wording point: the anchor says 'an operating point, not an external fact: a satisfying assignment for nine in ten of the fresh instances'. The trailing claim 'a mean of 1 is attainable' holds for the answer form (verified per instance) but says nothing about the test budget.",
+   "what_was_run": "printed env.threshold and env.anchor"
+  },
+  {
+   "id": "11 cost",
+   "n": "largest instance uf250-1065",
+   "result": "pass: 751 units per construction at n=250 (n_vars*n_opts = 500), 151 at n=50; training limit 252,640 units; test limit 64,002 (n=250) and 31,677 (n=175). On made-up random 3-SAT of the registered sizes: design a acquire 5.3 s CPU using 244,400 units, design b 14.3 s using 246,243, both within the limit; apply 0.0 to 0.1 s per instance, well-formed answers, hard total equal to my own count, meter stopping 162 and 237 units past the limit. Whether a made-up formula was satisfied was deliberately not printed.",
+   "what_was_run": "src/audit_main.py section H; src/madeup.py with designs a and b (made-up formulae only), output in audit1/madeup.out"
+  },
+  {
+   "id": "12 repository tests",
+   "n": "not run",
+   "result": "not run as a file: REPO/rsi6/data has no forecasting, regression, partitioning or setcover data, so importing the test module would fetch from other hosts. I reproduced the no-learner tests for this adapter only (fast rows equal the specification, view hides the adapter, malformed answers not valid, candidates(state, []) has shape (0, 2, 1)): 0 mismatches on 12 instances. The category's role is 'target', so the tests that run the learner (source role only) skip it.",
+   "what_was_run": "inline script on every ninth instance; roles.role_of('satisfiability') printed 'target'"
+  }
+ ],
+ "findings": [
+  {
+   "severity": "note",
+   "where": "score scale and threshold against the kernel's test budget (rsi6/kernel/run.py _test_limit; satisfiability.py score, threshold)",
+   "what": "Floor risk, for the owner's decision; not a defect against R1 to R8. With the all-or-nothing score and the registered test budget, fresh scores will very probably be 0 for any method, untrained or acquired, so the category may be unable to show a gain and the 0.90 threshold (22 of 24 solved) is unlikely to be reachable. The interface has no un-assign, so each new complete answer costs at least n units.",
+   "evidence": "src/audit_main.py printed 'test limit n=250: 64002.0 n=175: 31677.0', i.e. 256 and 181 evaluated answers, or about 85 and 60 constructions. src/flips.py (my own WalkSAT, not the learner) printed 'uf175-753 ... min 399 median 7176.0 max 281460 ... runs solved within that many flips: 0 of 60' and 'uf250-1065 ... min 574 median 13201.5 max 300000 ... runs solved within that many flips: 0 of 60'.",
+   "suggested_fix": "None inside the adapter: the binary score is the literal reading of R2 and of the work order's validity. If the owner wants a graded scale (share of the way from 7m/8 to m, falsified clauses as a soft group), that is a change of the work order, must be decided before any learner contact, and would credit answers the work order calls invalid. Otherwise register as is and expect a floor result."
+  },
+  {
+   "severity": "minor",
+   "where": "rsi6/environments/satisfiability.py, Satisfiability.anchor and module text lines 56-58",
+   "what": "The anchor ends with 'every instance is satisfiable, so a mean of 1 is attainable'. That is true of the answer form but can be read as attainable in the registered test, which the evidence above makes doubtful.",
+   "evidence": "Printed anchor: 'an operating point, not an external fact: a satisfying assignment for nine in ten of the fresh instances (an instance scores 1 when every clause is satisfied and 0 otherwise; every instance is satisfiable, so a mean of 1 is attainable)'. Attainability in the form: 'B attainable: ... 108 of 108'.",
+   "suggested_fix": "Reword to '... so a mean of 1 is attainable by an answer of this form; nothing is claimed about the registered test budget'. Text only; nothing measured changes."
+  },
+  {
+   "severity": "minor",
+   "where": "module text lines 10-12 and manifest field 'reference'",
+   "what": "The text says the source 'lists the sets as \"all satisfiable\"'. For these nine sets the benchmark page's words are 'all sat/unsat' (uf/uuf pairs); 'all satisfiable' is printed only for uf20-91. The substance is right.",
+   "evidence": "Text extracted from audit1/dl/benchm.html: 'uf20-91 : 20 variables, 91 clauses - 1000 instances, all satisfiable uf50-218 / uuf50-218 : 50 variables, 218 clauses - 1000 instances, all sat/unsat'. From descr.html: 'Table 1: ... test-sets uf* contain only satisfiable instances' and 'we seperated these into different test-sets using a complete algorithm'.",
+   "suggested_fix": "Quote the description page's sentence ('test-sets uf* contain only satisfiable instances') instead."
+  },
+  {
+   "severity": "note",
+   "where": "SatProblem exposed arrays (var_opt, var_var)",
+   "what": "The published instance is a three-variable relation; the generic form has no field for it, so the learner sees only its single-variable and pair projections and meets the clauses in full only through the exact hard-group changes of candidates. The exposure is aggregated but exact, defined by the public specification, and disclosed in the module text. R1 still holds: every truth assignment is an answer of the form, and the hard total of a complete answer is zero exactly when the formula is satisfied.",
+   "evidence": "src/audit_main.py: 'array isomorphism mismatches 0 of 432 ; evaluation mismatches 0 of 864'. Public view fields printed contain no clause list.",
+   "suggested_fix": "None."
+  },
+  {
+   "severity": "note",
+   "where": "published files of uf75-325, uf100-430, uf125-538, uf225-960",
+   "what": "Seven of the 108 selected files contain a clause printed twice. The adapter counts each printed clause as its own term, as the file states; validity and score are unaffected, and my evaluator does the same.",
+   "evidence": "src/scan.py: \"oddities: {'duplicate clause in uf75-325': 2, 'duplicate clause in uf100-430': 1, 'duplicate clause in uf125-538': 3, 'duplicate clause in uf225-960': 1}\"; no other oddity.",
+   "suggested_fix": "None."
+  },
+  {
+   "severity": "note",
+   "where": "builder's scratch directory, work/models.json",
+   "what": "The builder's scratch holds satisfying assignments for all 108 instances, found by its own WalkSAT for the attainability check. It is outside REPO and not referenced by the adapter, but it is an answer table for the fresh instances and must never be copied into the package or into any learner memory.",
+   "evidence": "ls work shows models.json at 50,532 bytes; work/models.out ends 'models: 108 of 108'; find -newermt on REPO lists only satisfiability.py, __init__.py, the manifest and the nine archives.",
+   "suggested_fix": "Keep the scratch directory out of the repository; delete models.json after the audits if it is not needed."
+  },
+  {
+   "severity": "note",
+   "where": "Satisfiability.reference",
+   "what": "reference(i) returns m, the number of clauses, which is derivable from the exposed arrays. That is the instance's size, not an answer; score does not read it; and the status 'satisfiable' is the same for every instance. No leak.",
+   "evidence": "src/audit_main.py: 'E2 fields equal to m (number of clauses) or strings in the view: 0 ; m derivable as var_opt.sum()/3: True'; digests identical with references replaced.",
+   "suggested_fix": "None."
+  },
+  {
+   "severity": "note",
+   "where": "REPO copy, rsi6/tests/test_kernel.py",
+   "what": "The test file cannot be imported in this copy without fetching the data of four other environments from other hosts, so neither the builder nor I ran it. The properties it tests were reproduced for this adapter by my own scripts.",
+   "evidence": "ls REPO/rsi6/data: binpacking jobshop knapsack pmedian quadassign satisfiability. The test module loads every REGISTRY entry at import (lines 26 to 29).",
+   "suggested_fix": "Run the no-learner tests of the file in the full repository after the adapter is merged; the learner tests skip this category because its role is 'target'."
+  }
+ ]
+}

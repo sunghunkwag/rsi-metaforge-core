@@ -1,0 +1,305 @@
+{
+ "report": "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/shift2/expertB.json",
+ "budget": 100000,
+ "partitions": [
+  "fresh2",
+  "compose24"
+ ],
+ "components": "SCf",
+ "rows": [
+  {
+   "label": "at-1e5",
+   "dropped": [],
+   "budget": 100000,
+   "counts": {
+    "fresh2": 38,
+    "compose24": 0
+   },
+   "learn": 0,
+   "held_out": 38,
+   "programs": {
+    "fresh2/((add-k (dyn . 0) (static . 10)) (positions (dyn . 1)))": [
+     "(lambda x0: list[int]. (range (length x0)))",
+     "search",
+     115
+    ],
+    "fresh2/((append-k (dyn . 0) (static . -2)) (head (dyn . 1)))": [
+     "(lambda x0: list[int]. (head x0))",
+     "search",
+     17
+    ],
+    "fresh2/((dedup (dyn . 0)) (is-primes (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. (is_empty (range ((mod x1) 2))))) x0)))",
+     "search",
+     1320
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 2)) (is-odds (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_prime (length x0)))",
+     "search",
+     105
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . -5)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. ((gt ((mod x1) 5)) 0))) (tail (tail x0))))",
+     "search",
+     10755
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 5)) (len (dyn . 1)))": [
+     "(lambda x0: list[int]. ((sub (length x0)) 5))",
+     "search",
+     1271
+    ],
+    "fresh2/((identify-geq-k (dyn . 0) (static . 2)) (is-odds (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. (is_empty (range ((mod x1) ((mul 2) 4)))))) x0)))",
+     "search",
+     36120
+    ],
+    "fresh2/((identify-geq-k (dyn . 0) (static . 3)) (empty (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty x0))",
+     "search",
+     16
+    ],
+    "fresh2/((identify-geq-k (dyn . 0) (static . 7)) (modulo-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((gt x1) 5)) 1) 0))) x0))",
+     "map+search",
+     12126
+    ],
+    "fresh2/((identify-is-mod-k (dyn . 0) (static . 3)) (sum (dyn . 1)))": [
+     "(lambda x0: list[int]. (length ((filter (lambda x1: int. (is_empty (range ((mod x1) 3))))) x0)))",
+     "search",
+     1501
+    ],
+    "fresh2/((identify-is-mod-k (dyn . 0) (static . 7)) (is-evens (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. (is_empty (range ((mod x1) ((add 2) 5)))))) x0)))",
+     "search",
+     36924
+    ],
+    "fresh2/((identify-is-mod-k (dyn . 0) (static . 7)) (pow-base-k (dyn . 1) (static . 7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_empty (range ((mod x1) ((add 2) 5))))) ((add 2) 5)) 1))) x0))",
+     "map+fused",
+     50001
+    ],
+    "fresh2/((identify-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . -7)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. 1)) x0))",
+     "map+search",
+     4
+    ],
+    "fresh2/((identify-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((eq x1) ((mul 2) 5))) 0) 1))) x0))",
+     "map+fused",
+     50001
+    ],
+    "fresh2/((identify-k (dyn . 0) (static . 10)) (len (dyn . 1)))": [
+     "(lambda x0: list[int]. (length x0))",
+     "search",
+     18
+    ],
+    "fresh2/((intersperse-k (dyn . 0) (static . 0)) (has-k (dyn . 1) (static . 10)))": [
+     "(lambda x0: list[int]. ((eq 2) (length ((filter (lambda x1: int. (is_empty (range ((mod x1) 5))))) x0))))",
+     "search",
+     41592
+    ],
+    "fresh2/((keep-mod-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((filter (lambda x1: int. (((if (is_empty (range ((mod x1) 5)))) false) (is_empty (range ((mod x1) 2)))))) x0))",
+     "filter+fused",
+     50001
+    ],
+    "fresh2/((keep-mod-k (dyn . 0) (static . 5)) (is-odds (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. (is_empty (range ((mod x1) ((mul 2) 5)))))) x0)))",
+     "search",
+     5104
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 3)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((ge x1) ((mul 2) 5))) ((mod ((mod x1) 3)) 2)) (length ((filter (lambda x2: int. (is_empty (range ((mod x2) 3))))) ((cons x1) nil)))))) x0))",
+     "map+fused",
+     50001
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 2)) (identify-is-prime (dyn . 1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. 0)) x0))",
+     "map+search",
+     3
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. 0)) x0))",
+     "map+search",
+     3
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (modulo-k (dyn . 1) (static . 6)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((mod x1) 3))) x0))",
+     "map+search",
+     115
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_prime ((mod x1) 3))) 2) ((mul ((mod x1) 3)) 5)))) x0))",
+     "map+fused",
+     50001
+    ],
+    "fresh2/((mult-k (dyn . 0) (static . 10)) (is-odds (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty x0))",
+     "search",
+     16
+    ],
+    "fresh2/((pow-base-k (dyn . 0) (static . 4)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if (is_empty (range x1))) x1) 1))) x0))",
+     "map+search",
+     4993
+    ],
+    "fresh2/((pow-base-k (dyn . 0) (static . 4)) (is-evens (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. (is_empty (range ((mod x1) ((mul 3) 5)))))) x0)))",
+     "search",
+     5302
+    ],
+    "fresh2/((prepend-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. ((gt ((mod x1) 2)) 0))) x0)))",
+     "search",
+     1333
+    ],
+    "fresh2/((repeat-k (dyn . 0) (static . 5)) (identify-geq-k (dyn . 1) (static . 0)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. 1)) (range ((mul (length x0)) 5))))",
+     "search",
+     51843
+    ],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (positions (dyn . 1)))": [
+     "(lambda x0: list[int]. (range (length x0)))",
+     "search",
+     115
+    ],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. (((if ((gt x1) 3)) 1) 0))) x0))",
+     "map+search",
+     9506
+    ],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (is-odds (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty x0))",
+     "search",
+     16
+    ],
+    "fresh2/((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (keep-mod-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((cons 2) ((filter (lambda x1: int. (is_empty (range ((mod x1) 2))))) (tail x0))))",
+     "search",
+     60735
+    ],
+    "fresh2/((replace-index-k-with-n (dyn . 0) (static . 5) (static . 0)) (count-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. ((mod (head ((filter (lambda x1: int. ((gt ((mod x1) 3)) 0))) x0))) 2))",
+     "search",
+     49573
+    ],
+    "fresh2/((rotate-k (dyn . 0) (static . 10)) (is-squares (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_empty ((filter (lambda x1: int. (is_prime x1))) x0)))",
+     "search",
+     26145
+    ],
+    "fresh2/((slice-k-n (dyn . 0) (static . 2) (static . 2)) (prepend-k (dyn . 1) (static . 5)))": [
+     "(lambda x0: list[int]. ((cons 5) (tail ((map (lambda x1: int. ((index x1) x0))) (range 3)))))",
+     "search",
+     10641
+    ],
+    "fresh2/((slice-k-n (dyn . 0) (static . 3) (static . 3)) (is-odds (dyn . 1)))": [
+     "(lambda x0: list[int]. (is_square ((sub (head x0)) 4)))",
+     "search",
+     5732
+    ],
+    "fresh2/((take-k (dyn . 0) (static . 3)) (rotate-k (dyn . 1) (static . 1)))": [
+     "(lambda x0: list[int]. ((map (lambda x1: int. ((index x1) ((cons ((index 2) x0)) x0)))) (range 3)))",
+     "search",
+     41394
+    ],
+    "fresh2/((uniq (dyn . 0)) (count-k (dyn . 1) (static . 2)))": [
+     "(lambda x0: list[int]. (((if ((eq 2) (head x0))) 1) 0))",
+     "search",
+     40119
+    ]
+   },
+   "used": {
+    "fresh2/((add-k (dyn . 0) (static . 10)) (positions (dyn . 1)))": [],
+    "fresh2/((append-k (dyn . 0) (static . -2)) (head (dyn . 1)))": [],
+    "fresh2/((dedup (dyn . 0)) (is-primes (dyn . 1)))": [
+     "c1_3"
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 2)) (is-odds (dyn . 1)))": [],
+    "fresh2/((drop-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . -5)))": [
+     "c2_2"
+    ],
+    "fresh2/((drop-k (dyn . 0) (static . 5)) (len (dyn . 1)))": [],
+    "fresh2/((identify-geq-k (dyn . 0) (static . 2)) (is-odds (dyn . 1)))": [
+     "c1_3"
+    ],
+    "fresh2/((identify-geq-k (dyn . 0) (static . 3)) (empty (dyn . 1)))": [],
+    "fresh2/((identify-geq-k (dyn . 0) (static . 7)) (modulo-k (dyn . 1) (static . 4)))": [
+     "c3_1"
+    ],
+    "fresh2/((identify-is-mod-k (dyn . 0) (static . 3)) (sum (dyn . 1)))": [
+     "c1_3"
+    ],
+    "fresh2/((identify-is-mod-k (dyn . 0) (static . 7)) (is-evens (dyn . 1)))": [
+     "c1_3"
+    ],
+    "fresh2/((identify-is-mod-k (dyn . 0) (static . 7)) (pow-base-k (dyn . 1) (static . 7)))": [
+     "c5_3"
+    ],
+    "fresh2/((identify-k (dyn . 0) (static . -2)) (identify-geq-k (dyn . 1) (static . -7)))": [],
+    "fresh2/((identify-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 5)))": [],
+    "fresh2/((identify-k (dyn . 0) (static . 10)) (len (dyn . 1)))": [],
+    "fresh2/((intersperse-k (dyn . 0) (static . 0)) (has-k (dyn . 1) (static . 10)))": [
+     "c1_3"
+    ],
+    "fresh2/((keep-mod-k (dyn . 0) (static . 2)) (remove-mod-k (dyn . 1) (static . 5)))": [
+     "c5_2",
+     "c5_3"
+    ],
+    "fresh2/((keep-mod-k (dyn . 0) (static . 5)) (is-odds (dyn . 1)))": [
+     "c1_3",
+     "c3_2"
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 10)) (identify-is-mod-k (dyn . 1) (static . 3)))": [
+     "c1_3",
+     "c3_2",
+     "c4_1"
+    ],
+    "fresh2/((modulo-k (dyn . 0) (static . 2)) (identify-is-prime (dyn . 1)))": [],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (identify-geq-k (dyn . 1) (static . 5)))": [],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (modulo-k (dyn . 1) (static . 6)))": [],
+    "fresh2/((modulo-k (dyn . 0) (static . 3)) (replace-all-k-with-n (dyn . 1) (static . 1) (static . 5)))": [
+     "c3_2"
+    ],
+    "fresh2/((mult-k (dyn . 0) (static . 10)) (is-odds (dyn . 1)))": [],
+    "fresh2/((pow-base-k (dyn . 0) (static . 4)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "c5_3"
+    ],
+    "fresh2/((pow-base-k (dyn . 0) (static . 4)) (is-evens (dyn . 1)))": [
+     "c1_3",
+     "c3_2"
+    ],
+    "fresh2/((prepend-k (dyn . 0) (static . -2)) (is-mod-k (dyn . 1) (static . -2)))": [
+     "c2_2"
+    ],
+    "fresh2/((repeat-k (dyn . 0) (static . 5)) (identify-geq-k (dyn . 1) (static . 0)))": [
+     "c3_2",
+     "c3_3"
+    ],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 2) (static . 10)) (positions (dyn . 1)))": [],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (identify-geq-k (dyn . 1) (static . 4)))": [
+     "c3_1"
+    ],
+    "fresh2/((replace-all-k-with-n (dyn . 0) (static . 3) (static . -2)) (is-odds (dyn . 1)))": [],
+    "fresh2/((replace-index-k-with-n (dyn . 0) (static . 1) (static . 2)) (keep-mod-k (dyn . 1) (static . 2)))": [
+     "c1_3"
+    ],
+    "fresh2/((replace-index-k-with-n (dyn . 0) (static . 5) (static . 0)) (count-k (dyn . 1) (static . 2)))": [
+     "c2_2"
+    ],
+    "fresh2/((rotate-k (dyn . 0) (static . 10)) (is-squares (dyn . 1)))": [],
+    "fresh2/((slice-k-n (dyn . 0) (static . 2) (static . 2)) (prepend-k (dyn . 1) (static . 5)))": [
+     "c4_2"
+    ],
+    "fresh2/((slice-k-n (dyn . 0) (static . 3) (static . 3)) (is-odds (dyn . 1)))": [],
+    "fresh2/((take-k (dyn . 0) (static . 3)) (rotate-k (dyn . 1) (static . 1)))": [
+     "c4_2"
+    ],
+    "fresh2/((uniq (dyn . 0)) (count-k (dyn . 1) (static . 2)))": [
+     "c3_1"
+    ]
+   },
+   "seconds": 430
+  }
+ ]
+}

@@ -1,0 +1,74 @@
+{
+ "name": "genassign",
+ "category": "genassign",
+ "source": "OR-Library (J. E. Beasley), generalised assignment problem: the files gap1 to gap12 (60 problems of type c in 12 size classes of 5; 5, 8 or 10 agents and 15 to 60 jobs; the problems used by Osman 1995 and by Cattrysse, Salomon and Van Wassenhove 1994), with the page gapinfo.html that states the file format and the optimal values. The files gapa, gapb, gapc and gapd of the same page (minimisation problems of Chu and Beasley 1997) are left out: the page gives no reference value for them",
+ "terms": "OR-Library: 'All of the material available from OR-Library is freely available for use. As such the MIT licence ... applies: Copyright (c) (2010) (J E Beasley)'. Fetched by hash. (The wording is the one the manifests of the other OR-Library environments of this package quote; the generalised assignment page itself states no terms.)",
+ "reference": "the optimal solution values 'when solved as maximisation problems' printed on the page gapinfo.html, which is pinned as a data file and parsed (kernel only). They are values an assignment attains, not bounds; the source publishes no assignment that reaches them. An exact computation outside the adapter reached every one of the 60 values with a valid assignment and proved that none can be exceeded",
+ "files": [
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/gapinfo.html",
+   "path": "gapinfo.html",
+   "sha256": "6cc31c6d883942a062f8dda84e1d8833f52637796e5ea246d981cb8014430cb2"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/gap1.txt",
+   "path": "gap1.txt",
+   "sha256": "3395ba9f775d5a608ad107e946021a89688bc0d62b5a5c07585744ea98b1d706"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/gap2.txt",
+   "path": "gap2.txt",
+   "sha256": "84ea4769a7a03e87746be10951fe64b32572c90be4c1c531ae92d437c2c8577b"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/gap3.txt",
+   "path": "gap3.txt",
+   "sha256": "1f3e510ed64f51d66ae937da92c47f129296de910134832ec68e3d088c0ca1b2"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/gap4.txt",
+   "path": "gap4.txt",
+   "sha256": "5dd459ffba5bd9230ca4564eed60a15e969b40425980fcd86d1179fe57a6c0a4"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/gap5.txt",
+   "path": "gap5.txt",
+   "sha256": "ee5348cba2f894370273a16a8c157795f0e480f1f65fb645e36b6d1cb9e16eb5"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/gap6.txt",
+   "path": "gap6.txt",
+   "sha256": "ee8a4a3cec50bde1b8544ba8d2908b0e00266b32630fa0ed2a04ef363656a784"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/gap7.txt",
+   "path": "gap7.txt",
+   "sha256": "d2014b2f271bf06852e6f52f1063a93e16952ffd707e21383af1e77555d6c059"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/gap8.txt",
+   "path": "gap8.txt",
+   "sha256": "6accdf67435fd37dbe9443412a3adaa7cf23845791868f98e1c36725ca05e3cd"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/gap9.txt",
+   "path": "gap9.txt",
+   "sha256": "7f5f062592237ed267ba156d5f92c65b3913ade6b7e090b6ed9d98c606428294"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/gap10.txt",
+   "path": "gap10.txt",
+   "sha256": "cf61d6b2c94ae2e6c74ba2b6afb787672b03c52980d08755ce2aca513de0fcf5"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/gap11.txt",
+   "path": "gap11.txt",
+   "sha256": "baa3d922c87daa41f57bbfb6d2f550cc052e19cacb248911d25719e470dd10fc"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/gap12.txt",
+   "path": "gap12.txt",
+   "sha256": "1d2194a19ba44a57ac13df745c181e4f7a7e665a426a9602336262803665fa8f"
+  }
+ ]
+}

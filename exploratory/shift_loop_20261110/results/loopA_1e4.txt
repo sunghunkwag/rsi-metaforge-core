@@ -1,0 +1,65 @@
+run  1 gen0                   learn  80 held-out  61 {'train': 19, 'near': 61, 'validation': 7, 'far': 5, 'far2': 10, 'fresh1': 19, 'fresh2': 20, 'compose24': 0} lib 0 keep {} E 0 | 26 s
+     propose s1_1: (lambda x0: int. (lambda x1: int. (lambda x2: list[int]. ((map (lambda x3: int. ((mod ((sub x3) x0)) x1))) x2))))  score 12 tasks 5 depth 1
+     propose s1_2: (lambda x0: int. (lambda x1: list[int]. ((filter (lambda x2: int. (is_empty (range ((mod x2) x0))))) x1)))  score 12 tasks 4 depth 1
+     propose s1_3: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. ((eq x2) x0))) x1)))  score 9 tasks 5 depth 1
+run  2 compress@1             learn  80 held-out  64 {'train': 19, 'near': 61, 'validation': 7, 'far': 6, 'far2': 10, 'fresh1': 19, 'fresh2': 22, 'compose24': 0} lib 3 keep {} E 0 | 38 s
+run  3 apoptosis@1            learn  84 held-out  53 {'train': 20, 'near': 64, 'validation': 7, 'far': 3, 'far2': 13, 'fresh1': 18, 'fresh2': 12, 'compose24': 0} lib 0 keep {'elem': 17, 'list': 17} E 0 | 27 s
+     accepted apoptosis: learn 80 -> 84, held-out 61 -> 53
+     propose s3_1: (lambda x0: list[int]. (lambda x1: int. ((map (lambda x2: int. ((index x2) x0))) (range x1))))  score 9 tasks 4 depth 1
+     propose s3_2: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. ((mod ((add x2) -1)) x0))) x1)))  score 7 tasks 3 depth 1
+     propose s3_3: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. ((mod ((sub x2) -1)) x0))) x1)))  score 7 tasks 3 depth 1
+run  4 compress@3             learn  94 held-out  55 {'train': 22, 'near': 72, 'validation': 8, 'far': 3, 'far2': 13, 'fresh1': 18, 'fresh2': 13, 'compose24': 0} lib 3 keep {'elem': 20, 'list': 20} E 0 | 31 s
+     accepted compress: learn 84 -> 94, held-out 53 -> 55
+     propose s4_1: (lambda x0: list[int]. (lambda x1: int. ((s3_1 (tail x0)) x1)))  score 7 tasks 11 depth 2
+     propose s4_2: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. ((gt x2) x0))) x1)))  score 6 tasks 4 depth 1
+     propose s4_3: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. ((mod x2) x0))) x1)))  score 6 tasks 4 depth 1
+run  5 compress@4             learn  97 held-out  56 {'train': 24, 'near': 73, 'validation': 8, 'far': 4, 'far2': 13, 'fresh1': 18, 'fresh2': 13, 'compose24': 0} lib 6 keep {'elem': 23, 'list': 23} E 0 | 32 s
+     accepted compress: learn 94 -> 97, held-out 55 -> 56
+     propose s5_1: (lambda x0: list[int]. (lambda x1: int. ((s4_1 (tail x0)) x1)))  score 6 tasks 10 depth 3
+     propose s5_2: (lambda x0: int. (lambda x1: int. (is_empty (range ((mod x0) x1)))))  score 5 tasks 5 depth 1
+     propose s5_3: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. x0)) x1)))  score 3 tasks 7 depth 1
+run  6 compress@5             learn  97 held-out  57 {'train': 24, 'near': 73, 'validation': 8, 'far': 4, 'far2': 13, 'fresh1': 19, 'fresh2': 13, 'compose24': 0} lib 9 keep {'elem': 26, 'list': 26} E 0 | 36 s
+run  7 apoptosis@5            learn  94 held-out  53 {'train': 24, 'near': 70, 'validation': 8, 'far': 3, 'far2': 12, 'fresh1': 17, 'fresh2': 13, 'compose24': 0} lib 6 keep {'elem': 10, 'list': 10} E 0 | 28 s
+run  8 unused@5               learn  97 held-out  56 {'train': 24, 'near': 73, 'validation': 8, 'far': 3, 'far2': 13, 'fresh1': 18, 'fresh2': 14, 'compose24': 0} lib 6 keep {'elem': 15, 'list': 14} E 0 | 27 s
+run  9 entropy@5              learn  97 held-out  56 {'train': 24, 'near': 73, 'validation': 8, 'far': 4, 'far2': 13, 'fresh1': 18, 'fresh2': 13, 'compose24': 0} lib 6 keep {'elem': 23, 'list': 23} E 1 | 29 s
+     rollback 1: no move accepted after compress@run5; banned it and returned to run 4
+     propose s9_1: (lambda x0: list[int]. ((s3_1 (tail x0)) 5))  score 4 tasks 4 depth 2
+     propose s9_2: (lambda x0: int. (is_empty (range x0)))  score 3 tasks 6 depth 1
+     propose s9_3: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. ((add x2) x0))) x1)))  score 3 tasks 3 depth 1
+run 10 compress@4             learn  97 held-out  60 {'train': 24, 'near': 73, 'validation': 8, 'far': 4, 'far2': 13, 'fresh1': 19, 'fresh2': 14, 'compose24': 2} lib 6 keep {'elem': 23, 'list': 23} E 0 | 30 s
+     accepted compress: learn 94 -> 97, held-out 55 -> 60
+     propose s10_1: (lambda x0: list[int]. (tail (s9_1 x0)))  score 4 tasks 7 depth 3
+     propose s10_2: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. ((index x0) x1))) x1)))  score 3 tasks 3 depth 1
+     propose s10_3: (lambda x0: list[int]. ((map (lambda x1: int. ((sub 1) x1))) x0))  score 2 tasks 2 depth 1
+run 11 compress@10            learn  97 held-out  58 {'train': 24, 'near': 73, 'validation': 8, 'far': 4, 'far2': 12, 'fresh1': 19, 'fresh2': 13, 'compose24': 2} lib 9 keep {'elem': 26, 'list': 26} E 0 | 31 s
+run 12 apoptosis@10           learn  97 held-out  57 {'train': 24, 'near': 73, 'validation': 8, 'far': 3, 'far2': 13, 'fresh1': 19, 'fresh2': 14, 'compose24': 0} lib 6 keep {'elem': 10, 'list': 10} E 0 | 27 s
+run 13 unused@10              learn  97 held-out  57 {'train': 24, 'near': 73, 'validation': 8, 'far': 3, 'far2': 13, 'fresh1': 19, 'fresh2': 14, 'compose24': 0} lib 6 keep {'elem': 14, 'list': 14} E 0 | 25 s
+run 14 entropy@10             learn  97 held-out  59 {'train': 24, 'near': 73, 'validation': 8, 'far': 4, 'far2': 13, 'fresh1': 19, 'fresh2': 13, 'compose24': 2} lib 6 keep {'elem': 23, 'list': 23} E 1 | 30 s
+     rollback 2: no move accepted after compress@run10; banned it and returned to run 4
+     propose s14_1: (lambda x0: list[int]. (lambda x1: int. ((s3_1 (tail (tail (tail x0)))) x1)))  score 3 tasks 3 depth 2
+     propose s14_2: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. ((mod ((sub x2) 2)) x0))) x1)))  score 2 tasks 2 depth 1
+     propose s14_3: (lambda x0: int. (lambda x1: int. (range ((mod x0) x1))))  score 1 tasks 5 depth 1
+run 15 compress@4             learn  97 held-out  56 {'train': 24, 'near': 73, 'validation': 8, 'far': 3, 'far2': 13, 'fresh1': 19, 'fresh2': 13, 'compose24': 0} lib 6 keep {'elem': 23, 'list': 23} E 0 | 31 s
+     accepted compress: learn 94 -> 97, held-out 55 -> 56
+     propose s15_1: (lambda x0: list[int]. ((cons 0) x0))  score 1 tasks 4 depth 1
+run 16 compress@15            learn  97 held-out  55 {'train': 24, 'near': 73, 'validation': 8, 'far': 3, 'far2': 13, 'fresh1': 19, 'fresh2': 12, 'compose24': 0} lib 7 keep {'elem': 24, 'list': 24} E 0 | 30 s
+run 17 apoptosis@15           learn  54 held-out  23 {'train': 17, 'near': 37, 'validation': 2, 'far': 1, 'far2': 10, 'fresh1': 4, 'fresh2': 6, 'compose24': 0} lib 6 keep {'elem': 10, 'list': 10} E 0 | 26 s
+run 18 unused@15              learn  97 held-out  57 {'train': 24, 'near': 73, 'validation': 8, 'far': 3, 'far2': 13, 'fresh1': 19, 'fresh2': 14, 'compose24': 0} lib 6 keep {'elem': 16, 'list': 13} E 0 | 25 s
+run 19 entropy@15             learn  97 held-out  55 {'train': 24, 'near': 73, 'validation': 8, 'far': 3, 'far2': 13, 'fresh1': 19, 'fresh2': 12, 'compose24': 0} lib 6 keep {'elem': 23, 'list': 23} E 1 | 28 s
+     rollback 3: no move accepted after compress@run15; banned it and returned to run 4
+     propose s19_1: (lambda x0: list[int]. ((s3_1 x0) 5))  score 2 tasks 5 depth 2
+     propose s19_2: (lambda x0: list[int]. (tail (tail x0)))  score 2 tasks 5 depth 1
+     propose s19_3: (lambda x0: int. ((mod x0) 5))  score 1 tasks 4 depth 1
+run 20 compress@4             learn  97 held-out  55 {'train': 24, 'near': 73, 'validation': 8, 'far': 3, 'far2': 13, 'fresh1': 18, 'fresh2': 13, 'compose24': 0} lib 6 keep {'elem': 23, 'list': 23} E 0 | 27 s
+     accepted compress: learn 94 -> 97, held-out 55 -> 55
+     propose s20_1: (lambda x0: list[int]. (s19_1 (s19_2 x0)))  score 2 tasks 5 depth 3
+     propose s20_2: (lambda x0: list[int]. ((index 3) x0))  score 1 tasks 4 depth 1
+run 21 compress@20            learn  97 held-out  54 {'train': 24, 'near': 73, 'validation': 8, 'far': 3, 'far2': 13, 'fresh1': 18, 'fresh2': 12, 'compose24': 0} lib 8 keep {'elem': 25, 'list': 25} E 0 | 26 s
+run 22 apoptosis@20           learn  88 held-out  56 {'train': 22, 'near': 66, 'validation': 8, 'far': 3, 'far2': 13, 'fresh1': 18, 'fresh2': 14, 'compose24': 0} lib 6 keep {'elem': 10, 'list': 10} E 0 | 20 s
+run 23 unused@20              learn  97 held-out  57 {'train': 24, 'near': 73, 'validation': 8, 'far': 3, 'far2': 13, 'fresh1': 19, 'fresh2': 14, 'compose24': 0} lib 6 keep {'elem': 16, 'list': 15} E 0 | 21 s
+run 24 entropy@20             learn  97 held-out  54 {'train': 24, 'near': 73, 'validation': 8, 'far': 3, 'far2': 13, 'fresh1': 18, 'fresh2': 12, 'compose24': 0} lib 6 keep {'elem': 23, 'list': 23} E 1 | 25 s
+no move accepted: stop
+random 60% cut of generation 0: 50 32 {'train': 9, 'near': 41, 'validation': 4, 'far': 3, 'far2': 4, 'fresh1': 12, 'fresh2': 9, 'compose24': 0}
+
+best state (run 5): learn 80 -> 97, held-out 61 -> 56; runs 24, rollbacks 3, symbols learned 6
+exit 0

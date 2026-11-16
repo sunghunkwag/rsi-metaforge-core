@@ -1,0 +1,5 @@
+{
+ "judge_seed": 1219348288471987537,
+ "drawn": "2026-11-06",
+ "how": "secrets.randbits(62), drawn once before any pool was built"
+}

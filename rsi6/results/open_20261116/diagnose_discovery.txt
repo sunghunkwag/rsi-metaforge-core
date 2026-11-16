@@ -1,0 +1,58 @@
+152 steps of discovery
+  discovery:frozen0          steps  16 spent    6101 candidates  96 zero  23 positive  32 promoted  26 confirmations 0/2 accepted 0
+  discovery:frozen1          steps  16 spent    6153 candidates  96 zero  17 positive  35 promoted  30 confirmations 0/1 accepted 0
+  discovery:recursive0       steps  16 spent    6102 candidates  96 zero  23 positive  32 promoted  26 confirmations 0/2 accepted 0
+  discovery:recursive1       steps  16 spent    6139 candidates  96 zero  17 positive  35 promoted  30 confirmations 0/1 accepted 0
+  discovery:shuffled0        steps  14 spent    6062 candidates  84 zero  16 positive  30 promoted  25 confirmations 0/3 accepted 0
+  discovery:shuffled1        steps  17 spent    6196 candidates 102 zero  19 positive  35 promoted  26 confirmations 0/1 accepted 0
+  discovery:tune0            steps  14 spent    6172 candidates  84 zero  10 positive  45 promoted  37 confirmations 0/2 accepted 0
+  discovery:tune1            steps  14 spent    6201 candidates  84 zero   3 positive  47 promoted  40 confirmations 0/1 accepted 0
+  discovery:uniform0         steps  16 spent    6292 candidates  96 zero  23 positive  39 promoted  30 confirmations 0/1 accepted 0
+  discovery:uniform1         steps  13 spent    6340 candidates  78 zero  20 positive  35 promoted  28 confirmations 0/4 accepted 0
+run noise (median sd over seeds of one mechanism's acquired score): {'binpacking': 0.0045, 'forecasting': 0.0133, 'jobshop': 0.0186, 'knapsack': 0.0, 'partitioning': 0.0413, 'pmedian': 0.0186, 'quadassign': 0.0246, 'regression': 0.0081, 'setcover': 0.1802}
+paired noise in confirmations (sd of candidate minus parent): {'jobshop': 0.022, 'knapsack': 0.0136, 'pmedian': 0.0071, 'quadassign': 0.0264}
+paired mean in confirmations: {'jobshop': 0.0061, 'knapsack': -0.0028, 'pmedian': -0.0015, 'quadassign': -0.0019}
+confirmation sd (median): 0.016956987887974347 | smallest mean the rule accepts: 0.011022042127183326
+screen vs promoted: {'n': 298, 'correlation': 0.032950685122397454}
+confirmations: 0/18 passed; value on discovery seeds +0.0080, on confirmation seeds +0.0000; positive there 0.56; t [-1.1, 0.5, 1.06, 1.1, 0.3, -1.82, 1.19, -0.84, -1.42, -0.49, 0.07, 2.15, -1.0, 0.98, 0.08, 1.28, -1.04, -0.51]
+screening values (non-zero): {'n_nonzero': 741, 'sd_screen': 0.05, 'sd_noise_one_seed': 0.0094, 'sd_true_effect_estimate': 0.0491, 'mean_screen': -0.0184}
+cells (n, mean screening value, share exactly zero):
+  theta/perturb             114 -0.0011 0.17
+  scalar/shortlist           87 -0.0293 0.00
+  init/replace               82 -0.0146 0.27
+  scalar/holdback            82 +0.0032 0.00
+  scalar/batch               79 +0.0014 0.00
+  scalar/pop                 71 -0.0007 0.00
+  score/swap                 67 -0.0665 0.01
+  score/delete               59 -0.0543 0.14
+  score/term                 57 -0.0169 0.32
+  theta/grow                 56 -0.0053 0.48
+  score/mutop                47 -0.0687 0.15
+  init/mutarg                46 -0.0180 0.28
+  pick/term                  44 -0.0100 0.34
+  propose/mutop              42 -0.0135 0.00
+  score/replace              39 -0.0327 0.13
+  propose/replace            33 -0.0362 0.00
+  score/mutarg               33 -0.0341 0.15
+  pick/cross                 31 +0.0005 0.35
+  propose/insert             31 -0.0141 0.19
+  pick/insert                28 -0.0071 0.25
+  pick/replace               28 -0.0090 0.11
+  propose/delete             27 -0.0349 0.00
+  scalar/select              27 -0.0182 0.00
+  pick/swap                  25 -0.0211 0.04
+  pick/mutop                 24 -0.0152 0.08
+  init/insert                24 -0.0238 0.29
+  pick/delete                22 -0.0040 0.05
+  update/swap                22 -0.0047 0.36
+  update/delete              21 -0.0009 0.05
+  score/cross                19 -0.0006 0.53
+  init/delete                18 -0.0197 0.28
+  update/mutop               18 -0.0401 0.00
+  update/insert              18 -0.0358 0.22
+  propose/swap               16 -0.0115 0.00
+  update/replace             14 -0.0013 0.00
+  score/insert               14 -0.0466 0.07
+  propose/mutarg             12 -0.0076 0.25
+  update/mutarg               7 +0.0014 0.43
+  pick/mutarg                 3 -0.0046 0.00

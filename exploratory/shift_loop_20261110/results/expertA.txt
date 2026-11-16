@@ -1,0 +1,16 @@
+run  1 student0       budget  10000 learn  80 families 17/26 score  14.23 held-out 61 {'train': 19, 'near': 61, 'validation': 7, 'far': 5, 'far2': 10, 'fresh1': 19, 'fresh2': 20, 'compose24': 0} lib 0 | 55 s
+run  2 teacher0       budget 100000 learn  84 families 17/26 score  14.41 held-out None {'train': 20, 'near': 64} lib 0 | 151 s
+     symbol c1_1: (lambda x0: int. (lambda x1: int. (is_empty (range ((mod x0) x1)))))  score 5 tasks 5 families 2
+     symbol c1_2: (lambda x0: int. (lambda x1: list[int]. ((map (lambda x2: int. x0)) x1)))  score 3 tasks 7 families 3
+     symbol c1_3: (lambda x0: int. ((mod x0) 4))  score 1 tasks 4 families 2
+run  3 student1.1     budget  10000 learn  80 families 17/26 score  14.23 held-out 62 {'train': 19, 'near': 61, 'validation': 7, 'far': 5, 'far2': 10, 'fresh1': 19, 'fresh2': 21, 'compose24': 0} lib 3 | 82 s
+     symbol c1_1: (lambda x0: int. ((mod x0) 5))  score 3 tasks 6 families 4
+     symbol c1_2: (lambda x0: int. (is_empty (range x0)))  score 3 tasks 6 families 3
+     symbol c1_3: (lambda x0: int. ((mod x0) 3))  score 1 tasks 4 families 3
+run  4 student1.2     budget  10000 learn  80 families 17/26 score  14.23 held-out 65 {'train': 19, 'near': 61, 'validation': 7, 'far': 5, 'far2': 11, 'fresh1': 19, 'fresh2': 23, 'compose24': 0} lib 3 | 77 s
+cycle 1: nothing accepted: stop
+run  5 teacher_final  budget 100000 learn  84 families 17/26 score  14.41 held-out None {'train': 20, 'near': 64} lib 0 | 186 s
+
+student at 10000: learn 80 -> 80, families 17 -> 17 of 26, score 14.227 -> 14.227, held-out 61 -> 61
+teacher at 100000: learn [84, 84], families [17, 17]; screened out 15; equal budget per real task 110473
+exit 0

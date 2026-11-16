@@ -1,0 +1,103 @@
+{
+ "what": "amendment 3: process c. Several techniques of self-modification tried in turn, generation after generation, each judged on categories of the pool that its search did not see",
+ "registered_utc": "2026-11-12T23:53:49Z",
+ "why": "the Owner's instruction 9 (try several techniques in turn until success), after three rounds with six nominees and no adoption; the two nominees that came closest were single-field changes, and what the improvers found by following their measurements on the pool lost on new categories",
+ "design": "a",
+ "design_note": "generation 0 is the first design of the learner (frozen, hashes below). The second design showed no advantage on the two categories neither design was developed on (post hoc runs, recorded) and costs 1.3 to 3.8 times the CPU",
+ "generation_0": {
+  "version_digest": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a",
+  "files": {
+   "rsi6/learner/learner.py": "a30b3c28d38357d1297efb36e04d1a83b5bf0010386100171ba9f4a0cd20683b",
+   "rsi6/learner/version.py": "96764716cedea50c2f0844644948790f6b373c3c2c47db74c8017beb57f0cdfa",
+   "rsi6/kernel/problem.py": "1b74f1af5bab5a20caac0b1d2a5fc21f07d074bd702a86f8e6c47d4943ab28c5"
+  }
+ },
+ "light": [
+  "binpacking",
+  "jobshop",
+  "pmedian",
+  "quadassign"
+ ],
+ "heavy": [
+  "partitioning",
+  "setcover"
+ ],
+ "still": [
+  "forecasting",
+  "knapsack",
+  "regression"
+ ],
+ "kinds_note": "light: generation 0 learns on them and a run is cheap. heavy: generation 0 learns on them and a run costs one to several CPU-minutes. still: generation 0 gained nothing on them in any recorded run (gain 0.0000, 0.0000 and +0.0016); they are not searched on and stay in the gates, one per generation, as a check that a nominee harms nothing there",
+ "stage_two": 12,
+ "split_rule": "each of the three lists is ordered by SHA-256 of 'rsi6 process c|<name>'; generation g sets aside the light category at position (g-1) mod 4, the heavy one at (g-1) mod 2 and the still one at (g-1) mod 3; it searches on the three other light categories and the other heavy one",
+ "techniques": {
+  "single": "every single-field change of the current version (the grid of its design) is measured with two seeds on the three light categories searched on; the twelve best by breadth there, if positive, are measured on the heavy category searched on as well; the nominee is the best by breadth over the four categories, if positive",
+  "remeasure": "the five best of those with positive breadth are measured with two more seeds on the four categories; the nominee is the best by breadth over the four seeds, if positive",
+  "combine": "of those, the changes with positive breadth that improved at least one searched category by more than 0.005 and lowered none by more than 0.005 are tried in order of breadth, at most eight, one per field; a change is added if the measured breadth of the combination on the four categories rises by more than 0.001",
+  "climb": "the learner's own search over versions (as in the earlier rounds) on the three light categories, improver and start the current version, objective breadth, within climb_cpu_limit"
+ },
+ "seeds_rule": "generation g: search 1000+10g+1 and +2; re-measurement +3 and +4; gate 2000+10g+1 to +6; confirmation 3000+10g+1 to +6",
+ "budgets": {
+  "run": {
+   "train": 40.0,
+   "test_c": 2.0,
+   "test_e": 1.0,
+   "n_train": 16,
+   "n_fresh": 24
+  },
+  "search": {
+   "train": 40.0,
+   "test_c": 2.0,
+   "test_e": 1.0,
+   "n_train": 12,
+   "n_fresh": 24,
+   "part": "A"
+  }
+ },
+ "climb_cpu_limit": 1500.0,
+ "rules": {
+  "margin": 0.005,
+  "cpu_ratio": 1.15,
+  "search_cpu_ratio": 1.25,
+  "bootstrap": 2000,
+  "level": 0.9,
+  "breadth_cap": 0.01,
+  "breadth_floor": -0.03
+ },
+ "adoption_rule": "a nominee is adopted if it passes the registered gate on the three categories set aside (margin, interval, CPU ratio; deciding half of their fresh instances) and its confirmation (other half, other seeds) is above zero; if several pass, the one with the largest value at the gate. Versions above search_cpu_ratio times the CPU of the current version on the searched categories are not nominated",
+ "generations_planned": 6,
+ "provisional": "the categories set aside belong to the pool: across generations each is searched on and set aside in turn, and every generation tests up to four nominees. An adoption here is therefore provisional and may be an effect of repeated testing. Nothing is claimed from it",
+ "decision": {
+  "external_gate": "after the last generation the final version is put through the registered gate against generation 0 on the reserve categories tour and colouring (role adoption:4, adapters built and audited by independent agents, no learner run on them before), seeds 4001 to 4006, confirmation 5001 to 5006",
+  "targets": "then one run of the target test for all three processes; arms of process c: c:frozen is generation 0 of the first design (the registered arm 'frozen'), c:self the final version, c:skills, c:memory, c:compute and c:search as registered for the other processes",
+  "success": "recursive self-improvement is reported as observed only if (1) at least two generations adopted a version, (2) the final version passes the external gate, and (3) on the sealed targets the smaller of the mean changes of the acquired score and of the gain between the final version and generation 0 is at least 0.01 with a 95% bootstrap interval that excludes zero, and the final version is not behind the compute-matched arm. Anything less is reported as what it is"
+ },
+ "predictions": [
+  {
+   "id": "C1",
+   "text": "at least one version is adopted provisionally within six generations",
+   "criterion": "count of adopt records of process c >= 1"
+  },
+  {
+   "id": "C2",
+   "text": "single-field techniques are adopted more often than the climb",
+   "criterion": "adoptions by single, remeasure or combine > adoptions by climb"
+  },
+  {
+   "id": "C3",
+   "text": "the final version does not pass the external gate",
+   "criterion": "no adoption, or external gate not passed"
+  },
+  {
+   "id": "C4",
+   "text": "the success condition is not met",
+   "criterion": "one of the three parts of the success condition fails"
+  }
+ ],
+ "not_claimed": [
+  "that an adoption inside this process is evidence of improvement on unseen categories",
+  "open-endedness: the versions are points of a list of 38 fields written by the experimenter",
+  "that the techniques are the system's own invention: they were written by the experimenter; what the system does is measure, select and adopt",
+  "anything about artificial general intelligence"
+ ]
+}

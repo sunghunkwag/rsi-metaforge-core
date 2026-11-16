@@ -1,0 +1,98 @@
+{
+ "env": "pmedian",
+ "seed": 9203,
+ "train": 800.0,
+ "gain": -0.1664670932683926,
+ "report": {
+  "program_rounds": 65,
+  "switches": 16,
+  "program_size": [
+   43,
+   13
+  ],
+  "learned": true,
+  "held_back": {
+   "start": 0.5,
+   "state": 1.0,
+   "last_best": 1.5
+  },
+  "failed": null
+ },
+ "acquire_constructions": {
+  "ok": 6620,
+  "Infeasible": 0,
+  "BudgetExhausted": 0,
+  "hard violation": 318
+ },
+ "apply_calls": 40,
+ "apply_outcomes": {
+  "hard violation": 6,
+  "ok": 34
+ },
+ "fresh_untrained": [
+  0.635076,
+  0.687491,
+  0.585023,
+  0.713782,
+  0.652373,
+  0.66454,
+  0.659263,
+  0.663798,
+  0.690101,
+  0.608803
+ ],
+ "fresh_acquired": [
+  0.0,
+  0.802302,
+  0.564531,
+  0.827171,
+  0.711962,
+  0.764685,
+  0.70633,
+  0.0,
+  0.0,
+  0.518596
+ ],
+ "apply_sequence": [
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "hard violation",
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "hard violation",
+  "hard violation",
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "hard violation",
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "ok",
+  "hard violation",
+  "hard violation"
+ ]
+}
