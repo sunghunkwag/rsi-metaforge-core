@@ -53,7 +53,7 @@ from rsi6.learner.learner import Learner, _finish_arbitrarily, _key
 
 TINY = 1e-9
 N_REG, N_PREG, N_AREG, N_WREG = 8, 4, 8, 4                  # score, pick, acquirer and fitness registers
-LIMITS = {"score": 32, "pick": 16, "init": 8, "propose": 12, "update": 16, "theta": 24}
+LIMITS = {"score": 48, "pick": 24, "init": 8, "propose": 16, "update": 24, "theta": 32}
 CONST = (-2.0, -1.0, -0.5, -0.1, 0.0, 0.1, 0.25, 0.5, 0.9, 1.0, 1.1, 1.5, 2.0, 4.0)
 
 # ---- the score and pick machine ------------------------------------------------------------
@@ -165,7 +165,7 @@ def validate(version: dict) -> dict:
         raise ValueError(f"an open version has exactly the parts {sorted(keys)}")
     theta = [float(x) for x in version["theta"]]
     if not 1 <= len(theta) <= LIMITS["theta"] or not all(np.isfinite(theta)) or max(abs(x) for x in theta) > 100.0:
-        raise ValueError("theta: 1 to 24 finite constants of size at most 100")
+        raise ValueError("theta: 1 to 32 finite constants of size at most 100")
     out = {"design": "o", "theta": [round(x, 6) for x in theta]}
     for part in ("score", "pick", "init", "propose", "update"):
         program = version[part]
@@ -218,162 +218,200 @@ SCHEMA = {}                                                    # no fields: the 
 # =============================================================================================
 # the score and pick machine
 # =============================================================================================
-def _normal(x, mask, kind):
-    sel = x[mask] if mask is not None and mask.any() else x
-    if sel.size == 0:
-        return np.zeros_like(x)
-    if kind == "mm":
-        lo, hi = sel.min(), sel.max()
-        return (x - lo) / (hi - lo) if np.isfinite(hi - lo) and hi - lo > TINY else np.zeros_like(x)
-    if kind == "z":
-        m, s = sel.mean(), sel.std()
-        return np.clip((x - m) / s, -3.0, 3.0) if np.isfinite(s) and s > TINY else np.zeros_like(x)
-    # rank over the masked entries, in [-1, 1]
-    out = np.zeros_like(x)
-    idx = np.flatnonzero(mask) if mask is not None else np.arange(len(x))
-    if len(idx) < 2:
-        return out
-    order = np.argsort(x[idx], kind="stable")
-    ranks = np.empty(len(idx))
-    ranks[order] = np.arange(len(idx))
-    out[idx] = 2.0 * ranks / (len(idx) - 1) - 1.0
-    return out
+def _norm_fn(kind):
+    def f(x, mask, idx):
+        sel = x[idx] if idx is not None else x
+        if sel.size == 0:
+            return np.zeros_like(x)
+        if kind == "mm":
+            lo, hi = sel.min(), sel.max()
+            return (x - lo) / (hi - lo) if hi - lo > TINY else np.zeros_like(x)
+        if kind == "z":
+            m, s = sel.mean(), sel.std()
+            return np.clip((x - m) / s, -3.0, 3.0) if s > TINY else np.zeros_like(x)
+        if kind == "rank":
+            out = np.zeros_like(x)
+            ids = idx if idx is not None else np.arange(len(x))
+            if len(ids) < 2:
+                return out
+            order = np.argsort(x[ids], kind="stable")
+            ranks = np.empty(len(ids))
+            ranks[order] = np.arange(len(ids))
+            out[ids] = 2.0 * ranks / (len(ids) - 1) - 1.0
+            return out
+        value = {"mean": sel.mean, "maxb": sel.max, "minb": sel.min, "sumb": sel.sum}[kind]()
+        return np.full_like(x, float(value))
+    return f
 
 
-def _stat(x, mask, kind):
-    sel = x[mask] if mask is not None and mask.any() else x
-    if sel.size == 0:
-        return np.zeros_like(x)
-    value = {"mean": sel.mean, "maxb": sel.max, "minb": sel.min, "sumb": sel.sum}[kind]()
-    return np.full_like(x, float(value))
+_ELEMENTWISE = {
+    "neg": np.negative, "abs": np.abs,
+    "sq": lambda x: np.minimum(x * x, 1e12),
+    "sqrt": lambda x: np.sign(x) * np.sqrt(np.abs(x)),
+    "log": lambda x: np.sign(x) * np.log1p(np.abs(x)),
+    "tanh": np.tanh, "relu": lambda x: np.maximum(x, 0.0),
+    "step": lambda x: (x > TINY).astype(float),
+    "exp": lambda x: np.exp(np.clip(x, -20.0, 5.0)),
+}
+_NORMALISING = {k: _norm_fn(k) for k in ("rank", "z", "mm", "mean", "maxb", "minb", "sumb")}
+_PAIRWISE = {
+    "add": np.add, "sub": np.subtract,
+    "mul": lambda x, y: np.clip(x * y, -1e12, 1e12),
+    "div": lambda x, y: x / (np.abs(y) + 1e-3),
+    "max": np.maximum, "min": np.minimum,
+    "gt": lambda x, y: (x > y).astype(float),
+}
 
 
-def _unary(op, x, mask):
-    if op == "neg":
-        return -x
-    if op == "abs":
-        return np.abs(x)
-    if op == "sq":
-        return np.clip(x * x, 0.0, 1e12)
-    if op == "sqrt":
-        return np.sign(x) * np.sqrt(np.abs(x))
-    if op == "log":
-        return np.sign(x) * np.log1p(np.abs(x))
-    if op == "tanh":
-        return np.tanh(x)
-    if op == "relu":
-        return np.maximum(x, 0.0)
-    if op == "step":
-        return (x > TINY).astype(float)
-    if op == "exp":
-        return np.exp(np.clip(x, -20.0, 5.0))
-    if op in ("rank", "z", "mm"):
-        return _normal(x, mask, op)
-    return _stat(x, mask, op)
+def live(program) -> list:
+    """The instructions of a score or pick program whose result reaches register 0, in order.
+    Only these are run: an instruction whose result is never read does nothing, not even draw
+    noise, so two programs with the same live instructions behave identically."""
+    need, keep = {0}, []
+    for i in range(len(program) - 1, -1, -1):
+        op, dst, a, b = program[i]
+        if dst not in need:
+            continue
+        keep.append(i)
+        need.discard(dst)
+        if op in BINARY:
+            need |= {a, b}
+        elif op in UNARY or op in PARAM or op in ("rel", "relt"):
+            need.add(a)
+    return [program[i] for i in sorted(keep)]
 
 
-def _binary(op, x, y):
-    if op == "add":
-        return x + y
-    if op == "sub":
-        return x - y
-    if op == "mul":
-        return np.clip(x * y, -1e12, 1e12)
-    if op == "div":
-        return x / (np.abs(y) + 1e-3)
-    if op == "max":
-        return np.maximum(x, y)
-    if op == "min":
-        return np.minimum(x, y)
-    return (x > y).astype(float)
+def compile_vector_program(program, theta, nreg=N_REG):
+    """A score or pick program, turned into one function ``f(sensor, length, mask, rel)``.
+    ``sensor(id, arg)`` returns a vector of ``length``; ``rel(r, x, transposed)`` propagates a
+    vector over an option-option relation; ``mask`` marks the entries that normalising
+    instructions look at. Register 0 is the result; registers not written read as zeros. Only
+    the live instructions are compiled."""
+    steps = []
+    for op, dst, a, b in live(program):
+        if op == "load":
+            steps.append((0, dst, a, b, None))
+        elif op in PARAM:
+            c = float(theta[b])
+            steps.append((1, dst, a, c, op == "scale"))
+        elif op == "const":
+            steps.append((2, dst, float(theta[b]), None, None))
+        elif op in ("rel", "relt"):
+            steps.append((3, dst, a, b, op == "relt"))
+        elif op in _PAIRWISE:
+            steps.append((4, dst, a, b, _PAIRWISE[op]))
+        elif op in _ELEMENTWISE:
+            steps.append((5, dst, a, None, _ELEMENTWISE[op]))
+        else:
+            steps.append((6, dst, a, None, _NORMALISING[op]))
+
+    def run(sensor, length, mask, rel=None):
+        zero = np.zeros(length)
+        R = [zero] * nreg
+        idx = np.flatnonzero(mask) if mask is not None else None
+        for kind, dst, a, b, f in steps:
+            if kind == 0:
+                R[dst] = sensor(a, b)
+            elif kind == 1:
+                R[dst] = R[a] * b if f else R[a] + b
+            elif kind == 2:
+                R[dst] = np.full(length, a)
+            elif kind == 3:
+                R[dst] = rel(b, R[a], f) if rel is not None else zero
+            elif kind == 4:
+                R[dst] = f(R[a], R[b])
+            elif kind == 5:
+                R[dst] = f(R[a])
+            else:
+                R[dst] = f(R[a], mask, idx)
+        out = R[0]
+        return out if np.all(np.isfinite(out)) else np.where(np.isfinite(out), out, 0.0)
+    return run
 
 
 def run_vector_program(program, theta, sensor, length, mask, rel=None, nreg=N_REG):
-    """Run a score or pick program. ``sensor(id, arg)`` returns a vector of ``length``;
-    ``rel(r, x, transposed)`` propagates a vector over an option-option relation. Register 0
-    is the result. Registers not written read as zeros."""
-    R = [None] * nreg
-    zero = np.zeros(length)
-    for op, dst, a, b in program:
-        if op == "load":
-            value = sensor(a, b)
-        elif op in PARAM:
-            x = R[a] if R[a] is not None else zero
-            value = x * theta[b] if op == "scale" else x + theta[b]
-        elif op == "const":
-            value = np.full(length, float(theta[b]))
-        elif op in ("rel", "relt"):
-            x = R[a] if R[a] is not None else zero
-            value = rel(b, x, op == "relt") if rel is not None else zero
-        elif op in BINARY:
-            value = _binary(op, R[a] if R[a] is not None else zero, R[b] if R[b] is not None else zero)
-        else:
-            value = _unary(op, R[a] if R[a] is not None else zero, mask)
-        value = np.where(np.isfinite(value), value, 0.0)
-        R[dst] = value
-    return R[0] if R[0] is not None else zero
+    """Run a score or pick program once (``compile_vector_program`` for repeated runs)."""
+    return compile_vector_program(program, theta, nreg)(sensor, length, mask, rel)
 
 
 class Sensors:
-    """The generic sensors of one assignment problem, read on demand during a construction."""
+    """The generic sensors of one assignment problem during a construction. Aggregates over the
+    partial answer (relations to assigned variables, options already used) are kept up to date
+    step by step, and only those that the mechanism's programs read."""
 
-    def __init__(self, P):
+    def __init__(self, P, genome: dict):
         self.P = P
         self.soft = ~P.hard & ~P.detail
-        self.n_vars, self.n_opts = P.n_vars, P.n_opts
         self.cap = P.capacity.astype(float) if P.capacity is not None else np.full(P.n_opts, float(P.n_vars))
         self.deg = [R.sum(axis=1) for R in P.var_var]
+        loads = lambda part, names: {(names[ins[2]], ins[3]) for ins in live(genome[part]) if ins[0] == "load"}
+        self.score_reads = loads("score", SCORE_SENSORS)
+        self.pick_reads = loads("pick", PICK_SENSORS)
+        self.need_neigh = sorted({arg for name, arg in self.score_reads if name == "neigh" and arg < len(P.var_var)})
+        self.need_done = sorted({arg for name, arg in self.pick_reads if name in ("vvdone", "vvopen") and arg < len(P.var_var)})
+        self.need_usedrel = sorted({arg for name, arg in self.score_reads if name == "usedrel" and arg < len(P.opt_opt)})
+        self.need_optsum = sorted({arg for name, arg in self.score_reads if name == "optsum" and arg < P.var_attr.shape[1]})
+
+    def begin(self):
+        P = self.P
+        self.neigh = {r: np.zeros((P.n_vars, P.n_opts)) for r in self.need_neigh}
+        self.done = {r: np.zeros(P.n_vars) for r in self.need_done}
+        self.usedrel = {r: np.zeros(P.n_opts) for r in self.need_usedrel}
+        self.optsum = {c: np.zeros(P.n_opts) for c in self.need_optsum}
+
+    def assigned(self, s, v: int, o: int) -> None:
+        P = self.P
+        for r, N in self.neigh.items():
+            N[:, o] += P.var_var[r][:, v]
+        for r, done in self.done.items():
+            done += P.var_var[r][:, v]
+        if self.usedrel and s["used"][o] == 1:                 # the option is used for the first time
+            for r, u in self.usedrel.items():
+                u += P.opt_opt[r][:, o]
+        for c, acc in self.optsum.items():
+            acc[o] += P.var_attr[v, c]
 
     def score_sensor(self, s, v, D, prev, step, rng):
         P = self.P
+        n = P.n_opts
 
         def read(kind, arg):
             name = SCORE_SENSORS[kind]
             if name == "dsoft":
-                return D[:, self.soft].sum(axis=1) if self.soft.any() else np.zeros(P.n_opts)
+                return D[:, self.soft].sum(axis=1) if self.soft.any() else np.zeros(n)
             if name == "dhard":
-                return D[:, P.hard].sum(axis=1) if P.hard.any() else np.zeros(P.n_opts)
+                return D[:, P.hard].sum(axis=1) if P.hard.any() else np.zeros(n)
             if name == "dgroup":
-                return D[:, arg].copy() if arg < P.n_groups else np.zeros(P.n_opts)
+                return D[:, arg].copy() if arg < P.n_groups else np.zeros(n)
             if name == "used":
                 return s["used"].astype(float)
             if name == "capleft":
                 return self.cap - s["used"]
             if name == "prev":
-                return P.opt_opt[arg][prev].astype(float) if arg < len(P.opt_opt) and prev >= 0 else np.zeros(P.n_opts)
+                return P.opt_opt[arg][prev].astype(float) if arg < len(P.opt_opt) and prev >= 0 else np.zeros(n)
             if name == "vo":
-                return P.var_opt[arg][v].astype(float) if arg < len(P.var_opt) else np.zeros(P.n_opts)
+                return P.var_opt[arg][v].astype(float) if arg < len(P.var_opt) else np.zeros(n)
             if name == "oa":
-                return P.opt_attr[:, arg].astype(float) if arg < P.opt_attr.shape[1] else np.zeros(P.n_opts)
+                return P.opt_attr[:, arg].astype(float) if arg < P.opt_attr.shape[1] else np.zeros(n)
             if name == "neigh":
-                if arg >= len(P.var_var):
-                    return np.zeros(P.n_opts)
-                a = s["a"]
-                on = a >= 0
-                return np.bincount(a[on], weights=P.var_var[arg][v][on], minlength=P.n_opts).astype(float)
+                return self.neigh[arg][v].copy() if arg in self.neigh else np.zeros(n)
             if name == "usedrel":
-                if arg >= len(P.opt_opt):
-                    return np.zeros(P.n_opts)
-                return P.opt_opt[arg] @ (s["used"] > 0).astype(float)
+                return self.usedrel[arg].copy() if arg in self.usedrel else np.zeros(n)
             if name == "progress":
-                return np.full(P.n_opts, 2.0 * step / max(P.n_vars - 1, 1) - 1.0)
+                return np.full(n, 2.0 * step / max(P.n_vars - 1, 1) - 1.0)
             if name == "ones":
-                return np.ones(P.n_opts)
+                return np.ones(n)
             if name == "occnext":
                 if arg >= len(P.occ_attr):
-                    return np.zeros(P.n_opts)
+                    return np.zeros(n)
                 A = P.occ_attr[arg]
                 k = np.minimum(s["used"], A.shape[1] - 1)
-                return np.where(s["used"] < A.shape[1], A[np.arange(P.n_opts), k], 0.0)
+                return np.where(s["used"] < A.shape[1], A[np.arange(n), k], 0.0)
             if name == "vattr":
-                return np.full(P.n_opts, float(P.var_attr[v, arg])) if arg < P.var_attr.shape[1] else np.zeros(P.n_opts)
+                return np.full(n, float(P.var_attr[v, arg])) if arg < P.var_attr.shape[1] else np.zeros(n)
             if name == "optsum":
-                if arg >= P.var_attr.shape[1]:
-                    return np.zeros(P.n_opts)
-                a = s["a"]
-                on = a >= 0
-                return np.bincount(a[on], weights=P.var_attr[on, arg], minlength=P.n_opts).astype(float)
-            return rng.random(P.n_opts)                          # noise
+                return self.optsum[arg].copy() if arg in self.optsum else np.zeros(n)
+            return rng.random(n)                                 # noise
         return read
 
     def pick_sensor(self, s, U, allowed, rng):
@@ -384,14 +422,13 @@ class Sensors:
             m = len(U)
             if name == "vattr":
                 return P.var_attr[U, arg].astype(float) if arg < P.var_attr.shape[1] else np.zeros(m)
-            if name in ("vvdone", "vvopen", "deg"):
-                if arg >= len(P.var_var):
+            if name in ("vvdone", "vvopen"):
+                if arg not in self.done:
                     return np.zeros(m)
-                if name == "deg":
-                    return self.deg[arg][U]
-                on = (s["a"] >= 0).astype(float)
-                done = P.var_var[arg][U] @ on
+                done = self.done[arg][U]
                 return done if name == "vvdone" else self.deg[arg][U] - done
+            if name == "deg":
+                return self.deg[arg][U] if arg < len(P.var_var) else np.zeros(m)
             if name == "domsize":
                 if P.domain is None:
                     return np.full(m, float(allowed.sum()))
@@ -402,7 +439,7 @@ class Sensors:
                 rows = P.var_opt[arg][U]
                 if name == "vosum":
                     return rows.sum(axis=1)
-                return np.where(allowed[None, :], rows, np.inf).min(axis=1) if allowed.any() else np.zeros(m)
+                return np.where(allowed[None, :], rows, 1e12).min(axis=1) if allowed.any() else np.zeros(m)
             if name == "ones":
                 return np.ones(m)
             return rng.random(m)
@@ -416,21 +453,24 @@ class Sensors:
         return (R.T @ x) if transposed else (R @ x)
 
 
-def construct(P, sensors: Sensors, genome: dict, theta, rng, shortlist: int, hold=None):
+def construct(P, sensors: Sensors, genome: dict, theta, rng, shortlist: int, hold=None, compiled=None):
     """One construction under the programs of ``genome`` with constants ``theta``. Returns
     ``(totals, answer)``; raises ``BudgetExhausted`` when the meter ends (``hold`` keeps the state)."""
+    score, pick = compiled if compiled is not None else (compile_vector_program(genome["score"], theta),
+                                                         compile_vector_program(genome["pick"], theta, N_PREG))
     s = P.start()
     if hold is not None:
         hold.append(s)
+    sensors.begin()
     prev = -1
     for step in range(P.n_vars):
         U = P.unassigned(s)
         allowed = P.allowed(s)
         if len(U) > 1:
-            q = run_vector_program(genome["pick"], theta, sensors.pick_sensor(s, U, allowed, rng), len(U), None, nreg=N_PREG)
+            q = pick(sensors.pick_sensor(s, U, allowed, rng), len(U), None)
             q = q + 1e-9 * rng.random(len(U))
             k = min(shortlist, len(U))
-            short = U[np.argsort(-q, kind="stable")[:k]]
+            short = U[np.argsort(-q, kind="stable")[:k]] if k > 1 else U[[int(np.argmax(q))]]
         else:
             short = U
         D = P.candidates(s, short)
@@ -439,8 +479,7 @@ def construct(P, sensors: Sensors, genome: dict, theta, rng, shortlist: int, hol
             ok = allowed if P.domain is None else allowed & P.domain[int(v)]
             if not ok.any():
                 continue
-            value = run_vector_program(genome["score"], theta, sensors.score_sensor(s, int(v), D[i], prev, step, rng),
-                                       P.n_opts, ok, rel=sensors.rel)
+            value = score(sensors.score_sensor(s, int(v), D[i], prev, step, rng), P.n_opts, ok, sensors.rel)
             value = np.where(ok, value + 1e-9 * rng.random(P.n_opts), -np.inf)
             o = int(np.argmax(value))
             if best is None or value[o] > best[0]:
@@ -452,6 +491,7 @@ def construct(P, sensors: Sensors, genome: dict, theta, rng, shortlist: int, hol
             best = (0.0, v, o)
         _, v, o = best
         P.assign(s, v, o)
+        sensors.assigned(s, v, o)
         prev = o
     return P.totals(s), P.assignment(s)
 
@@ -636,15 +676,16 @@ class OpenLearner(Learner):
             return None
         keys = np.zeros((len(thetas), len(problems), 2))
         for c, theta in enumerate(thetas):
+            compiled = (compile_vector_program(self.g["score"], theta), compile_vector_program(self.g["pick"], theta, N_PREG))
             for i, (P, sen) in enumerate(zip(problems, sensors)):
-                totals, _ = construct(P, sen, self.g, theta, rng, self.g["shortlist"])
+                totals, _ = construct(P, sen, self.g, theta, rng, self.g["shortlist"], compiled=compiled)
                 keys[c, i] = _key(totals, P)
         return keys
 
     def _acquire_open(self, problems, rng):
         g = self.g
         meter = problems[0].meter
-        sensors = [Sensors(P) for P in problems]
+        sensors = [Sensors(P, g) for P in problems]
         n = len(problems)
         order = rng.permutation(n)
         n_check = min(max(1, int(round(g["holdback"] * n))), n - 1) if n > 1 else 0
@@ -719,7 +760,7 @@ class OpenLearner(Learner):
                 shortlist //= 2
         hold = []
         try:
-            totals, answer = construct(P, Sensors(P), self.g, theta, rng, shortlist, hold=hold)
+            totals, answer = construct(P, Sensors(P, self.g), self.g, theta, rng, shortlist, hold=hold)
         except BudgetExhausted:
             return _finish_arbitrarily(P, hold[0] if hold else None)
         return self._improve(None, P, rng, answer, _key(totals, P))
