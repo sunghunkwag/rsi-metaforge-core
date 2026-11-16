@@ -4,10 +4,15 @@
 
 The steps, each a driver that can be stopped and started again:
 
-  1 process     process c to its last generation (alternating.py; amendment 3)
-  2 external    its freeze record and its external gate on the reserves (external.py; amendments 3, 4)
-  3 recursion   the recursion check (recursion.py; amendment 4)
-  4 targets     the sealed target test of all three processes (targets.py; registration, amendments 1 to 4)
+  1 open-discovery  the open experiment (rsi6/open/experiment.py; amendment 5), its four stages on
+  2 open-selection  categories of the source pool only
+  3 open-swap
+  4 open-heldout
+  5 process         process c to its last generation (alternating.py; amendment 3)
+  6 external        its freeze record and its external gate on the reserves (external.py; amendments 3, 4)
+  7 recursion       the recursion check (recursion.py; amendment 4)
+  8 targets         the sealed target test of the earlier processes (targets.py; registration, amendments 1 to 4)
+  9 open-later      the open experiment on the six categories of that test, now opened (amendment 5)
 
 A step is run only after the one before has written the record of its end, and it is skipped
 if its own record is there already, so this driver can be stopped and started again too. A
@@ -31,12 +36,21 @@ import time
 from rsi6.experiments import guard
 from rsi6.kernel import ledger as ledgers
 
+def _open(stage):
+    return lambda L, reg: bool(L.select(type="o_stage_done", stage=stage))
+
+
 STEPS = [
-    ("process", "rsi6.experiments.alternating",
+    ("open-discovery", ["rsi6.open.experiment", "--stage", "discovery"], _open("discovery")),
+    ("open-selection", ["rsi6.open.experiment", "--stage", "selection"], _open("selection")),
+    ("open-swap", ["rsi6.open.experiment", "--stage", "swap"], _open("swap")),
+    ("open-heldout", ["rsi6.open.experiment", "--stage", "heldout"], _open("heldout")),
+    ("process", ["rsi6.experiments.alternating"],
      lambda L, reg: all(L.select(type="c_generation_done", generation=g) for g in range(1, reg["generations_planned"] + 1))),
-    ("external", "rsi6.experiments.external", lambda L, reg: bool(L.select(type="external_gate", process="c"))),
-    ("recursion", "rsi6.experiments.recursion", lambda L, reg: bool(L.select(type="recursion_done"))),
-    ("targets", "rsi6.experiments.targets", lambda L, reg: bool(L.select(type="target_done"))),
+    ("external", ["rsi6.experiments.external"], lambda L, reg: bool(L.select(type="external_gate", process="c"))),
+    ("recursion", ["rsi6.experiments.recursion"], lambda L, reg: bool(L.select(type="recursion_done"))),
+    ("targets", ["rsi6.experiments.targets"], lambda L, reg: bool(L.select(type="target_done"))),
+    ("open-later", ["rsi6.open.experiment", "--stage", "heldout_later"], _open("heldout_later")),
 ]
 
 
@@ -72,7 +86,7 @@ def main() -> int:
     if not os.path.exists(path):
         raise SystemExit("there is no working ledger (ledger/live.jsonl)")
     env = dict(os.environ, OPENBLAS_NUM_THREADS="1", OMP_NUM_THREADS="1", PYTHONHASHSEED="0")
-    for name, module, done in STEPS:
+    for name, argv, done in STEPS:
         if guard.torn(path):
             say(args.log, "the last line of ledger/live.jsonl is incomplete (a driver stopped while writing it); remove that "
                           "line, note it, and start again")
@@ -85,9 +99,9 @@ def main() -> int:
             wait_for_the_lock(path, args.log)
             ledger = ledgers.Ledger(path)                  # another driver may have finished the step meanwhile
             if not done(ledger, reg):
-                say(args.log, f"step {name}: python -m {module}")
+                say(args.log, f"step {name}: python -m {' '.join(argv)}")
                 with open(args.log, "a") as out:
-                    code = subprocess.run([sys.executable, "-u", "-m", module], env=env, stdout=out, stderr=subprocess.STDOUT).returncode
+                    code = subprocess.run([sys.executable, "-u", "-m"] + argv, env=env, stdout=out, stderr=subprocess.STDOUT).returncode
                 ledger = ledgers.Ledger(path)
                 if code != 0 or not done(ledger, reg):
                     say(args.log, f"step {name}: ended with code {code} without the record of its end; stopping")

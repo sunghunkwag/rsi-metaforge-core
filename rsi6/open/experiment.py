@@ -24,6 +24,9 @@ each replayed record agrees with the recorded one, and goes on.
                with their training budgets raised to the CPU of the recursive arm's final
                mechanism, on the held-out categories, which no stage before touches, at the
                registered run budget.
+``heldout_later``  the same on the six categories of the earlier processes' sealed target test,
+               with seeds of its own, once that test has run on them (it refuses before); no run
+               of the open design touches them until then.
 """
 from __future__ import annotations
 
@@ -49,7 +52,7 @@ from rsi6.open import discovery, evaluate
 HERE = os.path.dirname(os.path.abspath(__file__))
 REGISTRATION = os.path.join(os.path.dirname(HERE), "registry", "registration_o.json")
 ARMS = ("recursive", "frozen", "uniform", "shuffled", "tune")
-ORDER = ("discovery", "selection", "swap", "heldout")
+ORDER = ("discovery", "selection", "swap", "heldout", "heldout_later")
 
 
 def say(*parts) -> None:
@@ -119,6 +122,8 @@ def main() -> int:
     for e in reg["discovery"] + reg["heldout"]:
         if roles.effective_role(environments.load(e).category, ledger) != "source":
             raise SystemExit(f"{e} is not in the source pool")
+    if args.stage == "heldout_later" and not ledger.select(type="target_done"):
+        raise SystemExit("the later held-out stage runs only after the sealed target test of the earlier processes")
     cache = Cache(ledger)
     memo = {}
     v0, a0 = designs.default("o"), designs.default("a")
@@ -183,22 +188,25 @@ def main() -> int:
     else:
         sel = find(ledger, type="o_stage_done", stage="selection")
         lineage = {r["lineage"]: r for r in ledger.select(type="o_lineage_done", stage="discovery")}
-        envs, seeds = reg["heldout"], S["heldout"]
+        later = stage == "heldout_later"
+        envs = reg["heldout_later"]["categories"] if later else reg["heldout"]
+        seeds = reg["heldout_later"]["seeds"] if later else S["heldout"]
         arms = {"a0": a0, "o0": v0}
         for arm in ARMS:
             arms[arm] = lineage[sel["finals"][arm]]["final"]
         results = {}
         for name, version in arms.items():
-            results[name] = evaluate.runs(cache, version, envs, seeds, f"open-heldout:{name}")
+            results[name] = evaluate.runs(cache, version, envs, seeds, f"open-{stage}:{name}")
             say(f"held-out {name}: acquired {np.mean([r['acquired'] for r in results[name]]):.4f}")
         want = {(r["env"], r["seed"]): evaluate.cpu(r) for r in results["recursive"]}
         for base_name, version in (("o0", v0), ("a0", a0)):
-            rows = evaluate.raise_until(cache, version, want, f"open-heldout:{base_name}@recursive")
+            rows = evaluate.raise_until(cache, version, want, f"open-{stage}:{base_name}@recursive")
             results[f"{base_name}@recursive"] = rows
-            discovery.append_once(ledger, {"type": "o_matched", "arm": f"{base_name}@recursive", "keys": [r["key"] for r in rows],
-                                           "reached": [bool(r["reached"]) for r in rows], "levels": [r["levels"] for r in rows],
-                                           "budgets": [r["budget"]["train"] for r in rows]}, ("arm",))
-        ledger.append({"type": "o_stage_done", "stage": "heldout", "envs": envs, "seeds": seeds,
+            discovery.append_once(ledger, {"type": "o_matched", "stage": stage, "arm": f"{base_name}@recursive",
+                                           "keys": [r["key"] for r in rows], "reached": [bool(r["reached"]) for r in rows],
+                                           "levels": [r["levels"] for r in rows], "budgets": [r["budget"]["train"] for r in rows]},
+                                  ("stage", "arm"))
+        ledger.append({"type": "o_stage_done", "stage": stage, "envs": envs, "seeds": seeds,
                        "arms": {name: [r["key"] for r in rows] for name, rows in results.items()},
                        "versions": {name: designs.digest(v) for name, v in arms.items()}})
     return 0

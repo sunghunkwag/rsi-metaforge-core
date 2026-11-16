@@ -48,11 +48,18 @@ def build(ledger, registration=None) -> dict | None:
     swap = find(ledger, type="o_stage_done", stage="swap")
     if swap:
         out["swap"] = {k: swap.get(k) for k in ("exercised", "why", "pairs", "mean_difference", "positive", "from")}
-    held = find(ledger, type="o_stage_done", stage="heldout")
-    if held:
+    for label, stage in (("heldout", "heldout"), ("heldout_later", "heldout_later")):
+        held = find(ledger, type="o_stage_done", stage=stage)
+        if held:
+            out[label] = heldout_section(ledger, held, stage)
+    return endpoints(reg, out)
+
+
+def heldout_section(ledger, held, stage) -> dict:
+    if True:
         by_key = {r["key"]: r for r in ledger.records if r.get("type") == "run" and "key" in r}
-        arms = {name: [by_key[k] for k in keys] for name, keys in held["arms"].items()}
-        matched = {r["arm"]: r for r in ledger.select(type="o_matched")}
+        arms = {name: [dict(by_key[k]) for k in keys] for name, keys in held["arms"].items()}
+        matched = {r["arm"]: r for r in ledger.select(type="o_matched") if r.get("stage", "heldout") == stage}
         for name in ("o0@recursive", "a0@recursive"):
             for row, reached in zip(arms[name], matched[name]["reached"]):
                 row["reached"] = reached
@@ -63,13 +70,16 @@ def build(ledger, registration=None) -> dict | None:
         pairs += [(arm, "o0", True) for arm in ("frozen", "uniform", "shuffled", "tune")]
         for a, b, control in pairs:
             comp[f"{a} minus {b}"] = evaluate.compare(arms[a], arms[b], name=f"{a} minus {b}", control=control)
-        out["heldout"] = {"envs": held["envs"], "seeds": held["seeds"], "comparisons": comp,
-                          "arms": {name: {"acquired": float(np.mean([r["acquired"] for r in rows])),
-                                          "untrained": float(np.mean([r["untrained"] for r in rows])),
-                                          "gain": float(np.mean([r["gain"] for r in rows])),
-                                          "cpu_per_run": float(np.mean([evaluate.cpu(r) for r in rows]))} for name, rows in arms.items()},
-                          "matched": {name: {"reached": int(sum(m["reached"])), "of": len(m["reached"])} for name, m in matched.items()}}
-    # ---- endpoints and the success condition (registration_o.json)
+        return {"envs": held["envs"], "seeds": held["seeds"], "comparisons": comp,
+                "arms": {name: {"acquired": float(np.mean([r["acquired"] for r in rows])),
+                                "untrained": float(np.mean([r["untrained"] for r in rows])),
+                                "gain": float(np.mean([r["gain"] for r in rows])),
+                                "cpu_per_run": float(np.mean([evaluate.cpu(r) for r in rows]))} for name, rows in arms.items()},
+                "matched": {name: {"reached": int(sum(m["reached"])), "of": len(m["reached"])} for name, m in matched.items()}}
+
+
+def endpoints(reg, out) -> dict:
+    """The endpoints and the success condition of registration_o.json, from the first held-out stage."""
     parts = {}
     rec = [v for v in out["lineages"].values() if v["arm"] == "recursive"]
     if "heldout" in out:
@@ -147,9 +157,11 @@ def main() -> int:
             print(f"  {name:24s} {v['minus_o0']:+.4f}{'  <- final of its arm' if out['selection']['finals'][v['arm']] == name else ''}")
     if "swap" in out:
         print("\nSWAP TEST:", out["swap"])
-    if "heldout" in out:
-        h = out["heldout"]
-        print(f"\nHELD-OUT {h['envs']} seeds {h['seeds']}; matched controls {h['matched']}")
+    for label in ("heldout", "heldout_later"):
+        if label not in out:
+            continue
+        h = out[label]
+        print(f"\n{label.upper()} {h['envs']} seeds {h['seeds']}; matched controls {h['matched']}")
         for name, a in h["arms"].items():
             print(f"  {name:14s} untrained {a['untrained']:.4f} acquired {a['acquired']:.4f} gain {a['gain']:+.4f} cpu/run {a['cpu_per_run']:.1f}")
         for name, c in h["comparisons"].items():
