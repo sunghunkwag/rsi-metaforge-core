@@ -398,3 +398,35 @@ representation and the learning principle programs of one small vector machine, 
 discovery process, `rsi6/open/`, generates new programs with the edit distribution that the
 current mechanism's own learning principle adapts, so that a discovered learning principle
 changes how the next mechanisms are generated. Process c continues under its registration.)
+
+## Instruction 14 (2026-11-16, about 10:12 UTC), verbatim
+
+Execution directive
+
+Your primary objective is to discover and experimentally validate radically new mechanisms of recursive capability acquisition, including computational principles that may not fit established human-designed categories of learning, reasoning, memory, representation, or search.
+
+Do not assume that the seven existing learner functions, their internal boundaries, or their algorithms are the only valid decomposition of intelligence. Treat the implementation of these functions and their interactions as mutable.
+
+Preserve the domain-general, LLM-free learner requirement. An external coding agent may implement experiments, but the learner must not depend on an LLM or a human-written domain-specific solver to operate.
+
+Begin with executable experiments that allow computational representations, reusable primitives, learning dynamics, and discovery operators to change across generations.
+
+Investigate whether discoveries can transform the mechanism that produces subsequent discoveries, rather than merely improving solutions to known tasks.
+
+Search for non-obvious mechanisms without rewarding opacity or superficial structural novelty. Do not reject a useful discovery merely because it originates from known ideas, but distinguish genuinely different causal mechanisms from cosmetic changes.
+
+Compare joint evolution of representation and discovery operators against fixed, partially mutable, randomized, and equal-compute controls.
+
+Use independent information sources and sealed external evaluation tasks. Prevent benchmark leakage, evaluator modification, and self-reported success.
+
+Measure new capability acquisition, transfer, m_net, computational efficiency, retention, and discovery efficiency over successive generations.
+
+Do not stop at ideation. Implement candidate mechanisms, run experiments, inspect failures, modify the code, and rerun the evaluations.
+
+If a hypothesis fails, preserve the measured failure and investigate a substantively different mechanism rather than renaming or repackaging the same approach.
+
+Do not produce additional research plans as substitutes for experimental evidence.
+
+(Received while the registered experiment of the open design was in its discovery stage. "m_net" is
+not defined in the instructions or the record; where it is reported, the definition used is stated
+with it.)
