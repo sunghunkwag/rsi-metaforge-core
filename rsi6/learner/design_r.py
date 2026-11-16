@@ -1,37 +1,36 @@
-"""Design "r": a learner whose discovery mechanism is rebuilt, at the start of every acquisition,
-from the record of its own earlier discoveries.
+"""Design "r": a learner whose discovery machinery is rebuilt, at the start of every acquisition,
+from its own record of earlier discoveries, carried across categories in the kernel's memory.
 
-Design q (``design_q.py``) searches over its score and pick programs inside acquisition: program
-rounds try edited copies of the current programs on the training problems of the category being
-learned and switch when a copy wins on two batches. Its edit operators and their probabilities
-are fixed. In development that search was starved and noisy (q0 minus o0 about 0).
+Design q (``design_q.py``) searches over its score and pick programs inside acquisition: a program
+round tries edited copies of the current programs on a batch of training problems and switches
+when the best copy also wins on a second batch. Its edit operators and their probabilities are
+fixed; in development the search gained nothing (rsi6/results/dev_20261116).
 
-Design r keeps design q's acquisition and makes the machinery that generates the edits a product
-of the learner's own experience, carried from one acquisition to the next through the kernel's
-memory channel (``acquire(problems, rng, memory)``): what one category's search discovered
-changes how the next category's search generates candidates. Three parts of that machinery
-change across acquisitions:
+Design r keeps design q's acquisition, rounds, rules and checks, and makes three parts of the
+machinery that generates the edits a product of the learner's own record, which the kernel hands
+from one acquisition to the next (``acquire(problems, rng, memory)``):
 
-* the prior over the inner edit operators: every variant of every program round is credited to
-  the operators that made it with its rank difference from the current programs on the round's
-  batch (``d`` in [-1, 1], ``1/k`` to each of its ``k`` operators); at the start of an
-  acquisition the prior weight of an operator is ``clip(beta * m / s, -clip, clip)``, where
-  ``m = sum(d) / (n + shrink)`` over every recorded variant and ``s`` the pooled spread of ``d``;
-* composite operators: the sequence of operators of every confirmed switch (a variant that won on
-  two batches) is kept as a composite operator, which a share of later variants applies as a
-  whole; a composite is credited like an operator and its weight comes from its own record;
-* reusable primitives: the instruction blocks that confirmed switches inserted and that are live
-  in the programs the acquisition ended with are kept in a library, which the splice operators
-  (absent from design q) insert into later programs.
+* the prior over the 20 inner edit operators (design q's 18 and two splice operators);
+* the prior over edit sizes (one, two or three edits per variant);
+* a library of instruction blocks taken from kept switches, which the splice operators insert
+  again, with the constants they added relocated to new constants.
 
-Nothing in the memory is a score on fresh instances, a reference or a category's name: only the
-learner's own totals on training problems (through ``d``), operator sequences and instruction
-blocks. With empty memory design r is design q with splice operators that find no block, which
-do nothing.
+The record of an acquisition (an ``r_stats`` entry) credits every informative variant of every
+program round to the operators that made it: ``d`` is its fitness margin over the current
+programs on the round's batch (mean rank, scaled to [-1, 1]); a variant whose constructions
+equal the current programs' on every problem of the batch is a tie and carries no credit (an
+edit that changes nothing would otherwise look harmless and be preferred); credit is shared
+``1/k`` among a variant's ``k`` operators. At the start of an acquisition the weight of an
+operator is ``clip(beta * ln(m / ubar), -cap, cap)``, where ``m = (U + kappa * ubar) / (N + kappa)``
+is its shrunk mean positive margin and ``ubar`` the mean over all operators (probability matching
+on the positive margin; rule ``dplus``). The edit sizes are weighted the same way.
 
-The entry an acquisition adds to the memory is also written into its report (key ``relay``),
-which the kernel stores in the run record: a chain of acquisitions can therefore be rebuilt, and
-replayed, from the ledger alone.
+Nothing in the memory is a score on fresh instances, an answer, a reference or a category's
+name: only the learner's own ranks on training problems, operator counts and instruction
+blocks. With no entry of either kind, design r is design q's generation 0 draw for draw. The
+entries an acquisition adds are also written into its report (``report["relay"]["new_entries"]``),
+which the kernel keeps in the run record: a chain of acquisitions is rebuilt, and replayed, from
+the ledger alone.
 """
 from __future__ import annotations
 
@@ -45,17 +44,23 @@ from rsi6.learner import design_o as O
 from rsi6.learner import design_q as Q
 from rsi6.open import edits as E
 
-CELLS = list(Q.INNER_CELLS) + [("score", "splice"), ("pick", "splice")]
+BASE_CELLS = list(Q.INNER_CELLS)
+SPLICE_CELLS = [("score", "splice"), ("pick", "splice")]
+CELLS = BASE_CELLS + SPLICE_CELLS
 N_CELLS = len(CELLS)
+BASE_THETA = 10                                     # generation 0's constants; an index at or above it was added by an edit
+PARAMLIKE = ("scale", "shift", "const")              # score and pick ops whose field b is a constant's index
+KIND_STATS, KIND_LIB, ENTRY_V = "r_stats", "r_lib", 1
+RELAY0 = {"beta": 1.0, "kappa": 20.0, "cap": 2.0, "lib_max": 32, "lib_per_run": 4, "rule": "dplus"}
 Q_KEYS = tuple(Q.O_KEYS) + ("inner",)
+STAT_KEYS = ("N", "U", "S", "Q", "W", "SW")
+SIZE_KEYS = ("NE", "UE", "SE", "QE")
 
 
 def default() -> dict:
-    """Generation 0 of design r: design q's generation 0 with the relay settings below."""
     out = Q.default()
     out["design"] = "r"
-    out["relay"] = {"beta": 1.0, "shrink": 20.0, "clip": 2.0, "composite_share": 0.25, "max_composites": 8,
-                    "max_blocks": 16, "max_records": 64}
+    out["relay"] = dict(RELAY0)
     return out
 
 
@@ -71,18 +76,16 @@ def validate(version: dict) -> dict:
         raise ValueError(f"a version of design r has exactly the parts {sorted(keys)}")
     out = Q.validate(q_part(version))
     out["design"] = "r"
-    relay = version["relay"]
-    want = {"beta", "shrink", "clip", "composite_share", "max_composites", "max_blocks", "max_records"}
-    if set(relay) != want:
-        raise ValueError(f"relay: {sorted(want)}")
-    beta, shrink, clip = float(relay["beta"]), float(relay["shrink"]), float(relay["clip"])
-    share = float(relay["composite_share"])
-    mc, mb, mr = int(relay["max_composites"]), int(relay["max_blocks"]), int(relay["max_records"])
-    if not (0 <= beta <= 4 and 0 < shrink <= 200 and 0 < clip <= 4 and 0 <= share <= 0.5 and 0 <= mc <= 32
-            and 0 <= mb <= 64 and 1 <= mr <= 256):
+    r = version["relay"]
+    if set(r) != set(RELAY0):
+        raise ValueError(f"relay: {sorted(RELAY0)}")
+    beta, kappa, cap = float(r["beta"]), float(r["kappa"]), float(r["cap"])
+    lib_max, lib_per_run, rule = int(r["lib_max"]), int(r["lib_per_run"]), r["rule"]
+    if not (0.1 <= beta <= 4 and 1 <= kappa <= 1000 and 0 < cap <= 8 and 0 <= lib_max <= 64 and 0 <= lib_per_run <= 8
+            and rule in ("dplus", "dmean")):
         raise ValueError("relay settings out of range")
-    out["relay"] = {"beta": round(beta, 6), "shrink": round(shrink, 6), "clip": round(clip, 6), "composite_share": round(share, 6),
-                    "max_composites": mc, "max_blocks": mb, "max_records": mr}
+    out["relay"] = {"beta": round(beta, 6), "kappa": round(kappa, 6), "cap": round(cap, 6), "lib_max": lib_max,
+                    "lib_per_run": lib_per_run, "rule": rule}
     return out
 
 
@@ -101,48 +104,96 @@ def differences(a: dict, b: dict) -> dict:
 SCHEMA = {}
 
 
-# =============================================================================================
-# what the memory holds, and what is rebuilt from it
-# =============================================================================================
-def _empty_entry() -> dict:
-    return {"cells": [[0, 0.0, 0.0] for _ in range(N_CELLS)], "composites": [], "blocks": [], "rejected_blocks": [],
-            "variants": 0, "rounds": 0, "switches": 0}
+def _canon(x) -> str:
+    return json.dumps(x, separators=(",", ":"), sort_keys=True)
 
 
-def machinery(entries: list, relay: dict) -> dict:
-    """The discovery machinery an acquisition starts with, rebuilt from the memory's entries:
-    the prior over the operators, the composite operators with their weights, the library."""
-    n = np.zeros(N_CELLS)
-    s = np.zeros(N_CELLS)
-    ss = np.zeros(N_CELLS)
-    composites, blocks = {}, []
-    for entry in entries:
-        for c, (cn, cs, css) in enumerate(entry["cells"]):
-            n[c] += cn
-            s[c] += cs
-            ss[c] += css
-        for comp in entry["composites"]:
-            key = json.dumps(comp["cells"])
-            got = composites.setdefault(key, {"cells": list(comp["cells"]), "n": 0, "s": 0.0, "ss": 0.0})
-            got["n"] += comp["n"]
-            got["s"] += comp["s"]
-            got["ss"] += comp["ss"]
-        for b in entry["blocks"]:
-            if b not in blocks:
-                blocks.append(b)
-    total_n = n.sum()
-    if total_n > 1:
-        mean = s.sum() / total_n
-        spread = float(np.sqrt(max(ss.sum() / total_n - mean ** 2, 1e-6)))
-    else:
-        spread = 1.0
-    m = s / (n + relay["shrink"])
-    prior = np.clip(relay["beta"] * m / spread, -relay["clip"], relay["clip"])
-    comps = sorted(composites.values(), key=lambda c: -(c["s"] / (c["n"] + relay["shrink"])))[: relay["max_composites"]]
-    for c in comps:
-        c["weight"] = float(np.clip(relay["beta"] * (c["s"] / (c["n"] + relay["shrink"])) / spread, -relay["clip"], relay["clip"]))
-    return {"prior": prior, "composites": comps, "blocks": blocks[-relay["max_blocks"]:], "spread": spread,
-            "recorded": int(total_n)}
+def prior_from(entries, relay: dict):
+    """The machinery an acquisition starts with, from the memory's entries (a pure function).
+    ``None`` when the memory holds no entry of either kind."""
+    stats = [e for e in entries if e.get("kind") == KIND_STATS and e.get("v") == ENTRY_V]
+    libs = [e for e in entries if e.get("kind") == KIND_LIB and e.get("v") == ENTRY_V]
+    if not stats and not libs:
+        return None
+    A = {k: np.zeros(N_CELLS) for k in STAT_KEYS}
+    B = {k: np.zeros(3) for k in SIZE_KEYS}
+    for e in stats:
+        for k in STAT_KEYS:
+            A[k] += np.asarray(e[k], float)
+        for k in SIZE_KEYS:
+            B[k] += np.asarray(e[k], float)
+    n = float(A["N"].sum())
+    beta, kappa, cap = relay["beta"], relay["kappa"], relay["cap"]
+    w, wE = np.zeros(N_CELLS), np.zeros(3)
+    if relay["rule"] == "dplus":
+        if n >= 1 and A["U"].sum() > 0:
+            ubar = A["U"].sum() / n
+            m = (A["U"] + kappa * ubar) / (A["N"] + kappa)
+            w = np.clip(beta * np.log(m / ubar), -cap, cap)
+            mE = (B["UE"] + kappa * ubar) / (B["NE"] + kappa)
+            wE = np.clip(beta * np.log(mE / ubar), -cap, cap)
+    elif n >= 1:                                                # dmean, the pre-written alternative
+        dbar = A["S"].sum() / n
+        s = np.sqrt(max(A["Q"].sum() / n - dbar ** 2, 1e-6))
+        m = (A["S"] + kappa * dbar) / (A["N"] + kappa)
+        w = np.clip(beta * (m - dbar) / s, -cap, cap)
+        nE = max(B["NE"].sum(), 1.0)
+        dbarE = B["SE"].sum() / nE
+        mE = (B["SE"] + kappa * dbarE) / (B["NE"] + kappa)
+        wE = np.clip(beta * (mE - dbarE) / s, -cap, cap)
+    seen, order = {}, []                                        # unique by canonical form, in the order of last occurrence
+    for e in libs:
+        for b in e["blocks"]:
+            key = _canon(b)
+            seen[key] = b
+            if key in order:
+                order.remove(key)
+            order.append(key)
+    library = [seen[k] for k in order][-relay["lib_max"]:] if relay["lib_max"] > 0 else []
+    return {"w": [round(float(x), 6) for x in w], "wE": [round(float(x), 6) for x in wE], "library": library,
+            "n": round(n, 6), "entries": len(entries)}
+
+
+def splice(g: dict, part: str, library: list, rng):
+    """Insert a library block into program ``part`` of the design-o mechanism ``g``: the constants
+    the block added when it was found are appended as new constants (random starts) and its
+    placeholders remapped to them; a term block goes to the end of the program."""
+    blocks = [b for b in library if b["part"] == part]
+    if not blocks:
+        return None, "no block"
+    blk = blocks[int(rng.integers(len(blocks)))]
+    out = copy.deepcopy(g)
+    n0 = len(out["theta"])
+    prog = out[part]
+    if n0 + blk["fresh"] > O.LIMITS["theta"] or len(prog) + len(blk["block"]) > O.LIMITS[part]:
+        return None, "full"
+    for _ in range(blk["fresh"]):
+        out["theta"].append(round(float(np.clip(rng.normal(0.0, 1.0), -50.0, 50.0)), 6))
+    ins = []
+    for op, dst, a, b in blk["block"]:
+        if op in PARAMLIKE and b < 0:
+            b = n0 + (-1 - b)
+        ins.append([op, dst, a, b])
+    pos = len(prog) if blk["term"] else int(rng.integers(len(prog) + 1))
+    prog[pos:pos] = ins
+    try:
+        out = O.validate(out)
+    except ValueError as error:
+        return None, f"invalid: {error}"
+    return out, {"part": part, "kind": "splice", "block": ins}
+
+
+def relocate(block: list):
+    """A block found in a kept program, its added constants turned into placeholders -1, -2, ..."""
+    remap, out = {}, []
+    for op, dst, a, b in block:
+        if op in PARAMLIKE and b >= BASE_THETA:
+            if b not in remap:
+                remap[b] = -1 - len(remap)
+            b = remap[b]
+        out.append([op, dst, a, b])
+    term = bool(out) and out[-1][0] == "add" and out[-1][1] == 0 and out[-1][2] == 0 and out[-1][3] != 0
+    return out, len(remap), term
 
 
 class LearnerR(Q.LearnerQ):
@@ -152,123 +203,134 @@ class LearnerR(Q.LearnerQ):
         full = validate(version)
         super().__init__(q_part(full))
         self.relay = full["relay"]
-        self.m = machinery([], self.relay)
-        self.entry = _empty_entry()
+        self._prior = None
 
     def acquire(self, problems, rng, memory=None):
         entries = list((memory or {}).get("entries", []))
-        self.m = machinery(entries[-self.relay["max_records"]:], self.relay)
-        self.entry = _empty_entry()
-        self._sensor_cache = {}
         if problems[0].kind == "predict":
             capability, report = self._acquire_predict(problems, rng)
             return capability, {"entries": entries}, report
+        self._prior = prior_from(entries, self.relay)
+        self._sensor_cache = {}
+        self._reset_log()
         capability, report = self._acquire_open(problems, rng)
+        new = self._new_entries(capability, problems[0])
         report["design"] = "r"
-        report["relay_in"] = {"entries": len(entries), "recorded": self.m["recorded"], "composites": len(self.m["composites"]),
-                              "blocks": len(self.m["blocks"]), "prior": [round(float(x), 4) for x in self.m["prior"]]}
-        report["relay"] = self.entry
-        return capability, {"entries": entries + [self.entry]}, report
+        report["relay"] = {"prior": None if self._prior is None else
+                           {"w": [round(x, 4) for x in self._prior["w"]], "wE": [round(x, 4) for x in self._prior["wE"]],
+                            "library": len(self._prior["library"]), "n": self._prior["n"], "entries": self._prior["entries"]},
+                           "new_entries": new}
+        return capability, {"entries": entries + new}, report
 
-    # ---- the variants, now drawn by the rebuilt machinery, and credited -----------------------
+    # ---- the log of one acquisition -----------------------------------------------------------
+    def _reset_log(self):
+        self._stats = {k: np.zeros(N_CELLS) for k in STAT_KEYS}
+        self._sizes = {k: np.zeros(3) for k in SIZE_KEYS}
+        self._counts = {"rounds": 0, "variants": 0, "informative": 0, "switches": 0}
+        self._switches = []
+        self._vlog = []
+
     def _variant(self, prog, theta, rng):
-        """An edited copy of ``prog``. Without composites and without a library this is design
-        q's ``_variant`` draw for draw (the splice operators are not offered while the library is
-        empty), with the rebuilt prior added to the inner weights."""
-        library = [{"part": b["part"], "block": b["block"]} for b in self.m["blocks"]]
-        active = list(range(len(Q.INNER_CELLS))) + ([len(Q.INNER_CELLS), len(Q.INNER_CELLS) + 1] if library else [])
-        weights = np.concatenate([np.asarray(self.inner["w"], float), np.zeros(N_CELLS - len(Q.INNER_CELLS))]) + self.m["prior"]
-        p = Q.softmax(weights[active])
-        comps = self.m["composites"]
-        use_comp = bool(comps) and rng.random() < self.relay["composite_share"]
+        """With no prior, design q's ``_variant`` draw for draw; with one, the operators, the edit
+        sizes and the library it was rebuilt with. Every call logs what it applied."""
+        pr = self._prior
+        ed = np.asarray(self.inner["edits"], float)
+        if pr is None:
+            cells_idx = list(range(len(BASE_CELLS)))
+            p = Q.softmax(self.inner["w"])
+            library = []
+        else:
+            library = pr["library"]
+            cells_idx = list(range(len(BASE_CELLS))) + [len(BASE_CELLS) + i for i, (part, _) in enumerate(SPLICE_CELLS)
+                                                         if any(b["part"] == part for b in library)]
+            logits = np.concatenate([np.asarray(self.inner["w"], float), np.zeros(len(SPLICE_CELLS))]) + np.asarray(pr["w"], float)
+            p = Q.softmax(logits[cells_idx])
+            ed = ed * np.exp(np.asarray(pr["wE"], float))
+        n = 1 + int(rng.choice(3, p=ed / ed.sum()))
         g = dict(self.g, score=copy.deepcopy(prog["score"]), pick=copy.deepcopy(prog["pick"]),
                  theta=[float(np.clip(x, -100.0, 100.0)) for x in theta])
-        used, inserted, composite = [], [], None
-
-        def take(cell, new, info):
-            if len(new["theta"]) > len(g["theta"]):          # a new constant: a random start, not a no-op
-                base = 1.0 if (info.get("block") and info["block"][-1][0] == "scale" and cell[0] == "theta") else 0.0
-                new["theta"][-1] = round(float(np.clip(base + rng.normal(0.0, 1.0), -50.0, 50.0)), 6)
-            if info.get("block") and info["part"] in ("score", "pick") and info["kind"] in ("insert", "term", "cross"):
-                inserted.append({"part": info["part"], "block": copy.deepcopy(info["block"])})
-            return new
-
-        if use_comp:                                          # a composite operator: its operators in order, once each
-            comp = comps[int(rng.choice(len(comps), p=Q.softmax([c["weight"] for c in comps])))]
-            composite = [list(c) for c in comp["cells"]]
-            for c in comp["cells"]:
-                cell = tuple(c)
-                new, info = E.apply_edit(g, cell, library, rng)
-                if new is not None:
-                    g = take(cell, new, info)
-                    used.append(CELLS.index(cell))
-        else:
-            ed = np.asarray(self.inner["edits"], float)
-            n = 1 + int(rng.choice(3, p=ed / ed.sum()))
-            for _ in range(n):
-                for _ in range(12):
-                    c = active[int(rng.choice(len(active), p=p))]
-                    cell = CELLS[c]
-                    new, info = E.apply_edit(g, cell, library, rng)
-                    if new is None:
-                        continue
-                    g = take(cell, new, info)
-                    used.append(c)
-                    break
-        if not used:
+        applied, infos = [], []
+        for _ in range(n):
+            for _ in range(12):
+                c = cells_idx[int(rng.choice(len(cells_idx), p=p))]
+                cell = CELLS[c]
+                if cell[1] == "splice":
+                    new, info = splice(g, cell[0], library, rng)
+                else:
+                    new, info = E.apply_edit(g, cell, [], rng)
+                if new is None:
+                    continue
+                if cell[1] != "splice" and len(new["theta"]) > len(g["theta"]):     # design q's random start of a new constant
+                    base = 1.0 if (info.get("block") and info["block"][-1][0] == "scale" and cell[0] == "theta") else 0.0
+                    new["theta"][-1] = round(float(np.clip(base + rng.normal(0.0, 1.0), -50.0, 50.0)), 6)
+                g = new
+                applied.append(c)
+                infos.append(info)
+                break
+        if not applied:
+            self._vlog.append(None)
             return None
-        self._last_plan = {"cells": used, "composite": composite, "inserted": inserted}
+        self._vlog.append({"cells": applied, "k": len(applied), "infos": infos})
         return {"score": g["score"], "pick": g["pick"]}, np.array(g["theta"], dtype=float)
 
-    def _credit(self, plans, F, switched_to):
-        """Credit every variant of a program round to the operators that made it."""
+    def _credit(self, logs, keys, F, switched):
+        """Credit the informative variants of one program round; ties carry no credit."""
+        self._counts["rounds"] += 1
         K = len(F)
-        if K < 2:
-            return
-        self.entry["rounds"] += 1
-        for j, plan in enumerate(plans, start=1):
-            if plan is None:
-                continue
-            d = float((F[j] - F[0]) / (K - 1))
-            share = 1.0 / len(plan["cells"])
-            for c in plan["cells"]:
-                cell = self.entry["cells"][c]
-                cell[0] += share
-                cell[1] += share * d
-                cell[2] += share * d * d
-            self.entry["variants"] += 1
-            if plan["composite"] is not None:
-                key = plan["composite"]
-                for comp in self.entry["composites"]:
-                    if comp["cells"] == key:
-                        break
-                else:
-                    comp = {"cells": key, "n": 0, "s": 0.0, "ss": 0.0}
-                    self.entry["composites"].append(comp)
-                comp["n"] += 1
-                comp["s"] += d
-                comp["ss"] += d * d
-            if j == switched_to:
-                self.entry["switches"] += 1
-                if len(plan["cells"]) >= 2 and plan["composite"] is None:
-                    self.entry["composites"].append({"cells": [list(CELLS[c]) for c in plan["cells"]], "n": 1, "s": d, "ss": d * d})
-                self._pending_blocks.extend(plan["inserted"])
-            elif len(self.entry["rejected_blocks"]) < 32:
-                self.entry["rejected_blocks"].extend(plan["inserted"][:1])
+        for i, log in enumerate(logs, start=1):
+            self._counts["variants"] += 1
+            if np.array_equal(keys[i], keys[0]):
+                continue                                         # a tie: the variant changed nothing the batch measures
+            self._counts["informative"] += 1
+            d = float((F[i] - F[0]) / (K - 1))
+            k = log["k"]
+            for c in log["cells"]:
+                self._stats["N"][c] += 1.0 / k
+                self._stats["U"][c] += max(d, 0.0) / k
+                self._stats["S"][c] += d / k
+                self._stats["Q"][c] += d * d / k
+                self._stats["W"][c] += (1.0 if d > 0 else 0.0) / k
+            self._sizes["NE"][k - 1] += 1.0
+            self._sizes["UE"][k - 1] += max(d, 0.0)
+            self._sizes["SE"][k - 1] += d
+            self._sizes["QE"][k - 1] += d * d
+            if i == switched:
+                for c in log["cells"]:
+                    self._stats["SW"][c] += 1.0 / k
+                self._switches.append(log)
+                self._counts["switches"] += 1
+
+    def _new_entries(self, capability, P0) -> list:
+        r6 = lambda a: [round(float(x), 6) for x in a]
+        kept = "program" in capability
+        kept_splice = bool(kept and any(CELLS[c][1] == "splice" for log in self._switches for c in log["cells"]))
+        stats = {"kind": KIND_STATS, "v": ENTRY_V, **{k: r6(self._stats[k]) for k in STAT_KEYS},
+                 **{k: r6(self._sizes[k]) for k in SIZE_KEYS}, **self._counts, "kept": kept, "kept_splice": kept_splice,
+                 "layout": {"ordered": bool(P0.ordered), "binary": bool(P0.n_opts == 2), "capacity": P0.capacity is not None}}
+        out = [stats]
+        if kept and self.relay["lib_per_run"] > 0:
+            final = capability["program"]
+            live = {part: {_canon(ins) for ins in O.live(final[part])} for part in ("score", "pick")}
+            blocks, keys = [], set()
+            for log in reversed(self._switches):
+                for info in log["infos"]:
+                    part = info.get("target") or info.get("part")
+                    blk = info.get("block")
+                    if not blk or part not in ("score", "pick") or not all(_canon(ins) in live[part] for ins in blk):
+                        continue
+                    ins, fresh, term = relocate(blk)
+                    b = {"part": part, "block": ins, "fresh": fresh, "term": term}
+                    if _canon(b) not in keys:
+                        keys.add(_canon(b))
+                        blocks.append(b)
+            blocks = blocks[: self.relay["lib_per_run"]]
+            if blocks:
+                out.append({"kind": KIND_LIB, "v": ENTRY_V, "blocks": blocks})
+        return out
 
     def _acquire_open(self, problems, rng):
-        self._pending_blocks = []
-        capability, report = self._acquire_open_r(problems, rng)
-        final = capability.get("program") or {"score": self.g["score"], "pick": self.g["pick"]}
-        live = {part: {json.dumps(ins) for ins in O.live(final[part])} for part in ("score", "pick")}
-        for b in self._pending_blocks:
-            if all(json.dumps(ins) in live[b["part"]] for ins in b["block"]) and b not in self.entry["blocks"]:
-                self.entry["blocks"].append(b)
-        return capability, report
-
-    def _acquire_open_r(self, problems, rng):
-        """Design q's acquisition (``design_q.LearnerQ._acquire_open``), with the variants of every
-        program round credited. The rounds, streams, rules and checks are design q's."""
+        """Design q's ``_acquire_open`` with three insertions: the log of a program round's variants,
+        their credit after the round's fitness, and the log entry of a confirmed switch."""
         g, inner = self.g, self.inner
         meter = problems[0].meter
         n = len(problems)
@@ -298,13 +360,10 @@ class LearnerR(Q.LearnerQ):
                     if meter.left() - reserve < (inner["variants"] + 1) * fit_cost[chosen].sum() + 2 * fit_cost[second].sum():
                         break
                     here = acq.A[0].copy()
-                    cands, plans = [(prog, here)], []
-                    for _ in range(inner["variants"]):
-                        self._last_plan = None
-                        v = self._variant(prog, here, rng_edit)
-                        if v is not None:
-                            cands.append(v)
-                            plans.append(self._last_plan)
+                    self._vlog = []
+                    variants = [self._variant(prog, here, rng_edit) for _ in range(inner["variants"])]
+                    logs = [log for log in self._vlog if log is not None]
+                    cands = [(prog, here)] + [v for v in variants if v is not None]
                     keys = self._rollouts_q([problems[i] for i in idx], idx, cands, rng_con, meter)
                     if keys is None:
                         break
@@ -317,7 +376,7 @@ class LearnerR(Q.LearnerQ):
                         pair = [cands[0], cands[best]]
                         keys2 = self._rollouts_q([problems[i] for i in idx2], idx2, pair, rng_con, meter)
                         if keys2 is None:
-                            self._credit(plans, F, None)
+                            self._credit(logs, keys, F, None)
                             break
                         report["constructions"] += 2 * batch
                         F2 = O._fitness(keys2)
@@ -327,7 +386,7 @@ class LearnerR(Q.LearnerQ):
                             last_best = (prog, theta.copy())
                             report["switches"] += 1
                             switched = best
-                    self._credit(plans, F, switched)
+                    self._credit(logs, keys, F, switched)
                 else:
                     if meter.left() - reserve < acq.K * fit_cost[chosen].sum():
                         break
@@ -376,50 +435,55 @@ class LearnerR(Q.LearnerQ):
 
 
 # =============================================================================================
-# the controls' memories, made from relayed ones (registered transformations)
+# the arms' memories, made from the relayed ones (registered transformations)
 # =============================================================================================
-def derangement(n: int, seed: int) -> list:
-    """A fixed permutation of ``n`` labels that moves every label."""
-    rng = np.random.default_rng(seed)
-    while True:
-        p = rng.permutation(n)
-        if all(p[i] != i for i in range(n)):
-            return [int(x) for x in p]
+def mem(entries) -> dict | None:
+    return {"entries": list(entries)} if entries else None
 
 
-def permutation(n: int, seed: int) -> list:
-    """A uniformly random permutation of ``n`` labels (fixed points allowed)."""
-    return [int(x) for x in np.random.default_rng(seed).permutation(n)]
+def without(memory, kind) -> dict | None:
+    return mem([e for e in (memory or {}).get("entries", []) if e.get("kind") != kind])
 
 
-def shuffled(memory: dict, seed: int) -> dict:
-    """The memory with the same amounts and no information about which operator did what: the
-    operator labels permuted uniformly at random in the cell records and in the composites, and
-    the library replaced by blocks of variants that were not kept (as many as there were kept
-    blocks, from the same entries). The permutation is uniform, not a derangement: a derangement
-    would move the strongly negative records of the few destructive operators onto other
-    operators every time and so make the placebo misinformed rather than uninformed; under a
-    uniform permutation every operator's record is, in expectation, the mean record."""
-    perm = permutation(N_CELLS, seed)
+def _random_block(blk, rng):
+    """A random block with the same part, length, number of new constants and term flag."""
+    part, L = blk["part"], len(blk["block"])
+    nreg = O.N_REG if part == "score" else O.N_PREG
+    sensors = O.SCORE_SENSORS if part == "score" else O.PICK_SENSORS
+    quiet = [k for k, name in enumerate(sensors) if name != "noise"]
+    if blk["term"]:
+        r = int(rng.integers(1, nreg))
+        r2 = 1 + (r % (nreg - 1))
+        body = [["load", r, int(rng.choice(quiet)), int(rng.integers(O.SENSOR_ARGS))]]
+        if L >= 6:
+            body += [["load", r2, int(rng.choice(quiet)), int(rng.integers(O.SENSOR_ARGS))], ["mul", r, r, r2]]
+        body += [[str(rng.choice(["mm", "rank", "z"])), r, r, 0], ["scale", r, r, -1], ["add", 0, 0, r]]
+        fresh = 1
+    else:                                                        # as many new constants as the original, then random instructions
+        fresh = blk["fresh"]
+        body = [[str(rng.choice(["scale", "shift"])), (r := int(rng.integers(nreg))), r, -1 - i] for i in range(min(fresh, L))]
+        while len(body) < L:
+            body.append(E.random_instruction(part, BASE_THETA, rng))
+        fresh = min(fresh, L)
+    return {"part": part, "block": body, "fresh": fresh, "term": blk["term"]}
+
+
+def shuffled(memory, j: int) -> dict | None:
+    """Chain j's memory with no information about which operator or which edit size did what:
+    every 20-array of every stats entry permuted by one uniformly random permutation of the
+    operators, every 3-array by one of the edit sizes (fixed points allowed: a derangement would
+    always move the destructive operators' records onto other operators and so misinform), and
+    every library block replaced by a random block of the same part, length, constants and form."""
+    import zlib
+    rng = np.random.default_rng([29, zlib.crc32(b"shuffle"), j])
+    pi, sigma = rng.permutation(N_CELLS), rng.permutation(3)
+    rng2 = np.random.default_rng([29, zlib.crc32(b"shuffle-lib"), j])
     out = []
-    for e in memory.get("entries", []):
-        cells = [None] * N_CELLS
-        for c in range(N_CELLS):
-            cells[perm[c]] = list(e["cells"][c])
-        comps = [{"cells": [list(CELLS[perm[CELLS.index(tuple(x))]]) for x in comp["cells"]], "n": comp["n"], "s": comp["s"], "ss": comp["ss"]}
-                 for comp in e["composites"]]
-        blocks = list(e.get("rejected_blocks", []))[: len(e["blocks"])]
-        out.append(dict(e, cells=cells, composites=comps, blocks=blocks))
-    return {"entries": out}
-
-
-def ablated(memory: dict, keep: str) -> dict:
-    """``keep='prior'``: the operator records only (no composites, no library); ``keep='blocks'``:
-    the library only (no operator records, no composites)."""
-    out = []
-    for e in memory.get("entries", []):
-        if keep == "prior":
-            out.append(dict(e, composites=[], blocks=[]))
-        else:
-            out.append(dict(e, cells=[[0, 0.0, 0.0] for _ in range(N_CELLS)], composites=[]))
-    return {"entries": out}
+    for e in (memory or {}).get("entries", []):
+        if e.get("kind") == KIND_STATS:
+            e = dict(e, **{k: [e[k][int(pi[c])] for c in range(N_CELLS)] for k in STAT_KEYS},
+                     **{k: [e[k][int(sigma[i])] for i in range(3)] for k in SIZE_KEYS})
+        elif e.get("kind") == KIND_LIB:
+            e = dict(e, blocks=[_random_block(b, rng2) for b in e["blocks"]])
+        out.append(e)
+    return mem(out)

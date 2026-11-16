@@ -1,37 +1,32 @@
-"""The relay experiment of design r (the Owner's instruction 14): does the learner's own record
-of its discoveries, carried from one category to the next, make its later discovery better?
+"""The relay experiment of design r (the Owner's instruction 14; registration_r.json).
 
     python -m rsi6.open.relay --stage meta|heldout [--ledger PATH] [--registration PATH] [--dev]
 
-``meta``     chains of acquisitions on source categories, in the registered order. In an
-             on-policy chain every acquisition starts from the memory of the acquisitions
-             before it in the chain, so the discovery machinery that generates its candidates
-             (operator prior, composite operators, block library: ``learner/design_r.py``) was
-             rebuilt from what the chain itself discovered, and what it discovers rebuilds the
-             machinery of the next one. An off-policy chain makes the same acquisitions (same
-             categories, same seeds) each with an empty memory: the same amount of record,
-             produced by a machinery that never changed. At the end of every on-policy chain
-             its first category is acquired once more with the chain's final memory (retention).
-``heldout``  on the held-out categories, which no process used before this stage (role
-             ``fresh``, unlocked here), for every chain and seed, paired: design r with the
-             chain's final memory (relay), with no memory (frozen: design q exactly), with the
-             memory's operator labels deranged and its library replaced by blocks that were not
-             kept (shuffled), with the off-policy chain's memory (offpolicy), with only the
-             operator record (prior) and with only the library (blocks); generation 0 of the open
-             design with its training budget raised pair by pair to relay's CPU (o0@relay); and
-             frozen at four times the training budget on a subset (ceiling).
+``meta``     chains of acquisitions on source categories in the registered order. In an on-policy
+             chain every acquisition starts from the memory the earlier acquisitions of the chain
+             left (design r rebuilds its operator prior, edit-size prior and block library from it),
+             so what one acquisition discovers changes how the next generates its candidates. An
+             off-policy chain makes the same acquisitions (categories, seeds) each with no memory:
+             the same amount of record, made by a machinery that never changed. Retention: job shop
+             and quadratic assignment acquired again, on the confirming half, with the memory of
+             their own block of the chain and with the final memory.
+``heldout``  on the held-out categories (role ``fresh``, unlocked here; no learner ran on them
+             before), paired by chain and seed, in a registered order of priority under a CPU cap:
+             relay and frozen (the primary), shuffled, o0 raised to relay's CPU, offpolicy,
+             library only, frozen at four times the training budget, prior only, the memories of
+             depth 8 and 4, references at the earlier processes' run budget, a0 raised to relay's
+             CPU. A non-binding futility look after half of the primary.
 
-A chain is rebuilt from the ledger: the memory an acquisition passes on is the one its run
-record's report holds (``report.relay``), and every step is recorded (``r_chain``) with the
-digest of the memory it started from. A stopped stage is resumed by starting the driver again:
-every measurement is served from the ledger and every record is checked against the recorded
-one.
+Every chain step is recorded (``r_memory``) with the digests of the memory it started from and
+left, and the memory is rebuilt from the run records' reports alone; a stopped stage replays
+from its start, every measurement served from the ledger, every record checked.
 """
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
+import math
 import os
 import sys
 import time
@@ -46,6 +41,8 @@ from rsi6.environments import fresh
 from rsi6.experiments import guard
 from rsi6.kernel import ledger as ledgers
 from rsi6.kernel import roles
+from rsi6.kernel.environment import split
+from rsi6.kernel.problem import Meter
 from rsi6.kernel.run import Cache
 from rsi6.learner import design_r, designs, dispatch_extra
 from rsi6.open import evaluate
@@ -53,7 +50,7 @@ from rsi6.open.discovery import append_once
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REGISTRATION = os.path.join(os.path.dirname(HERE), "registry", "registration_r.json")
-ORDER = ("meta", "heldout")
+ORDER_STAGES = ("meta", "heldout")
 
 
 def say(*parts) -> None:
@@ -65,80 +62,226 @@ def find(ledger, **where):
     return hits[-1] if hits else None
 
 
-def entry_of(record) -> dict | None:
-    rep = record.get("report") or {}
-    return rep.get("relay")
+def new_entries(record) -> list:
+    return list(((record.get("report") or {}).get("relay") or {}).get("new_entries") or [])
 
 
-def chain_jobs(reg, budget, j, k, memory, purpose):
-    env = reg["meta"]["order"][k]
-    seed = reg["seeds"]["meta_base"] + 100 * j + k
-    return {"env": env, "version": reg["version"], "seed": seed, "budget": budget, "memory": memory, "purpose": purpose}
+def digest_of(memory) -> str:
+    return ledgers.digest(memory)
 
 
-def run_meta(reg, cache, ledger, budget) -> dict:
-    n, order = reg["meta"]["chains"], reg["meta"]["order"]
-    memories = {j: {"entries": []} for j in range(n)}
-    for k in range(len(order)):
-        jobs = [chain_jobs(reg, budget, j, k, memories[j], f"relay-meta:chain{j}:pos{k}") for j in range(n)]
+# =============================================================================================
+# meta
+# =============================================================================================
+def run_meta(reg, cache, ledger) -> None:
+    M, order = reg["meta"], reg["meta"]["order"]
+    J, J_off = M["chains"], M["chains_off"]
+    budget = dict(reg["budgets"]["meta"])
+    on = {j: [] for j in range(J)}                       # entries after each position, per chain
+    off = {j: [] for j in range(J_off)}
+    depth = {j: {0: None} for j in range(J)}
+    for k, env in enumerate(order):
+        jobs, tags = [], []
+        for j in range(max(J, J_off)):
+            seed = M["seed_base"] + 100 * j + k
+            if j < J:
+                jobs.append({"env": env, "version": reg["version"], "seed": seed, "budget": budget, "memory": design_r.mem(on[j]),
+                             "purpose": f"relay-meta:on{j}:pos{k}"})
+                tags.append(("on", j))
+            if j < J_off:
+                jobs.append({"env": env, "version": reg["version"], "seed": seed, "budget": budget, "memory": None,
+                             "purpose": f"relay-meta:off{j}:pos{k}"})
+                tags.append(("off", j))
         got = cache.get(jobs)
-        for j, (job, r) in enumerate(zip(jobs, got)):
-            append_once(ledger, {"type": "r_chain", "kind": "on", "chain": j, "position": k, "env": job["env"], "seed": job["seed"],
-                                 "key": r["key"], "memory_in": ledgers.digest(job["memory"]), "entries_in": len(job["memory"]["entries"])},
-                        ("kind", "chain", "position"))
-            e = entry_of(r)
-            if e is not None:
-                memories[j] = {"entries": job["memory"]["entries"] + [e]}
-        say(f"meta position {k} ({order[k]}): acquired {np.mean([r['acquired'] for r in got]):.4f}, "
-            f"switches {np.mean([(r['report'] or {}).get('switches', 0) for r in got]):.2f}")
-    # off-policy: the same acquisitions, each from an empty memory
-    off = {j: {"entries": []} for j in range(n)}
-    jobs = [chain_jobs(reg, budget, j, k, {"entries": []}, f"relay-meta:off{j}:pos{k}") for j in range(n) for k in range(len(order))]
+        for (policy, j), job, r in zip(tags, jobs, got):
+            store = on if policy == "on" else off
+            before = design_r.mem(store[j]) if policy == "on" else None
+            after_entries = (store[j] if policy == "on" else []) + new_entries(r)
+            append_once(ledger, {"type": "r_memory", "policy": policy, "chain": j, "position": k, "env": env, "seed": job["seed"],
+                                 "run_key": r["key"], "digest_in": digest_of(before), "digest_out": digest_of(design_r.mem(after_entries)),
+                                 "n_entries": len(after_entries)}, ("policy", "chain", "position"))
+            if policy == "on":
+                on[j] = after_entries
+                depth[j][k + 1] = design_r.mem(on[j])
+            else:
+                off[j] = off[j] + new_entries(r)
+        say(f"meta position {k} ({env}): on-policy acquired {np.mean([r['acquired'] for (p, _), r in zip(tags, got) if p == 'on']):.4f}")
+    for j in range(J):
+        append_once(ledger, {"type": "r_chain_done", "chain": j, "digest": digest_of(design_r.mem(on[j])), "entries": len(on[j])}, ("chain",))
+    # retention, on the confirming half
+    R = M["retention"]
+    rb = dict(reg["budgets"]["retention"])
+    jobs, labels = [], []
+    for j in range(R["chains"]):
+        seed = R["seed_base"] + 10 * j
+        for env, depths in R["plan"].items():
+            for d in depths:
+                memory = None if d == 0 else depth[j][d]
+                jobs.append({"env": env, "version": reg["version"], "seed": seed, "budget": rb, "memory": memory,
+                             "purpose": f"relay-retention:chain{j}:{env}:depth{d}"})
+                labels.append((j, env, d))
     got = cache.get(jobs)
-    for job, r in zip(jobs, got):
-        j = (job["seed"] - reg["seeds"]["meta_base"]) // 100
-        k = (job["seed"] - reg["seeds"]["meta_base"]) % 100
-        append_once(ledger, {"type": "r_chain", "kind": "off", "chain": j, "position": k, "env": job["env"], "seed": job["seed"],
-                             "key": r["key"], "memory_in": ledgers.digest(job["memory"]), "entries_in": 0}, ("kind", "chain", "position"))
-    for j in range(n):
-        for k in range(len(order)):
-            r = got[j * len(order) + k]
-            e = entry_of(r)
-            if e is not None:
-                off[j] = {"entries": off[j]["entries"] + [e]}
-    # retention: the chain's first category again, with the final memory and a new seed
-    jobs = [{"env": order[0], "version": reg["version"], "seed": reg["seeds"]["retention_base"] + j, "budget": budget,
-             "memory": memories[j], "purpose": f"relay-meta:retention{j}"} for j in range(n)]
-    jobs += [{"env": order[0], "version": reg["version"], "seed": reg["seeds"]["retention_base"] + j, "budget": budget,
-              "memory": {"entries": []}, "purpose": f"relay-meta:retention-empty{j}"} for j in range(n)]
-    got = cache.get(jobs)
-    for j in range(n):
-        append_once(ledger, {"type": "r_chain", "kind": "retention", "chain": j, "position": len(order), "env": order[0],
-                             "key": got[j]["key"], "key_empty": got[n + j]["key"], "memory_in": ledgers.digest(memories[j])},
-                    ("kind", "chain", "position"))
-    return {"on": memories, "off": off}
+    append_once(ledger, {"type": "r_retention", "rows": [{"chain": j, "env": e, "depth": d, "key": r["key"]} for (j, e, d), r in zip(labels, got)]},
+                ("type",))
 
 
 def rebuild(ledger, reg) -> dict:
-    """The final memories of the chains, from the ledger's run records."""
+    """The memories of every chain at every depth, from the ledger's run records alone."""
     by_key = {r["key"]: r for r in ledger.records if r.get("type") == "run" and "key" in r}
-    out = {"on": {}, "off": {}}
-    for kind in ("on", "off"):
-        steps = sorted((r for r in ledger.select(type="r_chain", kind=kind)), key=lambda r: (r["chain"], r["position"]))
-        for s in steps:
-            mem = out[kind].setdefault(s["chain"], {"entries": []})
-            if kind == "on" and ledgers.digest(mem) != s["memory_in"]:
-                raise SystemExit(f"chain {s['chain']} position {s['position']}: the memory rebuilt from the ledger differs from the recorded one")
-            e = entry_of(by_key[s["key"]])
-            if e is not None:
-                mem["entries"] = mem["entries"] + [e]
-    return out
+    on, off = {}, {}
+    for s in sorted(ledger.select(type="r_memory"), key=lambda r: (r["policy"], r["chain"], r["position"])):
+        if s["policy"] == "on":
+            entries = on.setdefault(s["chain"], {0: []})
+            before = design_r.mem(entries[s["position"]])
+            if digest_of(before) != s["digest_in"]:
+                raise SystemExit(f"chain {s['chain']} position {s['position']}: the rebuilt memory differs from the recorded one")
+            entries[s["position"] + 1] = entries[s["position"]] + new_entries(by_key[s["run_key"]])
+            if digest_of(design_r.mem(entries[s["position"] + 1])) != s["digest_out"]:
+                raise SystemExit(f"chain {s['chain']} position {s['position']}: the memory it left differs from the recorded one")
+        else:
+            off.setdefault(s["chain"], []).extend(new_entries(by_key[s["run_key"]]))
+    return {"on": {j: {d: design_r.mem(e) for d, e in v.items()} for j, v in on.items()},
+            "off": {j: design_r.mem(e) for j, e in off.items()}}
+
+
+# =============================================================================================
+# held-out
+# =============================================================================================
+def units(env) -> dict:
+    """Construction units of the training and the fresh problems (problems built with a dummy
+    meter: no learner, no score)."""
+    train_ids, fresh_ids = split(env, 16, 24)
+    ut = sum(env.problem(i, Meter(0.0), 1, True)[0].construction_units() for i in train_ids)
+    uf = sum(env.problem(i, Meter(0.0), 1, False)[0].construction_units() for i in fresh_ids)
+    starts = all(env.problem(i, Meter(0.0), 1, False)[0].start_answer is not None for i in fresh_ids)
+    return {"train": float(ut), "test": float(uf), "all_fresh_have_start_answers": bool(starts)}
+
+
+def predicted_cpu(model, T, u) -> float:
+    return float(model["a"] + model["b"] * T * u["train"] + model["d"] * u["test"])
+
+
+def chain_means(arm, base, chains_of, held):
+    b = {(r["env"], r["seed"]): r["acquired"] for r in base}
+    by = {}
+    for r in arm:
+        if (r["env"], r["seed"]) in b:
+            by.setdefault(chains_of(r["seed"]), {}).setdefault(r["env"], []).append(r["acquired"] - b[(r["env"], r["seed"])])
+    return {j: float(np.mean([np.mean(v) for v in ev.values()])) for j, ev in by.items()}
+
+
+def run_heldout(reg, cache, ledger, mem, args) -> None:
+    H = reg["heldout"]
+    base_seed = H["seed_base"]
+    chain_of = lambda seed: (seed - base_seed) // 10
+    cats = H["categories"] if not args.dev else reg["dev_heldout"]
+    if not args.dev:
+        on_them = [r for r in ledger.records if r.get("type") == "run" and r.get("env") in cats]
+        if on_them and not find(ledger, type="r_plan"):
+            raise SystemExit(f"the ledger already holds {len(on_them)} runs on the held-out categories")
+        if not ledger.select(type="unlock", role=H["role"]):
+            ledger.append({"type": "unlock", "role": H["role"], "why": "the held-out stage of design r (registration_r.json)"})
+    U = {c: units(environments.load(c)) for c in cats}
+    cats = [c for c in cats if not U[c]["all_fresh_have_start_answers"]]
+    if len(cats) < 3 and not args.dev:
+        raise SystemExit(f"fewer than three held-out categories can be changed by a capability: {cats}")
+    model = H["cpu_model"]
+    grid = H["train_grid"]
+    T = {}
+    for c in cats:
+        ok = [t for t in grid if predicted_cpu(model["o0"], t, U[c]) <= H["max_cpu_per_run"]]
+        T[c] = max(ok) if ok else min(grid)
+    held_budget = lambda c, factor=1.0: dict(reg["budgets"]["heldout"], train=float(T[c]) * factor)
+    J, S, J2 = reg["meta"]["chains"], H["seeds"], H["secondary_chains"]
+    r0, o0, a0 = reg["version"], designs.default("o"), designs.default("a")
+    plan = {"categories": cats, "units": U, "train": T}
+    append_once(ledger, dict({"type": "r_plan"}, **plan), ("type",))
+    say(f"held-out plan: {plan['train']}")
+
+    def jobs(name, version, memory_of, chains, seeds, factor=1.0, budget_of=None):
+        out = []
+        for j in chains:
+            for c in cats:
+                for s in range(seeds):
+                    out.append({"env": c, "version": version, "seed": base_seed + 10 * j + s,
+                                "budget": budget_of(c) if budget_of else held_budget(c, factor),
+                                "memory": memory_of(j), "purpose": f"relay-heldout:{name}:chain{j}"})
+        return out
+
+    arms, cancelled, matched_frozen = {}, set(), {}
+    spent = lambda: sum(evaluate.cpu(r) for rows in arms.values() for r in rows)
+    cap = H["cpu_cap"]
+
+    def add(name, rows):
+        arms[name] = arms.get(name, []) + rows
+        say(f"held-out {name}: {len(rows)} runs, acquired {np.mean([r['acquired'] for r in rows]):.4f}; spent {spent():.0f}")
+
+    def matched(name, version, rows_ref, budget_of):
+        out = []
+        for c in cats:
+            want = {(r["env"], r["seed"]): evaluate.cpu(r) for r in rows_ref if r["env"] == c}
+            if want:
+                out += evaluate.raise_until(cache, version, want, f"relay-heldout:{name}", budget_of(c))
+        append_once(ledger, {"type": "r_matched", "arm": name, "keys": [r["key"] for r in out], "reached": [bool(r["reached"]) for r in out],
+                             "levels": [r["levels"] for r in out], "budgets": [r["budget"]["train"] for r in out]}, ("arm",))
+        return out
+
+    half = list(range(J // 2))
+    sec = list(range(J2))
+    D1, D2 = H["depths"]                                         # the shallower memories measured besides the final one
+    refs = list(range(min(H["reference_chains"], J2)))
+    # 1. primary-a
+    add("relay", cache.get(jobs("relay", r0, lambda j: mem["on"][j][len(reg["meta"]["order"])], half, S)))
+    add("frozen", cache.get(jobs("frozen", r0, lambda j: None, half, S)))
+    cm = chain_means(arms["relay"], arms["frozen"], chain_of, cats)
+    x = np.array([cm[j] for j in sorted(cm)])
+    t = float(x.mean() / (x.std(ddof=1) / math.sqrt(len(x)))) if len(x) > 1 and x.std(ddof=1) > 0 else 0.0
+    append_once(ledger, {"type": "r_futility", "chains": len(x), "mean": float(x.mean()), "t": t, "stop": bool(t < H["futility_t"])}, ("type",))
+    if t < H["futility_t"]:
+        cancelled = {2, 3, 5, 6, 8, 9, 10}
+    ratios = {}
+    for c in cats:
+        cells = {(r["env"], r["seed"]) for r in arms["frozen"] if r["env"] == c}
+        ratios[c] = sum(evaluate.cpu(r) for r in arms["relay"] if (r["env"], r["seed"]) in cells) / max(
+            sum(evaluate.cpu(r) for r in arms["frozen"] if r["env"] == c), 1e-9)
+    over = [c for c, v in ratios.items() if v > H["cpu_tolerance"]]
+    append_once(ledger, {"type": "r_cpu_rule", "ratios": ratios, "matched_categories": over}, ("type",))
+    if over:
+        rows = matched("frozen@relay", r0, [r for r in arms["relay"] if r["env"] in over], held_budget)
+        add("frozen@relay", rows)
+
+    items = [
+        (2, "primary-b", lambda: (add("relay", cache.get(jobs("relay", r0, lambda j: mem["on"][j][len(reg["meta"]["order"])], range(J // 2, J), S))),
+                                  add("frozen", cache.get(jobs("frozen", r0, lambda j: None, range(J // 2, J), S))))),
+        (3, "shuffled", lambda: add("shuffled", cache.get(jobs("shuffled", r0, lambda j: design_r.shuffled(mem["on"][j][len(reg["meta"]["order"])], j), sec, 2)))),
+        (4, "o0@relay", lambda: add("o0@relay", matched("o0@relay", o0, [r for r in arms["relay"] if chain_of(r["seed"]) < J2 and (r["seed"] - base_seed) % 10 < 2], held_budget))),
+        (5, "offpolicy", lambda: add("offpolicy", cache.get(jobs("offpolicy", r0, lambda j: mem["off"][j], sec, 2)))),
+        (6, "libonly", lambda: add("libonly", cache.get(jobs("libonly", r0, lambda j: design_r.without(mem["on"][j][len(reg["meta"]["order"])], design_r.KIND_STATS), sec, 2)))),
+        (7, "frozen@ceiling", lambda: add("frozen@ceiling", cache.get(jobs("frozen@ceiling", r0, lambda j: None, sec, 1, H["ceiling_factor"])))),
+        (8, "prioronly", lambda: add("prioronly", cache.get(jobs("prioronly", r0, lambda j: design_r.without(mem["on"][j][len(reg["meta"]["order"])], design_r.KIND_LIB), sec, 2)))),
+        (9, f"depth{D1}", lambda: add(f"depth{D1}", cache.get(jobs(f"depth{D1}", r0, lambda j: mem["on"][j][D1], sec, 1)))),
+        (10, f"depth{D2}", lambda: add(f"depth{D2}", cache.get(jobs(f"depth{D2}", r0, lambda j: mem["on"][j][D2], sec, 1)))),
+        (11, "references", lambda: (add("o0@ref", cache.get(jobs("o0@ref", o0, lambda j: None, refs, 1, budget_of=lambda c: dict(evaluate.RUN_BUDGET)))),
+                                    add("a0@ref", cache.get(jobs("a0@ref", a0, lambda j: None, refs, 1, budget_of=lambda c: dict(evaluate.RUN_BUDGET)))))),
+        (12, "a0@relay", lambda: add("a0@relay", matched("a0@relay", a0, [r for r in arms["relay"] if chain_of(r["seed"]) in refs and (r["seed"] - base_seed) % 10 == 0], held_budget))),
+    ]
+    for number, name, run in items:
+        if number in cancelled:
+            append_once(ledger, {"type": "r_item", "item": number, "name": name, "done": False, "why": "cancelled by the futility look"}, ("type", "item"))
+            continue
+        if spent() > cap:
+            append_once(ledger, {"type": "r_cap", "item": number, "name": name, "spent": spent(), "cap": cap}, ("type",))
+            break
+        run()
+        append_once(ledger, {"type": "r_item", "item": number, "name": name, "done": True}, ("type", "item"))
+    ledger.append({"type": "r_stage_done", "stage": "heldout", "categories": cats, "train": T,
+                   "arms": {name: [r["key"] for r in rows] for name, rows in arms.items()}})
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--ledger", default=guard.LIVE)
-    parser.add_argument("--stage", choices=ORDER, required=True)
+    parser.add_argument("--stage", choices=ORDER_STAGES, required=True)
     parser.add_argument("--registration", default=REGISTRATION)
     parser.add_argument("--dev", action="store_true", help="development: a scratch ledger, source categories only")
     args = parser.parse_args()
@@ -151,7 +294,7 @@ def main() -> int:
             raise SystemExit("the registered experiment reads registry/registration_r.json and no other file")
         root = os.path.dirname(os.path.dirname(HERE))
         wrong = [f for f, sha in reg["files"].items() if hashlib.sha256(open(os.path.join(root, f), "rb").read()).hexdigest() != sha]
-        if wrong or designs.digest(reg["version"]) != reg["version_digest"]:
+        if wrong or designs.digest(reg["version"]) != reg["version_digest"] or designs.digest(design_r.default()) != reg["version_digest"]:
             raise SystemExit(f"the files or the version differ from the registration: {wrong or 'version digest'}")
     guard.same_history(args.ledger)
     guard.single_writer(args.ledger)
@@ -165,7 +308,6 @@ def main() -> int:
             recorded = ledger.append({"type": "registration_r", "digest": ledgers.digest(reg), "registration": reg})
         if recorded["digest"] != ledgers.digest(reg):
             raise SystemExit("registration_r.json differs from the file recorded in the ledger")
-    budget = dict(reg["budget"])
     for e in reg["meta"]["order"]:
         if roles.effective_role(environments.load(e).category, ledger) != "source":
             raise SystemExit(f"{e} is not in the source pool")
@@ -183,55 +325,13 @@ def main() -> int:
     if find(ledger, type="r_stage_done", stage=stage):
         say(f"the stage {stage} is recorded")
         return 0
-    if stage == "heldout" and not find(ledger, type="r_stage_done", stage="meta"):
-        raise SystemExit("the stage heldout follows meta")
     if stage == "meta":
-        run_meta(reg, cache, ledger, budget)
+        run_meta(reg, cache, ledger)
         ledger.append({"type": "r_stage_done", "stage": "meta"})
         return 0
-    mem = rebuild(ledger, reg)
-    if not args.dev and not ledger.select(type="unlock", role=reg["heldout"]["role"]):
-        ledger.append({"type": "unlock", "role": reg["heldout"]["role"], "why": "the held-out stage of design r (registration_r.json)"})
-    H, S = reg["heldout"], reg["seeds"]
-    n = reg["meta"]["chains"]
-    o0 = designs.default("o")
-    arms = {}
-
-    train_of = H.get("train_by_category", {})                 # the registered size rule, fixed before any held-out run
-    budget_for = lambda e, factor=1.0: dict(budget, train=float(train_of.get(e, budget["train"])) * factor)
-
-    def jobs_for(name, version, memory_of, seeds_per_chain, chains, factor=1.0):
-        out = []
-        for j in chains:
-            for e in held:
-                for s in range(seeds_per_chain):
-                    out.append({"env": e, "version": version, "seed": S["heldout_base"] + 10 * j + s, "budget": budget_for(e, factor),
-                                "memory": memory_of(j), "purpose": f"relay-heldout:{name}:chain{j}"})
-        return out
-
-    full, sub = H["seeds_full"], H["seeds_sub"]
-    chains = list(range(n))
-    plan = [("relay", lambda j: mem["on"][j], full), ("frozen", lambda j: {"entries": []}, full),
-            ("shuffled", lambda j: design_r.shuffled(mem["on"][j], S["permutation"] + j), sub),
-            ("offpolicy", lambda j: mem["off"][j], sub),
-            ("prior", lambda j: design_r.ablated(mem["on"][j], "prior"), sub),
-            ("blocks", lambda j: design_r.ablated(mem["on"][j], "blocks"), sub)]
-    for name, memory_of, k in plan:
-        jobs = jobs_for(name, reg["version"], memory_of, k, chains)
-        arms[name] = cache.get(jobs)
-        say(f"held-out {name}: acquired {np.mean([r['acquired'] for r in arms[name]]):.4f} over {len(jobs)} runs")
-    rows = []
-    for e in held:                                              # raised from each category's own registered budget
-        want = {(r["env"], r["seed"]): evaluate.cpu(r) for r in arms["relay"] if r["env"] == e and (r["seed"] - S["heldout_base"]) % 10 < sub}
-        rows += evaluate.raise_until(cache, o0, want, "relay-heldout:o0@relay", budget_for(e))
-    arms["o0@relay"] = rows
-    append_once(ledger, {"type": "r_matched", "arm": "o0@relay", "keys": [r["key"] for r in rows],
-                         "reached": [bool(r["reached"]) for r in rows], "levels": [r["levels"] for r in rows],
-                         "budgets": [r["budget"]["train"] for r in rows]}, ("arm",))
-    arms["frozen@ceiling"] = cache.get(jobs_for("frozen@ceiling", reg["version"], lambda j: {"entries": []}, H["seeds_ceiling"],
-                                                chains, H["ceiling_factor"]))
-    ledger.append({"type": "r_stage_done", "stage": "heldout", "envs": held,
-                   "arms": {name: [r["key"] for r in rows] for name, rows in arms.items()}})
+    if not find(ledger, type="r_stage_done", stage="meta"):
+        raise SystemExit("the stage heldout follows meta")
+    run_heldout(reg, cache, ledger, rebuild(ledger, reg), args)
     return 0
 
 
