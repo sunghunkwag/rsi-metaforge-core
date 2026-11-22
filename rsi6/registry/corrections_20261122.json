@@ -1,0 +1,22 @@
+{
+ "what": "a correction made on 2026-11-22, when the package was first set up on a machine that had never held its data. It is kept in a file of its own so that rsi6/registry/corrections.json stays the file whose SHA-256 the ledger recorded (record 1211)",
+ "corrections": [
+  {
+   "utc": "2026-11-22T13:00:00Z",
+   "event": "python -m rsi6.fetch projects stopped at its first file: the SHA-256 of projects/getdata_sm.html differed from the manifest. The file is the data page of PSPLIB (getdata.php?mode=sm), a page the library generates and edits. Its bytes changed between 2026-11-16, when the manifest was written, and 2026-11-22. The earlier copy existed only on the machine of the earlier sessions and is not available, so what changed in the page cannot be shown",
+   "what": [
+    "rsi6/environments/manifests/projects.json: the sha256 of getdata_sm.html, from b171d5b19b99e3003cd7208cf5769b9e72aa4979bc1f8c846997351488dbf028 to de66392bda594c20838ab5b7a9134812fa09df4abae4ace8041e90b15d52501f"
+   ],
+   "checked": [
+    "the nine other files of the manifest (library.html, par.sm, j30.sm.tgz, j30opt.sm, j30.json, j60.sm.tgz, j60hrs.sm, j60lb.sm, j60.json) were fetched and have the hashes of the manifest: the instances and every reference value are the published ones the adapter was audited on",
+    "the two statements of the page that the adapter checks when it is built are there unchanged: j30 '480 instances (fully optimal)' and j60 '382/480 proven optimal'",
+    "the page was fetched twice, minutes apart, with the same hash: it does not differ from one request to the next",
+    "with the corrected manifest rsi6.tests.test_fresh passes: the adapter is built and passes the kernel's adapter checks, with no learner run"
+   ],
+   "not_changed": "the adapter rsi6/environments/projects.py (SHA-256 2e7530dbf3a2c5076d500e669814bbd81f19a0bbe35af1a4dc0a0fa7a3751f2a, as in registry/fresh.json), every other manifest, the rest of the registry, the ledger. The role of the category stays 'fresh' and locked",
+   "scores_seen_before_the_choice": "none: no run of a learner on the category exists",
+   "ledger": "not recorded in the ledger: this correction wrote no ledger record. A registration that uses the category pins its manifest by hash (as the draft of registration_r does), and that records this state",
+   "open": "a page that its publisher edits cannot be pinned for long, and the next edit stops the fetch again. The adapter needs two statements of the page, not its bytes; pinning those instead would be a change of the adapter and needs a new audit. Not done here"
+  }
+ ]
+}
