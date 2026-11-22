@@ -25,6 +25,7 @@ parser.add_argument("directory")
 parser.add_argument("--out", required=True)
 parser.add_argument("--boot", type=int, default=5000)
 parser.add_argument("--seed", type=int, default=20261123)
+parser.add_argument("--leave-out", nargs="*", default=[])      # categories dropped before anything is computed
 args = parser.parse_args()
 data = defaultdict(lambda: defaultdict(dict))
 machines = {}
@@ -33,10 +34,12 @@ for path in sorted(glob.glob(os.path.join(args.directory, "**", "pair_*.json"), 
     machines[os.path.basename(path)] = doc.get("machine")
     for r in doc["rows"]:
         data[doc["category"]][r["seed"]][(r["field"], json.dumps(r["value"], sort_keys=True))] = r
+for name in args.leave_out:
+    data.pop(name, None)
 cats = sorted(data)
 keys = sorted(set.intersection(*(set(data[c][s]) for c in cats for s in data[c])) - {BASE})
 rng = random.Random(args.seed)
-out = {"what": "reading 2 of PREDICTION.md", "categories": {c: sorted(data[c]) for c in cats}, "changes": {}, "machines": machines,
+out = {"what": "reading 2 of PREDICTION.md", "left_out": list(args.leave_out), "categories": {c: sorted(data[c]) for c in cats}, "changes": {}, "machines": machines,
        "rules": {"floor": FLOOR, "cap": CAP, "margin": MARGIN, "cpu_limit": CPU_LIMIT, "bootstrap": args.boot}}
 print(f"categories {len(cats)}: " + ", ".join(f"{c}({len(data[c])})" for c in cats))
 for k in keys:

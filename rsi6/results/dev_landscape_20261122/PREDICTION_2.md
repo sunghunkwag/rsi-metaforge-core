@@ -1,6 +1,6 @@
 # A second choice, fixed before its run
 
-2026-11-22, 20:35 UTC.
+2026-11-22, 20:31 UTC (the time of the commit that added this file).
 
 ## What had been seen when this was written
 
@@ -43,7 +43,8 @@ and failed their gates.
 Plan `rsi6/runs/dev-pair-2.json`: generation 0, `model.batch` 2, and for comparison `model.pop`
 16 → 8, `model.sigma` 1.0 → 0.2 and `model.batch` 2 with `model.pop` 8 together; seeds 730201 to
 730232, on partitioning and setcover 730201 to 730216; none used by any earlier run. Read with
-`scripts/reading_2.py` unchanged.
+`scripts/reading_2.py`; the option `--leave-out` it got with this file only drops the named
+categories before anything is computed.
 
 * *Confirmed on the pool a second time*, now as the fixed choice: the 5 % point of M9 is above 0
   and the CPU over the nine categories is at most 1.15 times generation 0's.
