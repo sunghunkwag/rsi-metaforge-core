@@ -515,6 +515,18 @@ be, no modification was ever accepted; (3) the categories are assignment and pre
 problems only, and the third form of the protocol (planning, formal proof) is not built. None
 of the three is removed by an instruction, and (3) makes (1) and (2) harder, not easier.
 
+**What that measurement showed (added 2026-11-22, 21:20 UTC; `results/dev_landscape_20261122/`).**
+The change the scan put first did not hold on new seeds. One change did, measured twice, the
+second time as a choice fixed before the run: `model.batch` 4 → 2, +0.0246 over the nine
+categories of the pool (5 % point +0.0154) at 1.04 times the CPU, +0.0066 (5 % point +0.0009)
+with set covering left out, above zero on the three categories it was picked without. So
+obstacle (1) now reads: one modification has been shown, in development and on the pool, to
+improve acquisition on categories it was not chosen on; none has been shown so on a category
+outside the pool, where no learner has run. The continued process as registered would not
+adopt it (amendment 2 counts it at +0.0037 against a margin of 0.005). A registered test of it
+opens held-out categories for good; which categories, and under which rule, is for the Owner.
+Obstacles (2) and (3) are as they were.
+
 ## Instruction 17 (2026-11-22, about 19:12 UTC), verbatim
 
 > https://github.com/IsaiahN/Ouroboros 여기 참조 해라

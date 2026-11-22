@@ -34,9 +34,12 @@ answers is recorded verbatim in [`rsi6/OWNER_DIRECTIVE.md`](rsi6/OWNER_DIRECTIVE
 | Process c (four techniques in turn) | the 38-field record | generation 1 adopted one version provisionally (7 fields; gate +0.0176 with lower bound +0.0066, confirmation +0.0035). Generation 2, from the adopted version: three nominees did not pass; the fourth has no registered gate yet, and computed outside the ledger it costs at least 2.6 times the incumbent's CPU where the rule allows 1.15. Stopped there; six generations are registered |
 | Open design | the learner's representation and its learning principle, as programs of a small vector machine; in the recursive arm each accepted mechanism re-learns how the next candidates are generated | 152 discovery steps, 912 candidates, 18 confirmations, **0 accepted** in every arm. The recursion was never exercised |
 | Relay (design r) | the discovery machinery, rebuilt at every acquisition from the learner's own record | development only. Its second development check is negative: on a category it had not met, the learner carrying the relay's memory acquired 0.0078 less than the learner carrying nothing (24 chains, 80% interval −0.0147 to −0.0010). Not registered, not run |
+| Scan of generation 0 (development, 2026-11-22) | one field of the 38-field record at a time, every change measured on every category of the pool, the few it picks out measured again on new seeds | development only. The change the scan put first did not hold on new seeds. One did, twice, the second time fixed before the run: `model.batch` 4 → 2 adds +0.0246 to what is acquired over the nine categories (5 % point +0.0154) at 1.04 times the CPU, +0.0066 (5 % point +0.0009) with set covering, which carries most of it, left out, and is above zero on the three categories it was picked without. As the continued process counts (amendment 2) it is worth +0.0037, under that process's margin of 0.005. A candidate for a registered test, not a result: [`rsi6/results/dev_landscape_20261122/`](rsi6/results/dev_landscape_20261122/) |
 
 Not run yet: the external gate of process c, the recursion check, and the test on the
-sealed target categories that decides the hypothesis.
+sealed target categories that decides the hypothesis. No learner has run on any of the ten
+categories outside the pool; a registered test of the one change the scan left standing would
+be the first, and registering it is the Owner's decision.
 
 What limits the result, as measured (details in `rsi6/RESULTS.md`):
 

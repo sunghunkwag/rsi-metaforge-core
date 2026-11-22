@@ -345,6 +345,41 @@ and the few that look better on three seeds are not better on four more.
   registered, and the numbers say that its primary endpoint, this same comparison on the four
   held-out categories, starts below zero. It has not been registered.
 
+## Development: a scan of generation 0, and one change that held on new seeds (2026-11-22)
+
+Not registered, not in the ledger, on the nine categories of the pool only. The record, with the
+order in which things were fixed and read, is `results/dev_landscape_20261122/`.
+
+Every registered process of the first design chose a version on some categories and lost on
+others. The scan measured what none of them had: generation 0 and each of its single-field
+changes on every category of the pool (8 seeds; 4 on partitioning and set covering).
+
+* **What a small scan shows is mostly not there.** With six categories read, leaving each out
+  in turn chose `assess.holdback` 0.25 → 0.3 every time, at +0.0197 on the category left out.
+  The choice, and the reasons to expect most of that to disappear, were committed before the
+  other three categories were read. On 32 new seeds per category (16 on the two heavy ones) it
+  kept +0.0030, 5 % point −0.0055: not confirmed.
+* **One change held.** `model.batch` 4 → 2 was one of four changes measured beside the choice
+  and was above zero. It was then fixed as the choice, with its reading, before a second run
+  on seeds nothing had used: +0.0246 over the nine categories (5 % point +0.0154) at 1.04 times
+  the CPU; +0.0066 (5 % point +0.0009) with set covering left out. It had been picked on six
+  categories and is above zero on the three it was picked without (set covering +0.168 and
+  +0.139 in the two runs, partitioning +0.027 and +0.011, knapsack +0.002 and +0.001).
+* **Why.** A run of generation 0 gets one to three rounds of learning from the registered
+  budget on six of the seven assignment categories and then keeps or drops what it learned as a
+  whole (bin packing keeps in 61 of 64 runs, quadratic assignment 54, job shop 49, p-median 19,
+  knapsack 2; the gain is exactly 0 when it drops). A batch of 2 at least doubles the rounds at
+  the same counted budget. With a batch of 8 the budget allows no round at all on bin packing
+  and p-median, and in six runs of eight on quadratic assignment.
+* **What it does not show.** The change is carried mostly by one category, as the nominees of
+  rounds 1 and 2 were. As the continued process counts (amendment 2) it is worth +0.0037, under
+  the margin of 0.005: that process would not adopt it. Two changes that each add rounds
+  (`model.batch` 2 with `model.pop` 8) are not better together than the first alone. And one
+  changed field is not recursion.
+
+No learner has run on a category outside the pool. Whether this change is tested on such
+categories, on which of them, and under which rule, is the Owner's decision.
+
 ## How to reproduce
 
     OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m rsi6.tests.test_kernel
