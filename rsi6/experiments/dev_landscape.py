@@ -32,6 +32,8 @@ the score on the training problems, counted units, CPU) and the run records besi
 same layout. It is for measuring again, with seeds the landscape did not use, the few changes a
 reading of the landscape picked out: the mean of a change chosen for being the largest of many is
 too large, and every change of a category shares generation 0's runs, so its luck.
+``--also NAME=FIELD=VALUE+FIELD=VALUE`` adds a version that differs from generation 0 in the
+named fields together, listed as the field ``combo:NAME``.
 ``--smoke`` checks the plumbing only (three changes, a quarter of the training budget, a seed
 nothing else uses, files named ``smoke_*``); its numbers mean nothing.
 """
@@ -68,6 +70,7 @@ def main() -> int:
     parser.add_argument("--out", required=True)
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--only", nargs="+", default=None, metavar="FIELD=VALUE")
+    parser.add_argument("--also", nargs="+", default=[], metavar="NAME=FIELD=VALUE+FIELD=VALUE")
     args = parser.parse_args()
     category = args.category
     base = designs.default("a")
@@ -79,7 +82,7 @@ def main() -> int:
         changes, budget, seeds = changes[:3], dict(BUDGET, train=10.0), [9730001]
     if any(not 730000 <= s < 740000 for s in seeds) and not args.smoke:
         raise SystemExit("the seeds of this development measurement are 730000 to 739999")
-    stem = ("smoke_" if args.smoke else "") + ("pair" if args.only else "landscape") + f"_{category}_{seeds[0]}"
+    stem = ("smoke_" if args.smoke else "") + ("pair" if (args.only or args.also) else "landscape") + f"_{category}_{seeds[0]}"
     os.makedirs(args.out, exist_ok=True)
     scratch = os.path.join(args.out, stem + ".scratch.jsonl")
     if guard.is_registered(scratch):
@@ -97,6 +100,10 @@ def main() -> int:
         changes = changes + [("adopted:c1", adopted[0]["digest"][:12], adopted[0]["version"])]
     if args.only:
         changes = _only(changes, args.only)
+    for spec in args.also:
+        name, _, parts = spec.partition("=")
+        fields = {f: json.loads(t) for f, _, t in (part.partition("=") for part in parts.split("+"))}
+        changes = changes + [("combo:" + name, parts, designs.validate(dict(base, **fields)))]
     versions = [("", None, base)] + changes
     jobs = [job for s in seeds for _, _, v in versions for job in rounds.jobs_for(v, [category], [s], budget, "dev-landscape")]
     records = []
