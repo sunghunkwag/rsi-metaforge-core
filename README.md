@@ -33,7 +33,7 @@ answers is recorded verbatim in [`rsi6/OWNER_DIRECTIVE.md`](rsi6/OWNER_DIRECTIVE
 | Round b1 (second design) | the same kind of record, redesigned | 2 nominees; none passed. At equal counted units the redesign acquired no more than the first design and cost 1.3 to 3.8 times the CPU |
 | Process c (four techniques in turn) | the 38-field record | generation 1 adopted one version provisionally (7 fields; gate +0.0176 with lower bound +0.0066, confirmation +0.0035). Generation 2, from the adopted version: three nominees did not pass; the fourth has no registered gate yet, and computed outside the ledger it costs at least 2.6 times the incumbent's CPU where the rule allows 1.15. Stopped there; six generations are registered |
 | Open design | the learner's representation and its learning principle, as programs of a small vector machine; in the recursive arm each accepted mechanism re-learns how the next candidates are generated | 152 discovery steps, 912 candidates, 18 confirmations, **0 accepted** in every arm. The recursion was never exercised |
-| Relay (design r) | the discovery machinery, rebuilt at every acquisition from the learner's own record | in development; not registered, not run |
+| Relay (design r) | the discovery machinery, rebuilt at every acquisition from the learner's own record | development only. Its second development check is negative: on a category it had not met, the learner carrying the relay's memory acquired 0.0078 less than the learner carrying nothing (24 chains, 80% interval −0.0147 to −0.0010). Not registered, not run |
 
 Not run yet: the external gate of process c, the recursion check, and the test on the
 sealed target categories that decides the hypothesis.

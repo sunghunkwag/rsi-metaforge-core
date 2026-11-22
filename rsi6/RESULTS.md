@@ -334,6 +334,17 @@ and the few that look better on three seeds are not better on four more.
   (`results/dev_r_20261116/`). That is a development result, not evidence; the registered test
   of design r is on four categories no process has used.
 
+  Its second development check, repeated on 2026-11-22 on GitHub-hosted runners
+  (`results/dev_r_d2_20261122/`), is negative. Over 24 chains, on a category the chain had
+  not met, the learner that carries the relay's memory acquired 0.0078 less than the learner
+  that carries nothing (80% interval -0.0147 to -0.0010; negative on each of the three
+  left-out categories), and no more than its shuffled placebo (-0.0021). The prior built
+  from the memory does not predict what the next acquisition finds useful (prospective
+  Spearman +0.04). The rule written before the check stops the registration only if the first
+  check is also below its bound, which it is not; so the rule leaves the experiment to be
+  registered, and the numbers say that its primary endpoint, this same comparison on the four
+  held-out categories, starts below zero. It has not been registered.
+
 ## How to reproduce
 
     OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m rsi6.tests.test_kernel

@@ -476,3 +476,41 @@ What "a general domain" would take beyond this package's categories: every envir
 is an assignment problem or a prediction problem in one generic form. The protocol names a
 third form, steps accepted by a state machine, for planning and formal proof (`RESEARCH_PLAN.md`,
 section 2); it is not built, and no learner of this package can act in it yet.
+
+## Instruction 16 (2026-11-22, about 18:55 UTC), verbatim
+
+> 범용 도메인에서 성공하게끔 해서 merge해
+
+(Given after the report on instruction 15, which said that recursive self-improvement had not
+succeeded and left the merge of the consolidation to the Owner.)
+
+How it is carried out.
+
+**Merge.** Not merged. The instruction makes the merge follow success in a general domain, and
+no run shows that. The pull request of the consolidation stays open, with every check passing;
+the Owner can have it merged for what it is, a consolidation, at any time.
+
+**Make it succeed in a general domain.** Nothing was reported as success, and nothing registered
+was run. What the instruction did lead to on that day:
+
+* Development check D2 of the relay, repeated on GitHub-hosted runners, was read
+  (`results/dev_r_d2_20261122/`): negative. With it, every mechanism of this package has now
+  failed the same way in development or in its registered test: what is found on some
+  categories does not carry to others. The relay experiment was not registered; whether the
+  four held-out categories are spent on it is the Owner's decision.
+* What had never been measured is whether a modification of the first design carries across
+  categories at all, with every change measured on every category. A development measurement
+  of exactly that was started on GitHub-hosted runners (`rsi6/experiments/dev_landscape.py`,
+  plan `rsi6/runs/dev-landscape.json`): generation 0, each of its single-field changes and the
+  version process c adopted, on the nine categories of the pool, 4 or 8 new seeds each. It
+  touches no sealed, reserve or held-out category and decides nothing by itself. If changes
+  carry, a process with gates large enough to see them is worth registering; if they do not,
+  no process that picks a version on some categories can pass on others, and the first design
+  is finished.
+
+What stands between this package and the instruction, stated once: (1) no modification has yet
+been shown to improve acquisition on categories it was not chosen on; (2) in the first design a
+better learner is not a better improver by construction, and in the open design, where it could
+be, no modification was ever accepted; (3) the categories are assignment and prediction
+problems only, and the third form of the protocol (planning, formal proof) is not built. None
+of the three is removed by an instruction, and (3) makes (1) and (2) harder, not easier.

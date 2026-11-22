@@ -1,0 +1,111 @@
+{
+ "what": "development check D2 of design r, repeated on GitHub-hosted runners on 2026-11-22 (rsi6/open/dev_d2.py, plan rsi6/runs/dev-d2.json, workflow run 45029175395, commit 20d48b1). Pooled as results/dev_r_20261116/scripts/make_dev_r.py pools its D2 block. Development only",
+ "per_left_out_category": {
+  "quadassign": {
+   "relay minus frozen": -0.009532533851741246,
+   "se": 0.007052418985837174,
+   "shuffled minus frozen": -0.003625848026293208,
+   "sigma_hat": 0.01957983831087322,
+   "tau_hat": 0.014359939911935692,
+   "relay over frozen CPU": 1.0171166362400814,
+   "instances scored 0": {
+    "relay": 0,
+    "frozen": 0,
+    "shuffled": 0
+   },
+   "machine": {
+    "python": "3.13.18",
+    "numpy": "2.5.3",
+    "cpus": 4,
+    "platform": "Linux-7.0.0-1020-azure-x86_64-with-glibc2.43",
+    "processor": "AMD EPYC 7763 64-Core Processor"
+   }
+  },
+  "jobshop": {
+   "relay minus frozen": -0.012038675510091433,
+   "se": 0.010993616740056096,
+   "shuffled minus frozen": -0.00873477521462307,
+   "sigma_hat": 0.030914058691799067,
+   "tau_hat": 0.022114189106045345,
+   "relay over frozen CPU": 0.9783786176776966,
+   "instances scored 0": {
+    "relay": 0,
+    "frozen": 0,
+    "shuffled": 0
+   },
+   "machine": {
+    "python": "3.13.18",
+    "numpy": "2.5.3",
+    "cpus": 4,
+    "platform": "Linux-7.0.0-1020-azure-x86_64-with-glibc2.43",
+    "processor": "AMD EPYC 7763 64-Core Processor"
+   }
+  },
+  "pmedian": {
+   "relay minus frozen": -0.0018456156334318574,
+   "se": 0.009321888457985632,
+   "shuffled minus frozen": -0.004685478944706063,
+   "sigma_hat": 0.023757355101741127,
+   "tau_hat": 0.02032178325516473,
+   "relay over frozen CPU": 0.9408780665070469,
+   "instances scored 0": {
+    "relay": 0,
+    "frozen": 0,
+    "shuffled": 0
+   },
+   "machine": {
+    "python": "3.13.18",
+    "numpy": "2.5.3",
+    "cpus": 4,
+    "platform": "Linux-7.0.0-1020-azure-x86_64-with-glibc2.43",
+    "processor": "AMD EPYC 9V74 80-Core Processor"
+   }
+  }
+ },
+ "development effect relay minus frozen": {
+  "mean": -0.007805608331754845,
+  "se": 0.005190402837493951,
+  "interval_80": [
+   -0.014654138504457117,
+   -0.0009570781590525733
+  ],
+  "chains": 24
+ },
+ "shuffled minus frozen": {
+  "mean": -0.005682034061874113,
+  "se": 0.004059031001490675,
+  "interval_80": [
+   -0.011037764080522247,
+   -0.0003263040432259787
+  ],
+  "chains": 24
+ },
+ "relay minus shuffled": {
+  "mean": -0.002123574269880732,
+  "se": 0.004129256219220737,
+  "chains": 24
+ },
+ "sigma_hat": 0.025189025484061912,
+ "tau_hat": 0.01921995585116532,
+ "library sizes (24 chains)": {
+  "median": 14.0,
+  "min": 8,
+  "max": 23
+ },
+ "prior top-3 mass (24 chains)": {
+  "median": 0.19137757041180364
+ },
+ "prospective Spearman (per acquisition)": {
+  "dplus": 0.043891410689803685,
+  "dmean": 0.05481903637497919,
+  "n": 164
+ },
+ "rules": {
+  "L2_dev from the repeated D1 (results/dev_r_20261116)": 0.0125,
+  "(b) library median at least 2": true,
+  "(c) dmean's prospective Spearman exceeds dplus's by more than 0.1": false,
+  "(d) median top-3 mass below 0.30, so alpha is raised to 2.0": true,
+  "(e) do not register: needs L2_dev below 0.003 AND the upper 80% bound below 0.003": false,
+  "(e) its second condition alone (the upper 80% bound of the development effect below 0.003)": true
+ }
+}
