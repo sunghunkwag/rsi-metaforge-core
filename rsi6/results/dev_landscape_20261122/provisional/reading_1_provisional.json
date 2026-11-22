@@ -1,0 +1,182 @@
+{
+ "carries_to_the_three": false,
+ "categories": [
+  "knapsack",
+  "partitioning",
+  "setcover"
+ ],
+ "choice": [
+  "assess.holdback",
+  "0.3"
+ ],
+ "common_changes": 85,
+ "m3": -0.06019536408679599,
+ "p3": 0.9176470588235294,
+ "per_category": {
+  "knapsack": {
+   "acquired_change": -0.0005517449541325298,
+   "changes_that_differ": {
+    "above_generation_0": 23,
+    "mean": 0.0007151524535592439,
+    "n": 45
+   },
+   "cpu_ratio": 1.020144823243681,
+   "gain_change": -0.0005517449541325298,
+   "generation_0": {
+    "acquired": 0.8415307586489873,
+    "untrained": 0.8409790136948547
+   },
+   "per_seed_acquired_change": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    -0.004413959633060238,
+    0.0
+   ],
+   "rank_of_the_choice": 69,
+   "seeds": [
+    730001,
+    730002,
+    730003,
+    730004,
+    730005,
+    730006,
+    730007,
+    730008
+   ]
+  },
+  "partitioning": {
+   "acquired_change": -0.003045818255943633,
+   "changes_that_differ": {
+    "above_generation_0": 4,
+    "mean": -0.015300558810184233,
+    "n": 37
+   },
+   "cpu_ratio": 1.0067687484535124,
+   "gain_change": -0.003045818255943633,
+   "generation_0": {
+    "acquired": 0.8735643747820334,
+    "untrained": 0.6162751288714988
+   },
+   "per_seed_acquired_change": [
+    0.0198736241718388,
+    -0.01201044709208765,
+    -0.0165812834901925,
+    -0.0034651666133331815
+   ],
+   "rank_of_the_choice": 49,
+   "seeds": [
+    730001,
+    730002,
+    730003,
+    730004
+   ]
+  },
+  "setcover": {
+   "acquired_change": -0.1769885290503118,
+   "changes_that_differ": {
+    "above_generation_0": 23,
+    "mean": -0.01679635471919813,
+    "n": 45
+   },
+   "cpu_ratio": 1.0447180301826846,
+   "gain_change": -0.1769885290503118,
+   "generation_0": {
+    "acquired": 0.6690190671565409,
+    "untrained": 0.18573491351893934
+   },
+   "per_seed_acquired_change": [
+    -0.08293262270673352,
+    -0.04329330030039469,
+    -0.40473966414380713
+   ],
+   "rank_of_the_choice": 78,
+   "seeds": [
+    730002,
+    730003,
+    730004
+   ]
+  }
+ },
+ "top_of_the_three": [
+  [
+   [
+    "model.batch",
+    "2"
+   ],
+   0.05292648785539634
+  ],
+  [
+   [
+    "shortlist",
+    "1"
+   ],
+   0.04967324509723769
+  ],
+  [
+   [
+    "shortlist",
+    "2"
+   ],
+   0.03713809327042343
+  ],
+  [
+   [
+    "model.elite",
+    "0.1"
+   ],
+   0.0370956119374738
+  ],
+  [
+   [
+    "model.sigma",
+    "0.65"
+   ],
+   0.03160078158396403
+  ],
+  [
+   [
+    "prior.dsoft",
+    "-3.0"
+   ],
+   0.029548777380577537
+  ],
+  [
+   [
+    "model.decay",
+    "0.7"
+   ],
+   0.02635640787200713
+  ],
+  [
+   [
+    "model.decay",
+    "0.85"
+   ],
+   0.02278040926081851
+  ],
+  [
+   [
+    "model.sigma",
+    "0.2"
+   ],
+   0.022419961208372242
+  ],
+  [
+   [
+    "model.sigma",
+    "2.0"
+   ],
+   0.022401381865928282
+  ]
+ ],
+ "what": "reading 1 of PREDICTION.md",
+ "with_the_smaller_of_the_two_means": {
+  "carries": false,
+  "m3": -0.06019536408679599,
+  "p3": 0.9176470588235294
+ }
+}

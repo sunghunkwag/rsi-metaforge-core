@@ -42,7 +42,7 @@ The artifacts of the three runs are in `artifacts/` as they were uploaded (GitHu
 days). `scripts/` has what read them; every number below is printed by one of them:
 
 ```
-mkdir x && for f in artifacts/*.tar.gz; do tar xzf $f -C x; done
+mkdir x && for f in artifacts/*.tar.gz; do tar xzf $f -C x; done     # landscape.tar.gz: see ADDENDUM.md
 python3 -I scripts/landscape_loco.py x/landscape --out loco.json        # leave one category out
 python3 -I scripts/reading_1.py      x/landscape --out reading_1.json
 python3 -I scripts/reading_2.py      x/pair      --out reading_2.json
@@ -95,8 +95,7 @@ the new seeds; quadratic assignment +0.008 where the scan had +0.049. The predic
 and the choice was wrong.
 
 **Reading 1 of `PREDICTION.md`** (the choice on the three categories it was made without, in
-the scan itself) is in section 5: four jobs of the scan were still running when the rest of
-this file was written.
+the scan itself) is negative too: section 5 and `ADDENDUM.md`.
 
 ## 2. The second choice
 
@@ -182,8 +181,10 @@ compute has not been measured.
 
 ## 5. The scan on all nine categories, and reading 1
 
-Pending when this file was written: partitioning (one of four jobs) and set covering (three of
-four) of `dev-landscape` were still running after two hours. See `ADDENDUM.md` once they are in.
+`ADDENDUM.md`. In short: reading 1 is negative as well (the first choice does not carry to the
+three categories it was made without), and with all nine categories in, leaving each out in
+turn chooses `model.batch` 2 in every fold. One job of the scan (set covering, one seed) was
+still running when the addendum was written; it says what is provisional for that reason.
 
 ## What this is, and what it is not
 
