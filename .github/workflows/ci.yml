@@ -1,0 +1,48 @@
+name: CI
+
+# Checks that need no benchmark data: every module compiles, and the committed ledger's hash
+# chain is intact. The tests that load the published benchmark data are in rsi6-tests.yml.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    name: Compile and verify the committed ledger
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Compile every module of the package
+        # rsi6/audit holds preserved records, among them scripts that must not be run or imported.
+        run: python -m compileall -q -x 'rsi6/audit/' rsi6
+
+      - name: Verify the hash chain of the committed ledger
+        run: |
+          python - <<'PY'
+          from rsi6.kernel.ledger import Ledger
+
+          book = Ledger("rsi6/ledger/main.jsonl")   # the constructor verifies every record
+          print(len(book.records), "records; head", book.head())
+          PY
+
+      - name: Verify the manifest of the preserved audit record
+        run: |
+          cd rsi6/audit/external_code_execution_20261111
+          sha256sum --check --quiet MANIFEST.sha256
