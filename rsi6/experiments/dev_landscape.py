@@ -34,6 +34,11 @@ reading of the landscape picked out: the mean of a change chosen for being the l
 too large, and every change of a category shares generation 0's runs, so its luck.
 ``--also NAME=FIELD=VALUE+FIELD=VALUE`` adds a version that differs from generation 0 in the
 named fields together, listed as the field ``combo:NAME``.
+
+``--base FIELD=VALUE ...`` moves the centre: the version every change is one field away from,
+and is compared with, is generation 0 with the named fields changed (the same scan one step
+on). The file names then carry ``_base`` and a short digest of that version, and the rows whose
+field is empty are that version's.
 ``--smoke`` checks the plumbing only (three changes, a quarter of the training budget, a seed
 nothing else uses, files named ``smoke_*``); its numbers mean nothing.
 """
@@ -71,9 +76,12 @@ def main() -> int:
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--only", nargs="+", default=None, metavar="FIELD=VALUE")
     parser.add_argument("--also", nargs="+", default=[], metavar="NAME=FIELD=VALUE+FIELD=VALUE")
+    parser.add_argument("--base", nargs="+", default=[], metavar="FIELD=VALUE")
     args = parser.parse_args()
     category = args.category
     base = designs.default("a")
+    if args.base:
+        base = designs.validate(dict(base, **{f: json.loads(t) for f, _, t in (part.partition("=") for part in args.base)}))
     changes = alternating.neighbours(base)
     if environments.load(category).form == "assign":
         changes = [c for c in changes if not c[0].startswith("predict.")]
@@ -82,7 +90,8 @@ def main() -> int:
         changes, budget, seeds = changes[:3], dict(BUDGET, train=10.0), [9730001]
     if any(not 730000 <= s < 740000 for s in seeds) and not args.smoke:
         raise SystemExit("the seeds of this development measurement are 730000 to 739999")
-    stem = ("smoke_" if args.smoke else "") + ("pair" if (args.only or args.also) else "landscape") + f"_{category}_{seeds[0]}"
+    stem = (("smoke_" if args.smoke else "") + ("pair" if (args.only or args.also) else "landscape")
+            + (f"_base{designs.digest(base)[:8]}" if args.base else "") + f"_{category}_{seeds[0]}")
     os.makedirs(args.out, exist_ok=True)
     scratch = os.path.join(args.out, stem + ".scratch.jsonl")
     if guard.is_registered(scratch):
@@ -124,7 +133,7 @@ def main() -> int:
                     if args.only else
                     "development: every single-field change of generation 0 of the first design on one category of the pool"),
            "category": category, "form": environments.load(category).form, "seeds": seeds, "budget": budget,
-           "generation_0": designs.digest(base), "changes": len(changes), "smoke": bool(args.smoke),
+           "generation_0": designs.digest(base), "base": list(args.base), "changes": len(changes), "smoke": bool(args.smoke),
            "machine": {"python": sys.version.split()[0], "numpy": np.__version__, "cpus": os.cpu_count(),
                        "platform": platform.platform(), "processor": _processor()},
            "rows": rows}
