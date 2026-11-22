@@ -514,3 +514,37 @@ better learner is not a better improver by construction, and in the open design,
 be, no modification was ever accepted; (3) the categories are assignment and prediction
 problems only, and the third form of the protocol (planning, formal proof) is not built. None
 of the three is removed by an instruction, and (3) makes (1) and (2) harder, not easier.
+
+## Instruction 17 (2026-11-22, about 19:12 UTC), verbatim
+
+> https://github.com/IsaiahN/Ouroboros 여기 참조 해라
+
+(Given while instruction 16 was being carried out.)
+
+How it is carried out. The repository was read, not run; the record is
+`audit/reference_ouroboros_20261123/`.
+
+* **What it is.** A population of agents without a language model that play the games of
+  ARC-AGI-3 and share one database. Its evolution changes six numeric weights, one choice among
+  five patterns and thirteen further numbers of a fixed, hand-written system of about 190,000
+  lines; its code is changed by coding agents driven by a language model. Its own state file
+  reports, at generation 5112, 242 levels completed in 38,357 games and no game won. It is an
+  attempt on a general benchmark, not a method known to work, and nothing read in it shows a
+  recursion.
+* **Its domain.** ARC-AGI-3 is built to be a general domain: unknown rules, unknown goals, a
+  human reference for every level. Its games are Python programs whose rules
+  are hidden by design, so rule (d) of `RESEARCH_PLAN.md`, section 2 (an evaluator written from
+  a public specification, no third-party code executed) excludes them as the rules stand. A
+  command of this session that would have installed the official toolkit for a probe was denied
+  by the permission classifier; it was not retried, reworded or moved to another machine, and
+  no permission is requested. Whether rule (d) is amended for that toolkit is the Owner's
+  decision.
+* **What is carried over.** The form: an agent acting step by step in a state machine it is not
+  told the rules of, scored by steps used against a reference. That is the third form of the
+  protocol, which obstacle (3) of instruction 16 says is not built. Its carriers under rule (d)
+  are IPC STRIPS planning problems and Metamath. Nothing of it is built by this instruction.
+* **What is not carried over.** Evolving a few weights of a fixed system (rounds 1 and 2 and
+  process c are that already), a shared store (the relay's memory; development check D2 was
+  negative), and health gauges as a measure of progress.
+
+The merge of instruction 16 is unchanged by this: not merged.

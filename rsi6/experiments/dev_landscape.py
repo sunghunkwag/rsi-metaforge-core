@@ -26,6 +26,12 @@ started again with the same ``--out`` repeats at most one chunk of runs.
 
 ``--out`` gets ``landscape_<category>_<first seed>.json`` (one row per version and seed: scores,
 the score on the training problems, counted units, CPU) and the run records beside it.
+
+``--only FIELD=VALUE ...`` measures generation 0 and the named changes only (the value as JSON;
+``adopted:c1`` names the adopted version) and writes ``pair_<category>_<first seed>.json`` in the
+same layout. It is for measuring again, with seeds the landscape did not use, the few changes a
+reading of the landscape picked out: the mean of a change chosen for being the largest of many is
+too large, and every change of a category shares generation 0's runs, so its luck.
 ``--smoke`` checks the plumbing only (three changes, a quarter of the training budget, a seed
 nothing else uses, files named ``smoke_*``); its numbers mean nothing.
 """
@@ -61,6 +67,7 @@ def main() -> int:
     parser.add_argument("--seeds", type=int, nargs="+", required=True)
     parser.add_argument("--out", required=True)
     parser.add_argument("--smoke", action="store_true")
+    parser.add_argument("--only", nargs="+", default=None, metavar="FIELD=VALUE")
     args = parser.parse_args()
     category = args.category
     base = designs.default("a")
@@ -72,7 +79,7 @@ def main() -> int:
         changes, budget, seeds = changes[:3], dict(BUDGET, train=10.0), [9730001]
     if any(not 730000 <= s < 740000 for s in seeds) and not args.smoke:
         raise SystemExit("the seeds of this development measurement are 730000 to 739999")
-    stem = ("smoke_" if args.smoke else "") + f"landscape_{category}_{seeds[0]}"
+    stem = ("smoke_" if args.smoke else "") + ("pair" if args.only else "landscape") + f"_{category}_{seeds[0]}"
     os.makedirs(args.out, exist_ok=True)
     scratch = os.path.join(args.out, stem + ".scratch.jsonl")
     if guard.is_registered(scratch):
@@ -88,6 +95,8 @@ def main() -> int:
     adopted = ledger.select(type="adopt", process="c")
     if adopted and not args.smoke:
         changes = changes + [("adopted:c1", adopted[0]["digest"][:12], adopted[0]["version"])]
+    if args.only:
+        changes = _only(changes, args.only)
     versions = [("", None, base)] + changes
     jobs = [job for s in seeds for _, _, v in versions for job in rounds.jobs_for(v, [category], [s], budget, "dev-landscape")]
     records = []
@@ -104,7 +113,9 @@ def main() -> int:
                          "untrained": r["untrained"], "acquired": r["acquired"], "gain": r["gain"],
                          "train_untrained": r.get("train_untrained"), "train_acquired": r.get("train_acquired"),
                          "units": r.get("units"), "cpu": r["cpu"]["acquire"] + r["cpu"]["apply"]})
-    out = {"what": "development: every single-field change of generation 0 of the first design on one category of the pool",
+    out = {"what": ("development: generation 0 of the first design and the named changes on one category of the pool"
+                    if args.only else
+                    "development: every single-field change of generation 0 of the first design on one category of the pool"),
            "category": category, "form": environments.load(category).form, "seeds": seeds, "budget": budget,
            "generation_0": designs.digest(base), "changes": len(changes), "smoke": bool(args.smoke),
            "machine": {"python": sys.version.split()[0], "numpy": np.__version__, "cpus": os.cpu_count(),
@@ -126,6 +137,23 @@ def main() -> int:
     for mean, name, c in summary[:8] + summary[-3:]:
         print(f"  {mean:+.4f}  cpu x{c:.2f}  {name}")
     return 0
+
+
+def _only(changes: list, names: list) -> list:
+    """The changes named as FIELD=VALUE, in the order named. A name that fits no change of this category
+    (a ``predict.*`` field on an assignment category) is an error, not a silent omission."""
+    chosen = []
+    for name in names:
+        field, _, text = name.partition("=")
+        if field == "adopted:c1":
+            found = [c for c in changes if c[0] == field]
+        else:
+            wanted = json.dumps(json.loads(text))
+            found = [c for c in changes if c[0] == field and json.dumps(c[1]) == wanted]
+        if len(found) != 1:
+            raise SystemExit(f"--only {name}: {len(found)} changes of this category fit")
+        chosen.append(found[0])
+    return chosen
 
 
 def _processor() -> str:
