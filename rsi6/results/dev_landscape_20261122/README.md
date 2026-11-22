@@ -18,9 +18,9 @@ new seeds, with a 5 % point of −0.0055. One change does hold on new seeds, mea
 `model.batch` 4 → 2, the second time as a choice fixed before the run. Over the nine categories
 it adds +0.0246 to what is acquired (5 % point +0.0154) at 1.04 times the CPU; with set covering,
 which carries most of it, left out, +0.0066 (5 % point +0.0009). It was picked on six
-categories and is above zero on the three it was picked without. Counted the way the continued
-process counts (amendment 2: no category may contribute more than +0.01) it is worth +0.0037,
-below that process's margin of 0.005. It is a candidate for a registered test on categories no
+categories and is above zero on the three it was picked without. The statistic by which the
+continued process ranks candidates in its search (amendment 2: no category counts for more than
++0.01) puts it at +0.0037. It is a candidate for a registered test on categories no
 learner has run on. It is not a result, and one changed field is not recursion.
 
 ## What was run
@@ -107,7 +107,7 @@ the scan itself) is negative too: section 5 and `ADDENDUM.md`.
 | M9, all nine categories | +0.0246, 5 % point +0.0154, 95 % point +0.0338 | **confirmed on the pool a second time** |
 | CPU over the nine | 1.04 times generation 0's | within 1.15 |
 | M8, set covering left out | +0.0066, 5 % point +0.0009 | **not carried by one category alone**, narrowly (2.9 % of resamples at or below 0) |
-| Value of amendment 2 | +0.0037, 5 % point +0.0004 | below the margin of 0.005, as expected |
+| Value of amendment 2 (the search's ranking statistic) | +0.0037, 5 % point +0.0004 | above zero; see the correction below |
 
 By category, mean change of what is acquired, standard error, runs above / below:
 
@@ -195,9 +195,16 @@ still running when the addendum was written; it says what is provisional for tha
   without. It is carried mostly by one category, as the nominees that failed in rounds 1 and 2
   were; unlike them it has been measured on 32 to 64 new seeds per category rather than 18
   paired runs on three.
-* The continued process as registered would not adopt it (amendment 2, +0.0037 against 0.005).
-  Whether that rule or the gate of the first rounds applies to a test of it is an amendment,
-  and the Owner's.
+* **Correction (2026-11-22, 22:40 UTC).** `PREDICTION_2.md`, and this file as first written,
+  set the value of amendment 2 (+0.0037) against "the margin of 0.005" and concluded that the
+  continued process as registered would not adopt the change. That confused two things.
+  Amendment 2's statistic (`rsi6/meta/rounds.py`, `breadth`) is what the searches of the
+  continued process rank candidates by, and what they ask of it is to be above zero. The
+  margin of 0.005 belongs to the gate (`gate`, the same since the first registration), which
+  decides an adoption and counts the plain mean of the change: at least 0.005, a 90 % lower
+  bound of the gain above zero, CPU at most 1.15 times the incumbent's. On the pool this change
+  is at +0.0246 by the gate's count. `PREDICTION_2.md` is left as it was committed; the
+  readings it fixed (M9, M8) do not depend on the mistaken sentence.
 * One changed field of a hand-written learner is not recursive self-improvement. It would be
   the first verified step; whether the changed learner is better at finding the next step is
   the question that follows it.

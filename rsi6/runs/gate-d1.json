@@ -1,0 +1,33 @@
+{
+ "what": "Registered (amendment 6): process d, generation 1. The gate and the confirmation of one nominee (generation 0 of the first design with model.batch 2) against generation 0 on the four categories that had the role fresh, by rsi6/experiments/gate_d.py on one hosted runner, in one job. The records that open the categories are in the committed ledger before this plan runs. The job uploads the working ledger; nothing is written back to the repository by the job.",
+ "tests": [
+  "rsi6.tests.test_kernel",
+  "rsi6.tests.test_fresh",
+  "rsi6.tests.test_gate_d"
+ ],
+ "fetch": [
+  "clique",
+  "projects",
+  "quadratic",
+  "tardiness",
+  "binpacking",
+  "forecasting",
+  "jobshop",
+  "knapsack",
+  "partitioning",
+  "pmedian",
+  "quadassign",
+  "regression",
+  "setcover"
+ ],
+ "jobs": [
+  {
+   "id": "gate",
+   "module": "rsi6.experiments.gate_d",
+   "args": [
+    "--copy-to",
+    "run_out"
+   ]
+  }
+ ]
+}

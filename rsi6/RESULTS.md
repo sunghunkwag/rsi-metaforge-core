@@ -372,8 +372,11 @@ changes on every category of the pool (8 seeds; 4 on partitioning and set coveri
   the same counted budget. With a batch of 8 the budget allows no round at all on bin packing
   and p-median, and in six runs of eight on quadratic assignment.
 * **What it does not show.** The change is carried mostly by one category, as the nominees of
-  rounds 1 and 2 were. As the continued process counts (amendment 2) it is worth +0.0037, under
-  the margin of 0.005: that process would not adopt it. Two changes that each add rounds
+  rounds 1 and 2 were. The statistic by which the continued process ranks candidates in its
+  search (amendment 2) puts it at +0.0037, because no category counts there for more than
+  +0.01; the registered gate, which decides an adoption, counts the plain mean (a first
+  version of this paragraph said the process would not adopt the change: that confused the
+  two, see the correction in the record). Two changes that each add rounds
   (`model.batch` 2 with `model.pop` 8) are not better together than the first alone. And one
   changed field is not recursion.
 

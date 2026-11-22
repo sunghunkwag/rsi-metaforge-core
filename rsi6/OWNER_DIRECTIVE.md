@@ -522,9 +522,12 @@ categories of the pool (5 % point +0.0154) at 1.04 times the CPU, +0.0066 (5 % p
 with set covering left out, above zero on the three categories it was picked without. So
 obstacle (1) now reads: one modification has been shown, in development and on the pool, to
 improve acquisition on categories it was not chosen on; none has been shown so on a category
-outside the pool, where no learner has run. The continued process as registered would not
-adopt it (amendment 2 counts it at +0.0037 against a margin of 0.005). A registered test of it
-opens held-out categories for good; which categories, and under which rule, is for the Owner.
+outside the pool, where no learner has run. (As first written this paragraph said the
+continued process as registered would not adopt it, amendment 2 counting it at +0.0037 against
+a margin of 0.005. That was wrong: amendment 2's statistic ranks candidates in the search; the
+margin of 0.005 belongs to the gate, which counts the plain mean. Corrected 2026-11-22, 22:40
+UTC.) A registered test of it opens held-out categories for good; which categories, and under
+which rule, is for the Owner.
 Obstacles (2) and (3) are as they were.
 
 ## Instruction 17 (2026-11-22, about 19:12 UTC), verbatim
@@ -560,3 +563,41 @@ How it is carried out. The repository was read, not run; the record is
   negative), and health gauges as a measure of progress.
 
 The merge of instruction 16 is unchanged by this: not merged.
+
+## Instruction 18 (2026-11-22, 22:34 UTC), verbatim
+
+> ARC-AGI-3는 무시하고!  성공적인 재귀적 자가 개선이 범용 도메인에서 실제 일어나게끔 하라!  성공하면 푸시 커밋 하라
+
+(Given after the report on instructions 16 and 17, which had put three decisions to the Owner:
+whether to open a registered test of the one change the scan left standing, with the four
+categories held out for the relay experiment recommended for it; whether to use ARC-AGI-3
+itself; whether to merge the consolidation as it is.)
+
+How it is carried out.
+
+**ARC-AGI-3.** Dropped. `audit/reference_ouroboros_20261123/` stays as a record; nothing of it is
+pursued.
+
+**"Make it actually happen."** Read as the Owner's decision on the first of the three
+questions: the registered test is opened, on the categories the report recommended, under the
+registered gate unchanged. That reading was sent to the Owner in a message before any record
+that opens a category was written. It is amendment 6 (`registry/amendment_6.json`): process d,
+generation 1, driver `experiments/gate_d.py`. The reserves and the sealed targets are not
+touched.
+
+**What that test can give, said before it runs.** A pass is one independently validated
+modification of the acquisition mechanism: the first half of the hypothesis, for one step. It
+is not the second half. The learner as improver (`meta/rounds.search`) works with the fields
+`edit.*` only; `model.batch` is not one of them, so the changed learner is, as an improver,
+generation 0 exactly. In the first design an improvement of how the learner acquires cannot
+make it better at finding the next improvement, whatever a gate shows. So no outcome of
+amendment 6 is "recursive self-improvement succeeded", and none will be reported as that.
+
+**"If it succeeds, commit and push."** Success here is the hypothesis of the README with both
+halves, by registered tests. Records of the work go to the branch of the open pull request as
+before. Nothing is merged, and nothing is pushed to the main branch, on a partial result.
+
+**A correction made under this instruction.** The report on instruction 16 said the continued
+process as registered would not adopt the change because amendment 2 counts it at +0.0037
+against a margin of 0.005. That confused the search's ranking statistic with the gate; the
+records are corrected (`results/dev_landscape_20261122/README.md`).

@@ -72,3 +72,6 @@ jobs:
 
       - name: Relay driver and report
         run: python -m rsi6.tests.test_relay
+
+      - name: The gate of process d, before it runs (amendment 6)
+        run: python -m rsi6.tests.test_gate_d
