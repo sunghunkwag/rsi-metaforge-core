@@ -20,8 +20,9 @@ the scan itself (`provisional/reading_1_provisional.json`):
 | set covering (3 of 4) | −0.177 |
 
 **It does not carry to the three.** Both readings that `PREDICTION.md` fixed for its choice are
-negative; only its warning held. The one job still missing cannot turn m3 above zero with p3
-at or under 0.10: set covering would need about +0.5 on its fourth seed.
+negative; only its warning held. For the one job still missing to turn m3 above zero, set
+covering would need about +0.54 on its fourth seed, more than the whole gain of generation 0
+there (+0.46 to +0.48).
 
 On those same three categories the change with the largest mean of all 85 is `model.batch` 2
 (+0.053), which was on the list of comparisons, not the choice.
@@ -48,8 +49,9 @@ eight chooses **`model.batch` 2 in all nine folds**:
 Mean +0.0276; resampling seeds gives a 5 % point of −0.0097 (the three seeds of set covering
 make it wide) and chooses `model.batch` 2 in 87.5 % of the folds; shuffling the changes within
 every category and repeating the procedure reaches +0.0276 in 0.05 % of 2000 shuffles. So the
-scan of eight seeds, once it had all nine categories, pointed at the change that the 96 new
-seeds per category then confirmed; with six categories it had pointed at another.
+scan of eight seeds, once it had all nine categories, pointed at the change that 64 new seeds
+per category (32 on the two heavy ones) had by then confirmed; with six categories it had
+pointed at another.
 
 Job shop and quadratic assignment in this table carry generation 0's bad luck on the scan's
 seeds (`README.md`, section 3): on new seeds the same change is at −0.005 and +0.019 there.
