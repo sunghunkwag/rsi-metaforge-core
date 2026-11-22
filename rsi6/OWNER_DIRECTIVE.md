@@ -468,8 +468,9 @@ it on 2026-11-22:
 * Long runs no longer need a session's machine: `.github/workflows/rsi6-runs.yml` runs a
   committed plan on GitHub-hosted runners. The first plan repeats development check D2 of the
   relay, whose outputs of 2026-11-16 were never committed (`rsi6/open/dev_d2.py`,
-  `rsi6/runs/dev-d2.json`). It is development on source-pool categories and decides, by the
-  rules written before it, whether the relay experiment is registered.
+  `rsi6/runs/dev-d2.json`). It is development on source-pool categories: the rules written
+  before it turn its numbers into the layout of the relay experiment (how many chains and
+  seeds, which controls), which is then registered and run the same way.
 
 What "a general domain" would take beyond this package's categories: every environment here
 is an assignment problem or a prediction problem in one generic form. The protocol names a
