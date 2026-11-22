@@ -1,0 +1,148 @@
+{
+ "summary": "I reviewed evaluate.py and the design of the comparison against discovery.py, run.py/environment.py, registration.json and amendment_4.json. I also ran small read-only analyses and simulations on copies of the data. The scripts are in WORK (noise3.py, sim.py), and total compute was under 3 CPU-minutes.\n\n1. evaluate.py. The arms match the docstring. Runs are paired by category and seed. The intervals call both_interval and blocked_interval from experiments/report.py. Several things break the house rules, though:\n   - The \"minus o0\" and \"minus a0\" comparisons are reported with no CPU check. smoke.log already shows a0 using about half of o0's CPU on setcover.\n   - The o0@arm control's interval is printed even when the control did not reach the arm's CPU. Failure condition 4 says such a comparison is void.\n   - The matched control deviates from amendment 4(d). It always doubles the budget, for at most 8 levels, and can overshoot the arm's CPU by up to 2x.\n   - Lineages that never accepted a mechanism are silently dropped, which is survivorship. After a migration, \"last o_accept\" can be a mechanism the lineage has abandoned.\n   - Only per-run CPU is matched. The CPU the discovery itself spent is never charged, although the registered \"more compute\" control and amendment 4(b) require it.\n\n2. Held-out validity. The split of instances depends only on the category, never on the seed (kernel/environment.py:61-69). Consequences:\n   - smoke.log showed generation 0 of both designs on exactly the fresh instances of partitioning and setcover that the held-out test will use.\n   - Process b1/c gates also used these fresh instances.\n   - Confirmation seeds and held-out seeds only resample relabelling and RNG, not instances.\n   - binpacking is the first design's development source; partitioning and setcover are its adoption and gate categories. o0 inherits that prior.\n   Only two things can be removed: the overlap of seeds (use never-used seeds) and the absent check that no discovery run touched a held-out category. Everything else must be stated.\n\n3. Controls.\n   - Present: o0 and a0 as baselines, uniform and shuffled arms, per-run CPU matching (when reached).\n   - Missing: a baseline that spends the discovery's total CPU tuning o0's own constants and scalars; a null-selection control (a lineage that accepts on randomized values) for drift from repeated selection; a within-category specialization check on the never-used part B fresh instances of the discovery categories; a recursive-arm shuffled control (the shuffled arm reverts to generation 0's principle).\n   - Not removable: the experimenter's choices of sensors, edit space and the o0 prior.\n\n4. Recursion claim. No test exists yet.\n   - evaluate.py has no recursive-vs-frozen statistic.\n   - The ledger's \"principle_of\" field hashes the whole mechanism, so it cannot show whether the learner of the discoverer (init/propose/update) changed. When it does not change, the comparison is empty.\n   - The arms are matched on steps, not CPU: the number of promoted candidates and kd vary.\n   - With 2 lineages per arm that migration couples, n is about 1 per arm.\n   I propose a paired principle-swap test from a fixed parent, with a placebo principle, at equal search CPU.\n\n5. Statistics. The development ledger (written by an older code version: seeds 1,2; kd 4; no screening) gives a seed SD of a candidate's 3-seed value of about 0.008 (0.0055 median-based). The margin of 0.002 is about 0.25 SD, and confirmation needs only a positive sign on 2 seeds.\n   - Simulated chance of accepting a candidate with no effect: 0.43 per step if all 6 candidates have none, 0.16 per step with 1 such candidate among 5 harmful ones. That is about 2 to 6 accepted no-effect candidates per 15-step lineage.\n   - In the ledger, the candidates with values +0.008 to +0.012 all confirmed at about -0.0036.\n   - Held-out test with 3 categories x 4 seeds: about 80% power needs an effect of about 0.025 to 0.03. Power at the registered 0.01 is about 25%.\n   - With 3 categories the bootstrap is anti-conservative. In my simulation, the one-sided rate under a heterogeneous null was about 6% against a nominal 2.5%, and it tends to 12.5% as the spread between categories grows.",
+ "checks_run": [
+  "Read rsi6/open/evaluate.py, discovery.py, run_dev.py; relevant parts of kernel/run.py (measure, Cache, key_of), kernel/environment.py split, learner/design_o.py (Acquirer, _acquire_open), open/edits.py behaviour/CELLS, experiments/report.py both_interval/blocked_interval",
+  "Read registration.json primary_endpoint, controls, recursion_test, failure_conditions, seeds, budgets; amendment_4.json decisions/predictions; roles.json",
+  "Read smoke.log and dev_o1_first.log; counted record types and categories of 'open:' runs in dev_o1.jsonl (only jobshop/knapsack/pmedian/quadassign, 110 runs each)",
+  "WORK/noise3.py on dev_o1.jsonl (read-only): 48 candidates, 8 behaviour-null; per-category seed SD of the paired candidate-parent difference (jobshop 0.023, knapsack 0.014, pmedian 0.031, quadassign 0.039 mean-based); implied SD of a candidate value 0.014 (1 seed), 0.010 (2), 0.008 (3); 10% of candidates had a 2-seed value >= 0.002",
+  "Dumped o_step/o_accept records: accepted value +0.0031 confirmation +0.0012; three rejected with values +0.0121/+0.0081/+0.0086 and confirmations -0.0036/-0.0038/-0.0035; weight vector max |w| 2.2 after one step, about 5 after six",
+  "WORK/sim.py: simulated the current acceptance rule (kd=6, screen on 1 seed, promote half, margin 0.002, 2-seed sign confirmation) with the measured seed SDs; called report.both_interval for the held-out false-positive rate and power at 3 categories x 4 seeds"
+ ],
+ "findings": [
+  {
+   "severity": "major",
+   "file": "rsi6/open/evaluate.py",
+   "line": "117-127",
+   "what": "evaluate.py reports comparisons that the registered house rule declares void. First, 'arm minus o0' and 'arm minus a0' get no CPU check, so the baseline may have received less CPU than the arm. Second, for the compute-matched control o0@arm, the min-change and interval are computed over all pairs even when some never reached the arm's CPU; only a 'matched k/n' count is appended.",
+   "why_it_matters": "registration.json failure_conditions[3]: 'any comparison in which the control received less measured CPU than the arm it is compared with is void'. The discovery CPU guard covers only the four discovery categories, summed over categories (discovery.py:164,174), so on held-out categories a mechanism's CPU per run is unconstrained. smoke.log already shows large CPU gaps between the designs there: setcover a0 96.4 s vs o0 206.5 s, partitioning 178.4 vs 220.4. So 'arm minus a0' will normally compare against a baseline with about half the CPU, and a positive held-out number could come from compute.",
+   "evidence": "evaluate.py:117-119 (no CPU field and no check); 123-124 (compare over all of `control`, then reached=sum(...)); 68 (dict(last[p], reached=...) keeps unreached pairs); smoke.log lines 'setcover design a ... cpu 96.4s' and 'setcover design o ... cpu 206.5s'",
+   "suggested_fix": "Store the per-pair CPU ratio with every comparison. Mark 'minus o0' and 'minus a0' void whenever the baseline's CPU is below the arm's on a pair, or add a0@arm and require it. For o0@arm, compute the statistic only when every pair is reached; otherwise report the comparison as void, as the registration says."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/open/evaluate.py",
+   "line": "55-68",
+   "what": "The matched control does not follow amendment_4 reading (d). It always doubles the training budget and stops after 8 levels. Amendment 4(d) says 'doubled at first, then by the factor that the measured CPU of the last two levels says is needed, at least 2 and at most 64 per level, at most twelve levels'. Pure doubling also overshoots: the control receives between 1x and about 2x the arm's CPU, so the arm is not compared 'at matched CPU'.",
+   "why_it_matters": "With 8 levels the control's budget tops out at 2^7 = 128x, whereas the house rule allows up to 64^11. So 'not reached' (and a void comparison) is more likely than the registered procedure would give. When it is reached, the control can have nearly twice the arm's CPU, which biases the result against a genuinely better mechanism. In both cases the docstring's 'compute-matched' overstates what was built.",
+   "evidence": "evaluate.py:55 levels=8; 66 value[pair] *= 2.0; 67 stop at first cpu >= want; amendment_4.json decisions[4] reading (d)",
+   "suggested_fix": "Implement the amendment 4(d) schedule (12 levels, adaptive factor 2-64). Record the achieved CPU ratio for each pair. Call the control 'at least the arm's CPU' and report the ratio actually achieved."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/open/evaluate.py",
+   "line": "104-106",
+   "what": "Arms are built only from o_accept records. A lineage that accepted nothing silently produces no arm. A lineage whose parent was replaced by migration (discovery.py:239 sets worst.parent with no o_accept record) is evaluated on its last own acceptance, which is no longer its mechanism. Ledgers whose basename prefix before the first '.' is the same, with the same lineage name, overwrite each other.",
+   "why_it_matters": "Survivorship: an arm whose lineages fail disappears, instead of counting as o0 (zero change). Per registration failure_conditions[0], 'no version adopted' must be reported as that result. A recursive-vs-frozen or arm-vs-uniform summary built from the surviving arms is biased toward whichever arms had accepted candidates, which by finding 'null acceptance' are often noise.",
+   "evidence": "evaluate.py:105-106 `for r in ... select(type=\"o_accept\")`, key f\"{basename.split('.')[0]}:{lineage}\"; discovery.py:239-243 migration writes only o_migrate",
+   "suggested_fix": "Make the lineage list explicit: read every lineage from o_step and o_migrate records. Take each lineage's final parent from its last o_step 'parent_score_after'/'parent' key or a final o_final record. Count a lineage without acceptances as o0. Use the full ledger path or a digest as the arm name."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/open/evaluate.py",
+   "line": "121-122",
+   "what": "The compute control matches only the CPU of one evaluation run of the final mechanism. The CPU the discovery spent to find it is never charged: about 4 categories x (6 screens + 3x3 promotions + 2x2 confirmations) runs per step, x 15 steps, x 2 lineages. No control spends that CPU on o0 in another way, such as tuning its own constants, scalars or prior on the same discovery categories.",
+   "why_it_matters": "Claim (3) 'not from more compute' covers the process, not only the final run. The registered control is 'generation 0 given at least the measured CPU-seconds the self lineage spent per target on rounds and gates', and amendment_4 (b) defines spent CPU as all searches, gates and confirmations. Without a search baseline at equal total CPU, a held-out gain could be what any tuning of o0's existing knobs would give. That would be (c) or (e), not a new principle.",
+   "evidence": "evaluate.py:121 want = cpu of results[name] (one run per pair); registration.json controls[4]; amendment_4.json decisions[4] (b)",
+   "suggested_fix": "Add two arms. (i) A 'tune' arm: the same discovery driver with edits restricted to the theta and scalar cells (or uniform edits on them), same steps, kd and acceptance rule, with its total CPU matched to the recursive arm's measured total from the ledger. (ii) Report each arm's total discovery CPU next to its held-out result."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/kernel/environment.py",
+   "line": "61-69",
+   "what": "Instances do not depend on the seed: split() uses only the category, and measure() varies only the relabelling and RNG with the seed. As a result: (a) the discovery's 'fresh confirmation seeds' (discovery.py:187) re-score the same part-A fresh instances it selected on; (b) every held-out seed scores the same 24 fresh instances per category; (c) generation 0 of both designs was already measured on exactly those held-out fresh instances of partitioning and setcover (smoke.log); (d) process b1/c gates used those same instances.",
+   "why_it_matters": "Confirmation guards only against relabel/RNG noise, not against fitting the fixed instance set. The held-out interval resamples seeds, which carry no instance variance, so it is narrower than generalisation to the category would warrant. The experimenter knows o0's level and headroom on exactly these test instances (setcover acquired 0.9265, so at most +0.07 is possible there).",
+   "evidence": "environment.py:62-66 docstring 'It depends on the environment only, so every version and every seed is scored on the same fresh instances'; run.py:80 split(env, n_train, n_fresh) with no seed; discovery.py:187 fresh_seeds = [s + 2*steps ...] reuse SEARCH_BUDGET part A; smoke.log 'partitioning design o ... acquired 0.8714', 'setcover design o ... acquired 0.9265'",
+   "suggested_fix": "Removable: use held-out seeds never used before (not 1-4; smoke.log's seeds are unknown). Add a check that no 'open:' run in any discovery ledger used a held-out category (evaluate.py never reads the discovery's categories, and run_dev accepts binpacking because it is source). Must be stated: the instances were seen. The interval covers seed noise only, and the inference is to these instances. Add part B of the discovery categories (never used by discovery) as a within-category specialisation check."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/open/discovery.py",
+   "line": "182-193",
+   "what": "The acceptance rule lets mechanisms with no true effect through at a high rate. The margin is 0.002 on a 3-seed value whose seed SD is about 0.008 (0.0055 median-based). Confirmation only needs s2-p2 > 0 on 2 seeds, which has SD about 0.010 and passes a no-effect candidate with probability about 0.5. The margin can also drop to 0.0005 through migration (line 235).",
+   "why_it_matters": "Simulated with the measured SDs (WORK/sim.py): the chance of accepting a no-effect candidate is 0.43 per step when all 6 candidates have none, and 0.16 per step with 1 such among 5 harmful (-0.01). That is about 2.4 to 6.5 accepted no-effect mechanisms per 15-step lineage, so a lineage's final mechanism is largely a random walk. In the development ledger, the three candidates with values +0.012/+0.008/+0.009 confirmed at -0.0036/-0.0038/-0.0035 (winner's curse). The one acceptance (+0.0031, confirmation +0.0012) cannot be told apart from noise.",
+   "evidence": "WORK/noise3.py output: 'sd of value with 3 seeds: 0.0082', 'with 2 seeds: 0.0100'; sim.py: '6 null P(accept ...)=0.434', '1 null + 5 at -0.01 ... =0.163, expected 2.4'; dev_o1.jsonl o_step rows of recursive1 steps 2, 3, 5 and o_accept step 0. (The development ledger was written by an older code version: seeds 1,2, kd 4, no screening.)",
+   "suggested_fix": "Require the confirmation to clear the margin as well, not just be positive, or require a combined z of value and confirmation above about 2. Use at least 4 confirmation seeds. Set the margin to about 1 SD of the value. Also report the expected number of no-effect acceptances under the chosen rule."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/experiments/report.py",
+   "line": "30-47",
+   "what": "With 3 held-out categories, the bootstrap that resamples categories is anti-conservative. The resample made only of the worst category has probability 1/27 = 3.7% > 2.5%, so 'interval excludes zero' is roughly 'all three category means positive'. Under a symmetric null with heterogeneous categories that has probability up to 1/8 per sign. Power is low at the registered threshold.",
+   "why_it_matters": "Simulation with both_interval, 3 categories x 4 seeds, seed SD 0.025, 150 trials: null with category SD 0.02 gives P(lower bound > 0) = 0.06 (nominal 0.025). Power is 0.25 at an effect of 0.01, 0.66 at 0.02, 0.95 at 0.03, and 0.51 at 0.02 with category SD 0.02. A held-out claim at 0.01 is unlikely to be detected and can be a false positive at about 2-5x the nominal rate.",
+   "evidence": "WORK/sim.py output: 'delta 0.00 tau 0.02: P(lo>0)=0.06', 'delta 0.01 tau 0.00: 0.25', 'delta 0.02: 0.66', 'delta 0.03: 0.95'",
+   "suggested_fix": "State the effective level with 3 clusters, or add held-out categories. Use more seeds, e.g. 8 as the registered target seeds, to shrink within-category error. Pre-register the minimal detectable effect (about 0.025-0.03 with 4 seeds). Require all categories positive as an explicit sign criterion instead of calling it a 95% interval."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/open/evaluate.py",
+   "line": "107-124",
+   "what": "evaluate.py contains no test of claim (2). It compares each lineage only with o0, a0 and o0@arm; recursive is never compared with frozen, uniform or shuffled. The planned design also cannot support such a test. Each arm has 2 lineages, and migration makes the worse one copy the better one's mechanism, library and weights, so effectively n is about 1 per arm. The recursive and frozen trajectories diverge, so a difference mixes the discoverer's learner with which noisy candidates happened to be accepted.",
+   "why_it_matters": "Comparing two intervals of 'arm minus o0' for 2 coupled lineages cannot establish or refute that a discovered principle improves discovery. Given the high rate of no-effect acceptance, the arm difference is dominated by lineage luck. The registered recursion test requires nominees 'from the same start ... at equal search CPU' and says one round 'can refute but cannot establish'.",
+   "evidence": "evaluate.py:114-124 (only vs o0/a0/o0@); discovery.py:239-242 migration copies best.parent, library and weights; run_dev.py:40 default 2 lineages; registration.json recursion_test",
+   "suggested_fix": "Use a principle-swap test. Take each distinct principle P in the recursive arm, identified by a hash of the effective init/propose/update. From a fixed parent (o0, and the final mechanism), run R >= 8 short discovery replicates with discoverer learner P and R with generation 0's principle P0. Each replicate pair shares the rng seed, kd, promote, margin and discovery categories, at equal total CPU. Add a placebo principle (an unselected random edit of P0's update) and uniform. Pre-register the endpoint: the paired difference in the confirmed value of the final mechanism after a fixed number of steps, measured on unused confirmation seeds and on part B. It supports the claim if P beats both P0 and the placebo. It refutes it if P is at most P0. It is empty, and must be reported as 'not tested', if no accepted mechanism changed the principle."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/open/discovery.py",
+   "line": "74,196",
+   "what": "The ledger's 'principle_of' is edits.behaviour of the whole mechanism, so it changes on any accepted edit, including score-only and pick-only edits. Nothing records whether the discoverer's learner actually changed (init/propose/update). Further, Acquirer is built with pop=kd (line 75), so a change to the genome's 'pop' never reaches the discoverer.",
+   "why_it_matters": "The recursive-vs-frozen comparison is empty when the accepted mechanisms never change init/propose/update, or change them only in ways that do nothing in the discoverer's regime (kd 3-10 candidates per step, about 15 updates, 43-dimensional weights). In that case the two arms differ only in rng consumption. With the current record, a reader would see a changing 'principle_of' and believe the recursion was active.",
+   "evidence": "discovery.py:74 self.source = edits.behaviour(principle_source); edits.py:199-201 behaviour = sha256(effective(mechanism)) (whole mechanism); discovery.py:196 'principle_of': self.D.source[:16]; design_o.py:585 K = pop or genome['pop']",
+   "suggested_fix": "Record a hash of the effective init, propose and update programs, plus the scalars Acquirer reads. Count the steps run under a principle different from P0. Before the run, check on a synthetic fitness sequence that P and P0 give different proposals for the same rng."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/open/discovery.py",
+   "line": "153-176",
+   "what": "The arms are matched on number of steps, not CPU. How many candidates go on to the other discovery seeds depends on how many screen positive (alive/promoted). kd changes in migrations (line 234) and is inherited. So a discoverer that proposes better candidates measures more of them on more seeds, and lineages differ in candidates per step. No CPU budget per lineage or arm exists.",
+   "why_it_matters": "Differences between recursive, frozen and uniform arms can come from different search CPU (c). The registration's recursion test requires 'equal search CPU'.",
+   "evidence": "discovery.py:168-171 promoted from alive (screen > 0); 234 kd perturbed in migrate; run_dev.py:68 loop over a fixed number of steps",
+   "suggested_fix": "Give each lineage a CPU budget, not a step count, using the summed cpu of its runs from the ledger. Or report the arms' total CPU and compare them at equal CPU, truncating at the smaller total."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/open/evaluate.py",
+   "line": "1-17",
+   "what": "Information from the held-out categories enters the experiment in ways that cannot be removed. o0 writes the first design's prior and its cross-entropy search (design_o.py:87-88). That design was developed on binpacking, a source category in roles.json, and its adoption and gate rounds b1/c used partitioning and setcover. The experimenter also chose the sensors, the edit space and the split of categories after smoke.log showed generation 0 on partitioning and setcover. In particular, setcover o0 is at 0.9265, which leaves about 0.07 of headroom.",
+   "why_it_matters": "Point (e) of claim (3) cannot be fully controlled. For 'arm minus o0', inheriting a prior tuned on the held-out categories mostly favours o0 (conservative). But the edit space and sensors were designed knowing every category, and the choice of held-out set after seeing headroom affects the statistic, which is the minimum over categories. These must be stated with the result.",
+   "evidence": "roles.json: binpacking 'source', setcover/partitioning 'adoption:3'; smoke.log lines for partitioning/setcover; design_o.py:87-88 docstring of default()",
+   "suggested_fix": "Register the held-out categories, seeds, aggregation over lineages and statistic before the first discovery run. State the leaks listed here. As a check that does not depend on the first design's history, also report the arms on part B of the discovery categories."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/open/discovery.py",
+   "line": "214-217",
+   "what": "The 'shuffled' negative control rebuilds on generation 0's principle (self.start), so it is a control for the frozen arm only. No control applies shuffled feedback to a recursive discoverer, and no control checks for drift from repeated selection, such as a lineage that accepts on randomized values with the same number of acceptances.",
+   "why_it_matters": "Without a null-selection lineage, there is no held-out null distribution for 'a mechanism after k noisy acceptances', which is needed to separate (d) from (a). Shuffled feedback still selects on real values, so it does not supply one.",
+   "evidence": "discovery.py:216 `elif self.D.mode in (\"frozen\", \"shuffled\"): self.D.rebuild(self.start, ...)`; 89-90 only D's feedback permuted",
+   "suggested_fix": "Add a 'null-accept' arm. It uses the same proposals and number of acceptances, but each candidate's value and confirmation are replaced by values permuted across candidates, or the accepted candidate is drawn at random among valid ones. Evaluate its final mechanisms on held-out exactly like the other arms."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/open/evaluate.py",
+   "line": "112-123",
+   "what": "One rng (default_rng(0)) is shared across all comparisons, consumed in sequence. The interval of a comparison therefore depends on how many arms come before it and on the order of the --discovery arguments.",
+   "why_it_matters": "Adding or reordering a discovery ledger changes the printed intervals of the other arms, so a result is not repeatable from its own inputs alone.",
+   "evidence": "evaluate.py:112 rng = np.random.default_rng(0); 117-123 compare(..., rng) repeatedly",
+   "suggested_fix": "Seed each comparison from a hash of its name, e.g. default_rng(zlib.crc32(name))."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/open/discovery.py",
+   "line": "177-180",
+   "what": "The discoverer's fitness vector mixes 1-seed screen values (non-promoted candidates) with 3-seed values (promoted), plus a floor for refused candidates. In the development ledger, generation 0's cross-entropy update moved the weight vector to max |w| 2.2 after one step and about 5 after six, concentrating edits on one or two cells (cell 29 in recursive0, cell 12 in recursive1).",
+   "why_it_matters": "With value noise about 0.008-0.014 against candidate differences of the same size, fitness ranks are mostly noise. A rank-based learner then concentrates on noise early. This also lowers the chance that any principle differs measurably from uniform: frozen and uniform may be indistinguishable, which leaves the recursion channel without effect.",
+   "evidence": "dev_o1.jsonl o_step weights: 'recursive0 0 43 max|w| 2.204', 'recursive0 5 43 max|w| 4.922'; repeated cells [29] and [12] in candidate rows",
+   "suggested_fix": "Before any registered run, test frozen against uniform on candidate value per CPU. If no difference, the recursion test cannot show anything and should be reported as such. Feed only values measured at the same precision."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/experiments/report.py",
+   "line": "36-39",
+   "what": "The statistic min(change in acquired, change in gain) gives no credit to a mechanism that improves its untrained answer through new score/pick programs. Such a mechanism raises 'untrained' and 'acquired' together, so the gain changes little.",
+   "why_it_matters": "A discovered representation can raise the acquired score on held-out categories and still show a min-change near 0. Interpreting a null result as 'no capability acquired' needs this caveat, as does reading the per-category acquired column alone.",
+   "evidence": "run.py:124-125 gain = acquired - untrained of the same version; report.py:39 return min(a, g)",
+   "suggested_fix": "Report acquired, untrained and gain separately for each arm alongside the registered minimum."
+  }
+ ]
+}

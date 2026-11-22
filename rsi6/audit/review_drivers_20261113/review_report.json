@@ -1,0 +1,103 @@
+{
+ "summary": "Review of rsi6/experiments/report.py. No blocking defect found. Two major findings: (1) the success condition of process c scores \"not behind the compute-matched arm\" (and can return success True) even when the matched arm did not reach the matched CPU, although registration.json failure_conditions says such a comparison is void; (2) C6 is scored from the file registry/targets.json as soon as it exists, not from the ledger and not from what the target test actually ran on. Minor: adopting generations are counted as adopt records (a duplicate record for one generation gives True); the PROCESS C header mixes finished generations with runs/CPU of the generation in progress; the SEARCHES table drops or mislabels the recursion searches; C2 does not show when the adopted version was named by several techniques; C5/C6 texts and one label do not come from the ledger.\n\nWhat I checked and found correct: C1 to C5 follow their registered criteria and stay None until decidable; success is None until all parts are decided, False as soon as one is False, True only if all hold (synthetic states); both_interval and blocked_interval resample categories and, within each, seeds, with the same seed indices for acquired and gain, and the statistic is the min of the two means recomputed per draw; compare() sorts both arms by seed within each category, so the listing order of an arm does not matter (by reading; my run-time check of this was confounded by my own test generator and proves nothing); the alias arms c:frozen and c:skills get no comparison of their own and repeat the rows of frozen and skills; adoptions of the three processes that all carry round 1 are attributed correctly (synthetic and both ledgers: no ADOPTED line under ROUND 1, 2, b1; the process c adoption appears only in PROCESS C); the CPU of process c equals targets.py spent_by_process_c on both ledgers (13397.959 on main, 11681.453 on dev; dev matched record 23.362906 = 0.002 x 11681.453); records of the external gate and of the recursion check cannot enter the process c tables or rounds_section (exact tags, round_done rounds only). Regressions on main.jsonl: ROUND 1, ROUND 2, ROUND b1 and R1 to R4, B1 to B3 agree with the search/gate/confirm records.\n\nCompute used: about 5.5 CPU-minutes, one process at a time, nice 19; nothing under REPO modified; no learner run. Scripts and outputs are in <review>/work_c (scan.py, arms.py, synth.py, main.txt, dev.txt, main.json, dev.json).",
+ "checks_run": [
+  "report on rsi6/ledger/main.jsonl (45 s CPU): predictions, ROUND 1/2/b1, PROCESS C compared with the ledger records listed by work_c/scan.py",
+  "report on dev_ledger.jsonl (45 s CPU): process c section with freeze and external gate, targets with the c: arms, C1-C6 scoring",
+  "work_c/scan.py on both ledgers: record types, run purposes, CPU of process c by report.py's rule and by targets.py's regex (equal on both), adopt/freeze/external_gate/matched/target_done records, tags/rounds/names of every search, gate and confirm record",
+  "work_c/arms.py on the dev ledger: the runs behind frozen, c:frozen, c:self, c:compute, c:search, skills, c:skills, c:memory (aliases are the same runs; versions and budgets as described)",
+  "work_c/synth.py with a stub ledger (no learner): seven states of the success condition, C1-C6 in the all-hold state, a duplicate adopt record, a matched arm that reached the CPU in 0 of 32 pairs, rounds_section with adoptions of processes a, b and c all carrying round 1, search_section with two recursion searches without nominee, an arm one run short",
+  "reading: report.py in full, targets.py, alternating.py, external.py, recursion.py, meta/rounds.py, key_of/Cache in kernel/run.py, Ledger.select, registration_c.json, amendment_4.json, registration.json (primary_endpoint, failure_conditions, controls, seeds, prediction criteria)"
+ ],
+ "findings": [
+  {
+   "severity": "major",
+   "file": "rsi6/experiments/report.py",
+   "line": "315-319",
+   "what": "The targets part of the success condition takes 'not behind the compute-matched arm' from the comparison c:self minus c:compute without looking at whether c:compute reached the matched CPU. The matched records (reached per pair) are only printed at the very end under 'compute matching'.",
+   "why_it_matters": "registration.json failure_conditions[3]: 'any comparison in which the control received less measured CPU than the arm it is compared with is void'. targets.py matched() stops after twelve levels and records reached=False for pairs that stay below the matched CPU (possible on a category where the CPU of generation 0 does not grow with the training budget; the pool already has one with cpu/run 0.0, forecasting, and amendment 4 expects satisfiability to score 0 for every arm). In that case part (3) cannot be decided by a void comparison, yet the report can print success True and C4 MISSED.",
+   "evidence": "work_c/synth.py, state 'matched CPU reached in NO pair': parts {'two_adopting_generations': True, 'external_gate_passed': True, 'targets': True} -> True while matched c:compute = {'reached': 0, 'of': 32}. Confidence: certain about the behaviour; medium that the registered rule must be applied at this point (it stands in the base registration, and registration_c.json says the c: arms are 'as registered for the other processes').",
+   "suggested_fix": "In process_c_section read the matched record of c:compute (or recompute per (env, seed) from the runs: cpu of the c:compute run >= cpu of the c:self run + share). If any pair is below, set parts['targets'] to None or to an explicit 'void' state that can never give success True, and print it beside the success line. The same test belongs on every '<primary> minus compute/search' comparison that is printed."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/experiments/report.py",
+   "line": "351-353",
+   "what": "C6 is scored from the file registry/targets.json next to the code: as soon as that file exists, whatever the ledger says, whatever --ledger was given, and whether or not the target test has run. It is not computed from the ledger.",
+   "why_it_matters": "Scored too early and on evidence outside the hash chain. If the file is written while the audit of genassign is pending (three admitted), the report prints C6 MISSED and flips later; if the file is edited after the run, or the run used --targets with another file, C6 is scored on a list the test did not use. A report on dev_ledger.jsonl would score C6 from the registered file. The text of C6 is 'the target test runs on four categories', which only target_done proves. The module docstring says a number that cannot be computed from the ledger is not printed.",
+   "evidence": "Lines 351-353: os.path.exists(listed) is the only condition; the two json.load(open(listed)) calls read the file, and a file without 'admitted' raises KeyError and stops the whole report. On both ledgers today the file is absent and C6 prints 'not scored' (main.txt, dev.txt). The ledger holds the same information tamper-evidently: target_done['targets'] and the unlock record of role target written by targets.py lines 210-211, 224.",
+   "suggested_fix": "Score C6 from the last target_done record: None until it exists, then len(done['targets']) == 4 (and, to match the text, 'genassign' in it); show the list as the detail. If the file is kept as evidence, print its SHA-256 and require it to equal the targets in the ledger."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/experiments/report.py",
+   "line": "306",
+   "what": "'two_adopting_generations' is len(adoptions) >= 2, a count of adopt records, not of distinct generations that adopted.",
+   "why_it_matters": "registration_c.json decision.success (1) says 'at least two generations adopted a version'. alternating.py writes the adopt record (line 235) before c_generation_done (line 239); a driver killed between the two and started again sets current to the adopted version (lines 195-196), finds the gates and confirmations of that generation in the ledger and appends a second adopt record for the same generation. The report then gives part (1) True with one adopting generation, and C1/C2 counts are inflated. The window is two consecutive appends, so it is unlikely, but the driver is running now and is restartable by design.",
+   "evidence": "work_c/synth.py, state 'DUPLICATE adopt of one generation' (two adopt records with round 1): two_adopting_generations True, success True.",
+   "suggested_fix": "Count len({a['round'] for a in adoptions}) and take the technique of a generation from its last adopt record; cross-check against c_generation_done['adopted_by'] and print a warning when the two disagree. (alternating.py should also guard the append with find(type='adopt', process='c', round=g).)"
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/experiments/report.py",
+   "line": "264-289, 477-479",
+   "what": "The header line of PROCESS C mixes two scopes: generations and 'distinct nominees tested' cover only generations with a c_generation_done record, while 'runs' and 'CPU-seconds' cover every run of process c, including the generation in progress. Nominees and gates of the generation in progress are not shown at all.",
+   "why_it_matters": "A reader of '1 of 6 generations recorded, ... 2 distinct nominees tested, 1740 runs, 13398 CPU-seconds' takes the runs and CPU as the cost of generation 1. The label says something other than what is computed.",
+   "evidence": "main.jsonl: of the 1740 runs counted, 1162 have purposes of c1 and 578 of c2 (work_c/scan.py, Counter({'c1': 1162, 'c2': 578})); the header prints 1740 runs beside '1 of 6 generations recorded'.",
+   "suggested_fix": "Either print runs and CPU per generation (by the c<g> in the purpose) and say 'including generation g in progress', or restrict the totals to recorded generations. Optionally list the c_nominee records of the generation in progress as 'in progress'."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/experiments/report.py",
+   "line": "108-112, 151-154",
+   "what": "search_section was not adapted to the search records of the recursion check (tags recursion:c<g>:gen0 / :random, round c<g>, same start as the climb). (a) The rule that skips 'the same search under another name' drops a recursion search whenever its nominee equals that of the climb or of the other recursion search, including when both are None. (b) For the recursion searches that are listed, the gate and the confirmation are looked up under tag.replace('search','gate'), which leaves the tag unchanged, while recursion.py writes them under '<tag>:gate' and '<tag>:confirm'; the row prints 'adoption set none, confirmation half none' although both were measured.",
+   "why_it_matters": "The SEARCHES table will silently omit or mislabel the searches of the recursion check. The table of the recursion check itself (from recursion_done) is not affected, and no prediction is scored from these rows.",
+   "evidence": "work_c/synth.py case 4: three search records of round c2 with the same start and no nominee (climb, recursion gen0, recursion random) -> searches listed: ['search:c2:climb'].",
+   "suggested_fix": "Apply the skip rule only when improver and improver_version are equal too (or only to records without 'diagnostic'); for records with diagnostic == 'recursion' look the gate and confirmation up under tag + ':gate' and tag + ':confirm'."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/experiments/report.py",
+   "line": "284-285, 337-339",
+   "what": "C2 and the list of adoptions take the technique from the adopt record alone. When several techniques name the same version, alternating.py line 234 (max over equal gate values) credits the first in the order single, remeasure, combine, climb; the report does not show that the adopted version was also named by another technique.",
+   "why_it_matters": "If the climb and a single-field technique name the same version and it is adopted, C2 counts it for the single-field side by a tie-break that the registration does not state. Not a wrong number today, but C2 could be decided by it.",
+   "evidence": "Generation 1 on main.jsonl: single, remeasure and combine all named b108b1ce6514 with identical gate records. The same version b108b1ce was the nominee of the random search of round 2 (search:2:random), so a search over versions can land on the best single-field change.",
+   "suggested_fix": "In each adoption entry add the list of techniques whose c_nominee of that generation has the adopted digest; in C2 report such adoptions separately and state how they were counted (or leave C2 unscored if they decide it)."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/experiments/report.py",
+   "line": "327-329, 438, 502",
+   "what": "Printed text that does not come from the ledger: the texts and criteria of C5 and C6 are read from registry/amendment_4.json on disk without a comparison with a ledger record (R1-R8 likewise from registration.json, line 438, although the ledger holds the registration); the label 'external gate on the reserves' is fixed text.",
+   "why_it_matters": "The file can differ from what was registered without the report noticing; if amendment_4.json is absent, C5 and C6 vanish from the list without a word. On the dev ledger the fixed label is printed for binpacking and jobshop.",
+   "evidence": "dev.txt: 'external gate on the reserves: passed False ...' followed by per-category rows binpacking and jobshop (the external_gate record has envs ['binpacking', 'jobshop']). main.jsonl has no record of amendment 4 yet; its amendment records use the field 'amendment': N with 'record_sha256', while recursion.py line 69-70 will look for and write 'number': 4 with 'digest' and no record_sha256.",
+   "suggested_fix": "Take the predictions of amendment 4 from its ledger record when present, otherwise print the SHA-256 of the file and mark the texts as 'not yet recorded in the ledger'; print the envs of the external_gate record instead of the words 'the reserves'."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/experiments/report.py",
+   "line": "206-212",
+   "what": "compare() pairs runs by position after sorting by seed and zips the two lists; an arm with a missing or extra run for a category is truncated and mispaired without any message.",
+   "why_it_matters": "Cannot occur with targets.py as written (target_done is appended only after every arm is complete, one run per category and seed), so the numbers of the registered run are not at risk; a hand-made or partial target_done would give a success verdict from mispaired runs.",
+   "evidence": "work_c/synth.py case 5: c:self with one run removed -> 'c:self minus frozen' computed as [0.0301, 0.0249, 0.0315] and success True, no error.",
+   "suggested_fix": "Build each side as a dict by seed and assert that the two seed sets of every category are equal to done['seeds'] before subtracting."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/experiments/report.py",
+   "line": "115",
+   "what": "search_section calls ledger.select(type='registration') inside the loop over all runs for every search record, a full scan of the ledger per run. One report on main.jsonl costs 45 CPU-seconds now.",
+   "why_it_matters": "The cost grows with searches x runs x records: with six climbs, up to ten recursion searches and about three times the runs, a report will cost several CPU-minutes on a machine where a registered experiment measures CPU-seconds.",
+   "evidence": "time of the report on main.jsonl (3953 records, 12 search records... 3884 runs): real 45 s; the dev ledger the same. The stub tests show the bootstrap is the smaller part.",
+   "suggested_fix": "Read the registered search budget once before the loops and index the runs once by (budget, env, seed)."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/experiments/report.py",
+   "line": "188, 216, 294-301, 306-319",
+   "what": "Observations without a defect. (a) One random generator is shared by all comparisons and the arms are iterated in the order of the stored dict, which is alphabetical after the ledger is reloaded, so the interval of 'c:self minus frozen' depends on which other arms exist; it is deterministic for a given ledger. (b) external_gate 'passed' is taken from the record and not recomputed from the gate and confirm records, and its 'final' digest is not compared with the freeze digest. (c) With no adoption (primary_arm_c 'c:frozen') the targets part stays None rather than False, and the branch at line 311-312 is unreachable; success is False anyway through part (1). (d) Part (1) and C2 wait for the freeze record even when all six generations are recorded, which is conservative.",
+   "why_it_matters": "None of these changes a registered result; (b) and (c) are places where a cross-check is cheap.",
+   "evidence": "dev.txt arm order 'b:compute, b:fixed, ...'; synthetic states in work_c/synth.py: 'targets not run' -> None, 'behind compute' -> False, 'small effect' -> False, 'one adoption, not frozen' -> None, 'all parts hold' -> True with C1 True, C2 False (two climb adoptions), C3 False, C4 False, C5 and C6 None.",
+   "suggested_fix": "Optional: recompute passed as gate['adopted'] and confirmation['mean_min'] > 0 and compare with the record; require external['final'] == freeze digest; set the targets part to False when primary_arm_c is 'c:frozen'."
+  }
+ ]
+}

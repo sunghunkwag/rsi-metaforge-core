@@ -1,0 +1,102 @@
+{
+ "buildable": true,
+ "files_written": [
+  "<scratch>/targets/genassign/repo/rsi6/environments/genassign.py",
+  "<scratch>/targets/genassign/repo/rsi6/environments/manifests/genassign.json",
+  "<scratch>/targets/genassign/repo/rsi6/environments/__init__.py",
+  "<scratch>/targets/genassign/work/checks.py",
+  "<scratch>/targets/genassign/work/checks.out",
+  "<scratch>/targets/genassign/work/prove.py",
+  "<scratch>/targets/genassign/work/prove_some.py",
+  "<scratch>/targets/genassign/work/mc.py",
+  "<scratch>/targets/genassign/work/enumerate_valid.py",
+  "<scratch>/targets/genassign/work/rerun/reproved.json",
+  "<scratch>/targets/genassign/work/rerun/reproved_long_a.json",
+  "<scratch>/targets/genassign/work/rerun/reproved_long_b.json"
+ ],
+ "learner_run_on_benchmark_instances": false,
+ "source": "OR-Library (J. E. Beasley), generalised assignment problem: gap1.txt to gap12.txt and the page gapinfo.html, all from https://people.brunel.ac.uk/~mastjjb/jeb/orlib/. 13 files are pinned by SHA-256 in the manifest; a fresh download of all 13 in this session reproduced every pinned hash. The page is parsed for the 60 optimal values, not typed; an independent regex reading of the page in the checks gives the same 60 values. gapa to gapd are left out because the page gives no reference value for them.",
+ "hosts_used": [
+  "people.brunel.ac.uk"
+ ],
+ "answer_form": "AssignProblem, exact. The n jobs are the variables and the m agents are the options; no count capacity, not ordered, no domain, no start answer. Two groups: [0] minus the sum of c over the assigned jobs (soft; a soft group is minimised, so the maximisation is presented as minimising the negated value, and a complete answer's published value is exactly minus this total); [1] the total amount by which resource consumed exceeds capacity, summed over agents (hard; zero exactly when the answer is valid). Exposed arrays, each a field of the file: var_opt[0][j,i] = c(i,j), var_opt[1][j,i] = a(i,j), opt_attr[i,0] = b(i). Jobs and agents are relabelled with the seed and decode maps back. One layout for all 60 with nothing padded: ('assign', False, True, True, (False, True), (False, False), 0, 1, 0, 0, 2, 0, True, True).",
+ "reference": "The optimal values 'when solved as maximisation problems' printed on gapinfo.html (336 to 1451). They are attainable values, not bounds. The source publishes no assignment that reaches them. My own branch and bound over jobs with a Lagrangian bound (WORK/prove.py, no code shared with the adapter) found a valid assignment of the listed value and exhausted the tree above it for 60 of 60: proved 60, only reached 0. This was re-run to the end in this session from fresh downloads (55 under a 60 s cap, the other 5 without a cap, the longest 996 s), with node counts identical to the earlier attempt's record.",
+ "score_scale": "Chance-corrected, not the plain ratio: score = (value - chance) / (optimum - chance), cut to [0, 1]; 0 for an invalid answer, 1 at the optimum. The plain ratio is not used because c lies in [10, 25] and a random valid assignment is worth 0.734 to 0.913 of the optimum. 'A uniformly random valid answer' is taken to mean an assignment drawn uniformly from the set of assignments that respect every capacity. A uniformly random assignment is almost never valid (204 of 210 million), and its closed-form mean differs from the valid-set mean by -0.21 to +0.16 of the scale, so it is not used. The chance value is an estimate from a fixed sampler in the adapter (chance_value): 512 random walks whose steps are decided by a and b alone and keep the uniform distribution on the valid set. It reads c only to average, never reads the reference, and uses counter-based random numbers written out in the module, so it is deterministic. Accuracy: within 0.6 units (0.016 of the scale) of exact enumeration on the five c515 problems; within 0.0133 of the scale of independent plain-Python chains on all 60; another seed moved it by at most 0.0027 on 9 problems. An error of that size moves a score of 0.90 by less than 0.002. Optimum minus chance ranges from 28.1 to 314.0.",
+ "threshold_and_anchor": "threshold = 0.90. Anchor: an operating point, not an external fact: on average nine tenths of the way from the estimated expected value of a uniformly random valid assignment to the optimal value published by the OR-Library (a value a valid assignment attains, not a bound); an invalid assignment counts 0. On these instances a score of 0.90 corresponds to 0.973 to 0.991 of the optimum (0.984 on average). It was fixed without any learner score on this category.",
+ "groups": "12 published size classes of 5 instances each: c515, c520, c525, c530, c824, c832, c840, c848, c1030, c1040, c1050, c1060. split(env, 16, 24) gives training 16 from c1030 (2), c1040 (3), c1060 (2), c530 (1), c832 (2), c840 (4), c848 (2), and fresh 24 from c1050 (5), c515 (4), c520 (5), c525 (5), c824 (5); no group is on both sides. Halves of the fresh side: 14 (c1050, c515, c824) and 10 (c520, c525).",
+ "instances_used": 60,
+ "instances_left_out": "None of gap1 to gap12. The size rule (at most 1,000 jobs and jobs times agents at most 30,000, stated in the module text) admits all 60; the largest is 60 jobs by 10 agents, 661 construction units. gapa, gapb, gapc and gapd (minimisation problems) are left out entirely because the page gives no reference value for them; they were not downloaded.",
+ "checks": [
+  {
+   "id": "a",
+   "n": "60 instances (5 per group) x 2 relabellings, 4140 partial states",
+   "result": "pass: _new/_rows/_push equal the partial_totals specification, for rows of assigned and unassigned jobs alike"
+  },
+  {
+   "id": "b",
+   "n": "1020 answers through decode (505 valid, 515 invalid)",
+   "result": "pass: an independent evaluator from the published specification gives exactly the group totals; every invalid answer scores 0; score differs by 0.0 given the adapter's chance value and by at most 0.0116 with an independently sampled chance value; malformed answers score 0 and run._valid rejects them"
+  },
+  {
+   "id": "c",
+   "n": "60 optimal assignments, 1200 corrupted ones",
+   "result": "pass: the source publishes no assignments, so assignments of the listed value found by my own exact computation were used; all 60 score exactly 1.0; corrupted in one job: 28 score below 1, 1172 score 0, none 1; a beaten reference is cut at 1.0"
+  },
+  {
+   "id": "d",
+   "n": "60 instances x 2 seeds x training/fresh",
+   "result": "pass: one layout; n_vars 15 to 60, n_opts 5, 8 or 10, max n_vars*n_opts 600"
+  },
+  {
+   "id": "e",
+   "n": "180 cases",
+   "result": "pass: the same answer under two relabellings has equal totals and equal score; the arrays differ by a permutation only"
+  },
+  {
+   "id": "f",
+   "n": "split(env, 16, 24)",
+   "result": "pass: 16 training from 7 groups, 24 fresh from 5 other groups, no group on both sides"
+  },
+  {
+   "id": "g",
+   "n": "designs a and b, 8 made-up training problems and 3 made-up test problems each",
+   "result": "pass: acquire ran within the meter (13760 and 20113 of 20720 units); apply untrained and acquired returned well-formed answers whose totals equal an own evaluation; made-up random instances only, no benchmark instance"
+  },
+  {
+   "id": "h",
+   "n": "3000 arrays and numbers over 60 instances, training and fresh",
+   "result": "pass: 0 equal to the reference or the chance value (either sign) in the problem object, its view or a fresh state; no string attributes; exposed arrays traced to c, a, b of the file"
+  },
+  {
+   "id": "i",
+   "n": "60 instances plus 8 made-up small problems",
+   "result": "pass: the sampler is deterministic; against exact enumeration it is off by at most 1.24 units on made-up problems and at most 0.6 units on c515; it refuses when fewer than half of its samples are valid (minimum valid share on the benchmark sample 0.924)"
+  },
+  {
+   "id": "j",
+   "n": "6 instances",
+   "result": "pass: the package's generic tests repeated for this adapter alone (same seed same bytes, view hides the adapter and is read-only, no reference among the problem's numbers, registry entry)"
+  },
+  {
+   "id": "proof",
+   "n": "60 instances",
+   "result": "listed optimum proved for 60, only reached for 0; re-run to the end in this session from fresh downloads"
+  },
+  {
+   "id": "fetch",
+   "n": "13 files",
+   "result": "pass: python3 -m rsi6.fetch genassign reproduces the pinned hashes, and so does a fresh curl download of all 13"
+  }
+ ],
+ "open_issues": [
+  "The chance value is an estimate, not exact, and comes from a sampler inside the adapter. It is the one thing in the module that is neither parsing nor evaluation. It walks on feasibility (a and b) only, never on the objective, feeds only the score, and its result is in no field of the problem. An auditor should decide whether this is acceptable; the alternative, the closed-form mean over all assignments, is exact but differs from the valid-set mean by -0.21 to +0.16 of the scale.",
+  "The sampler assumes the valid set is connected under single-job moves and two-job exchanges. That is confirmed by exact enumeration only for the five c515 problems and for small made-up ones; for larger instances the only evidence is agreement with independent chains (at most 0.0133 of the scale).",
+  "Loading the environment costs about 13 to 17 CPU seconds because the sampler runs for all 60 instances at construction.",
+  "The threshold 0.90 is an uncalibrated operating point. Invalid answers count 0 and feasibility is tight (204 of 210 million uniformly random assignments were valid), so the mean score may be dominated by whether answers are feasible at all.",
+  "The scale is short on the small instances: optimum minus chance is as low as 28.1, so one unit of value is up to about 0.036 of score on c515.",
+  "The capacities b(i) are exposed as opt_attr, unlike knapsack.py where limits act only through the hard group. They are a published field of the instance and an attribute of the option; noted in case an auditor wants the knapsack convention.",
+  "The terms of use in the manifest are the OR-Library wording that the other OR-Library manifests of this package quote. The generalised assignment page states no terms, and the library's legal page was not fetched because it is not among the addresses named in the task; the manifest says so.",
+  "rsi6/tests/test_kernel.py was not run: it loads every registered environment and this copy holds data for only some. The relevant generic tests are repeated for genassign in check (j).",
+  "An earlier, cut-off attempt left the adapter, manifest, registry entry and scripts. I checked them before keeping them: read the adapter and the proof code line by line, re-verified hashes, re-ran all proofs. I completed the module text (it had placeholders and described a closed-form chance value while the code used the sampler). WORK/enum.py shadowed the standard module enum and broke the checks; it is now WORK/enumerate_valid.py."
+ ]
+}

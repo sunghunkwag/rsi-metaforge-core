@@ -1,42 +1,45 @@
 {
   "repo_notes": [
     {
-      "content": "This repository is an experimental Recursive Self-Improvement / MetaForge system. Documentation should focus on executable self-improvement loops, validation gates, anti-cheat controls, lineage tracking, accepted/rejected modifications, benchmark logs, pytest outputs, and known failure modes."
+      "content": "This repository holds one experiment, RSI-6 (the package rsi6/): a test of whether a learner that modifies its own capability-acquisition mechanism, adopting only independently validated modifications, becomes better at acquiring capabilities in kinds of environment it has never met. The measured outcome so far is negative: no recursive self-improvement has been observed. Documentation must state that plainly."
     },
     {
-      "content": "Do not summarize this repository as a generic LLM-agent wrapper. The central claim is not prompt orchestration, but experimentally gated self-modification with evidence logs and reproducible tests."
+      "content": "The canonical documents are rsi6/RESULTS.md (what was measured, misses first), rsi6/RESEARCH_PLAN.md (the protocol) and rsi6/OWNER_DIRECTIVE.md (the research directive, verbatim). Every reported number comes from the hash-chained ledger rsi6/ledger/main.jsonl. Prefer these over any summary."
     },
     {
-      "content": "Separate demonstrated behavior from speculative general-intelligence or unbounded capability claims. Emphasize what the code and logs actually show, where the evidence is weak, and which components are prototypes."
+      "content": "Do not summarize this repository as an LLM-agent wrapper: no code of the experiment calls a language model. The learner is one program that sees every environment only through two generic problem forms (rsi6/kernel/problem.py)."
     },
     {
-      "content": "Prioritize human-authored documentation in docs/ as the canonical guide to the architecture, validation logic, evidence map, and limitations."
+      "content": "Separate what was demonstrated from what was not. An adoption inside process c is provisional; the test on the sealed target categories has not been run. Make no general-intelligence or unbounded-capability claims."
+    },
+    {
+      "content": "The earlier program-synthesis line of the project (a stack-VM runtime on integer-list tasks and the packages RSI-2, RSI-3 and RSI-5) was removed from the tree on 2026-11-22 and remains in the git history only. Do not document it as current."
     }
   ],
   "pages": [
     {
-      "title": "System Overview",
-      "purpose": "Explain the overall RSI/MetaForge architecture, main files, execution flow, and how the components connect."
+      "title": "Overview and Status",
+      "purpose": "State the hypothesis, what has been measured in each process, and that no recursive self-improvement has been observed."
     },
     {
-      "title": "Recursive Self-Improvement Loop",
-      "purpose": "Document where the system proposes, applies, validates, rejects, or accepts self-modifications."
+      "title": "The Learner and the Generic Problem Forms",
+      "purpose": "Explain the learner's contract (acquire, apply), the assignment and prediction forms, the designs of the learner (first, second, open design o, designs q and r) and what a version is."
     },
     {
-      "title": "Validation Gates and Anti-Cheat Controls",
-      "purpose": "Explain mechanisms intended to prevent fake improvement, shallow mutation, benchmark gaming, or self-deception."
+      "title": "Self-Modification Processes",
+      "purpose": "Document the registered rounds, process c and the open design's discovery of mechanisms: what is searched, how a nominee is gated and confirmed, and what was adopted or rejected."
     },
     {
-      "title": "Lineage Tracking and Evidence Logs",
-      "purpose": "Show how logs, lineage records, accepted patches, rejected patches, and test outputs support or weaken the self-improvement claim."
+      "title": "Environments, Roles and Sealing",
+      "purpose": "List the benchmark families and their adapters, the roles (source, adoption, target, reserve, fresh), how data are fetched and pinned, and how sealed categories are kept from the learner."
     },
     {
-      "title": "Benchmark and Test Harness",
-      "purpose": "Document available tests, result files, battery outputs, pytest logs, demo modes, and how to reproduce reported behavior."
+      "title": "Ledger, Registrations and Audits",
+      "purpose": "Explain the hash-chained ledger, the registrations and amendments written before the runs they govern, replay from the ledger, and the records of independent audits."
     },
     {
-      "title": "Known Limitations and Failure Modes",
-      "purpose": "Clearly separate current experimental capability from unsupported broad self-improvement claims, including brittleness, current limits, and future work."
+      "title": "Limits and Negative Results",
+      "purpose": "Collect the measured limits: modifications that did not transfer across categories, edits that mostly harmed, the closed list of version fields, and what the experiment cannot show."
     }
   ]
 }

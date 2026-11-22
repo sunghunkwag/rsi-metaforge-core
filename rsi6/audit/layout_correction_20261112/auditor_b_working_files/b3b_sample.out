@@ -1,0 +1,14 @@
+seed 20261112
+phase 1: 60 records
+   binpacking [176, 273, 316, 321, 322, 375, 382, 662, 732, 871, 993, 1109]
+   forecasting [39, 141, 184, 359, 384, 468, 633, 863, 874, 1057, 1155, 1179]
+   jobshop [29, 78, 84, 168, 266, 295, 433, 458, 596, 725, 816, 865]
+   pmedian [533, 541, 648, 677, 687, 728, 757, 827, 918, 1062, 1088, 1149]
+   quadassign [509, 575, 577, 700, 970, 977, 978, 1034, 1063, 1099, 1121, 1141]
+   version digests in phase 1: 48
+   purposes: {'search:1:self': 8, 'search:1:random': 13, 'search:2:self': 18, 'search:2:random': 16, 'confirm:1:self:incumbent': 1, 'confirm:1:self:nominee': 1, 'gate:1:self:incumbent': 1, 'confirm:1:random:nominee': 2}
+   budgets: {(12, 'A'): 55, (16, 'B'): 4, (16, 'A'): 1}
+   seeds: {11: 29, 12: 26, 101: 1, 202: 2, 204: 1, 206: 1}
+phase 2: 640 records; of which not in phase 1: 604
+phase 3: 96 records
+all phases: 760 distinct records of 1192 ; version digests covered: 138 of 138

@@ -1,0 +1,134 @@
+{
+ "name": "partitioning",
+ "category": "partitioning",
+ "source": "Instances: the graphs of Johnson, Aragon, McGeoch and Schevon (Operations Research 37, 1989), the 24 files G124.*, G250.*, G500.*, G1000.*, U500.* and U1000.* of D. S. Johnson's directory pub/dsj/partition of the DIMACS archive (archive.dimacs.rutgers.edu). Reference values: the result tables of F. de Meijer, R. Sotirov, A. Wiegele and S. Zhao, 'Partitioning through projections: strong SDP bounds for large graph partition problems', arXiv:2205.06788v2, read from the data files of the e-print's source archive.",
+ "terms": "DIMACS archive: the directory index carries no licence text; it says only 'This page, and any PDF documents linked on this page, are no longer maintained and may not meet accessibility standards.' arXiv: the e-print is distributed under the licence shown on its arXiv abstract page (not read here). Both are fetched by hash and not redistributed here.",
+ "reference": "the column UB (upper bound on the minimum cut, 'obtained by heuristics or the optimal solution from the literature') of the rows for these graphs in the e-print's table data files Hager_datafile1.tex, Hager_datafile2.tex, largeGraphSparse5n_datafile1.tex, largeGraphSparse5n_datafile2.tex, largeGraphSparse5n_datafile3.tex, hagerBisection_datafile1.tex and spinglass2pmBisection_datafile1.tex (kernel only). The source publishes no partition that attains a value, and the values are not all the best known in the wider literature.",
+ "files": [
+  {
+   "url": "https://arxiv.org/e-print/2205.06788v2",
+   "path": "arxiv-2205.06788v2.tar.gz",
+   "sha256": "97700111457cf60517d644640ca08ca550421dba025d315a41cbd770602048b9"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/G124.02",
+   "path": "G124.02",
+   "sha256": "ba398b1ad7c1f377c5751a2740551a1d42180094e36e510737d59904f2309262"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/G124.04",
+   "path": "G124.04",
+   "sha256": "cc8031ae6bfe8197f9eb04abf9a58d2e1c1b3de60d99b389a68e60053ae1ef7c"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/G124.08",
+   "path": "G124.08",
+   "sha256": "b0c5d574ef1d18c7f528a6012443938191128f1cf8ce4a122f06d59e21cc9a21"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/G124.16",
+   "path": "G124.16",
+   "sha256": "261103528c9bf861fc199cd296ba3baa0fc795b8d822f059a6dc0503bf08364b"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/G250.01",
+   "path": "G250.01",
+   "sha256": "5b6f49f69a6a4e651ecde69f2117316fa0af2ade58e9a3b1d8cfd027382713dc"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/G250.02",
+   "path": "G250.02",
+   "sha256": "94ca168b13fdfd0426a650a4989c3388d890c96e74bd3f0857dbf886bdda2afe"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/G250.04",
+   "path": "G250.04",
+   "sha256": "fc03fbdc47c3c90db130bd5e8612e1f089027d2c0b37faec8622385484c6b0e8"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/G250.08",
+   "path": "G250.08",
+   "sha256": "fa84c8a6ee324ebb231dc162c9770789f9b78f25d0ffb90d0a626630cd750827"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/G500.005",
+   "path": "G500.005",
+   "sha256": "68caffdf7e01f786dbf5f773771c7bdbb302a9eadf5b760aa6186914f7b0dd68"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/G500.01",
+   "path": "G500.01",
+   "sha256": "6391641fbf8a0305461606016297a9db3353165cec706025610e39511dbcd232"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/G500.02",
+   "path": "G500.02",
+   "sha256": "be002266a559ee09837ba6ccfc41527576eec866be13fe5cbe5ebe78d264a236"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/G500.04",
+   "path": "G500.04",
+   "sha256": "8a02767312d76332bb1b7dd0eb41a48ecd7fb7500d721d4cbc3aa583837d85e8"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/G1000.0025",
+   "path": "G1000.0025",
+   "sha256": "794dbe085dc3d959d686d39342b9c5b9ab739711c4ce8bfa93338337fbc04354"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/G1000.005",
+   "path": "G1000.005",
+   "sha256": "52c0a3186618d785fde745608d9b65ce780e2b8b7ed4ee92a08e241db5469e1a"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/G1000.01",
+   "path": "G1000.01",
+   "sha256": "b7ce1e8f7af7703efb04f65edeea0078f027b00dfa0755b7bfe0fd26000b3d97"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/G1000.02",
+   "path": "G1000.02",
+   "sha256": "fcac7e4441114e6fa404a47461f4780788283155c04f28a899e8ba6e285490ce"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/U500.05",
+   "path": "U500.05",
+   "sha256": "7933ea566b17a98b4f81c04e1791b03b34b9b2a40f1fabe54c6fbc482215a142"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/U500.10",
+   "path": "U500.10",
+   "sha256": "a239d7770a3798b34868f1f1c5c4634be057a338612912c3527d7e2f3404d824"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/U500.20",
+   "path": "U500.20",
+   "sha256": "4c4cad8405b17ce01df042b59f3e75705b7435cfd8bc2a38b7e5692abf94fbe1"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/U500.40",
+   "path": "U500.40",
+   "sha256": "974d6e7d328920d4df8468649dab5e330a3a91195251581c1c3688253d7a2c06"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/U1000.05",
+   "path": "U1000.05",
+   "sha256": "178a3936841302274e871e5344d071d8b3535d9329f16f6774d24d2cc50b5754"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/U1000.10",
+   "path": "U1000.10",
+   "sha256": "d3bab5ef02e3d91d6717f46ab3092d9acde8edd01d8f14dae8b38537d1b58015"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/U1000.20",
+   "path": "U1000.20",
+   "sha256": "35dda1d3dad9d24a1ce8e0f60d770da1711e506908d278bee9e0cc3e14983452"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/dsj/partition/U1000.40",
+   "path": "U1000.40",
+   "sha256": "6c4a54da925a0f08b7980192462cce31bdc71fc75ae61326dbe43e6a6c83df58"
+  }
+ ]
+}

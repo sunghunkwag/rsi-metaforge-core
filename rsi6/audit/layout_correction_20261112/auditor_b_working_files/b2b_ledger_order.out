@@ -1,0 +1,20 @@
+run records: 1192
+run records whose recorded role is not the role at that point of the ledger: 0
+run records made while the category's role was locked: 0
+first and last run record per environment: {'binpacking': (1, 1198), 'forecasting': (3, 1200), 'jobshop': (5, 1202), 'pmedian': (503, 1204), 'quadassign': (509, 1206)}
+unlock / release / round_done positions: [(502, 'unlock', 'adoption:1', 1), (581, 'release', 'adoption:1', 1), (582, 'round_done', None, 1), (1210, 'unlock', 'adoption:2', 2)]
+roles of the seven adapters: {'forecasting': 'source', 'jobshop': 'source', 'binpacking': 'source', 'quadassign': 'adoption:1', 'pmedian': 'adoption:1', 'knapsack': 'adoption:2', 'regression': 'adoption:2'}
+draw reproduces roles.json: True
+run purposes in ledger order (first idx, last idx, count):
+    search:1:self:start 1 6 6
+    search:1:self 7 258 252
+    search:1:random 261 500 240
+    gate:1:self:incumbent 503 514 12
+    gate:1:self:nominee 515 526 12
+    confirm:1:self:incumbent 528 539 12
+    confirm:1:self:nominee 540 551 12
+    gate:1:random:nominee 555 566 12
+    confirm:1:random:nominee 568 579 12
+    search:2:self:start 583 586 4
+    search:2:self 587 950 364
+    search:2:random 953 1206 254

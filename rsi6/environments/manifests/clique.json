@@ -1,0 +1,529 @@
+{
+ "name": "clique",
+ "category": "clique",
+ "source": "The second DIMACS implementation challenge (1992-93; M. A. Trick, D. S. Johnson), its archive https://archive.dimacs.rutgers.edu/pub/challenge/graph/ (the address http://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/ redirects there). Graphs, in the DIMACS binary format: the files benchmarks/clique/*.clq.b with at most 1000 vertices by the table contents.tex (58 of 66), and the graphs of benchmarks/volume/Clique that are not in benchmarks/clique and have at most 1000 vertices (gen200_p0.9_44, gen200_p0.9_55, gen400_p0.9_55, gen400_p0.9_65, gen400_p0.9_75, C125.9, C250.9, C500.9, C1000.9, DSJC500.5, DSJC1000.5; the volume's 23 graphs that are also in benchmarks/clique (16 of them within the size rule) are byte-identical copies of those files, checked, and are not fetched; C2000.5, C2000.9 and C4000.5 are above the size rule). Read for the reference: benchmarks/clique/contents.tex (the table of the clique benchmarks), solvers/results.dmclique and solvers/results.dfmax (the steering committee's results files), the solution files benchmarks/clique/SOLUTIONS/*.sol of the graphs fetched (25 of 27: san2.sol names no graph of the directory and has no s line, hamming10-2.sol belongs to a graph above the size rule), and the comment lines of the graph files. Pinned as records, not parsed: translators/binformat/README.binformat (the binary format), doc/ccformat.tex (the text format and the solution lines), gen_info.tex (the problem statement), benchmarks/clique/LAST_UPDATESep23 (the correction of the p_hat files), solvers/README (what dfmax and dmclique are), benchmarks/volume/instruct.tex (the volume's test set and its families) and benchmarks/volume/Clique/Appendix.tex (the volume's results form, empty)",
+ "terms": "the archive states no licence and no terms of use for these files. The challenge's general information (gen_info.tex) says: 'With author's permission, submitted inputs and generators will be made available to Challenge participants; some may be included in the set of DIMACS benchmarks.' Fetched by hash, not redistributed here.",
+ "reference": "the maximum clique size the source states for each graph (kernel only). Read: '[OPT = k]' in solvers/results.dmclique ('We also list the true maximum clique size, when known'; '[OPT = ??]' where not known); the column 'Clique Size' of benchmarks/clique/contents.tex (a plain number; after '$\\ge$' a lower bound); the column 'Max' of solvers/results.dfmax (the exact branch and bound code dfmax, on the graphs it finished); the line 's cqu k' of a solution file whose comment says 'Solution is optimal.' and whose k listed vertices (numbered from 0) are a clique of the graph; the comment lines 'k max clique' (san, gen) and 'Largest Clique: k' (keller) of the graph files. Every such statement found for a graph must give the same value, and no lower bound ('$\\ge$ k' of the table, 'Clique Size: k' of the brock and MANN files, which list the clique their generator built) may exceed it; this holds for all 56 graphs used. 50 have '[OPT = k]'; c-fat500-10 has only its solution file (126); the five gen graphs have only their comment line. The source also publishes answers: the 25 solution files and the clique lists in the comments of the 12 brock and 2 MANN files, each a clique of exactly the reference size. The values were not re-proved here.",
+ "files": [
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/contents.tex",
+   "path": "benchmarks/clique/contents.tex",
+   "sha256": "79daa85e843509e85d7780419ceaa76604aa05eecbde62ab777b66d350f047e0"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/LAST_UPDATESep23",
+   "path": "benchmarks/clique/LAST_UPDATESep23",
+   "sha256": "f8d3d0c491e56a4e73f9ef11e06b56c2b76d36fedfb212a5b068e60c4a05383b"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/solvers/results.dmclique",
+   "path": "solvers/results.dmclique",
+   "sha256": "e68042918939fb3411765041aaa9d1525f94d438dcfcd4f7629c4410877d7c1f"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/solvers/results.dfmax",
+   "path": "solvers/results.dfmax",
+   "sha256": "85a12349aecf4c7c15231f6149d4cab6d2ffb98b4ce4dfaf920ac89e05b0e297"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/solvers/README",
+   "path": "solvers/README",
+   "sha256": "6b23bfdb1ca1fdd193241f967e1ecf5a9fc408849107b8f3917b803f119adf33"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/doc/ccformat.tex",
+   "path": "doc/ccformat.tex",
+   "sha256": "a083407ffcd893438f3735bc89628da93cf20bb62d099b83465e972fde309b3f"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/translators/binformat/README.binformat",
+   "path": "translators/binformat/README.binformat",
+   "sha256": "4aac647c871b8ec903a0c39aeac87290b2dad94dbdcff6a46abf749aab065a13"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/volume/instruct.tex",
+   "path": "benchmarks/volume/instruct.tex",
+   "sha256": "8a9a107797087128038018ec7b618743c1cbc35316030b81334ef000fe833dbc"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/gen_info.tex",
+   "path": "gen_info.tex",
+   "sha256": "942bc3982386dfaa012b71523da704d63ecddf27b9ebd7649644b4889afd05d1"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/volume/Clique/Appendix.tex",
+   "path": "benchmarks/volume/Clique/Appendix.tex",
+   "sha256": "72202d315df9c88a262fb3b6652029f737db7c70667ecf13cc06e26e05ebdba6"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/c-fat200-1.sol",
+   "path": "benchmarks/clique/SOLUTIONS/c-fat200-1.sol",
+   "sha256": "d0026d4ee507b01c8f39e252b538af36669ffc56b4a01d08e20886ae7de7b0ba"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/c-fat200-2.sol",
+   "path": "benchmarks/clique/SOLUTIONS/c-fat200-2.sol",
+   "sha256": "e3616b6ec5e443677d92f3920f731980085b9093ec37be5dfbc155d3d0355383"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/c-fat200-5.sol",
+   "path": "benchmarks/clique/SOLUTIONS/c-fat200-5.sol",
+   "sha256": "41d5d4ad6c1965e7320769284eefff88e470a6aa486b1fa0afe15858fc033dcf"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/c-fat500-1.sol",
+   "path": "benchmarks/clique/SOLUTIONS/c-fat500-1.sol",
+   "sha256": "15ab8392109a12ce1f9de621c27dae681885c4b671f4b3156a4401d60d2da014"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/c-fat500-10.sol",
+   "path": "benchmarks/clique/SOLUTIONS/c-fat500-10.sol",
+   "sha256": "8717138eeface11a770f3daa0c255f899476ddbb07305670da23b40704ad8ca7"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/c-fat500-2.sol",
+   "path": "benchmarks/clique/SOLUTIONS/c-fat500-2.sol",
+   "sha256": "70f635a2aae81682984d7d8b1f2a192f54d3f0c53869d23ccb0d5ccd0471c205"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/c-fat500-5.sol",
+   "path": "benchmarks/clique/SOLUTIONS/c-fat500-5.sol",
+   "sha256": "2c3d269fd328e0d2c8d1e4f683962a54b29e667d262c7b66d4caffdde3ef524a"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/hamming6-2.sol",
+   "path": "benchmarks/clique/SOLUTIONS/hamming6-2.sol",
+   "sha256": "ef8a50d07fd94fc165c0140693f3c967ed175560689a9bc2859afc019080c36f"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/hamming6-4.sol",
+   "path": "benchmarks/clique/SOLUTIONS/hamming6-4.sol",
+   "sha256": "cafa512014dec5499b1b628c3eabcaa936249bcb5d729e620c07a5518ca78831"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/hamming8-2.sol",
+   "path": "benchmarks/clique/SOLUTIONS/hamming8-2.sol",
+   "sha256": "b28c2cff366145133d2a24943e87d67d93f13dc2dc05933a5bf61e184a001f92"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/hamming8-4.sol",
+   "path": "benchmarks/clique/SOLUTIONS/hamming8-4.sol",
+   "sha256": "66dc57d3239cedb4fe1c39ad7c394616827f4a6ad787a24b7f5556dc2a5d5fdc"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/johnson16-2-4.sol",
+   "path": "benchmarks/clique/SOLUTIONS/johnson16-2-4.sol",
+   "sha256": "b630fb2237ad6eaafc153415dc68248e04bfa0bdf47f45c25217682147e94777"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/johnson8-2-4.sol",
+   "path": "benchmarks/clique/SOLUTIONS/johnson8-2-4.sol",
+   "sha256": "08da65b228c9e629b496bbcc38d559b5ea076c297f206139f67aa1c761b81779"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/johnson8-4-4.sol",
+   "path": "benchmarks/clique/SOLUTIONS/johnson8-4-4.sol",
+   "sha256": "bd9cf2d2fa8edb62903ab164b9c5b858c72bdbb8af6274dbb0ec11446d8ac45a"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/keller4.sol",
+   "path": "benchmarks/clique/SOLUTIONS/keller4.sol",
+   "sha256": "ba7e96facd6ce7db0e7aac62030e1dfdee1c888b985ce7c4d55e4a0c6558ed7e"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/p_hat300-1.sol",
+   "path": "benchmarks/clique/SOLUTIONS/p_hat300-1.sol",
+   "sha256": "9343bfa1c775771a2492a262e09e9ab61348f7818e59f517a08867ce3f5b588e"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/p_hat300-2.sol",
+   "path": "benchmarks/clique/SOLUTIONS/p_hat300-2.sol",
+   "sha256": "a702c335becbcfa9c2fb53869c2a87df01ac6327f6484a24516fc50a9c6c4a78"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/p_hat300-3.sol",
+   "path": "benchmarks/clique/SOLUTIONS/p_hat300-3.sol",
+   "sha256": "f2e77aff13910e302805067e7f37ad2ad8ba119c9d2c7a9eb9524be586ec4011"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/p_hat500-1.sol",
+   "path": "benchmarks/clique/SOLUTIONS/p_hat500-1.sol",
+   "sha256": "9d6b307658b67297fe6e0bcf0f61692ba1b6951d6b278c0710ae67ae9d8a5699"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/p_hat500-2.sol",
+   "path": "benchmarks/clique/SOLUTIONS/p_hat500-2.sol",
+   "sha256": "1866c86242c947ca97cc8a5148d1a589d0cb258685a367fbe7fb203f38a9714e"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/san200_0.7_1.sol",
+   "path": "benchmarks/clique/SOLUTIONS/san200_0.7_1.sol",
+   "sha256": "1771ef60fa275da41c2b132b3663f1d69690b9dd76a88fd10dbdddf3d62c456e"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/san200_0.9_1.sol",
+   "path": "benchmarks/clique/SOLUTIONS/san200_0.9_1.sol",
+   "sha256": "9b1a719b03250688c00d20ba57466ad3b652f810082e5fb2afbc530558d4e6ec"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/san200_0.9_2.sol",
+   "path": "benchmarks/clique/SOLUTIONS/san200_0.9_2.sol",
+   "sha256": "336a5586728f877096294d34f9ba248bae8f44bfa5a364287776374c11cf2b85"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/san200_0.9_3.sol",
+   "path": "benchmarks/clique/SOLUTIONS/san200_0.9_3.sol",
+   "sha256": "0744b2f4670d24110fa9c0a62aecf7220c63e8426fcc3fbdcb51406536641686"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/SOLUTIONS/sanr200_0.7.sol",
+   "path": "benchmarks/clique/SOLUTIONS/sanr200_0.7.sol",
+   "sha256": "44b9fa76d3965985402c9e8b4695ad0cad64444009c101f8e46c6e5a060a9ee3"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/MANN_a27.clq.b",
+   "path": "benchmarks/clique/MANN_a27.clq.b",
+   "sha256": "c8193a725ab7b868d564f3b49ee8a996ba228ce8257b73226974ab3a21eb4fdd"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/MANN_a9.clq.b",
+   "path": "benchmarks/clique/MANN_a9.clq.b",
+   "sha256": "41f02394dcaf34151951e1e0e9791733758a642094413b03717b74b8c0cdead7"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/brock200_1.clq.b",
+   "path": "benchmarks/clique/brock200_1.clq.b",
+   "sha256": "5262154c1f809f5bb231c004126631f995966e49436c220167989c1787e2f9ca"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/brock200_2.clq.b",
+   "path": "benchmarks/clique/brock200_2.clq.b",
+   "sha256": "9fb84254bc2b9a509b2898559f0c4b4d3b86f2b3dd53d5d39b014d46dc32a4d3"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/brock200_3.clq.b",
+   "path": "benchmarks/clique/brock200_3.clq.b",
+   "sha256": "ccf32fe9a68778d8baf2a52ea8148a20480d75bc1c7850a5d4f19e11cbd57636"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/brock200_4.clq.b",
+   "path": "benchmarks/clique/brock200_4.clq.b",
+   "sha256": "9da6b7306b1eca51f1548b641bbd50dcee11cb3066bec44dc57886573cd77c5e"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/brock400_1.clq.b",
+   "path": "benchmarks/clique/brock400_1.clq.b",
+   "sha256": "eef65ccca341d5782bb05bb5abecd9f4368929f03e0a28e72cba436617d96fb5"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/brock400_2.clq.b",
+   "path": "benchmarks/clique/brock400_2.clq.b",
+   "sha256": "a68dbd971bb0280703b9b15acc79825dc6040209e3bd523bd5e307c330d7aa68"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/brock400_3.clq.b",
+   "path": "benchmarks/clique/brock400_3.clq.b",
+   "sha256": "9c99cfde97f72106b00bc941dc765e0653179cd62b89cec2a21dd722318c78f1"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/brock400_4.clq.b",
+   "path": "benchmarks/clique/brock400_4.clq.b",
+   "sha256": "27ea24226e03b50461203dffcaa096fb2748b0e5a541144a8a6520b1ee0ff1d0"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/brock800_1.clq.b",
+   "path": "benchmarks/clique/brock800_1.clq.b",
+   "sha256": "d473aff67638c2ddb09d1ae28f632557b35e002e3bb9383a8e5af71e44491eaf"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/brock800_2.clq.b",
+   "path": "benchmarks/clique/brock800_2.clq.b",
+   "sha256": "ccfa7c81d5563c9c0f41b0f676396644bdfe35b70c664d421881002d8a30ff1b"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/brock800_3.clq.b",
+   "path": "benchmarks/clique/brock800_3.clq.b",
+   "sha256": "ff5f0d2732911eccf90e6c018f2ad6856616a1d5ca279fdf29164a63fc82de96"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/brock800_4.clq.b",
+   "path": "benchmarks/clique/brock800_4.clq.b",
+   "sha256": "8678f1b49a2799c698a8ef4eebcd309685b133e24561583f15f2fae6e0f0f4a5"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/c-fat200-1.clq.b",
+   "path": "benchmarks/clique/c-fat200-1.clq.b",
+   "sha256": "ab4534546d9ecc7341ffa05d01467fe1934dff591e3bfe3dcd25374bdbc0f618"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/c-fat200-2.clq.b",
+   "path": "benchmarks/clique/c-fat200-2.clq.b",
+   "sha256": "e84440b12a5406ee21b8841ac40ecb2165dc9c60e8b68c3acb20c079b0d4eeb8"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/c-fat200-5.clq.b",
+   "path": "benchmarks/clique/c-fat200-5.clq.b",
+   "sha256": "270f397324d19f843958937077ecd73afef0b9bdc0d4af1dd1732cf2712ed007"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/c-fat500-1.clq.b",
+   "path": "benchmarks/clique/c-fat500-1.clq.b",
+   "sha256": "58fabae2e77d719b0055db75695a08207a88f05b460d655d658d0358cc12e103"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/c-fat500-10.clq.b",
+   "path": "benchmarks/clique/c-fat500-10.clq.b",
+   "sha256": "cc5c337cde02773fa90146c41b04ae34016831eb5e204abc4e970828b657cd12"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/c-fat500-2.clq.b",
+   "path": "benchmarks/clique/c-fat500-2.clq.b",
+   "sha256": "c48bebb64af478c666c35b8f305430d197db08e49c808bb2d0bc1aa362583109"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/c-fat500-5.clq.b",
+   "path": "benchmarks/clique/c-fat500-5.clq.b",
+   "sha256": "6445beaf23cf98109c19571899b4f69bd30c5fc978baafc3cae62bf08826061d"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/hamming6-2.clq.b",
+   "path": "benchmarks/clique/hamming6-2.clq.b",
+   "sha256": "ebded15c7f06420ca92441e4415ab7342a44b08b6119c0254aceb9245edc05c8"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/hamming6-4.clq.b",
+   "path": "benchmarks/clique/hamming6-4.clq.b",
+   "sha256": "5b79fca632de51be3c20a795ce5c7a63f4cb19c5f3e71ad603ae75a477153f07"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/hamming8-2.clq.b",
+   "path": "benchmarks/clique/hamming8-2.clq.b",
+   "sha256": "c969c705a813f15034692ab14e4ebecc566ec6d0a0c538103de011900249c4d4"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/hamming8-4.clq.b",
+   "path": "benchmarks/clique/hamming8-4.clq.b",
+   "sha256": "533d6e86d193b4c2ad94252d19c5f017c016e7f9168e17ed1fabea0fc483b0fd"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/johnson16-2-4.clq.b",
+   "path": "benchmarks/clique/johnson16-2-4.clq.b",
+   "sha256": "942daec7d621524d156eb6c03f817aad42bc3dfa1e7e6f453b10297a6c214c5e"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/johnson32-2-4.clq.b",
+   "path": "benchmarks/clique/johnson32-2-4.clq.b",
+   "sha256": "4509e603433fa8a297d72addf51390285cc2d9712200e83ae8a5137b50ccd77f"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/johnson8-2-4.clq.b",
+   "path": "benchmarks/clique/johnson8-2-4.clq.b",
+   "sha256": "54763989a569982283d6067be6d81489a388c7d492d0329d26aef62c868185b9"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/johnson8-4-4.clq.b",
+   "path": "benchmarks/clique/johnson8-4-4.clq.b",
+   "sha256": "13c80fd9667c962fc5612668815308907da860ff03ff58bcc2f38a1d41bcbb51"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/keller4.clq.b",
+   "path": "benchmarks/clique/keller4.clq.b",
+   "sha256": "46c9e11dfd3c1a8f72f62032ca4c1c211b763151b285d2775071e2287acd0b21"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/keller5.clq.b",
+   "path": "benchmarks/clique/keller5.clq.b",
+   "sha256": "c6ff9b7d32ee29d879107298ef9878d8f693716f1e3c82b665f0833c0833e26a"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/p_hat1000-1.clq.b",
+   "path": "benchmarks/clique/p_hat1000-1.clq.b",
+   "sha256": "a808ad7a3c08ef0a70a55b623360b0638dc0c60e5642a6ccdf534dd2b93abf48"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/p_hat1000-2.clq.b",
+   "path": "benchmarks/clique/p_hat1000-2.clq.b",
+   "sha256": "38060d43b3b36b4dfb2fef888fb95eadf62fc9fe8568cec56ca1881f1228fa8b"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/p_hat1000-3.clq.b",
+   "path": "benchmarks/clique/p_hat1000-3.clq.b",
+   "sha256": "df4f76d1b5abf56e2c9dbb74975907b3ead35d450319b3ac5a709588a33c62a7"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/p_hat300-1.clq.b",
+   "path": "benchmarks/clique/p_hat300-1.clq.b",
+   "sha256": "c74d083b0253f7eb2b841baf6807fd4509fcf2717c67d0dd319cde7285cd54e7"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/p_hat300-2.clq.b",
+   "path": "benchmarks/clique/p_hat300-2.clq.b",
+   "sha256": "806f2886cf5cf06a1997682492caa64f9a126cc5ac4636b4487f6092ae45f616"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/p_hat300-3.clq.b",
+   "path": "benchmarks/clique/p_hat300-3.clq.b",
+   "sha256": "37727ee4fa7f787f9fbddba3b0fd4f6fe30da9c829b7b8dd0ea09314c702df97"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/p_hat500-1.clq.b",
+   "path": "benchmarks/clique/p_hat500-1.clq.b",
+   "sha256": "729361741343a84b218081b7068c1e91d68240ba4d057ec8c804594e14bd1cbc"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/p_hat500-2.clq.b",
+   "path": "benchmarks/clique/p_hat500-2.clq.b",
+   "sha256": "979c961adfb90bb413e30010b0cb3190964f23d4a51ea837cc675941e5d6f2fd"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/p_hat500-3.clq.b",
+   "path": "benchmarks/clique/p_hat500-3.clq.b",
+   "sha256": "9899322313aed7475a27362c9fde85da63cf975453d79e3cb476f672181c0080"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/p_hat700-1.clq.b",
+   "path": "benchmarks/clique/p_hat700-1.clq.b",
+   "sha256": "60880442d594a3b5cae6211e629e1a7569b0585bd3a046a7ba4da762d5ec9752"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/p_hat700-2.clq.b",
+   "path": "benchmarks/clique/p_hat700-2.clq.b",
+   "sha256": "29a3b3e0e967924e77744020f553b65f730e82866fcc15a80d0e02b77f28bbcb"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/p_hat700-3.clq.b",
+   "path": "benchmarks/clique/p_hat700-3.clq.b",
+   "sha256": "0eb855ee9755f3c182f30fef4b463be7dd73778cda63173c0afa006f1808b0f3"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/san1000.clq.b",
+   "path": "benchmarks/clique/san1000.clq.b",
+   "sha256": "6b4aa153257d8683e61e8852b071d03b3f928bf9fbd91d5e15bb8e959f86136c"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/san200_0.7_1.clq.b",
+   "path": "benchmarks/clique/san200_0.7_1.clq.b",
+   "sha256": "61dc2547968200adf5971dfc0944b3a770e9f2501d0ed353052849a44c48aeb2"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/san200_0.7_2.clq.b",
+   "path": "benchmarks/clique/san200_0.7_2.clq.b",
+   "sha256": "42d370451376d7d4d5411face06813a4cd2d4967ad757669a7a08e6ac1df6fe7"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/san200_0.9_1.clq.b",
+   "path": "benchmarks/clique/san200_0.9_1.clq.b",
+   "sha256": "250d86413373ef61b5d81cf15d2b732526ea4af5c99911739e706de58f5b19b8"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/san200_0.9_2.clq.b",
+   "path": "benchmarks/clique/san200_0.9_2.clq.b",
+   "sha256": "6f915cd7a2e6b425374450d7df4ae7a6f2eff62bf214a4365a5e9641afcb94ec"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/san200_0.9_3.clq.b",
+   "path": "benchmarks/clique/san200_0.9_3.clq.b",
+   "sha256": "10098c6c38a6ead93c04147abd527dbdbc2e9b0b1cdecfac5f1ee775b2f5c40d"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/san400_0.5_1.clq.b",
+   "path": "benchmarks/clique/san400_0.5_1.clq.b",
+   "sha256": "0f088ac002abeb270a7e9c5017c6eb826ae2951f4a524d4a8211622847d4a9f6"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/san400_0.7_1.clq.b",
+   "path": "benchmarks/clique/san400_0.7_1.clq.b",
+   "sha256": "20a7fad49dc16684eebe5cd7c169068f9900ff4a9d6cac0ff64a0b6ba7879ea5"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/san400_0.7_2.clq.b",
+   "path": "benchmarks/clique/san400_0.7_2.clq.b",
+   "sha256": "68ed7c6298c56946699adac97238287ff1224a518f78061016ed50b651c4682c"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/san400_0.7_3.clq.b",
+   "path": "benchmarks/clique/san400_0.7_3.clq.b",
+   "sha256": "a100dbac9025c4ca2f66bb194f08740394316dad4f6f7cae35fb3abc1a7fbed1"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/san400_0.9_1.clq.b",
+   "path": "benchmarks/clique/san400_0.9_1.clq.b",
+   "sha256": "3f70aa8c3a48d5d7b3ac43d1426822383c6ef70b7d3e79679e2b97e765aacc53"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/sanr200_0.7.clq.b",
+   "path": "benchmarks/clique/sanr200_0.7.clq.b",
+   "sha256": "46e7e78f2253fa578fa6f19261e4ac8b6c3e62ced840affd3c39ef1386b54589"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/sanr200_0.9.clq.b",
+   "path": "benchmarks/clique/sanr200_0.9.clq.b",
+   "sha256": "0021ec418da9009d8390a002ad5e5c0bfa45a40431358b855c8aaa15065eadd1"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/sanr400_0.5.clq.b",
+   "path": "benchmarks/clique/sanr400_0.5.clq.b",
+   "sha256": "aae4af2de84ee2488b6f6e9331bbfc93f794336341dbb64f6c2e9e9cd028b1dd"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/sanr400_0.7.clq.b",
+   "path": "benchmarks/clique/sanr400_0.7.clq.b",
+   "sha256": "c677c8a2698c6a368bb451900818afc84fbbade98af18a6a7b8dee698dcaa770"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/volume/Clique/C1000.9.clq.b",
+   "path": "benchmarks/volume/Clique/C1000.9.clq.b",
+   "sha256": "cbf0e81bf55352463777398c5d57f1ab332b6d78fdf9c58ef09d5f0c5c243ee1"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/volume/Clique/C125.9.clq.b",
+   "path": "benchmarks/volume/Clique/C125.9.clq.b",
+   "sha256": "63299cef0716195fdd2830c62d8812c9d310c29cbaac7fe178dda1139ee7045e"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/volume/Clique/C250.9.clq.b",
+   "path": "benchmarks/volume/Clique/C250.9.clq.b",
+   "sha256": "c0586584d50c6ecbcb637a375a5202486cbc87c4a50286fcc7968ddd689921df"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/volume/Clique/C500.9.clq.b",
+   "path": "benchmarks/volume/Clique/C500.9.clq.b",
+   "sha256": "15489eac993872ab61737c1c82dc89f30ca12b05b7fff2c3dbd68b29d67e7a4c"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/volume/Clique/DSJC1000.5.clq.b",
+   "path": "benchmarks/volume/Clique/DSJC1000.5.clq.b",
+   "sha256": "4ef5f6ac499418afe4620fcd73c46df55dd83a867e5d9bd7e4fbac9655f88089"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/volume/Clique/DSJC500.5.clq.b",
+   "path": "benchmarks/volume/Clique/DSJC500.5.clq.b",
+   "sha256": "f0eecb7f516921f39ad4bba0d20db0a33920bb43491a24d0c075574c4e1cc4f3"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/volume/Clique/gen200_p0.9_44.clq.b",
+   "path": "benchmarks/volume/Clique/gen200_p0.9_44.clq.b",
+   "sha256": "9b788bfba21fc8fcfac2e3f1cc2f0684ae305c0ecc69d4523b3abe37e7f52c2f"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/volume/Clique/gen200_p0.9_55.clq.b",
+   "path": "benchmarks/volume/Clique/gen200_p0.9_55.clq.b",
+   "sha256": "04a499ba3c8d224269fe45c1860d9d251a03c3e1bc983a562d30c408cd643edf"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/volume/Clique/gen400_p0.9_55.clq.b",
+   "path": "benchmarks/volume/Clique/gen400_p0.9_55.clq.b",
+   "sha256": "384cd33312b0e77b1a251ae88a2c3eb9fd8762a4a3e0cc2b33352919c46b06f2"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/volume/Clique/gen400_p0.9_65.clq.b",
+   "path": "benchmarks/volume/Clique/gen400_p0.9_65.clq.b",
+   "sha256": "71a2f7b0dfd39859cc1effc265ce4ee2bf476edd3871d7119c0d7266ff09b642"
+  },
+  {
+   "url": "https://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/volume/Clique/gen400_p0.9_75.clq.b",
+   "path": "benchmarks/volume/Clique/gen400_p0.9_75.clq.b",
+   "sha256": "093e11f27b9398782bb903e75b4dfe078634e823bd362576cb0f179ad5b5f592"
+  }
+ ]
+}

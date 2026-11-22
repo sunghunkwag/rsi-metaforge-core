@@ -1,0 +1,186 @@
+{
+ "summary": "I found no blocking defect and five major ones; registration_o.json does not yet support every claim it makes. The checks passed: all nine generation_0.files hashes match REPO, the version digest of generation 0 is correct (765e0e60...), and REPO/rsi6/registry/amendment_5.json pins the file's sha256 (e4e99943...). Every prediction and endpoint can be decided from the ledger records; I ran report.py on a copy of the development ledger and it scored them all. A stub replay of step 0 reproduces the development records exactly, so the restart path is deterministic.\n\nThe five major defects:\n(1) The swap endpoint E3(c) and the selection of finals are measured on part B. That is the same set of instances every acceptance chose on, because the fresh instances do not depend on the seed. The claim that part B is \"never selected on\" is false.\n(2) E2, E3(b) and O3 each compare one selected mechanism per arm, and the interval does not resample discovery lineages. E3(b) uses a point estimate only.\n(3) The development statement leaves out two things. The end-to-end development run measured o0 and a0 on bin packing with the registered held-out seed 7001 at the registered budget. The development discovery used the registered seeds and seed 5, which makes the registered step 0 a replay: recursive1 accepted a mechanism that changes the learning principle, so O4 was in effect seen before registration.\n(4) Hashes are missing for modules the runs depend on: learner.py and version.py, which design_o imports and which define a0, plus design_b.py, environment.py, ledger.py, experiments/report.py (the statistic), the environments and the data.\n(5) what_cannot_be_removed leaves out the first design's test-time local improvement. Every answer of the open design uses it, and discovery cannot edit it.\n\nMinor mismatches: CPU is charged twice for some runs. The screening CPU cap is checked against generation 0's mean over all three seeds, not \"the same seeds\". The tune arm can insert program instructions. A void E1 gives \"not decided\" instead of \"not met\". Several reproduction details are not registered.\n\nExpected compute at the registered budgets, about 30 CPU-hours or 8-9 hours at four workers:\n- **Discovery:** about 62k CPU-s charged, about 20 steps per lineage.\n- **Selection:** about 1.4k CPU-s.\n- **Swap:** about 18k CPU-s.\n- **Held-out:** about 25-35k CPU-s, about 2-3 hours of wall-clock time. It can finish if the training-budget schedule does not jump by 64.",
+ "checks_run": [
+  "sha256sum of the 9 files in generation_0.files against REPO: all 9 match (e.g. design_o.py 2d437d06..., discovery.py 6a918a69..., report.py 98f6ee1c...)",
+  "sha256 of registration_o.json = e4e999432bb326fc..., equal to registration_o_sha256 in amendment_5.json",
+  "designs.digest(designs.default('o')) = 765e0e601c9a...: matches version_digest; designs.digest(default('a')) = 4766c8e4... (registration_c generation 0)",
+  "sha256 of learner.py a30b3c28... and version.py 96764716... (equal to registration_c generation_0.files but absent from registration_o)",
+  "diff of registration_o.json against registration_o_dev.json: they differ only in what, registered_utc, the held-out categories and seeds, and the hashes of design_o.py (dev 91a77d84...) and report.py (dev ebeedab1...)",
+  "Re-ran 3 generation-0 runs on quadassign (seeds 1-3, search budget, part A) with the current code via kernel.run.measure: acquired/untrained identical to the development ledger, CPU acquire 1.29/1.22/1.32 -> 1.65/1.71/1.58 s (load-dependent)",
+  "Stub replay (FakeCache serving dev_e2e.jsonl runs, FakeLedger) of step 0 of discovery:recursive1, uniform0 and tune0 with the current discovery.py: spent 902.048 / 388.696 / 511.894, identical to the development records, and the same accepted digest 13f643f4...; the unique runs used cost only 699.724 / 295.869 / 419.067 CPU-s",
+  "Ran python -m rsi6.open.report on a COPY of dev_e2e.jsonl in WORK with --registration registration_o_dev.json: every prediction and success part is scored (O1 MISSED, O2-O5 held, E1/E3a/E3b/E3c False)",
+  "Per-run CPU from the dev ledger by purpose and category (open:screen jobshop 7.7, knapsack 15.1, pmedian 8.9, quadassign 1.8; heldout binpacking o0 32.6, a0 8.3 -> 27.0 at train 80 -> 45.0 at train 160; posthoc:a partitioning A 147.7 / B 26.8, setcover A 92.4 / B 74.7)",
+  "Read experiment.py, discovery.py, evaluate.py, report.py, edits.py, the relevant parts of design_o.py (Acquirer, live, default, OpenLearner), kernel/run.py (measure, halves, key_of, Cache), environment.split, experiments/report.py (both_interval, blocked_interval), registration.json, registration_c.json, amendment_4.json, amendment_5.json",
+  "Checked the RNG seed keys of every arm and stage for collisions: none among arms (sums of ords 984/660/768/849/444; swap 1064/1116)"
+ ],
+ "fixed": [
+  {
+   "finding": "Screen seed left out of the promoted value",
+   "status": "fixed",
+   "evidence": "discovery.py 231-237: promoted value = paired mean on rest = seeds[1:] only"
+  },
+  {
+   "finding": "Confirmation on part B with seeds used once and a z threshold",
+   "status": "partly_fixed",
+   "evidence": "discovery.py 250-259: seeds confirm_base+4*confirmations+j, one-sided z >= knobs.z over 16 pairs. The seeds are fresh, but part B's instances are the same for every seed (environment.split depends on the env only; halves() on the env only), so the same 12-instance halves are reused for every confirmation, for selection and for the swap assessment. Seed ranges of 100 per lineage allow only 25 confirmations, and this is not enforced (enough at the registered budgets, about 12 at most). Dev evidence that the confirmation is weak: recursive1 passed with +0.0076 on part B, then scored -0.0031 against o0 on part B with the selection seeds."
+  },
+  {
+   "finding": "CPU charge per lineage",
+   "status": "partly_fixed",
+   "evidence": "Every run used is charged, including runs served from the ledger, but the memo key includes the seeds tuple, so runs are charged twice. Stub replay: spent 388.696 vs 295.869 CPU-s of unique runs (uniform0); 902.048 vs 699.724 (recursive1). That is about 93 CPU-s per lineage at the start and about 110 per acceptance (records(mechanism, self.seeds, ..., 'accepted') at line 278 re-charges the screen and promote runs)."
+  },
+  {
+   "finding": "Principle hash",
+   "status": "fixed",
+   "evidence": "discovery.principle hashes init/propose/update; the Discoverer's Acquirer reads only genome['init'|'propose'|'update'] with pop overridden by kd (design_o.py 613-659), so the hash identifies exactly what learns the weights"
+  },
+  {
+   "finding": "Replay on restart through append_once",
+   "status": "fixed",
+   "evidence": "dev_resume2.log replays 4 steps at the same second with identical spent. My stub replay with the current code reproduces dev step 0 exactly. append_once compares every field."
+  },
+  {
+   "finding": "Arms differing only as stated (tune arm)",
+   "status": "partly_fixed",
+   "evidence": "TUNE_CELLS = theta and scalar cells (discovery.py 57), but theta 'grow' (edits.py 169-182) inserts a ['scale'|'shift', r, r, k] instruction into score or pick: a program change, contrary to 'edits of generation 0's constants and numbers only'"
+  },
+  {
+   "finding": "Void rules for controls",
+   "status": "fixed",
+   "evidence": "evaluate.compare 109-117: void if control and (base CPU < arm CPU in any pair or any pair unreached); report passes control=True for o0@recursive and a0@recursive"
+  },
+  {
+   "finding": "raise_until with the schedule of amendment 4(d)",
+   "status": "partly_fixed",
+   "evidence": "evaluate.py 56-81 follows 4(d) but adds rules that 4(d) and registration_o do not state: aim 1.1x the target, factor 64 when CPU did not rise, the registered budget counts as level 1. These are the same as experiments/targets.py 40-44 and 134-139."
+  }
+ ],
+ "defects": [
+  {
+   "severity": "major",
+   "file": "rsi6/open/experiment.py",
+   "line": "168-181 (also 139-150; discovery.py 250-264)",
+   "what": "The swap endpoint E3(c) and the selection of finals are measured on part B of the discovery categories, the same instances every acceptance chose on. The registration calls part B 'the confirming half ... (never selected on)'.",
+   "why_it_matters": "The fresh instances and their halves depend on the category only (environment.split, run.halves), so new seeds give new training randomness and relabelling but not new instances. A lineage, or a discovered principle, that tries more confirmations collects more chance gains on part B. E3(c) can then come out positive with no capability that carries over, and E3(c) is part of the success condition. Selection between the two lineages of an arm has the same bias.",
+   "evidence": "discovery.py 253 measures confirmations at CONFIRM_BUDGET (part B). experiment.py 168-176 measures swap finals at CONFIRM_BUDGET (part B) with swap_assess seeds. run.py 80-82: split(env, ...) and halves(env, ...) take no seed. Dev: recursive1 passed confirmation on B (+0.0076, z>=1.64), then measured -0.0031 against o0 on B with the selection seeds.",
+   "suggested_fix": "Assess the swap finals, and select finals, on instances no acceptance used: for example a third part of the fresh instances, or held-out training instances. Otherwise state in the registration that E3(c) and selection are measured on the instances acceptance chose on, and drop 'never selected on'."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/open/report.py",
+   "line": "60-80",
+   "what": "The arm comparisons E2 (recursive minus uniform/shuffled/tune), E3(b) (recursive minus frozen) and O3 each compare one selected mechanism per arm. The bootstrap resamples categories and seeds, not discovery lineages. E3(b) is decided by the point estimate alone (> 0).",
+   "why_it_matters": "The interval says nothing about the variation between discovery runs, which is the source of any difference between arms. If arms do not matter, two chance mechanisms differ, and the interval can exclude zero in either direction. E3(b) is close to a coin flip whenever both finals differ from generation 0. The text 'the learning of the discoverer against none, against noise, and against tuning' claims an arm-level effect that n=1 per arm cannot support.",
+   "evidence": "report.py 79-80: parts['E3b'] = min_change[0] > 0.0. experiment.py 146-148: one final per arm. experiments/report.py 30-47: the resampling is over categories and seeds only.",
+   "suggested_fix": "State in the registration that these are comparisons of the selected mechanisms, conditional on discovery, with intervals over evaluation noise only. Better: evaluate every lineage's final on the held-out categories and report the between-lineage spread, or require E3(b) to hold for every lineage pair."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/registry/registration_o.json",
+   "line": "development (182)",
+   "what": "The development statement is incomplete. (a) The end-to-end development run measured o0 (0.9802), a0 (0.9875) and a0@recursive (levels at train 40/80/160) on bin packing with the registered held-out seed 7001 at the registered run budget. (b) Development discovery used the registered seed 5, knobs and seeds (discovery 1-3, confirm_base 10000, selection 20001-20004). The registered run's step 0 is therefore a replay of the development step 0, apart from CPU-dependent decisions. In it, recursive1 accepted a mechanism that changes the learning principle (O4 held in development). The registration was dated 06:36:29Z, after the development run of 06:05-06:35.",
+   "why_it_matters": "Results of registered (category, seed) cells for the baselines were known before registration, and scores are deterministic (re-run: identical acquired values). O4, and O1 for lineage 1, are close to pre-observed, so they are not genuine predictions.",
+   "evidence": "dev_e2e.jsonl o_matched and open-heldout runs on binpacking seed 7001. Stub replay of step 0 of discovery:recursive1 with the current code: spent 902.048, accepted 13f643f4..., principle_changed True. report.py on a copy of the dev ledger: 'O4 held'.",
+   "suggested_fix": "Disclose (a) and (b) in the development field. Either change the discovery seed and seeds before the registered run, or mark O4 and O1 as informed by development."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/registry/registration_o.json",
+   "line": "generation_0.files (8-18)",
+   "what": "Modules the runs depend on are missing from the hashes. rsi6/learner/learner.py and version.py are imported by design_o.py (Learner, _finish_arbitrarily, _key, design_a.default for the prediction form and the test-time local improvement) and define the a0 baseline. Also missing: design_b.py (imported by designs.py), kernel/environment.py (split and _order fix the fresh instances and the A/B halves), kernel/ledger.py (digest, hence the run keys and version digests), experiments/report.py (both_interval and blocked_interval, the registered statistic), experiments/guard.py, rsi6/environments/*.py and the data.",
+   "why_it_matters": "A change to any of them changes the measured numbers or the statistic, and the registration would not detect it. registration_c pinned learner.py and version.py for its generation 0, and registration_o drops them although its generation 0 executes them.",
+   "evidence": "design_o.py 66-68 imports; design_o.py 683-689: self.v = design_a.default(). evaluate.py 35 imports blocked_interval and both_interval. run.py 23-25 imports split and _order. sha256: learner.py a30b3c28..., version.py 96764716..., environment.py 420cc924..., experiments/report.py fc83f30f..., ledger.py df60a167....",
+   "suggested_fix": "Add these files and their hashes, plus a manifest hash of the environment adapters and data, before the registration is recorded."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/registry/registration_o.json",
+   "line": "what_cannot_be_removed (183-187)",
+   "what": "The statements are accurate but incomplete. Every answer of the open design at test time is a construction followed by the first design's local improvement with its default settings, and the prediction form is the first design's. That code was developed on bin packing and is shared by every arm and by a0. Discovery cannot edit it, and the registration does not say so.",
+   "why_it_matters": "This leaks more design knowledge from a held-out category (bin packing) into every arm than the stated prior weights do. Part of every held-out score comes from a fixed human component, which dilutes and can mask differences between mechanisms.",
+   "evidence": "design_o.py 43-46 and 683-689: 'The answer at test time is a construction followed by the first design's local improvement'; self.v = design_a.default().",
+   "suggested_fix": "Add to what_cannot_be_removed that test-time local improvement and the prediction form are the first design's, fixed and not open to discovery."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/open/discovery.py",
+   "line": "171-177, 278",
+   "what": "Some runs are charged twice: the memo key includes the seeds tuple, so the start, screen, promote and 'accepted' keys overlap. That is about 93 CPU-s per lineage at the start and about 110 CPU-s per acceptance.",
+   "why_it_matters": "This contradicts 'charged the recorded CPU of every run it uses' if that means each run is charged once. It penalises lineages that accept (about 1.8% of 6000 per acceptance), which weighs against the recursive arm.",
+   "evidence": "Stub replay: uniform0 spent 388.696 vs unique 295.869; tune0 511.894 vs 419.067; recursive1 902.048 vs 699.724.",
+   "suggested_fix": "Charge per run key (kernel key_of) instead of per memo key, or state the rule as it is."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/open/discovery.py",
+   "line": "216, 224, 236",
+   "what": "The CPU cap is checked against generation 0's mean CPU per seed over all three discovery seeds, not 'generation 0's CPU on the same seeds' as cpu_rule says. The cap also uses CPU measured under different machine loads.",
+   "why_it_matters": "Load noise of about 30% against a 1.25 cap makes some refusals random. 6 of 60 development candidates were refused at screening, including the best screen value of recursive1 (0.0092). Which mechanisms get promoted can then depend on machine load.",
+   "evidence": "My re-run of the same three runs: acquire 1.29/1.22/1.32 -> 1.65/1.71/1.58 s. Dev o_step reasons: 'cpu above the cap at screening'.",
+   "suggested_fix": "Word the rule as implemented, or compare against generation 0 on the same seed. Consider a cap on construction units instead of CPU."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/open/edits.py",
+   "line": "169-182",
+   "what": "The tune arm's 'grow' cell inserts a scale/shift instruction into score or pick, and 'select' switches between selection rules. arms_meaning says 'edits of generation 0's constants and numbers only'.",
+   "why_it_matters": "The tuning control can change the representation programs, so 'tuning instead of discovering programs' (E2) is not exactly what runs.",
+   "evidence": "discovery.py 57: TUNE_CELLS covers the theta and scalar parts; edits.py 179-180: g[target].insert(..., ins).",
+   "suggested_fix": "Exclude theta 'grow' from TUNE_CELLS, or state it in arms_meaning."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/open/report.py",
+   "line": "78, 87, 107",
+   "what": "A void E1 gives E1 = None, and success becomes None ('not decided'). The registration requires E1 to hold for success, so a void E1 should give 'not met'. O2 counts a void E1 as 'E1 not met'.",
+   "why_it_matters": "The success line can read 'not decided' when the registered condition is not met, which is inconsistent with O2.",
+   "evidence": "report.py 78: parts['E1'] = None if e1['void'] else ...; 87: None unless some part is False.",
+   "suggested_fix": "Treat a void E1 as False in the success condition, and report the voidness beside it."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/registry/registration_o.json",
+   "line": "seeds, swap, statistic, matching",
+   "what": "Details needed to reproduce or judge the run are not registered. The interleaving order: ARMS order then lineage index, one step per active lineage per round (experiment.py 79-86). The discoverer RNG key: [seed, sum(ord(stage)), sum(ord(arm)), k] (experiment.py 69). The swap discovery seeds swap_base+3k+j and swap confirmation seeds swap_confirm_base+1000*(discovered)+100k+4c+j (experiment.py 165-166). Bootstrap draws (5000) and RNG crc32(comparison name) (evaluate.py 97; experiments/report.py 30). The matching additions (aim 1.1x, factor 64 when CPU did not rise, registered budget as level 1). Worker count 4. Tie-breaks: selection takes the first lineage name by max over sorted names (experiment.py 148); confirmation takes the first promoted candidate among equal values. Behaviour on a stop: replay from the stage start with append_once. Budgets and CPU ratios are hard-coded in discovery.py and evaluate.py, not read from the registration.",
+   "why_it_matters": "The earlier house rules registered these: registration.json rules carry bootstrap and level, and registration_c has a seeds_rule. Without them the run cannot be reproduced from the registration alone.",
+   "evidence": "See the lines cited. Hard-coded values: discovery.py 53-56, evaluate.py 41.",
+   "suggested_fix": "Add a 'reproduction' section with these rules."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/registry/amendment_5.json",
+   "line": "decisions[0], [1]",
+   "what": "Amendment 5 names the stages 'discovery, transplant, held-out', but the code runs discovery, selection, swap and heldout. heldout_later registers categories and seeds but no arms, budgets, statistic or code.",
+   "why_it_matters": "The ledgered amendment does not describe the experiment that runs. The later held-out stage is not fully registered.",
+   "evidence": "amendment_5.json decisions[0]; experiment.py 52: ORDER = ('discovery', 'selection', 'swap', 'heldout'); registration_o.json heldout_later.",
+   "suggested_fix": "Align the amendment text with the stages, and register the procedure of the later stage, or say it will be registered separately."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/open/discovery.py",
+   "line": "255-259 and docstring 31-35",
+   "what": "The confirmation z treats the 16 (category, seed) pairs as independent, but within a category they share the same part-B instances. Confirmations recur across about 20 steps in each of 10 lineages. The docstring also says the confirmation checks CPU against generation 0's, but the code checks only the parent ratio of 1.10, which is the registration's wording.",
+   "why_it_matters": "The stated z threshold overstates the evidence for each acceptance. The discovery docstring is inaccurate.",
+   "evidence": "discovery.py 259; the dev confirmation that did not reproduce under the selection seeds (+0.0076 -> -0.0031).",
+   "suggested_fix": "Fix the docstring, and state in not_claimed that the z is not a calibrated test."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/open/report.py",
+   "line": "60-63, 103-117",
+   "what": "O2, O3 and O5 hold automatically when the recursive final is generation 0 or the swap is not exercised: the differences are exactly 0 and the interval is [0, 0]. The reported comparisons 'recursive minus o0', 'recursive minus a0' and '<arm> minus o0' carry control=True and are void whenever o0 or a0 used less CPU in any pair, which is likely for most of them.",
+   "why_it_matters": "These predictions do not separate 'no capability' from 'discovery found nothing'. Readers may misread the VOID labels on comparisons that are not endpoints.",
+   "evidence": "Dev report: O2, O3 and O5 held with (0.0, 0.0, 0.0); 'recursive minus a0 ... VOID'.",
+   "suggested_fix": "Report these predictions with the number of non-generation-0 finals. Use control=False for comparisons that are not controls."
+  },
+  {
+   "severity": "note",
+   "file": "dev_e2e.log",
+   "line": "whole file",
+   "what": "The four-stage development run used older design_o.py (91a77d84...) and report.py (ebeedab1...), not the registered files. The logged end-to-end never ran the report ('not registered in this ledger'). Expected compute at the registered budgets: discovery about 62k CPU-s charged (10 x 6000 plus a final-step overrun of about 300 each; about 20 steps per lineage at about 300 CPU-s per step after a start overhead of about 190), selection about 1.4k, swap about 17-18k, held-out about 25-35k. Held-out breaks down as up to 6 open versions x 6 seeds x (33 + 200 + 200) \u2248 15.6k, a0 \u2248 2.1k, and two raised controls \u2248 5-10k. The total is about 30 CPU-hours, about 8-9 hours of wall-clock time at 4 workers. Held-out takes about 2-3 hours and can finish, unless a pair's CPU fails to rise with the training budget: the schedule then multiplies it by 64 per level for up to 12 levels.",
+   "why_it_matters": "The registered code was not run end to end. I re-ran generation 0 (quadassign, 3 seeds; identical scores), replayed step 0 with a stub (identical records) and ran report.py on a copy of the dev ledger (it works), so the risk is small but not nil.",
+   "evidence": "registration_o_dev.json file hashes; dev_e2e.log 'the open experiment is not registered in this ledger'; my runs in WORK (repro.py, charge.py, report on dev_copy.jsonl).",
+   "suggested_fix": "Repeat a short development run of all four stages and the report with the registered files before recording the registration."
+  }
+ ]
+}

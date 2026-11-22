@@ -1,0 +1,112 @@
+{
+ "buildable": true,
+ "reason_if_not": "",
+ "source": "OR-Library (J. E. Beasley), uncapacitated warehouse location, page uncapinfo.html: all 15 files of the page (cap71-74, cap101-104, cap131-134 = sets VII, X, XIII; capa, capb, capc = sets A, B, C), reference values in uncapopt.txt. 16 files in the manifest, each pinned by SHA-256; capa/capb/capc were added in this correction (fetched once by me to WORK/dl3 and once by the package's own fetch, byte-identical). The capacitated problem of the same files is still not presented (its published optima divide a customer's demand; unchanged from the first build).",
+ "answer_form": "AssignProblem, unchanged: variable = customer, option = warehouse, an option may be taken any number of times, no order, no capacity. One soft term group: allocation costs of the assigned customers plus the fixed costs of the warehouses at least one of them takes; for a complete answer exactly the published value. Exposed: var_opt[0] = cost matrix, opt_attr[:,0] = fixed cost. The only code changes: parse() reads the word \"capacity\" (capa, capb, capc print it instead of a number) as absent; the instance list is the page's 15 files; group() is the size class; size rule constant.",
+ "groups": "Two groups, the published size class named by the number of customers (the convention of pmedian.py): \"50\" = the 12 files of sets VII, X, XIII; \"1000\" = capa, capb, capc. The published problem set is no longer the group, because VII, X and XIII are one body of data (66 pairs of instances share a cost column, all 66 now inside one group). capa, capb, capc share no cost column, demands or fixed costs with the others or with each other; they are kept together as one size class of one source. Kernel split (16, 24): training = all 12 of class \"50\", fresh = capb, capa, capc; halves [capb, capc] | [capa]. Pairs (training, fresh) with a common cost column, the same demands or the same fixed costs: 0. I fixed this rule before computing the kernel's order for it. For the record, computed afterwards and not adopted: grouping by common cost columns alone (12, 1, 1, 1; the literal wording of the audit's suggestion) gets the kernel order [capb, cap71, capa, capc], i.e. fresh = capb + the 12 small, training = capa and capc only.",
+ "instances_used": 15,
+ "instances_left_out": "None. The size rule was restated before anything was scored (no learner has met an instance of this category): at most 1,000 customers and at most 100,000 customer-warehouse pairs (was 30,000). Reason, stated in the module text: the old rule left out exactly the three instances that do not share data with the others, so no fresh instance could be independent of training. The 25 capacitated-only files remain unused (each is number for number one of the 12 small instances).",
+ "reference": "Optimal values of the uncapacitated problem in uncapopt.txt, read by score() and reference() only. Attainable, not bounds: my checks exhibit for each of the 15 instances an answer with the published value (capa found 17156454.4783 vs 17156454.478, capb 12979071.5814 vs 12979071.582, capc 11505594.3288 vs 11505594.329, by my own add/drop/exchange search outside the package). Optimality is proved by complete enumeration for sets VII and X only; for XIII, A, B, C it rests on the source. Tolerance 0.001 (one unit of the last printed decimal) kept; the module text now says correctly that the rounding warning stands in capopt.txt, that uncapopt.txt prints four values 0.0005 below and one (capb) 0.0006 above what an answer attains.",
+ "score_scale": "Plain ratio reference / value, cut at 1; 0 for an invalid answer. Kept because a uniformly random valid answer is far below 0.5 on it: reference / expected random value is 0.277-0.407 on the 12 small instances and 0.082, 0.125, 0.139 on capa, capb, capc; largest mean score of 2000 random answers 0.413.",
+ "threshold_and_anchor": "0.95, unchanged: an operating point, not an external fact (mean ratio of the published optimum to the answer's cost), taken from pmedian.py. It now applies to a mean over 3 fresh instances. Not checked against any baseline, on purpose (that would predict the learner's score before the registered test).",
+ "learner_run_on_benchmark_instances": false,
+ "hosts_used": [
+  "people.brunel.ac.uk"
+ ],
+ "files_written": [
+  "<scratch>/targets/facility/repo/rsi6/environments/facility.py",
+  "<scratch>/targets/facility/repo/rsi6/environments/manifests/facility.json",
+  "<scratch>/targets/facility/repo/rsi6/data/facility/capa.txt",
+  "<scratch>/targets/facility/repo/rsi6/data/facility/capb.txt",
+  "<scratch>/targets/facility/repo/rsi6/data/facility/capc.txt",
+  "<scratch>/targets/facility/work/checks.py",
+  "<scratch>/targets/facility/work/checks.out",
+  "<scratch>/targets/facility/work/checks.err",
+  "<scratch>/targets/facility/work/patch1.py",
+  "<scratch>/targets/facility/work/patch2.py",
+  "<scratch>/targets/facility/work/explore2.py",
+  "<scratch>/targets/facility/work/dl3/capa.txt",
+  "<scratch>/targets/facility/work/dl3/capb.txt",
+  "<scratch>/targets/facility/work/dl3/capc.txt",
+  "<scratch>/targets/facility/work/facility.before_audit1.py",
+  "<scratch>/targets/facility/work/facility.before_audit1.json",
+  "<scratch>/targets/facility/work/checks.before_audit1.py",
+  "<scratch>/targets/facility/work/checks.before_audit1.out"
+ ],
+ "checks": [
+  {
+   "id": "a",
+   "n": "5431 partial states; 45 full paths (15 instances x 3 relabellings)",
+   "result": "PASS. Fast rows and totals equal the specification. Largest absolute difference 6.56e-07 on totals that reach 2e8 (relative 3e-15); numpy.allclose, the kernel test's criterion, holds in every state. My first tightened criterion (rows relative to the row) failed at 4e-08: that is cancellation in the specification's own difference of two totals, not an error of the fast methods, so the criterion is now relative to the total."
+  },
+  {
+   "id": "b",
+   "n": "645 valid answers through decode, 120 invalid",
+   "result": "PASS. Independent evaluator (own parser, rewritten line by line to read the word 'capacity') equals score; largest difference 2.45e-16."
+  },
+  {
+   "id": "c",
+   "n": "15 instances",
+   "result": "PASS. An answer with the published value is exhibited for every instance and scores exactly 1 (8 by complete enumeration, 7 by my local search: attainment only); one customer moved to its dearest warehouse scores less (0.38-0.47 on the small, 0.915, 0.935, 0.940 on capa, capb, capc); out of range scores 0; adapter's parser equals mine."
+  },
+  {
+   "id": "d",
+   "n": "15 instances x 2 seeds x training/fresh",
+   "result": "PASS. One layout: ('assign', False, True, True, (False,), (False,), 0, 1, 0, 0, 1, 0, True, True). No padding is needed."
+  },
+  {
+   "id": "e",
+   "n": "15 instances, 10 answers each",
+   "result": "PASS. Same answer under two relabellings: largest difference of score or value 9.31e-10; 30 of 30 permutations differ; exposed arrays equal the file's fields."
+  },
+  {
+   "id": "f",
+   "n": "split(env, 16, 24)",
+   "result": "PASS. 12 training in group '50', 3 fresh in group '1000'; 66 instance pairs share a cost column, 0 of them across groups; 0 (training, fresh) pairs share a cost column, demands or fixed costs. This is the correction of the first major finding."
+  },
+  {
+   "id": "g",
+   "n": "5 made-up shapes x designs a and b",
+   "result": "PASS. Both designs accept made-up instances of this layout (random numbers only) and return well-formed, exactly evaluated answers, including on a made-up 1000 x 100 instance within the registered test budget (under 1 CPU second for two applies)."
+  },
+  {
+   "id": "g2",
+   "n": "12 made-up training instances of the real shapes (4 each of 50x16, 50x25, 50x50)",
+   "result": "PASS. Design a: 1 round, 64 constructions, 384,198 of 752,480 units, learned True. Design b: 47 iterations, 526 constructions, learned True. This is the correction of the second major finding; design a still makes no round with 4 of 50x25 or 6 small ones, as before."
+  },
+  {
+   "id": "i",
+   "n": "15 instances",
+   "result": "PASS. Malformed answers are not valid; the view shows generic fields only; same seed gives the same problem; the problem object holds the cost matrix and the fixed costs and nothing else of its own."
+  },
+  {
+   "id": "h",
+   "n": "510 arrays and scalars",
+   "result": "PASS. 0 values within 1.0 of the reference; 0 strings naming the instance or class; the instance files do not print the optimum."
+  },
+  {
+   "id": "cap",
+   "n": "25 capacitated-only files, 16 manifest files",
+   "result": "PASS. 13 capacitated files admit no undivided answer although capopt prints optima for them; all 25 repeat one of the 12 small instances; a second download of the 16 manifest files is byte-identical."
+  },
+  {
+   "id": "scale",
+   "n": "2000 random answers per instance",
+   "result": "PASS. Largest mean score 0.413, largest reference / expected value 0.407; plain ratio kept."
+  },
+  {
+   "id": "not run",
+   "result": "rsi6/tests/test_kernel.py was not run (forbidden as a whole); checks a, d, e, h, i cover its per-adapter properties. All 12 checks above: 'RESULT: all checks passed', adapter sha256 3ab16683191d6de2."
+  }
+ ],
+ "open_issues": [
+  "DECISION TAKEN BY THE BUILDER, NEEDS CONFIRMATION ABOVE: the audit said the first major finding needs a decision above the builder. Told to decide, I restated the size rule (30,000 -> 100,000 pairs) to admit capa, capb, capc and changed the grouping. Nothing has been scored, so this is still before the registered test, but whoever registers the target should confirm it.",
+  "GROUPING RULE IS THE ONE THAT GIVES THE USABLE SPLIT: I adopted 'size class' (2 groups: 12 | 3), not the audit's literal 'common cost matrix' (4 groups: 12, 1, 1, 1). My grounds were fixed before I computed any order (R6 asks for the published family or size class; the kernel's text keeps instances of one generator together; pmedian.py names groups the same way). But the outcome matters and should be judged: the adopted rule gives training = 12 small, fresh = capa, capb, capc; the other rule, computed afterwards for the record, would give training = capa, capc and fresh = capb + the 12 small, which is unusable. That capa, capb, capc are one generator is supported by the data only (same dimensions, same cost range 5 to 150,000, three levels of fixed cost) and by the page listing them as sets A, B, C; the paper was not fetched.",
+  "Minor finding R6 not correctable: 15 instances in 2 groups, split 12 training / 3 fresh against the kernel's 16 / 24 and 3 groups. The benchmark has no more. A mean over 3 fresh instances is coarse, the deciding half is 2 instances and the confirming half 1, and the 12 training instances are only 3 cost matrices at 4 fixed-cost levels.",
+  "The test is now a transfer across size and regime, which bounds what a result means: training has 50 customers and fixed costs 7,500-25,000; fresh has 1,000 customers, 100 warehouses and fixed costs 400,000-2,250,000 against allocation costs up to 151,000 (the optima open 4, 7 and 9 of 100 warehouses). A low fresh score would not by itself show that nothing was acquired on the small instances.",
+  "Threshold 0.95 may be strict on the fresh side and is unverified: moving a single customer to its dearest warehouse already drops an optimal answer to 0.915-0.940 there. No constructive baseline was computed on benchmark instances, deliberately.",
+  "Design a is marginal: on made-up instances of the real training shapes it makes exactly one learning round (384,198 of 752,480 units). That is on random numbers; the real instances may behave differently.",
+  "Fresh instances exceed the size preference of R6: one construction costs 101,001 units, a fresh answer has a test budget of 1,202,002 units, so one run spends about 7.2 million units on the 6 fresh answers against 752,480 for all of training. CPU time on a made-up instance of that size was under a second.",
+  "Auditor's notes left as they are, no change called for: (1) an answer that opens a warehouse and leaves it idle is written without the idle warehouse (never cheaper, optimum unchanged); (2) optimality of the references of set XIII, and now also of A, B, C, rests on the source (attainment verified); (3) the licence wording in the manifest is copied from pmedian.json, the legal page was not fetched (it is not among the addresses I was allowed to download)."
+ ]
+}

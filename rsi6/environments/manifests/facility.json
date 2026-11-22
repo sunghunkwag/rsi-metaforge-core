@@ -1,0 +1,89 @@
+{
+ "name": "facility",
+ "category": "facility",
+ "source": "OR-Library (J. E. Beasley), uncapacitated warehouse location (page uncapinfo.html): all 15 files of the page, cap71 to cap74, cap101 to cap104, cap131 to cap134 and capa, capb, capc (problem sets VII, X, XIII and A, B, C of Table 2 of J. E. Beasley, 'Lagrangean heuristics for location problems', European Journal of Operational Research 65 (1993) 383-399). The capacitated problem of the same files (page capinfo.html, values in capopt.txt) is not presented: see the module text of rsi6/environments/facility.py.",
+ "terms": "OR-Library: 'All of the material available from OR-Library is freely available for use. As such the MIT licence ... applies: Copyright (c) (2010) (J E Beasley)'. Fetched by hash. (The wording is the one recorded in this package's manifest of the same source, pmedian.json; the library's legal page was not fetched again for this manifest.)",
+ "reference": "the optimal values of the uncapacitated problem in uncapopt.txt, printed with three decimals (kernel only)",
+ "files": [
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/uncapopt.txt",
+   "path": "uncapopt.txt",
+   "sha256": "88136637f2045dfd8b4ab9ba900f618951fde7ea9055f7677ab292098176106f"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/cap71.txt",
+   "path": "cap71.txt",
+   "sha256": "dda7a533a674bd5c82766f58aa3ccb995f9cf7f776210f9aa1a7a49406ded8dc"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/cap72.txt",
+   "path": "cap72.txt",
+   "sha256": "fbbc19aef762f3db1d1ba79500fee3268b36e4d482d6062a81153787b58174e1"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/cap73.txt",
+   "path": "cap73.txt",
+   "sha256": "36ed79748e049e01fe7e2f254aeb62ef64ebef5090caf770083242089352c703"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/cap74.txt",
+   "path": "cap74.txt",
+   "sha256": "a740928ead01307256663517055486660d8303b6c61b1a0b2b1e9f2b2fc3af06"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/cap101.txt",
+   "path": "cap101.txt",
+   "sha256": "7f1d0e32808b8c1bd9e3f49ee42dd758abb5a157da63ed52182f22bd14919ebe"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/cap102.txt",
+   "path": "cap102.txt",
+   "sha256": "52725adf3d065fa7e6f365817c9ba5d9cec1261f93403b30fd15e00dd2cb8b40"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/cap103.txt",
+   "path": "cap103.txt",
+   "sha256": "c22544480223e067fad39960171796d681e44b5e20041c4280779b9d57b65198"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/cap104.txt",
+   "path": "cap104.txt",
+   "sha256": "cc4c0ab975191650dc12d85d7c93b6cc649ec5a448a29218fa39953451e16833"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/cap131.txt",
+   "path": "cap131.txt",
+   "sha256": "3ea70c64d029f21a2065b588c4ffa7b0d60cab6ee82fd7775360e0f7e007b36a"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/cap132.txt",
+   "path": "cap132.txt",
+   "sha256": "f9826bdee15ab1b0594170a9fafbcee7911e8dcf61e441886883fab77a4c1886"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/cap133.txt",
+   "path": "cap133.txt",
+   "sha256": "c200ca2e51cd58b3b3fc5a43c584aa3c4c5b6ddee91fd90983c998ebdb90f402"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/cap134.txt",
+   "path": "cap134.txt",
+   "sha256": "664737506cac1ac7c641e7daf618602e890a53d04cfde31389c98fff38112d7b"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/capa.txt",
+   "path": "capa.txt",
+   "sha256": "99df07aec953ac1e1d5e63578a0600aa3b899606a6a19fc1dfcf1a24739783f8"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/capb.txt",
+   "path": "capb.txt",
+   "sha256": "1f35015e05b629877ae805f737c575e50ece0c71d4b818c7b63c0687f14f7728"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/capc.txt",
+   "path": "capc.txt",
+   "sha256": "0c6e58103427b45c23829ab1a5b9fa92d01a3bfe0bac29085e3246ff23753011"
+  }
+ ]
+}

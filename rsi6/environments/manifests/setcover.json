@@ -1,0 +1,256 @@
+{
+ "name": "setcover",
+ "category": "setcover",
+ "source": "OR-Library (J. E. Beasley), set covering: the test problem sets 4, 5, 6, A, B and E of J. E. Beasley, 'An algorithm for set covering problems', European Journal of Operational Research 31 (1987) 85-93 (sets 4 to 6 originally from Balas and Ho); files scp41..scp410, scp51..scp510, scp61..scp65, scpa1..scpa5, scpb1..scpb5, scpe1..scpe5, and the library's description page scpinfo.html (kept as a pinned record of the file format; not parsed). Sets C and D (4,000 columns) are left out by the adapter's size rule; for the other files of the page the source names no table of optimal values (see the adapter's module text)",
+ "terms": "OR-Library: 'All of the material available from OR-Library is freely available for use. As such the MIT licence ... applies: Copyright (c) (2010) (J E Beasley)'. Fetched by hash.",
+ "reference": "reference_values (kernel only). Provenance, said plainly: the description page does NOT print these values; it says 'the value of the optimal solution for each of these data files is given in the paper' (Beasley 1987). Neither that paper nor any other document stating the values could be fetched; the 40 values were recorded from memory of the literature (Beasley 1987, as tabulated e.g. by Beasley and Chu 1996), and no table was consulted. Verified from the pinned files by the adapter's checks (outside the package; the covers found are answers and are not stored here): every value is attained by a cover that is exhibited (40 of 40); no cover is cheaper (40 of 40: for 12 a Lagrangian lower bound rounded up equals the value, for 28 a branch and bound over all covers of cost at most value - 1 ends without one). The first audit, by its own code, found a cover at the value for 40 of 40 and proved 31 optimal by exhaustive search (sets 4, 5, E, scp62..65, scpa4, scpa5); for scp61, scpa1..3 and scpb1..5 optimality rests on the builder's check and on the literature",
+ "reference_values": {
+  "scp41": 429,
+  "scp42": 512,
+  "scp43": 516,
+  "scp44": 494,
+  "scp45": 512,
+  "scp46": 560,
+  "scp47": 430,
+  "scp48": 492,
+  "scp49": 641,
+  "scp410": 514,
+  "scp51": 253,
+  "scp52": 302,
+  "scp53": 226,
+  "scp54": 242,
+  "scp55": 211,
+  "scp56": 213,
+  "scp57": 293,
+  "scp58": 288,
+  "scp59": 279,
+  "scp510": 265,
+  "scp61": 138,
+  "scp62": 146,
+  "scp63": 145,
+  "scp64": 131,
+  "scp65": 161,
+  "scpa1": 253,
+  "scpa2": 252,
+  "scpa3": 232,
+  "scpa4": 234,
+  "scpa5": 236,
+  "scpb1": 69,
+  "scpb2": 76,
+  "scpb3": 80,
+  "scpb4": 79,
+  "scpb5": 72,
+  "scpe1": 5,
+  "scpe2": 5,
+  "scpe3": 5,
+  "scpe4": 5,
+  "scpe5": 5
+ },
+ "files": [
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/scpinfo.html",
+   "path": "scpinfo.html",
+   "sha256": "1b798dda8425f44048cdc0dcfaaa57561d2de0aefc5f911aebaf50d4bf1d5528"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp41.txt",
+   "path": "scp41.txt",
+   "sha256": "85788fe18b2af8034fea25619a8ce0e8db1c870935854f73d9be4bb721ae445e"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp42.txt",
+   "path": "scp42.txt",
+   "sha256": "08094a5dda03cdc4975e5750978131f45462645ff1f44abd0816c05cf706edd7"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp43.txt",
+   "path": "scp43.txt",
+   "sha256": "19e94d9825584b00fb795af2bd3cd17d1e21966ad75c563c8b936da8b83c4105"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp44.txt",
+   "path": "scp44.txt",
+   "sha256": "253cc2e40df68757edb97b272d4b844000297b40894532bd85e33e2e045a6c68"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp45.txt",
+   "path": "scp45.txt",
+   "sha256": "05ddb202c92a26623036486fadd089f73d5ec0ce8cfc262ca44f17a3b9de8863"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp46.txt",
+   "path": "scp46.txt",
+   "sha256": "465c0a82beed8789cf0ae6104c035925d4539b6967956428cd8fbafe65a1c316"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp47.txt",
+   "path": "scp47.txt",
+   "sha256": "74bcc2f3544a37c4ef0f18cce72285a665137e9b509fb48e8ab1be581c10a9db"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp48.txt",
+   "path": "scp48.txt",
+   "sha256": "5c1137889bc04ea982f21ce9783c16fb88092d628fd9fe739150821cc03f3be8"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp49.txt",
+   "path": "scp49.txt",
+   "sha256": "4239aa79093ee7cb00ec2958ad5f6e092b0f099742cbd2822bd8ad9177c18c79"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp410.txt",
+   "path": "scp410.txt",
+   "sha256": "d10d8531380a005299a4dce4c08a77c11568cdbd484a0ccf1da3a3e7c65b5187"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp51.txt",
+   "path": "scp51.txt",
+   "sha256": "c97d8cb7b00e8528efb9114565c02292fd5efa147ce4bf8e6208df843d1a60f8"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp52.txt",
+   "path": "scp52.txt",
+   "sha256": "070585918b02d5eee078b03373b6cc4e6d5b1643da06e4b18a3f06963cd1f1b0"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp53.txt",
+   "path": "scp53.txt",
+   "sha256": "15bf4cdf3e88040b11f9991389c5285001fa665f8a22fc1b17f30a9616a8131a"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp54.txt",
+   "path": "scp54.txt",
+   "sha256": "ff32fd1cb0eadd2f056a5eb7b08ba60934253ef2546b449159d5c379d7c803ab"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp55.txt",
+   "path": "scp55.txt",
+   "sha256": "939e60400a50bd9ca400e90242e5d9085fa7350a74c8827ecc328dfc74f84395"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp56.txt",
+   "path": "scp56.txt",
+   "sha256": "1cbb7f77759117fb18c15be5c6b1f79dbf85999ed1f98ba6710b5db82d8e04c9"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp57.txt",
+   "path": "scp57.txt",
+   "sha256": "f953675a5252b8108cf438307eefc95edab69ff057bbc4fc601e02b9ff60e51f"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp58.txt",
+   "path": "scp58.txt",
+   "sha256": "23868d4492a4dc1d8879d20fff14aecfe0bbe9181515395a4ad175f69502fbaa"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp59.txt",
+   "path": "scp59.txt",
+   "sha256": "cc8bf6b4f4f56ac076041e2f28578e25438bb6de19d32c57432f28de2d255d96"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp510.txt",
+   "path": "scp510.txt",
+   "sha256": "e7d521e4d2df266cb80d87d9f43604bac0805d2bb634b959b21a2f934cb32e87"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp61.txt",
+   "path": "scp61.txt",
+   "sha256": "1c3ac390aded677808d035c79f67b4e53f267b4834d534945d4ab80f8ac3d31b"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp62.txt",
+   "path": "scp62.txt",
+   "sha256": "d496833a8234fb5fd2b091f87d72e40bba573b4bd3c2dc321930f2a0b8604500"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp63.txt",
+   "path": "scp63.txt",
+   "sha256": "312a97df057b8a9059dbd8c057b41a1506af2a809dd14daafeae61c984062fa6"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp64.txt",
+   "path": "scp64.txt",
+   "sha256": "8503f1cc32c8641b0ece857518131b973bf79708a41efcd4d3368a2c5d93921c"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scp65.txt",
+   "path": "scp65.txt",
+   "sha256": "cd7deeaf475aacc8997c10337a2a7005d7e5c4eb3d9d6b6a71daf9799c6c2eca"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scpa1.txt",
+   "path": "scpa1.txt",
+   "sha256": "e47f63dcaf249b141396a0ad9dbb34ace7b97de3d5554907e0bbf5389a5bf39d"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scpa2.txt",
+   "path": "scpa2.txt",
+   "sha256": "e8fd17b3e0e505c905531d561f4f594a592d23963fb4bff4115fcf0e58b307de"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scpa3.txt",
+   "path": "scpa3.txt",
+   "sha256": "f94819f246404fec3e84ea05c04dacca271a1c8f93cfb2dc398dd693d9eda7a9"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scpa4.txt",
+   "path": "scpa4.txt",
+   "sha256": "bee46166d53b16141d0148cbe25b16da358bb0de8b7b2ae935c70a302cd481d3"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scpa5.txt",
+   "path": "scpa5.txt",
+   "sha256": "676c40fc9a984507922345cefb59a6b1f5ff42256e8913e4d470d151eb625255"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scpb1.txt",
+   "path": "scpb1.txt",
+   "sha256": "301b3235b29af5e20f4f4478d5e0f8a472ade9139495fb74d8a9c70811c91fc1"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scpb2.txt",
+   "path": "scpb2.txt",
+   "sha256": "d89600b2f4c6300199063aa84346e537819e2ff7837873e911ba2fdeefd059ff"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scpb3.txt",
+   "path": "scpb3.txt",
+   "sha256": "fb76451bf349d1ecdbcfad1dbf12902e901a306b5caa9be78095ea7860cb0924"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scpb4.txt",
+   "path": "scpb4.txt",
+   "sha256": "2af8da888923351f192fc7b604e8b3aca58fdb7b65dfa9660a824669742b6e22"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scpb5.txt",
+   "path": "scpb5.txt",
+   "sha256": "ba760cb95a5294a4b64f8fbddb67f4030833f89817c869d64d94208d4b1a72cf"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scpe1.txt",
+   "path": "scpe1.txt",
+   "sha256": "c04388428fd4050661d9a14e2beb50bc3fc203856a0cab2a782c3ea751da6246"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scpe2.txt",
+   "path": "scpe2.txt",
+   "sha256": "4f8cc3b46794583980f3ba8a0d1ba4ec8a7ce8e0e08553caa4c49f7221d41c8c"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scpe3.txt",
+   "path": "scpe3.txt",
+   "sha256": "b314906d85d852a2dbff9b6b536b44720c22b7d0fc7039d37a722ed3f5ba700b"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scpe4.txt",
+   "path": "scpe4.txt",
+   "sha256": "dddeb72f933467237223f2fbd35abca659f1fe22bf4abfbd36d649ce16d4e236"
+  },
+  {
+   "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/scpe5.txt",
+   "path": "scpe5.txt",
+   "sha256": "c45d19716391da9500acbc6f36ea76efbbc48407aee681723140538c95acdf38"
+  }
+ ]
+}

@@ -1,0 +1,2354 @@
+[
+ {
+  "ans_type": "str",
+  "module": "study.py",
+  "name": "Study_1:0",
+  "sat": "def sat(s: str):\n    return s.count('o') == 1000 and s.count('oo') == 0",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "str",
+  "module": "study.py",
+  "name": "Study_2:0",
+  "sat": "def sat(s: str):\n    return s.count('o') == 1000 and s.count('oo') == 100 and s.count('ho') == 801",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "study.py",
+  "name": "Study_3:0",
+  "sat": "def sat(li: List[int]):\n    return sorted(li) == list(range(999)) and all(li[i] != i for i in range(len(li)))",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "study.py",
+  "name": "Study_4:0",
+  "sat": "def sat(li: List[int]):\n    return len(li) == 10 and li.count(li[3]) == 2",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "study.py",
+  "name": "Study_5:0",
+  "sat": "def sat(li: List[int]):\n    return all([li.count(i) == i for i in range(10)])",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "int",
+  "module": "study.py",
+  "name": "Study_6:0",
+  "sat": "def sat(i: int):\n    return i % 123 == 4 and i > 10 ** 10",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "str",
+  "module": "study.py",
+  "name": "Study_7:0",
+  "sat": "def sat(s: str):\n    return str(8 ** 2888).count(s) > 8 and len(s) == 3",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[str]",
+  "module": "study.py",
+  "name": "Study_8:0",
+  "sat": "def sat(ls: List[str]):\n    return ls[1234] in ls[1235] and ls[1234] != ls[1235]",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "study.py",
+  "name": "Study_9:0",
+  "sat": "def sat(li: List[int]):\n    return [\"The quick brown fox jumps over the lazy dog\"[i] for i in li] == list(\n        \"The five boxing wizards jump quickly\")",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "str",
+  "module": "study.py",
+  "name": "Study_10:0",
+  "sat": "def sat(s: str):\n    return s in str(8 ** 1818) and s == s[::-1] and len(s) > 11",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[str]",
+  "module": "study.py",
+  "name": "Study_11:0",
+  "sat": "def sat(ls: List[str]):\n    return min(ls) == max(ls) == str(len(ls))",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "study.py",
+  "name": "Study_12:0",
+  "sat": "def sat(li: List[int]):\n    return all(i + j == 9 for i, j in zip([4] + li, li)) and len(li) == 1000",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "float",
+  "module": "study.py",
+  "name": "Study_13:0",
+  "sat": "def sat(x: float):\n    return str(x - 3.1415).startswith(\"123.456\")",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "study.py",
+  "name": "Study_14:0",
+  "sat": "def sat(li: List[int]):\n    return all([sum(li[:i]) == i for i in range(20)])",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "study.py",
+  "name": "Study_15:0",
+  "sat": "def sat(li: List[int]):\n    return all(sum(li[:i]) == 2 ** i - 1 for i in range(20))",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "str",
+  "module": "study.py",
+  "name": "Study_16:0",
+  "sat": "def sat(s: str):\n    return float(s) + len(s) == 4.5",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "int",
+  "module": "study.py",
+  "name": "Study_17:0",
+  "sat": "def sat(i: int):\n    return len(str(i + 1000)) > len(str(i + 1001))",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[str]",
+  "module": "study.py",
+  "name": "Study_18:0",
+  "sat": "def sat(ls: List[str]):\n    return [s + t for s in ls for t in ls if s != t] == 'berlin berger linber linger gerber gerlin'.split()",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "study.py",
+  "name": "Study_19:0",
+  "sat": "def sat(li: List[int]):\n    return {i + j for i in li for j in li} == {0, 1, 2, 3, 4, 5, 6, 17, 18, 19, 20, 34}",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "study.py",
+  "name": "Study_20:0",
+  "sat": "def sat(li: List[int]):\n    return all(j in {i - 1, i + 1, 3 * i} for i, j in zip([0] + li, li + [128]))",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "study.py",
+  "name": "Study_21:0",
+  "sat": "def sat(li: List[int]):\n    return all([li[i] != li[i + 1] for i in range(10)]) and len(set(li)) == 3",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "str",
+  "module": "study.py",
+  "name": "Study_22:0",
+  "sat": "def sat(s: str):\n    return s[::2] in s and len(set(s)) == 5",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[str]",
+  "module": "study.py",
+  "name": "Study_23:0",
+  "sat": "def sat(ls: List[str]):\n    return tuple(ls) in zip('dee', 'doo', 'dah!')",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "study.py",
+  "name": "Study_24:0",
+  "sat": "def sat(li: List[int]):\n    return li.count(17) == 3 and li.count(3) >= 2",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "str",
+  "module": "study.py",
+  "name": "Study_25:0",
+  "sat": "def sat(s: str):\n    return sorted(s) == sorted('Permute me true') and s == s[::-1]",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[str]",
+  "module": "study.py",
+  "name": "Study_26:0",
+  "sat": "def sat(ls: List[str]):\n    return \"\".join(ls) == str(8 ** 88) and all(len(s) == 8 for s in ls)",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "study.py",
+  "name": "Study_27:0",
+  "sat": "def sat(li: List[int]):\n    return li[li[0]] != li[li[1]] and li[li[li[0]]] == li[li[li[1]]]",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "study.py",
+  "name": "Study_28:0",
+  "sat": "def sat(li: List[int]):\n    return all(i in range(1000) and abs(i - j) >= 10 for i in li for j in li if i != j) and len(set(li)) == 100",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "study.py",
+  "name": "Study_29:0",
+  "sat": "def sat(l: List[int]):\n    return all(i in range(1000) and abs(i * i - j * j) >= 10 for i in l for j in l if i != j) and len(set(l)) > 995",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "study.py",
+  "name": "Study_30:0",
+  "sat": "def sat(li: List[int]):\n    return all([123 * li[i] % 1000 < 123 * li[i + 1] % 1000 and li[i] in range(1000) for i in range(20)])",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "SumOfDigits:0",
+  "sat": "def sat(x: str, s=679):\n    return s == sum([int(d) for d in x])",
+  "sol_header": "def sol(s=679):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "SumOfDigits:1",
+  "sat": "def sat(x: str, s=40427):\n    return s == sum([int(d) for d in x])",
+  "sol_header": "def sol(s=40427):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "SumOfDigits:2",
+  "sat": "def sat(x: str, s=8071):\n    return s == sum([int(d) for d in x])",
+  "sol_header": "def sol(s=8071):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "SumOfDigits:3",
+  "sat": "def sat(x: str, s=86120):\n    return s == sum([int(d) for d in x])",
+  "sol_header": "def sol(s=86120):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "SumOfDigits:4",
+  "sat": "def sat(x: str, s=26785):\n    return s == sum([int(d) for d in x])",
+  "sol_header": "def sol(s=26785):"
+ },
+ {
+  "ans_type": "float",
+  "module": "basic.py",
+  "name": "FloatWithDecimalValue:0",
+  "sat": "def sat(z: float, v=9, d=0.0001):\n    return int(z * 1 / d % 10) == v",
+  "sol_header": "def sol(v=9, d=0.0001):"
+ },
+ {
+  "ans_type": "float",
+  "module": "basic.py",
+  "name": "FloatWithDecimalValue:1",
+  "sat": "def sat(z: float, v=1, d=1e-17):\n    return int(z * 1 / d % 10) == v",
+  "sol_header": "def sol(v=1, d=1e-17):"
+ },
+ {
+  "ans_type": "float",
+  "module": "basic.py",
+  "name": "FloatWithDecimalValue:2",
+  "sat": "def sat(z: float, v=9, d=1e+83):\n    return int(z * 1 / d % 10) == v",
+  "sol_header": "def sol(v=9, d=1e+83):"
+ },
+ {
+  "ans_type": "float",
+  "module": "basic.py",
+  "name": "FloatWithDecimalValue:3",
+  "sat": "def sat(z: float, v=5, d=1e-18):\n    return int(z * 1 / d % 10) == v",
+  "sol_header": "def sol(v=5, d=1e-18):"
+ },
+ {
+  "ans_type": "float",
+  "module": "basic.py",
+  "name": "FloatWithDecimalValue:4",
+  "sat": "def sat(z: float, v=5, d=1e+90):\n    return int(z * 1 / d % 10) == v",
+  "sol_header": "def sol(v=5, d=1e+90):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "ArithmeticSequence:0",
+  "sat": "def sat(x: List[int], a=7, s=5, e=200):\n    return x[0] == a and x[-1] <= e and (x[-1] + s > e) and all([x[i] + s == x[i + 1] for i in range(len(x) - 1)])",
+  "sol_header": "def sol(a=7, s=5, e=200):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "ArithmeticSequence:1",
+  "sat": "def sat(x: List[int], a=43536, s=3795, e=417606):\n    return x[0] == a and x[-1] <= e and (x[-1] + s > e) and all([x[i] + s == x[i + 1] for i in range(len(x) - 1)])",
+  "sol_header": "def sol(a=43536, e=417606, s=3795):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "ArithmeticSequence:2",
+  "sat": "def sat(x: List[int], a=-70138, s=4868, e=498910):\n    return x[0] == a and x[-1] <= e and (x[-1] + s > e) and all([x[i] + s == x[i + 1] for i in range(len(x) - 1)])",
+  "sol_header": "def sol(a=-70138, e=498910, s=4868):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "ArithmeticSequence:3",
+  "sat": "def sat(x: List[int], a=55980, s=7402, e=155818):\n    return x[0] == a and x[-1] <= e and (x[-1] + s > e) and all([x[i] + s == x[i + 1] for i in range(len(x) - 1)])",
+  "sol_header": "def sol(a=55980, e=155818, s=7402):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "ArithmeticSequence:4",
+  "sat": "def sat(x: List[int], a=-44635, s=5046, e=503563):\n    return x[0] == a and x[-1] <= e and (x[-1] + s > e) and all([x[i] + s == x[i + 1] for i in range(len(x) - 1)])",
+  "sol_header": "def sol(a=-44635, e=503563, s=5046):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "GeometricSequence:0",
+  "sat": "def sat(x: List[int], a=8, r=2, l=50):\n    return x[0] == a and len(x) == l and all([x[i] * r == x[i + 1] for i in range(len(x) - 1)])",
+  "sol_header": "def sol(a=8, r=2, l=50):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "GeometricSequence:1",
+  "sat": "def sat(x: List[int], a=-484, r=4, l=589):\n    return x[0] == a and len(x) == l and all([x[i] * r == x[i + 1] for i in range(len(x) - 1)])",
+  "sol_header": "def sol(a=-484, r=4, l=589):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "GeometricSequence:2",
+  "sat": "def sat(x: List[int], a=889, r=7, l=393):\n    return x[0] == a and len(x) == l and all([x[i] * r == x[i + 1] for i in range(len(x) - 1)])",
+  "sol_header": "def sol(a=889, r=7, l=393):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "GeometricSequence:3",
+  "sat": "def sat(x: List[int], a=-777, r=4, l=103):\n    return x[0] == a and len(x) == l and all([x[i] * r == x[i + 1] for i in range(len(x) - 1)])",
+  "sol_header": "def sol(a=-777, r=4, l=103):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "GeometricSequence:4",
+  "sat": "def sat(x: List[int], a=-736, r=4, l=92):\n    return x[0] == a and len(x) == l and all([x[i] * r == x[i + 1] for i in range(len(x) - 1)])",
+  "sol_header": "def sol(a=-736, r=4, l=92):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "LineIntersection:0",
+  "sat": "def sat(e: List[int], a=2, b=-1, c=1, d=2021):\n    x = e[0] / e[1]\n    return abs(a * x + b - c * x - d) < 10 ** -5",
+  "sol_header": "def sol(a=2, b=-1, c=1, d=2021):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "LineIntersection:1",
+  "sat": "def sat(e: List[int], a=-77698407, b=-31793716, c=-10799659, d=89278024):\n    x = e[0] / e[1]\n    return abs(a * x + b - c * x - d) < 10 ** -5",
+  "sol_header": "def sol(a=-77698407, b=-31793716, c=-10799659, d=89278024):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "LineIntersection:2",
+  "sat": "def sat(e: List[int], a=89600582, b=-47657198, c=95101265, d=-52126265):\n    x = e[0] / e[1]\n    return abs(a * x + b - c * x - d) < 10 ** -5",
+  "sol_header": "def sol(a=89600582, b=-47657198, c=95101265, d=-52126265):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "LineIntersection:3",
+  "sat": "def sat(e: List[int], a=-11422303, b=-57150416, c=-59162339, d=-37428439):\n    x = e[0] / e[1]\n    return abs(a * x + b - c * x - d) < 10 ** -5",
+  "sol_header": "def sol(a=-11422303, b=-57150416, c=-59162339, d=-37428439):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "LineIntersection:4",
+  "sat": "def sat(e: List[int], a=-18517001, b=-13662763, c=-11156613, d=9271005):\n    x = e[0] / e[1]\n    return abs(a * x + b - c * x - d) < 10 ** -5",
+  "sol_header": "def sol(a=-18517001, b=-13662763, c=-11156613, d=9271005):"
+ },
+ {
+  "ans_type": "int",
+  "module": "basic.py",
+  "name": "IfProblem:0",
+  "sat": "def sat(x: int, a=324554, b=1345345):\n    if a < 50:\n        return x + a == b\n    else:\n        return x - 2 * a == b",
+  "sol_header": "def sol(a=324554, b=1345345):"
+ },
+ {
+  "ans_type": "int",
+  "module": "basic.py",
+  "name": "IfProblem:1",
+  "sat": "def sat(x: int, a=51, b=40553793):\n    if a < 50:\n        return x + a == b\n    else:\n        return x - 2 * a == b",
+  "sol_header": "def sol(a=51, b=40553793):"
+ },
+ {
+  "ans_type": "int",
+  "module": "basic.py",
+  "name": "IfProblem:2",
+  "sat": "def sat(x: int, a=50, b=72369383):\n    if a < 50:\n        return x + a == b\n    else:\n        return x - 2 * a == b",
+  "sol_header": "def sol(a=50, b=72369383):"
+ },
+ {
+  "ans_type": "int",
+  "module": "basic.py",
+  "name": "IfProblem:3",
+  "sat": "def sat(x: int, a=90, b=42412534):\n    if a < 50:\n        return x + a == b\n    else:\n        return x - 2 * a == b",
+  "sol_header": "def sol(a=90, b=42412534):"
+ },
+ {
+  "ans_type": "int",
+  "module": "basic.py",
+  "name": "IfProblem:4",
+  "sat": "def sat(x: int, a=62, b=-26538057):\n    if a < 50:\n        return x + a == b\n    else:\n        return x - 2 * a == b",
+  "sol_header": "def sol(a=62, b=-26538057):"
+ },
+ {
+  "ans_type": "int",
+  "module": "basic.py",
+  "name": "IfProblemWithAnd:0",
+  "sat": "def sat(x: int, a=9384594, b=1343663):\n    if x > 0 and a > 50:\n        return x - a == b\n    else:\n        return x + a == b",
+  "sol_header": "def sol(a=9384594, b=1343663):"
+ },
+ {
+  "ans_type": "int",
+  "module": "basic.py",
+  "name": "IfProblemWithAnd:1",
+  "sat": "def sat(x: int, a=57, b=40522966):\n    if x > 0 and a > 50:\n        return x - a == b\n    else:\n        return x + a == b",
+  "sol_header": "def sol(a=57, b=40522966):"
+ },
+ {
+  "ans_type": "int",
+  "module": "basic.py",
+  "name": "IfProblemWithAnd:2",
+  "sat": "def sat(x: int, a=29, b=71683001):\n    if x > 0 and a > 50:\n        return x - a == b\n    else:\n        return x + a == b",
+  "sol_header": "def sol(a=29, b=71683001):"
+ },
+ {
+  "ans_type": "int",
+  "module": "basic.py",
+  "name": "IfProblemWithAnd:3",
+  "sat": "def sat(x: int, a=92, b=8820402):\n    if x > 0 and a > 50:\n        return x - a == b\n    else:\n        return x + a == b",
+  "sol_header": "def sol(a=92, b=8820402):"
+ },
+ {
+  "ans_type": "int",
+  "module": "basic.py",
+  "name": "IfProblemWithAnd:4",
+  "sat": "def sat(x: int, a=64, b=46712723):\n    if x > 0 and a > 50:\n        return x - a == b\n    else:\n        return x + a == b",
+  "sol_header": "def sol(a=64, b=46712723):"
+ },
+ {
+  "ans_type": "int",
+  "module": "basic.py",
+  "name": "IfProblemWithOr:0",
+  "sat": "def sat(x: int, a=253532, b=1230200):\n    if x > 0 or a > 50:\n        return x - a == b\n    else:\n        return x + a == b",
+  "sol_header": "def sol(a=253532, b=1230200):"
+ },
+ {
+  "ans_type": "int",
+  "module": "basic.py",
+  "name": "IfProblemWithOr:1",
+  "sat": "def sat(x: int, a=22, b=-84904666):\n    if x > 0 or a > 50:\n        return x - a == b\n    else:\n        return x + a == b",
+  "sol_header": "def sol(a=22, b=-84904666):"
+ },
+ {
+  "ans_type": "int",
+  "module": "basic.py",
+  "name": "IfProblemWithOr:2",
+  "sat": "def sat(x: int, a=10, b=74723522):\n    if x > 0 or a > 50:\n        return x - a == b\n    else:\n        return x + a == b",
+  "sol_header": "def sol(a=10, b=74723522):"
+ },
+ {
+  "ans_type": "int",
+  "module": "basic.py",
+  "name": "IfProblemWithOr:3",
+  "sat": "def sat(x: int, a=66, b=-39109407):\n    if x > 0 or a > 50:\n        return x - a == b\n    else:\n        return x + a == b",
+  "sol_header": "def sol(a=66, b=-39109407):"
+ },
+ {
+  "ans_type": "int",
+  "module": "basic.py",
+  "name": "IfProblemWithOr:4",
+  "sat": "def sat(x: int, a=24, b=18773099):\n    if x > 0 or a > 50:\n        return x - a == b\n    else:\n        return x + a == b",
+  "sol_header": "def sol(a=24, b=18773099):"
+ },
+ {
+  "ans_type": "int",
+  "module": "basic.py",
+  "name": "IfCases:0",
+  "sat": "def sat(x: int, a=4, b=54368639):\n    if a == 1:\n        return x % 2 == 0\n    elif a == -1:\n        return x % 2 == 1\n    else:\n        return x + a == b",
+  "sol_header": "def sol(a=4, b=54368639):"
+ },
+ {
+  "ans_type": "int",
+  "module": "basic.py",
+  "name": "IfCases:1",
+  "sat": "def sat(x: int, a=-4, b=-83354930):\n    if a == 1:\n        return x % 2 == 0\n    elif a == -1:\n        return x % 2 == 1\n    else:\n        return x + a == b",
+  "sol_header": "def sol(a=-4, b=-83354930):"
+ },
+ {
+  "ans_type": "int",
+  "module": "basic.py",
+  "name": "IfCases:2",
+  "sat": "def sat(x: int, a=-3, b=71965664):\n    if a == 1:\n        return x % 2 == 0\n    elif a == -1:\n        return x % 2 == 1\n    else:\n        return x + a == b",
+  "sol_header": "def sol(a=-3, b=71965664):"
+ },
+ {
+  "ans_type": "int",
+  "module": "basic.py",
+  "name": "IfCases:3",
+  "sat": "def sat(x: int, a=2, b=36068130):\n    if a == 1:\n        return x % 2 == 0\n    elif a == -1:\n        return x % 2 == 1\n    else:\n        return x + a == b",
+  "sol_header": "def sol(a=2, b=36068130):"
+ },
+ {
+  "ans_type": "int",
+  "module": "basic.py",
+  "name": "IfCases:4",
+  "sat": "def sat(x: int, a=-3, b=14385903):\n    if a == 1:\n        return x % 2 == 0\n    elif a == -1:\n        return x % 2 == 1\n    else:\n        return x + a == b",
+  "sol_header": "def sol(a=-3, b=14385903):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "ListPosSum:0",
+  "sat": "def sat(x: List[int], n=5, s=19):\n    return len(x) == n and sum(x) == s and all([a > 0 for a in x])",
+  "sol_header": "def sol(n=5, s=19):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "ListPosSum:1",
+  "sat": "def sat(x: List[int], n=6241, s=54594969):\n    return len(x) == n and sum(x) == s and all([a > 0 for a in x])",
+  "sol_header": "def sol(n=6241, s=54594969):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "ListPosSum:2",
+  "sat": "def sat(x: List[int], n=8427, s=33081884):\n    return len(x) == n and sum(x) == s and all([a > 0 for a in x])",
+  "sol_header": "def sol(n=8427, s=33081884):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "ListPosSum:3",
+  "sat": "def sat(x: List[int], n=3363, s=67595319):\n    return len(x) == n and sum(x) == s and all([a > 0 for a in x])",
+  "sol_header": "def sol(n=3363, s=67595319):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "ListPosSum:4",
+  "sat": "def sat(x: List[int], n=9909, s=88140438):\n    return len(x) == n and sum(x) == s and all([a > 0 for a in x])",
+  "sol_header": "def sol(n=9909, s=88140438):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "ListDistinctSum:0",
+  "sat": "def sat(x: List[int], n=4, s=2021):\n    return len(x) == n and sum(x) == s and len(set(x)) == n",
+  "sol_header": "def sol(n=4, s=2021):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "ListDistinctSum:1",
+  "sat": "def sat(x: List[int], n=124, s=2603089):\n    return len(x) == n and sum(x) == s and len(set(x)) == n",
+  "sol_header": "def sol(n=124, s=2603089):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "ListDistinctSum:2",
+  "sat": "def sat(x: List[int], n=823, s=8609609):\n    return len(x) == n and sum(x) == s and len(set(x)) == n",
+  "sol_header": "def sol(n=823, s=8609609):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "ListDistinctSum:3",
+  "sat": "def sat(x: List[int], n=796, s=86694751):\n    return len(x) == n and sum(x) == s and len(set(x)) == n",
+  "sol_header": "def sol(n=796, s=86694751):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "ListDistinctSum:4",
+  "sat": "def sat(x: List[int], n=225, s=38417364):\n    return len(x) == n and sum(x) == s and len(set(x)) == n",
+  "sol_header": "def sol(n=225, s=38417364):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "ConcatStrings:0",
+  "sat": "def sat(x: str, s=['a', 'b', 'c', 'd', 'e', 'f'], n=4):\n    return len(x) == n and all([x[i] == s[i] for i in range(n)])",
+  "sol_header": "def sol(s=['a', 'b', 'c', 'd', 'e', 'f'], n=4):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "ConcatStrings:1",
+  "sat": "def sat(x: str, s=['I', '&', 'W', '&', 'p', 'c', '-', 'U', '(', ' ', 'A', '(', 'S', 'W', 'R', '#', 'm', 'v', '@', '8', '%', 'a', '.', 'K', 'O', '[', '[', '#', 'q', 'k', 'K'], n=16):\n    return len(x) == n and all([x[i] == s[i] for i in range(n)])",
+  "sol_header": "def sol(n=16, s=['I', '&', 'W', '&', 'p', 'c', '-', 'U', '(', ' ', 'A', '(', 'S', 'W', 'R', '#', 'm', 'v', '@', '8', '%', 'a', '.', 'K', 'O', '[', '[', '#', 'q', 'k', 'K']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "ConcatStrings:2",
+  "sat": "def sat(x: str, s=['L', 'C', 'b', 'r', 't', 'V', 'R', '%', 'R', '8', 'V', '#', '<', '!', 'U', 'y', 'x'], n=13):\n    return len(x) == n and all([x[i] == s[i] for i in range(n)])",
+  "sol_header": "def sol(n=13, s=['L', 'C', 'b', 'r', 't', 'V', 'R', '%', 'R', '8', 'V', '#', '<', '!', 'U', 'y', 'x']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "ConcatStrings:3",
+  "sat": "def sat(x: str, s=['-', '&', ')', '&', 'c', 'l', '/', 'H', '1', 'j', 'z', 'o', 'E', '|', '8', '&', '0', '&', 'y', '!', 'r', 'H', 'S', 'P', '5'], n=8):\n    return len(x) == n and all([x[i] == s[i] for i in range(n)])",
+  "sol_header": "def sol(n=8, s=['-', '&', ')', '&', 'c', 'l', '/', 'H', '1', 'j', 'z', 'o', 'E', '|', '8', '&', '0', '&', 'y', '!', 'r', 'H', 'S', 'P', '5']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "ConcatStrings:4",
+  "sat": "def sat(x: str, s=['0', '@', 'R', 'k', '$', '$', 't', '0', '3', '#', '!', 'a', 'w', 'k', 'q', 'H', '-', 'm'], n=16):\n    return len(x) == n and all([x[i] == s[i] for i in range(n)])",
+  "sol_header": "def sol(n=16, s=['0', '@', 'R', 'k', '$', '$', 't', '0', '3', '#', '!', 'a', 'w', 'k', 'q', 'H', '-', 'm']):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "SublistSum:0",
+  "sat": "def sat(x: List[int], t=677, a=43, e=125, s=10):\n    non_zero = [z for z in x if z != 0]\n    return t == sum([x[i] for i in range(a, e, s)]) and len(set(non_zero)) == len(non_zero) and all(\n        [x[i] != 0 for i in range(a, e, s)])",
+  "sol_header": "def sol(t=677, a=43, e=125, s=10):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "SublistSum:1",
+  "sat": "def sat(x: List[int], t=44475424, a=93, e=8496, s=6):\n    non_zero = [z for z in x if z != 0]\n    return t == sum([x[i] for i in range(a, e, s)]) and len(set(non_zero)) == len(non_zero) and all(\n        [x[i] != 0 for i in range(a, e, s)])",
+  "sol_header": "def sol(t=44475424, a=93, e=8496, s=6):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "SublistSum:2",
+  "sat": "def sat(x: List[int], t=2183536, a=36, e=8450, s=1):\n    non_zero = [z for z in x if z != 0]\n    return t == sum([x[i] for i in range(a, e, s)]) and len(set(non_zero)) == len(non_zero) and all(\n        [x[i] != 0 for i in range(a, e, s)])",
+  "sol_header": "def sol(t=2183536, a=36, e=8450, s=1):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "SublistSum:3",
+  "sat": "def sat(x: List[int], t=1196610, a=15, e=4376, s=3):\n    non_zero = [z for z in x if z != 0]\n    return t == sum([x[i] for i in range(a, e, s)]) and len(set(non_zero)) == len(non_zero) and all(\n        [x[i] != 0 for i in range(a, e, s)])",
+  "sol_header": "def sol(t=1196610, a=15, e=4376, s=3):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "SublistSum:4",
+  "sat": "def sat(x: List[int], t=6165697, a=47, e=3830, s=2):\n    non_zero = [z for z in x if z != 0]\n    return t == sum([x[i] for i in range(a, e, s)]) and len(set(non_zero)) == len(non_zero) and all(\n        [x[i] != 0 for i in range(a, e, s)])",
+  "sol_header": "def sol(t=6165697, a=47, e=3830, s=2):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "CumulativeSum:0",
+  "sat": "def sat(x: List[int], t=50, n=10):\n    assert all([v > 0 for v in x])\n    s = 0\n    i = 0\n    for v in sorted(x):\n        s += v\n        if s > t:\n            return i == n\n        i += 1\n    return i == n",
+  "sol_header": "def sol(t=50, n=10):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "CumulativeSum:1",
+  "sat": "def sat(x: List[int], t=364928431, n=1088):\n    assert all([v > 0 for v in x])\n    s = 0\n    i = 0\n    for v in sorted(x):\n        s += v\n        if s > t:\n            return i == n\n        i += 1\n    return i == n",
+  "sol_header": "def sol(t=364928431, n=1088):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "CumulativeSum:2",
+  "sat": "def sat(x: List[int], t=7978940451, n=5932):\n    assert all([v > 0 for v in x])\n    s = 0\n    i = 0\n    for v in sorted(x):\n        s += v\n        if s > t:\n            return i == n\n        i += 1\n    return i == n",
+  "sol_header": "def sol(t=7978940451, n=5932):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "CumulativeSum:3",
+  "sat": "def sat(x: List[int], t=4545622399, n=1009):\n    assert all([v > 0 for v in x])\n    s = 0\n    i = 0\n    for v in sorted(x):\n        s += v\n        if s > t:\n            return i == n\n        i += 1\n    return i == n",
+  "sol_header": "def sol(t=4545622399, n=1009):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "basic.py",
+  "name": "CumulativeSum:4",
+  "sat": "def sat(x: List[int], t=4917027557, n=4815):\n    assert all([v > 0 for v in x])\n    s = 0\n    i = 0\n    for v in sorted(x):\n        s += v\n        if s > t:\n            return i == n\n        i += 1\n    return i == n",
+  "sol_header": "def sol(t=4917027557, n=4815):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "BasicStrCounts:0",
+  "sat": "def sat(s: str, s1=\"a\", s2=\"b\", count1=50, count2=30):\n    return s.count(s1) == count1 and s.count(s2) == count2 and s[:10] == s[-10:]",
+  "sol_header": "def sol(s1=\"a\", s2=\"b\", count1=50, count2=30):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "BasicStrCounts:1",
+  "sat": "def sat(s: str, s1=\"t\", s2=\"qu\", count1=86, count2=83):\n    return s.count(s1) == count1 and s.count(s2) == count2 and s[:10] == s[-10:]",
+  "sol_header": "def sol(s1=\"t\", s2=\"qu\", count1=86, count2=83):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "BasicStrCounts:2",
+  "sat": "def sat(s: str, s1=\"kuc\", s2=\"qu\", count1=63, count2=58):\n    return s.count(s1) == count1 and s.count(s2) == count2 and s[:10] == s[-10:]",
+  "sol_header": "def sol(s1=\"kuc\", s2=\"qu\", count1=63, count2=58):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "BasicStrCounts:3",
+  "sat": "def sat(s: str, s1=\"te\", s2=\"tex\", count1=97, count2=53):\n    return s.count(s1) == count1 and s.count(s2) == count2 and s[:10] == s[-10:]",
+  "sol_header": "def sol(s1=\"te\", s2=\"tex\", count1=97, count2=53):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "BasicStrCounts:4",
+  "sat": "def sat(s: str, s1=\"hot\", s2=\"n\", count1=48, count2=92):\n    return s.count(s1) == count1 and s.count(s2) == count2 and s[:10] == s[-10:]",
+  "sol_header": "def sol(s1=\"hot\", s2=\"n\", count1=48, count2=92):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "ZipStr:0",
+  "sat": "def sat(s: str, substrings=['foo', 'bar', 'baz', 'oddball']):\n    return all(sub in s[i::len(substrings)] for i, sub in enumerate(substrings))",
+  "sol_header": "def sol(substrings=['foo', 'bar', 'baz', 'oddball']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "ZipStr:1",
+  "sat": "def sat(s: str, substrings=['quifelota', 'chyhimyvemene', 'ge']):\n    return all(sub in s[i::len(substrings)] for i, sub in enumerate(substrings))",
+  "sol_header": "def sol(substrings=['quifelota', 'chyhimyvemene', 'ge']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "ZipStr:2",
+  "sat": "def sat(s: str, substrings=['kitytextiritex', 'cumathoxaz', 'rebute', 'rocor']):\n    return all(sub in s[i::len(substrings)] for i, sub in enumerate(substrings))",
+  "sol_header": "def sol(substrings=['kitytextiritex', 'cumathoxaz', 'rebute', 'rocor']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "ZipStr:3",
+  "sat": "def sat(s: str, substrings=['te', 'wusyc']):\n    return all(sub in s[i::len(substrings)] for i, sub in enumerate(substrings))",
+  "sol_header": "def sol(substrings=['te', 'wusyc']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "ZipStr:4",
+  "sat": "def sat(s: str, substrings=['cute', 'rysucajaxuno']):\n    return all(sub in s[i::len(substrings)] for i, sub in enumerate(substrings))",
+  "sol_header": "def sol(substrings=['cute', 'rysucajaxuno']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "ReverseCat:0",
+  "sat": "def sat(s: str, substrings=['foo', 'bar', 'baz']):\n    return all(sub in s and sub[::-1] in s for sub in substrings)",
+  "sol_header": "def sol(substrings=['foo', 'bar', 'baz']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "ReverseCat:1",
+  "sat": "def sat(s: str, substrings=['kepijilufuwisejyzat', 'lechogyvonaxegitex']):\n    return all(sub in s and sub[::-1] in s for sub in substrings)",
+  "sol_header": "def sol(substrings=['kepijilufuwisejyzat', 'lechogyvonaxegitex']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "ReverseCat:2",
+  "sat": "def sat(s: str, substrings=['ripihuquyrenytu', 'quosafyji', 'chyguzocuzuqu', 'futhixequyb']):\n    return all(sub in s and sub[::-1] in s for sub in substrings)",
+  "sol_header": "def sol(substrings=['ripihuquyrenytu', 'quosafyji', 'chyguzocuzuqu', 'futhixequyb']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "ReverseCat:3",
+  "sat": "def sat(s: str, substrings=['thacovatukoliva', 'maquyfezisothizyp', 'ka', 'benegiquememif']):\n    return all(sub in s and sub[::-1] in s for sub in substrings)",
+  "sol_header": "def sol(substrings=['thacovatukoliva', 'maquyfezisothizyp', 'ka', 'benegiquememif']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "ReverseCat:4",
+  "sat": "def sat(s: str, substrings=['t', 'vochemachylit', 'vutextynydakelopi', 'fazapydomozamochug']):\n    return all(sub in s and sub[::-1] in s for sub in substrings)",
+  "sol_header": "def sol(substrings=['t', 'vochemachylit', 'vutextynydakelopi', 'fazapydomozamochug']):"
+ },
+ {
+  "ans_type": "List[str]",
+  "module": "basic.py",
+  "name": "EngineerNumbers:0",
+  "sat": "def sat(ls: List[str], n=100, a=\"bar\", b=\"foo\"):\n    return len(ls) == len(set(ls)) == n and ls[0] == a and ls[-1] == b and ls == sorted(ls)",
+  "sol_header": "def sol(n=100, a=\"bar\", b=\"foo\"):"
+ },
+ {
+  "ans_type": "List[str]",
+  "module": "basic.py",
+  "name": "EngineerNumbers:1",
+  "sat": "def sat(ls: List[str], n=44, a=\"lychezothotextocev\", b=\"th\"):\n    return len(ls) == len(set(ls)) == n and ls[0] == a and ls[-1] == b and ls == sorted(ls)",
+  "sol_header": "def sol(n=44, a=\"lychezothotextocev\", b=\"th\"):"
+ },
+ {
+  "ans_type": "List[str]",
+  "module": "basic.py",
+  "name": "EngineerNumbers:2",
+  "sat": "def sat(ls: List[str], n=13, a=\"kacukebyhapuniryh\", b=\"te\"):\n    return len(ls) == len(set(ls)) == n and ls[0] == a and ls[-1] == b and ls == sorted(ls)",
+  "sol_header": "def sol(n=13, a=\"kacukebyhapuniryh\", b=\"te\"):"
+ },
+ {
+  "ans_type": "List[str]",
+  "module": "basic.py",
+  "name": "EngineerNumbers:3",
+  "sat": "def sat(ls: List[str], n=61, a=\"cisoceratext\", b=\"milusicochylitextyco\"):\n    return len(ls) == len(set(ls)) == n and ls[0] == a and ls[-1] == b and ls == sorted(ls)",
+  "sol_header": "def sol(n=61, a=\"cisoceratext\", b=\"milusicochylitextyco\"):"
+ },
+ {
+  "ans_type": "List[str]",
+  "module": "basic.py",
+  "name": "EngineerNumbers:4",
+  "sat": "def sat(ls: List[str], n=59, a=\"hokitextawelaxah\", b=\"maryhedu\"):\n    return len(ls) == len(set(ls)) == n and ls[0] == a and ls[-1] == b and ls == sorted(ls)",
+  "sol_header": "def sol(n=59, a=\"hokitextawelaxah\", b=\"maryhedu\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "PenultimateString:0",
+  "sat": "def sat(s: str, strings=['cat', 'dog', 'bird', 'fly', 'moose']):\n    return s in strings and sum(t > s for t in strings) == 1",
+  "sol_header": "def sol(strings=['cat', 'dog', 'bird', 'fly', 'moose']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "PenultimateString:1",
+  "sat": "def sat(s: str, strings=['ryzapychybykydege', 'mivowepe', 'sovywos', 'chanyrorybynid', 'vafechajufo', 'nokymocymoxac', 'jahejafuquoduk', 'gogy', 'bytothice', 'ruminuvixixutudigom']):\n    return s in strings and sum(t > s for t in strings) == 1",
+  "sol_header": "def sol(strings=['ryzapychybykydege', 'mivowepe', 'sovywos', 'chanyrorybynid', 'vafechajufo', 'nokymocymoxac', 'jahejafuquoduk', 'gogy', 'bytothice', 'ruminuvixixutudigom']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "PenultimateString:2",
+  "sat": "def sat(s: str, strings=['mipelavychekecy', 'pythujutisoxofe', 'diliwagacivychinofiw', 'na', 'dobynaramithibolo', 'cugupyfytextofoxat', 'gyfokebo', 'bymitextitextizoc', 'rekimuk', 'bepumyxitubachek']):\n    return s in strings and sum(t > s for t in strings) == 1",
+  "sol_header": "def sol(strings=['mipelavychekecy', 'pythujutisoxofe', 'diliwagacivychinofiw', 'na', 'dobynaramithibolo', 'cugupyfytextofoxat', 'gyfokebo', 'bymitextitextizoc', 'rekimuk', 'bepumyxitubachek']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "PenultimateString:3",
+  "sat": "def sat(s: str, strings=['hunuvarufefikaq', 'xejegu', 'minoc', 'puthyvyc', 'xyzeryberi', 'tyl', 'thyvojyvijazetonowa', 'jahygywuchitho', 'quuvuvigy', 'zuhechywituthexe']):\n    return s in strings and sum(t > s for t in strings) == 1",
+  "sol_header": "def sol(strings=['hunuvarufefikaq', 'xejegu', 'minoc', 'puthyvyc', 'xyzeryberi', 'tyl', 'thyvojyvijazetonowa', 'jahygywuchitho', 'quuvuvigy', 'zuhechywituthexe']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "PenultimateString:4",
+  "sat": "def sat(s: str, strings=['wesolotelunyzecemexi', 'pociquuwygocysahef', 'lequusigipitexti', 'quojuxaq', 'fyt', 'm', 'bavalepynoza', 'zihath', 'lodomijibuxoju', 'xasuwytextochypuli']):\n    return s in strings and sum(t > s for t in strings) == 1",
+  "sol_header": "def sol(strings=['wesolotelunyzecemexi', 'pociquuwygocysahef', 'lequusigipitexti', 'quojuxaq', 'fyt', 'm', 'bavalepynoza', 'zihath', 'lodomijibuxoju', 'xasuwytextochypuli']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "PenultimateRevString:0",
+  "sat": "def sat(s: str, strings=['cat', 'dog', 'bird', 'fly', 'moose']):\n    return s[::-1] in strings and sum(t < s[::-1] for t in strings) == 1",
+  "sol_header": "def sol(strings=['cat', 'dog', 'bird', 'fly', 'moose']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "PenultimateRevString:1",
+  "sat": "def sat(s: str, strings=['rawithelen', 'que', 'pikuf', 'koze', 'zehyquorofyxytextef', 'text', 'jezebox', 'zychopucebychokyz', 'pyzyxatevafugedix', 'buzogehabojyb']):\n    return s[::-1] in strings and sum(t < s[::-1] for t in strings) == 1",
+  "sol_header": "def sol(strings=['rawithelen', 'que', 'pikuf', 'koze', 'zehyquorofyxytextef', 'text', 'jezebox', 'zychopucebychokyz', 'pyzyxatevafugedix', 'buzogehabojyb']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "PenultimateRevString:2",
+  "sat": "def sat(s: str, strings=['thythanaham', 'quiroxebadivogis', 'kyh', 'xa', 'gathytyjonymihahahy', 'musyzisequyxyhenico', 'poxizitizexokigewifi', 'mife', 'chyjuratexta', 'gyrato']):\n    return s[::-1] in strings and sum(t < s[::-1] for t in strings) == 1",
+  "sol_header": "def sol(strings=['thythanaham', 'quiroxebadivogis', 'kyh', 'xa', 'gathytyjonymihahahy', 'musyzisequyxyhenico', 'poxizitizexokigewifi', 'mife', 'chyjuratexta', 'gyrato']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "PenultimateRevString:3",
+  "sat": "def sat(s: str, strings=['habicynanikadifovac', 'bozehathyfoz', 'hud', 'textudunachuxarise', 'hewohahatazabab', 'lutumelimevabutha', 'wocher', 'wacifufixudizon', 'tazibedo', 'xytu']):\n    return s[::-1] in strings and sum(t < s[::-1] for t in strings) == 1",
+  "sol_header": "def sol(strings=['habicynanikadifovac', 'bozehathyfoz', 'hud', 'textudunachuxarise', 'hewohahatazabab', 'lutumelimevabutha', 'wocher', 'wacifufixudizon', 'tazibedo', 'xytu']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "PenultimateRevString:4",
+  "sat": "def sat(s: str, strings=['vekykothumygochuth', 'xujatajazisiqu', 'vapyvymobymethotexto', 'tygope', 'g', 'ripalotextaj', 'tecehuthojodogucivaj', 'xyjulecometihesej', 'ribo', 'gutachowagexatoset']):\n    return s[::-1] in strings and sum(t < s[::-1] for t in strings) == 1",
+  "sol_header": "def sol(strings=['vekykothumygochuth', 'xujatajazisiqu', 'vapyvymobymethotexto', 'tygope', 'g', 'ripalotextaj', 'tecehuthojodogucivaj', 'xyjulecometihesej', 'ribo', 'gutachowagexatoset']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "CenteredString:0",
+  "sat": "def sat(s: str, target=\"foobarbazwow\", length=6):\n    return target[(len(target) - length) // 2:(len(target) + length) // 2] == s",
+  "sol_header": "def sol(target=\"foobarbazwow\", length=6):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "CenteredString:1",
+  "sat": "def sat(s: str, target=\"rujus\", length=1):\n    return target[(len(target) - length) // 2:(len(target) + length) // 2] == s",
+  "sol_header": "def sol(target=\"rujus\", length=1):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "CenteredString:2",
+  "sat": "def sat(s: str, target=\"bulu\", length=4):\n    return target[(len(target) - length) // 2:(len(target) + length) // 2] == s",
+  "sol_header": "def sol(target=\"bulu\", length=4):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "CenteredString:3",
+  "sat": "def sat(s: str, target=\"defojuhujuwilumec\", length=7):\n    return target[(len(target) - length) // 2:(len(target) + length) // 2] == s",
+  "sol_header": "def sol(target=\"defojuhujuwilumec\", length=7):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "CenteredString:4",
+  "sat": "def sat(s: str, target=\"tenuhije\", length=6):\n    return target[(len(target) - length) // 2:(len(target) + length) // 2] == s",
+  "sol_header": "def sol(target=\"tenuhije\", length=6):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "SubstrCount:0",
+  "sat": "def sat(substring: str, string=\"moooboooofasd\", count=2):\n    return string.count(substring) == count",
+  "sol_header": "def sol(string=\"moooboooofasd\", count=2):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "SubstrCount:1",
+  "sat": "def sat(substring: str, string=\"nyvyfytibuquyquuchudemixyzychumanachozyquiquowutextyvomyzychyme\", count=4):\n    return string.count(substring) == count",
+  "sol_header": "def sol(string=\"nyvyfytibuquyquuchudemixyzychumanachozyquiquowutextyvomyzychyme\", count=4):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "SubstrCount:2",
+  "sat": "def sat(substring: str, string=\"cokomoquiwythyluwamymothynihythenyfeteth\", count=4):\n    return string.count(substring) == count",
+  "sol_header": "def sol(string=\"cokomoquiwythyluwamymothynihythenyfeteth\", count=4):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "SubstrCount:3",
+  "sat": "def sat(substring: str, string=\"cutextolichymocajethamopyvepethytextydynykihywyxivytextequylejekuf\", count=3):\n    return string.count(substring) == count",
+  "sol_header": "def sol(string=\"cutextolichymocajethamopyvepethytextydynykihywyxivytextequylejekuf\", count=3):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "SubstrCount:4",
+  "sat": "def sat(substring: str, string=\"modacequytextytextilaleguthovamipehywaciripetext\", count=3):\n    return string.count(substring) == count",
+  "sol_header": "def sol(string=\"modacequytextytextilaleguthovamipehywaciripetext\", count=3):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "CompleteParens:0",
+  "sat": "def sat(t: str, s=\"))(Add)some))parens()to()(balance(()(()(me!)((((\"):\n    for i in range(len(t) + 1):\n        depth = t[:i].count(\"(\") - t[:i].count(\")\")\n        assert depth >= 0\n    return depth == 0 and s in t",
+  "sol_header": "def sol(s=\"))(Add)some))parens()to()(balance(()(()(me!)((((\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "CompleteParens:1",
+  "sat": "def sat(t: str, s=\"(po)(())kf((((cy()))((tex()())(\"):\n    for i in range(len(t) + 1):\n        depth = t[:i].count(\"(\") - t[:i].count(\")\")\n        assert depth >= 0\n    return depth == 0 and s in t",
+  "sol_header": "def sol(s=\"(po)(())kf((((cy()))((tex()())(\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "CompleteParens:2",
+  "sat": "def sat(t: str, s=\"yf)()(()))hik()t(((\"):\n    for i in range(len(t) + 1):\n        depth = t[:i].count(\"(\") - t[:i].count(\")\")\n        assert depth >= 0\n    return depth == 0 and s in t",
+  "sol_header": "def sol(s=\"yf)()(()))hik()t(((\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "CompleteParens:3",
+  "sat": "def sat(t: str, s=\")((le(()()chu)())nol))((sic(((da)()ty((()te))xy(())))))k\"):\n    for i in range(len(t) + 1):\n        depth = t[:i].count(\"(\") - t[:i].count(\")\")\n        assert depth >= 0\n    return depth == 0 and s in t",
+  "sol_header": "def sol(s=\")((le(()()chu)())nol))((sic(((da)()ty((()te))xy(())))))k\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "basic.py",
+  "name": "CompleteParens:4",
+  "sat": "def sat(t: str, s=\"))())l\"):\n    for i in range(len(t) + 1):\n        depth = t[:i].count(\"(\") - t[:i].count(\")\")\n        assert depth >= 0\n    return depth == 0 and s in t",
+  "sol_header": "def sol(s=\"))())l\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "HelloWorld:0",
+  "sat": "def sat(s: str):\n    return s + 'world' == 'Hello world'",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "BackWorlds:0",
+  "sat": "def sat(s: str):\n    return s[::-1] + 'world' == 'Hello world'",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrAdd:0",
+  "sat": "def sat(st: str, a=\"world\", b=\"Hello world\"):\n    return st + a == b",
+  "sol_header": "def sol(a=\"world\", b=\"Hello world\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrAdd:1",
+  "sat": "def sat(st: str, a=\"zine\", b=\"cerofilimybazine\"):\n    return st + a == b",
+  "sol_header": "def sol(a=\"zine\", b=\"cerofilimybazine\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrAdd:2",
+  "sat": "def sat(st: str, a=\"id\", b=\"xakid\"):\n    return st + a == b",
+  "sol_header": "def sol(a=\"id\", b=\"xakid\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrAdd:3",
+  "sat": "def sat(st: str, a=\"dyr\", b=\"dyr\"):\n    return st + a == b",
+  "sol_header": "def sol(a=\"dyr\", b=\"dyr\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrAdd:4",
+  "sat": "def sat(st: str, a=\"s\", b=\"tos\"):\n    return st + a == b",
+  "sol_header": "def sol(a=\"s\", b=\"tos\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrSetLen:0",
+  "sat": "def sat(s: str, dups=2021):\n    return len(set(s)) == len(s) - dups",
+  "sol_header": "def sol(dups=2021):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrSetLen:1",
+  "sat": "def sat(s: str, dups=0):\n    return len(set(s)) == len(s) - dups",
+  "sol_header": "def sol(dups=0):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrSetLen:2",
+  "sat": "def sat(s: str, dups=1):\n    return len(set(s)) == len(s) - dups",
+  "sol_header": "def sol(dups=1):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrSetLen:3",
+  "sat": "def sat(s: str, dups=2):\n    return len(set(s)) == len(s) - dups",
+  "sol_header": "def sol(dups=2):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrMul:0",
+  "sat": "def sat(s: str, target=\"foofoofoofoo\", n=2):\n    return s * n == target",
+  "sol_header": "def sol(target=\"foofoofoofoo\", n=2):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrMul:1",
+  "sat": "def sat(s: str, target=\"biquacagegichisykbiquacagegichisykbiquacagegichisyk\", n=3):\n    return s * n == target",
+  "sol_header": "def sol(target=\"biquacagegichisykbiquacagegichisykbiquacagegichisyk\", n=3):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrMul:2",
+  "sat": "def sat(s: str, target=\"hutextogoxanithiru\", n=1):\n    return s * n == target",
+  "sol_header": "def sol(target=\"hutextogoxanithiru\", n=1):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrMul:3",
+  "sat": "def sat(s: str, target=\"sisisisisisisisisisisisisisi\", n=7):\n    return s * n == target",
+  "sol_header": "def sol(target=\"sisisisisisisisisisisisisisi\", n=7):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrMul:4",
+  "sat": "def sat(s: str, target=\"fuchomurybaxefuchomurybaxefuchomurybaxefuchomurybaxefuchomurybaxefuchomurybaxefuchomurybaxe\", n=7):\n    return s * n == target",
+  "sol_header": "def sol(target=\"fuchomurybaxefuchomurybaxefuchomurybaxefuchomurybaxefuchomurybaxefuchomurybaxefuchomurybaxe\", n=7):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "StrMul2:0",
+  "sat": "def sat(n: int, target=\"foofoofoofoo\", s=\"foofoo\"):\n    return s * n == target",
+  "sol_header": "def sol(target=\"foofoofoofoo\", s=\"foofoo\"):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "StrMul2:1",
+  "sat": "def sat(n: int, target=\"\", s=\"jan\"):\n    return s * n == target",
+  "sol_header": "def sol(target=\"\", s=\"jan\"):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "StrMul2:2",
+  "sat": "def sat(n: int, target=\"koquuwibehyckoquuwibehyckoquuwibehyckoquuwibehyckoquuwibehyckoquuwibehyckoquuwibehyc\", s=\"koquuwibehyc\"):\n    return s * n == target",
+  "sol_header": "def sol(target=\"koquuwibehyckoquuwibehyckoquuwibehyckoquuwibehyckoquuwibehyckoquuwibehyckoquuwibehyc\", s=\"koquuwibehyc\"):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "StrMul2:3",
+  "sat": "def sat(n: int, target=\"kasujyzkasujyzkasujyzkasujyzkasujyzkasujyzkasujyzkasujyzkasujyzkasujyzkasujyzkasujyzkasujyzkasujyzkasujyzkasujyz\", s=\"kasujyzkasujyz\"):\n    return s * n == target",
+  "sol_header": "def sol(target=\"kasujyzkasujyzkasujyzkasujyzkasujyzkasujyzkasujyzkasujyzkasujyzkasujyzkasujyzkasujyzkasujyzkasujyzkasujyzkasujyz\", s=\"kasujyzkasujyz\"):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "StrMul2:4",
+  "sat": "def sat(n: int, target=\"kedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuth\", s=\"kedezygijithequuthkedezygijithequuth\"):\n    return s * n == target",
+  "sol_header": "def sol(target=\"kedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuthkedezygijithequuth\", s=\"kedezygijithequuthkedezygijithequuth\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrLen:0",
+  "sat": "def sat(s: str, n=1000):\n    return len(s) == n",
+  "sol_header": "def sol(n=1000):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrLen:1",
+  "sat": "def sat(s: str, n=39):\n    return len(s) == n",
+  "sol_header": "def sol(n=39):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrLen:2",
+  "sat": "def sat(s: str, n=790):\n    return len(s) == n",
+  "sol_header": "def sol(n=790):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrLen:3",
+  "sat": "def sat(s: str, n=485):\n    return len(s) == n",
+  "sol_header": "def sol(n=485):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrLen:4",
+  "sat": "def sat(s: str, n=4031):\n    return len(s) == n",
+  "sol_header": "def sol(n=4031):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "StrAt:0",
+  "sat": "def sat(i: int, s=\"cat\", target=\"a\"):\n    return s[i] == target",
+  "sol_header": "def sol(s=\"cat\", target=\"a\"):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "StrAt:1",
+  "sat": "def sat(i: int, s=\"quadyquady\", target=\"a\"):\n    return s[i] == target",
+  "sol_header": "def sol(s=\"quadyquady\", target=\"a\"):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "StrAt:2",
+  "sat": "def sat(i: int, s=\"quixatextofazejate\", target=\"i\"):\n    return s[i] == target",
+  "sol_header": "def sol(s=\"quixatextofazejate\", target=\"i\"):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "StrAt:3",
+  "sat": "def sat(i: int, s=\"thethe\", target=\"e\"):\n    return s[i] == target",
+  "sol_header": "def sol(s=\"thethe\", target=\"e\"):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "StrAt:4",
+  "sat": "def sat(i: int, s=\"bucudibucudibucudi\", target=\"b\"):\n    return s[i] == target",
+  "sol_header": "def sol(s=\"bucudibucudibucudi\", target=\"b\"):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "StrNegAt:0",
+  "sat": "def sat(i: int, s=\"cat\", target=\"a\"):\n    return s[i] == target and i < 0",
+  "sol_header": "def sol(s=\"cat\", target=\"a\"):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "StrNegAt:1",
+  "sat": "def sat(i: int, s=\"ch\", target=\"c\"):\n    return s[i] == target and i < 0",
+  "sol_header": "def sol(s=\"ch\", target=\"c\"):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "StrNegAt:2",
+  "sat": "def sat(i: int, s=\"nydivimocuvacetext\", target=\"y\"):\n    return s[i] == target and i < 0",
+  "sol_header": "def sol(s=\"nydivimocuvacetext\", target=\"y\"):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "StrNegAt:3",
+  "sat": "def sat(i: int, s=\"chyxchyx\", target=\"x\"):\n    return s[i] == target and i < 0",
+  "sol_header": "def sol(s=\"chyxchyx\", target=\"x\"):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "StrNegAt:4",
+  "sat": "def sat(i: int, s=\"tuchuworyquofojyzusutuchuworyquofojyzusutuchuworyquofojyzusu\", target=\"h\"):\n    return s[i] == target and i < 0",
+  "sol_header": "def sol(s=\"tuchuworyquofojyzusutuchuworyquofojyzusutuchuworyquofojyzusu\", target=\"h\"):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "StrSlice:0",
+  "sat": "def sat(inds: List[int], s=\"hello world\", target=\"do\"):\n    i, j, k = inds\n    return s[i:j:k] == target",
+  "sol_header": "def sol(s=\"hello world\", target=\"do\"):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "StrSlice:1",
+  "sat": "def sat(inds: List[int], s=\"ninykofiwimninykofiwim\", target=\"\"):\n    i, j, k = inds\n    return s[i:j:k] == target",
+  "sol_header": "def sol(s=\"ninykofiwimninykofiwim\", target=\"\"):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "StrSlice:2",
+  "sat": "def sat(inds: List[int], s=\"limerybinylimerybiny\", target=\"n\"):\n    i, j, k = inds\n    return s[i:j:k] == target",
+  "sol_header": "def sol(s=\"limerybinylimerybiny\", target=\"n\"):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "StrSlice:3",
+  "sat": "def sat(inds: List[int], s=\"fyzihurothevirechahfyzihurothevirechah\", target=\"\"):\n    i, j, k = inds\n    return s[i:j:k] == target",
+  "sol_header": "def sol(s=\"fyzihurothevirechahfyzihurothevirechah\", target=\"\"):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "StrSlice:4",
+  "sat": "def sat(inds: List[int], s=\"kibozekiboze\", target=\"\"):\n    i, j, k = inds\n    return s[i:j:k] == target",
+  "sol_header": "def sol(s=\"kibozekiboze\", target=\"\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrIndex:0",
+  "sat": "def sat(s: str, big_str=\"foobar\", index=2):\n    return big_str.index(s) == index",
+  "sol_header": "def sol(big_str=\"foobar\", index=2):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrIndex:1",
+  "sat": "def sat(s: str, big_str=\"fukulagatextuj\", index=10):\n    return big_str.index(s) == index",
+  "sol_header": "def sol(big_str=\"fukulagatextuj\", index=10):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrIndex:2",
+  "sat": "def sat(s: str, big_str=\"nunalurejijunopyrewithocukopojot\", index=12):\n    return big_str.index(s) == index",
+  "sol_header": "def sol(big_str=\"nunalurejijunopyrewithocukopojot\", index=12):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrIndex:3",
+  "sat": "def sat(s: str, big_str=\"fu\", index=1):\n    return big_str.index(s) == index",
+  "sol_header": "def sol(big_str=\"fu\", index=1):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrIndex:4",
+  "sat": "def sat(s: str, big_str=\"fatextemedyrotichipicecojon\", index=24):\n    return big_str.index(s) == index",
+  "sol_header": "def sol(big_str=\"fatextemedyrotichipicecojon\", index=24):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrIndex2:0",
+  "sat": "def sat(big_str: str, sub_str=\"foobar\", index=2):\n    return big_str.index(sub_str) == index",
+  "sol_header": "def sol(sub_str=\"foobar\", index=2):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrIndex2:1",
+  "sat": "def sat(big_str: str, sub_str=\"quadox\", index=75):\n    return big_str.index(sub_str) == index",
+  "sol_header": "def sol(sub_str=\"quadox\", index=75):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrIndex2:2",
+  "sat": "def sat(big_str: str, sub_str=\"votextymuvethic\", index=880):\n    return big_str.index(sub_str) == index",
+  "sol_header": "def sol(sub_str=\"votextymuvethic\", index=880):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrIndex2:3",
+  "sat": "def sat(big_str: str, sub_str=\"pyrumymasekalihochyvibisamaquythifedetextityvath\", index=0):\n    return big_str.index(sub_str) == index",
+  "sol_header": "def sol(sub_str=\"pyrumymasekalihochyvibisamaquythifedetextityvath\", index=0):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrIndex2:4",
+  "sat": "def sat(big_str: str, sub_str=\"nofufaxunetextesitocedezyxuxexyfoquichitiracyquat\", index=185):\n    return big_str.index(sub_str) == index",
+  "sol_header": "def sol(sub_str=\"nofufaxunetextesitocedezyxuxexyfoquichitiracyquat\", index=185):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrIn:0",
+  "sat": "def sat(s: str, a=\"hello\", b=\"yellow\", length=4):\n    return len(s) == length and s in a and s in b",
+  "sol_header": "def sol(a=\"hello\", b=\"yellow\", length=4):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrIn:1",
+  "sat": "def sat(s: str, a=\"vuzogaguzechicowejeguthemeralic\", b=\"kybyjifidoquifwejeguthemelihitextodeju\", length=11):\n    return len(s) == length and s in a and s in b",
+  "sol_header": "def sol(a=\"vuzogaguzechicowejeguthemeralic\", b=\"kybyjifidoquifwejeguthemelihitextodeju\", length=11):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrIn:2",
+  "sat": "def sat(s: str, a=\"kehorithxyfurexatextoxivuquunusethawatextebu\", b=\"pxyfurexatextoxivuquuwynicixo\", length=20):\n    return len(s) == length and s in a and s in b",
+  "sol_header": "def sol(a=\"kehorithxyfurexatextoxivuquunusethawatextebu\", b=\"pxyfurexatextoxivuquuwynicixo\", length=20):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrIn:3",
+  "sat": "def sat(s: str, a=\"bafywihequyjicivicharyquynikixuhinyqu\", b=\"syrapetagecvicharyquynirorazecheth\", length=12):\n    return len(s) == length and s in a and s in b",
+  "sol_header": "def sol(a=\"bafywihequyjicivicharyquynikixuhinyqu\", b=\"syrapetagecvicharyquynirorazecheth\", length=12):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrIn:4",
+  "sat": "def sat(s: str, a=\"diquatextaxubowafucevyhuquuthexitacavobychajexytextug\", b=\"thachevolatvyhuquuthexitacavobyjokobuchudymal\", length=20):\n    return len(s) == length and s in a and s in b",
+  "sol_header": "def sol(a=\"diquatextaxubowafucevyhuquuthexitacavobychajexytextug\", b=\"thachevolatvyhuquuthexitacavobyjokobuchudymal\", length=20):"
+ },
+ {
+  "ans_type": "List[str]",
+  "module": "trivial_inverse.py",
+  "name": "StrIn2:0",
+  "sat": "def sat(substrings: List[str], s=\"hello\", count=15):\n    return len(substrings) == len(set(substrings)) >= count and all(sub in s for sub in substrings)",
+  "sol_header": "def sol(s=\"hello\", count=15):"
+ },
+ {
+  "ans_type": "List[str]",
+  "module": "trivial_inverse.py",
+  "name": "StrIn2:1",
+  "sat": "def sat(substrings: List[str], s=\"rywixekugagethathulisitextanyp\", count=451):\n    return len(substrings) == len(set(substrings)) >= count and all(sub in s for sub in substrings)",
+  "sol_header": "def sol(s=\"rywixekugagethathulisitextanyp\", count=451):"
+ },
+ {
+  "ans_type": "List[str]",
+  "module": "trivial_inverse.py",
+  "name": "StrIn2:2",
+  "sat": "def sat(substrings: List[str], s=\"xetyvezitajithiban\", count=165):\n    return len(substrings) == len(set(substrings)) >= count and all(sub in s for sub in substrings)",
+  "sol_header": "def sol(s=\"xetyvezitajithiban\", count=165):"
+ },
+ {
+  "ans_type": "List[str]",
+  "module": "trivial_inverse.py",
+  "name": "StrIn2:3",
+  "sat": "def sat(substrings: List[str], s=\"rofegakusaquybemydomimibyzodycetextunoce\", count=799):\n    return len(substrings) == len(set(substrings)) >= count and all(sub in s for sub in substrings)",
+  "sol_header": "def sol(s=\"rofegakusaquybemydomimibyzodycetextunoce\", count=799):"
+ },
+ {
+  "ans_type": "List[str]",
+  "module": "trivial_inverse.py",
+  "name": "StrIn2:4",
+  "sat": "def sat(substrings: List[str], s=\"thacyt\", count=21):\n    return len(substrings) == len(set(substrings)) >= count and all(sub in s for sub in substrings)",
+  "sol_header": "def sol(s=\"thacyt\", count=21):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrCount:0",
+  "sat": "def sat(string: str, substring=\"a\", count=10, length=100):\n    return string.count(substring) == count and len(string) == length",
+  "sol_header": "def sol(substring=\"a\", count=10, length=100):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrCount:1",
+  "sat": "def sat(string: str, substring=\"ky\", count=66, length=133):\n    return string.count(substring) == count and len(string) == length",
+  "sol_header": "def sol(substring=\"ky\", count=66, length=133):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrCount:2",
+  "sat": "def sat(string: str, substring=\"jepy\", count=87, length=650):\n    return string.count(substring) == count and len(string) == length",
+  "sol_header": "def sol(substring=\"jepy\", count=87, length=650):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrCount:3",
+  "sat": "def sat(string: str, substring=\"hothyfyt\", count=3, length=417):\n    return string.count(substring) == count and len(string) == length",
+  "sol_header": "def sol(substring=\"hothyfyt\", count=3, length=417):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrCount:4",
+  "sat": "def sat(string: str, substring=\"moz\", count=70, length=210):\n    return string.count(substring) == count and len(string) == length",
+  "sol_header": "def sol(substring=\"moz\", count=70, length=210):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrSplit:0",
+  "sat": "def sat(x: str, parts=['I', 'love', 'dumplings', '!'], length=100):\n    return len(x) == length and x.split() == parts",
+  "sol_header": "def sol(parts=['I', 'love', 'dumplings', '!'], length=100):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrSplit:1",
+  "sat": "def sat(x: str, parts=['thala', 'chaliriliq', 'chufyselikizap'], length=116):\n    return len(x) == length and x.split() == parts",
+  "sol_header": "def sol(parts=['thala', 'chaliriliq', 'chufyselikizap'], length=116):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrSplit:2",
+  "sat": "def sat(x: str, parts=['lepytextati', 'ki', 'fy'], length=69):\n    return len(x) == length and x.split() == parts",
+  "sol_header": "def sol(parts=['lepytextati', 'ki', 'fy'], length=69):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrSplit:3",
+  "sat": "def sat(x: str, parts=['quyhigechyhy'], length=38):\n    return len(x) == length and x.split() == parts",
+  "sol_header": "def sol(parts=['quyhigechyhy'], length=38):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrSplit:4",
+  "sat": "def sat(x: str, parts=['je', 'pojacyda', 'papucet', 'wesobaq'], length=40):\n    return len(x) == length and x.split() == parts",
+  "sol_header": "def sol(parts=['je', 'pojacyda', 'papucet', 'wesobaq'], length=40):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrSplitter:0",
+  "sat": "def sat(x: str, parts=['I', 'love', 'dumplings', '!', ''], string=\"I_love_dumplings_!_\"):\n    return string.split(x) == parts",
+  "sol_header": "def sol(parts=['I', 'love', 'dumplings', '!', ''], string=\"I_love_dumplings_!_\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrSplitter:1",
+  "sat": "def sat(x: str, parts=['kowot', 'quimimy'], string=\"kowottextihocavikirofegyfquimimy\"):\n    return string.split(x) == parts",
+  "sol_header": "def sol(parts=['kowot', 'quimimy'], string=\"kowottextihocavikirofegyfquimimy\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrSplitter:2",
+  "sat": "def sat(x: str, parts=['f', 'thixaresiquagipoquas', 'fytylu', 'jywaxaw'], string=\"fdetthixaresiquagipoquasdetfytyludetjywaxaw\"):\n    return string.split(x) == parts",
+  "sol_header": "def sol(parts=['f', 'thixaresiquagipoquas', 'fytylu', 'jywaxaw'], string=\"fdetthixaresiquagipoquasdetfytyludetjywaxaw\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrSplitter:3",
+  "sat": "def sat(x: str, parts=['tibuzumurun', 'hakebixutextolonyf', 'bothuraquobara'], string=\"tibuzumurunhocyxihakebixutextolonyfhocyxibothuraquobara\"):\n    return string.split(x) == parts",
+  "sol_header": "def sol(parts=['tibuzumurun', 'hakebixutextolonyf', 'bothuraquobara'], string=\"tibuzumurunhocyxihakebixutextolonyfhocyxibothuraquobara\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrSplitter:4",
+  "sat": "def sat(x: str, parts=['fitextu', 'chythawequeku', 'th'], string=\"fitextufyhachochythawequekufyhachoth\"):\n    return string.split(x) == parts",
+  "sol_header": "def sol(parts=['fitextu', 'chythawequeku', 'th'], string=\"fitextufyhachochythawequekufyhachoth\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrJoiner:0",
+  "sat": "def sat(x: str, parts=['I!!', '!love', 'dumplings', '!', ''], string=\"I!!!!!love!!dumplings!!!!!\"):\n    return x.join(parts) == string",
+  "sol_header": "def sol(parts=['I!!', '!love', 'dumplings', '!', ''], string=\"I!!!!!love!!dumplings!!!!!\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrJoiner:1",
+  "sat": "def sat(x: str, parts=['tatext'], string=\"tatext\"):\n    return x.join(parts) == string",
+  "sol_header": "def sol(parts=['tatext'], string=\"tatext\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrJoiner:2",
+  "sat": "def sat(x: str, parts=[], string=\"\"):\n    return x.join(parts) == string",
+  "sol_header": "def sol(parts=[], string=\"\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrJoiner:3",
+  "sat": "def sat(x: str, parts=['ruquug'], string=\"ruquug\"):\n    return x.join(parts) == string",
+  "sol_header": "def sol(parts=['ruquug'], string=\"ruquug\"):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "StrJoiner:4",
+  "sat": "def sat(x: str, parts=['numegixuly', 'koxyfihimurukothasyl'], string=\"numegixulypyjetkoxyfihimurukothasyl\"):\n    return x.join(parts) == string",
+  "sol_header": "def sol(parts=['numegixuly', 'koxyfihimurukothasyl'], string=\"numegixulypyjetkoxyfihimurukothasyl\"):"
+ },
+ {
+  "ans_type": "List[str]",
+  "module": "trivial_inverse.py",
+  "name": "StrParts:0",
+  "sat": "def sat(parts: List[str], sep=\"!!\", string=\"I!!!!!love!!dumplings!!!!!\"):\n    return sep.join(parts) == string and all(sep not in p for p in parts)",
+  "sol_header": "def sol(sep=\"!!\", string=\"I!!!!!love!!dumplings!!!!!\"):"
+ },
+ {
+  "ans_type": "List[str]",
+  "module": "trivial_inverse.py",
+  "name": "StrParts:1",
+  "sat": "def sat(parts: List[str], sep=\"jachasurobithu\", string=\"watalachyquujachasurobithuba\"):\n    return sep.join(parts) == string and all(sep not in p for p in parts)",
+  "sol_header": "def sol(sep=\"jachasurobithu\", string=\"watalachyquujachasurobithuba\"):"
+ },
+ {
+  "ans_type": "List[str]",
+  "module": "trivial_inverse.py",
+  "name": "StrParts:2",
+  "sat": "def sat(parts: List[str], sep=\"xusoquyvamathila\", string=\"bolifotinuwywyjochxusoquyvamathilazyvuxusoquyvamathilanifajatextethxusoquyvamathilafocharatefymoji\"):\n    return sep.join(parts) == string and all(sep not in p for p in parts)",
+  "sol_header": "def sol(sep=\"xusoquyvamathila\", string=\"bolifotinuwywyjochxusoquyvamathilazyvuxusoquyvamathilanifajatextethxusoquyvamathilafocharatefymoji\"):"
+ },
+ {
+  "ans_type": "List[str]",
+  "module": "trivial_inverse.py",
+  "name": "StrParts:3",
+  "sat": "def sat(parts: List[str], sep=\"chixachal\", string=\"\"):\n    return sep.join(parts) == string and all(sep not in p for p in parts)",
+  "sol_header": "def sol(sep=\"chixachal\", string=\"\"):"
+ },
+ {
+  "ans_type": "List[str]",
+  "module": "trivial_inverse.py",
+  "name": "StrParts:4",
+  "sat": "def sat(parts: List[str], sep=\"lochuv\", string=\"biflochuvzulothanodugedusilochuvlilochuvhobegikofero\"):\n    return sep.join(parts) == string and all(sep not in p for p in parts)",
+  "sol_header": "def sol(sep=\"lochuv\", string=\"biflochuvzulothanodugedusilochuvlilochuvhobegikofero\"):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListSetLen:0",
+  "sat": "def sat(li: List[int], dups=42155):\n    return len(set(li)) == len(li) - dups",
+  "sol_header": "def sol(dups=42155):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListSetLen:1",
+  "sat": "def sat(li: List[int], dups=18793):\n    return len(set(li)) == len(li) - dups",
+  "sol_header": "def sol(dups=18793):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListSetLen:2",
+  "sat": "def sat(li: List[int], dups=70976):\n    return len(set(li)) == len(li) - dups",
+  "sol_header": "def sol(dups=70976):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListSetLen:3",
+  "sat": "def sat(li: List[int], dups=23476):\n    return len(set(li)) == len(li) - dups",
+  "sol_header": "def sol(dups=23476):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListSetLen:4",
+  "sat": "def sat(li: List[int], dups=17633):\n    return len(set(li)) == len(li) - dups",
+  "sol_header": "def sol(dups=17633):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListMul:0",
+  "sat": "def sat(li: List[int], target=[17, 9, -1, 17, 9, -1], n=2):\n    return li * n == target",
+  "sol_header": "def sol(target=[17, 9, -1, 17, 9, -1], n=2):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListMul:1",
+  "sat": "def sat(li: List[int], target=[-69358, -69358, -69358, -69358, -69358, -69358, -69358], n=7):\n    return li * n == target",
+  "sol_header": "def sol(target=[-69358, -69358, -69358, -69358, -69358, -69358, -69358], n=7):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListMul:2",
+  "sat": "def sat(li: List[int], target=[-51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344], n=8):\n    return li * n == target",
+  "sol_header": "def sol(target=[-51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344, -51721, -18394, -51187, -39897, 18547, 42761, -8992, 66683, 78344], n=8):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListMul:3",
+  "sat": "def sat(li: List[int], target=[], n=0):\n    return li * n == target",
+  "sol_header": "def sol(target=[], n=0):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListMul:4",
+  "sat": "def sat(li: List[int], target=[-25821, -22076, 28354, -16195, 51325, 54104, -89614, 9766, -25821, -22076, 28354, -16195, 51325, 54104, -89614, 9766, -25821, -22076, 28354, -16195, 51325, 54104, -89614, 9766, -25821, -22076, 28354, -16195, 51325, 54104, -89614, 9766, -25821, -22076, 28354, -16195, 51325, 54104, -89614, 9766, -25821, -22076, 28354, -16195, 51325, 54104, -89614, 9766, -25821, -22076, 28354, -16195, 51325, 54104, -89614, 9766, -25821, -22076, 28354, -16195, 51325, 54104, -89614, 9766], n=4):\n    return li * n == target",
+  "sol_header": "def sol(target=[-25821, -22076, 28354, -16195, 51325, 54104, -89614, 9766, -25821, -22076, 28354, -16195, 51325, 54104, -89614, 9766, -25821, -22076, 28354, -16195, 51325, 54104, -89614, 9766, -25821, -22076, 28354, -16195, 51325, 54104, -89614, 9766, -25821, -22076, 28354, -16195, 51325, 54104, -89614, 9766, -25821, -22076, 28354, -16195, 51325, 54104, -89614, 9766, -25821, -22076, 28354, -16195, 51325, 54104, -89614, 9766, -25821, -22076, 28354, -16195, 51325, 54104, -89614, 9766], n=4):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListLen:0",
+  "sat": "def sat(li: List[int], n=85012):\n    return len(li) == n",
+  "sol_header": "def sol(n=85012):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListLen:1",
+  "sat": "def sat(li: List[int], n=969):\n    return len(li) == n",
+  "sol_header": "def sol(n=969):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListLen:2",
+  "sat": "def sat(li: List[int], n=7051):\n    return len(li) == n",
+  "sol_header": "def sol(n=7051):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListLen:3",
+  "sat": "def sat(li: List[int], n=9):\n    return len(li) == n",
+  "sol_header": "def sol(n=9):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListLen:4",
+  "sat": "def sat(li: List[int], n=324):\n    return len(li) == n",
+  "sol_header": "def sol(n=324):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "ListAt:0",
+  "sat": "def sat(i: int, li=[17, 31, 91, 18, 42, 1, 9], target=18):\n    return li[i] == target",
+  "sol_header": "def sol(li=[17, 31, 91, 18, 42, 1, 9], target=18):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "ListAt:1",
+  "sat": "def sat(i: int, li=[-62, -29, 73, -21, -45, -20, -74, -69, 30, -25, 16, 82, -31, 93, -20, 75, 68, 86], target=73):\n    return li[i] == target",
+  "sol_header": "def sol(li=[-62, -29, 73, -21, -45, -20, -74, -69, 30, -25, 16, 82, -31, 93, -20, 75, 68, 86], target=73):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "ListAt:2",
+  "sat": "def sat(i: int, li=[99, 51, -28, -69, -90, -15, 7, -67], target=51):\n    return li[i] == target",
+  "sol_header": "def sol(li=[99, 51, -28, -69, -90, -15, 7, -67], target=51):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "ListAt:3",
+  "sat": "def sat(i: int, li=[-68, 81, 13, -5, 81, 75, -3, -73, -89, 72], target=13):\n    return li[i] == target",
+  "sol_header": "def sol(li=[-68, 81, 13, -5, 81, 75, -3, -73, -89, 72], target=13):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "ListAt:4",
+  "sat": "def sat(i: int, li=[51, -68, -57, 8, 77, -80, -28, -24, 11, 40, 57, 60, 53], target=11):\n    return li[i] == target",
+  "sol_header": "def sol(li=[51, -68, -57, 8, 77, -80, -28, -24, 11, 40, 57, 60, 53], target=11):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "ListNegAt:0",
+  "sat": "def sat(i: int, li=[17, 31, 91, 18, 42, 1, 9], target=91):\n    return li[i] == target and i < 0",
+  "sol_header": "def sol(li=[17, 31, 91, 18, 42, 1, 9], target=91):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "ListNegAt:1",
+  "sat": "def sat(i: int, li=[78, 91, -67, -5, 30, -42, 68, 32, 96, -55, -39, -46, 90], target=-39):\n    return li[i] == target and i < 0",
+  "sol_header": "def sol(li=[78, 91, -67, -5, 30, -42, 68, 32, 96, -55, -39, -46, 90], target=-39):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "ListNegAt:2",
+  "sat": "def sat(i: int, li=[-60, 9, 1, -42, 31, 70, 5, 1, 42, -90, -20], target=-42):\n    return li[i] == target and i < 0",
+  "sol_header": "def sol(li=[-60, 9, 1, -42, 31, 70, 5, 1, 42, -90, -20], target=-42):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "ListNegAt:3",
+  "sat": "def sat(i: int, li=[41, -52, -40, -35, 53, -98, 83, 63, -18, 74, -8, -93, -3, 22, 30], target=53):\n    return li[i] == target and i < 0",
+  "sol_header": "def sol(li=[41, -52, -40, -35, 53, -98, 83, 63, -18, 74, -8, -93, -3, 22, 30], target=53):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "ListNegAt:4",
+  "sat": "def sat(i: int, li=[95, 51, 76, 63, -97, -32], target=-32):\n    return li[i] == target and i < 0",
+  "sol_header": "def sol(li=[95, 51, 76, 63, -97, -32], target=-32):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListSlice:0",
+  "sat": "def sat(inds: List[int], li=[42, 18, 21, 103, -2, 11], target=[-2, 21, 42]):\n    i, j, k = inds\n    return li[i:j:k] == target",
+  "sol_header": "def sol(li=[42, 18, 21, 103, -2, 11], target=[-2, 21, 42]):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListSlice:1",
+  "sat": "def sat(inds: List[int], li=[-11, 92, 42, 18, -83, 55, 13, 14, -67, -58, -41], target=[-67]):\n    i, j, k = inds\n    return li[i:j:k] == target",
+  "sol_header": "def sol(li=[-11, 92, 42, 18, -83, 55, 13, 14, -67, -58, -41], target=[-67]):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListSlice:2",
+  "sat": "def sat(inds: List[int], li=[-53, -81, -92, 22, -67], target=[-53, -81, -92]):\n    i, j, k = inds\n    return li[i:j:k] == target",
+  "sol_header": "def sol(li=[-53, -81, -92, 22, -67], target=[-53, -81, -92]):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListSlice:3",
+  "sat": "def sat(inds: List[int], li=[-72, 70, 50, -41, 94, -82, -74, 8, -23], target=[-82]):\n    i, j, k = inds\n    return li[i:j:k] == target",
+  "sol_header": "def sol(li=[-72, 70, 50, -41, 94, -82, -74, 8, -23], target=[-82]):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListSlice:4",
+  "sat": "def sat(inds: List[int], li=[26, -25, -18, -53, 18, -71, -82, 20, -100, -84, -85], target=[-25]):\n    i, j, k = inds\n    return li[i:j:k] == target",
+  "sol_header": "def sol(li=[26, -25, -18, -53, 18, -71, -82, 20, -100, -84, -85], target=[-25]):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "ListIndex:0",
+  "sat": "def sat(item: int, li=[17, 2, 3, 9, 11, 11], index=4):\n    return li.index(item) == index",
+  "sol_header": "def sol(li=[17, 2, 3, 9, 11, 11], index=4):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "ListIndex:1",
+  "sat": "def sat(item: int, li=[93, -13, -56, 19], index=2):\n    return li.index(item) == index",
+  "sol_header": "def sol(li=[93, -13, -56, 19], index=2):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "ListIndex:2",
+  "sat": "def sat(item: int, li=[-79, 49, 4, -75, -66, -76, 37, -62, -35, -79, 68, 82, -11, -71, 63, -82, 22, 65], index=2):\n    return li.index(item) == index",
+  "sol_header": "def sol(li=[-79, 49, 4, -75, -66, -76, 37, -62, -35, -79, 68, 82, -11, -71, 63, -82, 22, 65], index=2):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "ListIndex:3",
+  "sat": "def sat(item: int, li=[96, -61, 50, -49, -1, -23, -35], index=3):\n    return li.index(item) == index",
+  "sol_header": "def sol(li=[96, -61, 50, -49, -1, -23, -35], index=3):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "ListIndex:4",
+  "sat": "def sat(item: int, li=[26, -90, 89], index=0):\n    return li.index(item) == index",
+  "sol_header": "def sol(li=[26, -90, 89], index=0):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListIndex2:0",
+  "sat": "def sat(li: List[int], i=29, index=10412):\n    return li.index(i) == index",
+  "sol_header": "def sol(i=29, index=10412):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListIndex2:1",
+  "sat": "def sat(li: List[int], i=-99167, index=48792):\n    return li.index(i) == index",
+  "sol_header": "def sol(i=-99167, index=48792):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListIndex2:2",
+  "sat": "def sat(li: List[int], i=-67679, index=87059):\n    return li.index(i) == index",
+  "sol_header": "def sol(i=-67679, index=87059):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListIndex2:3",
+  "sat": "def sat(li: List[int], i=81395, index=79231):\n    return li.index(i) == index",
+  "sol_header": "def sol(i=81395, index=79231):"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "trivial_inverse.py",
+  "name": "ListIndex2:4",
+  "sat": "def sat(li: List[int], i=63344, index=1583):\n    return li.index(i) == index",
+  "sol_header": "def sol(i=63344, index=1583):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "ListIn:0",
+  "sat": "def sat(s: str, a=['cat', 'dot', 'bird'], b=['tree', 'fly', 'dot']):\n    return s in a and s in b",
+  "sol_header": "def sol(a=['cat', 'dot', 'bird'], b=['tree', 'fly', 'dot']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "ListIn:1",
+  "sat": "def sat(s: str, a=['xetex', 'jomuboxuc', 'nyfiranuri', 'curu', 'jehykexethinun', 'bumekynuxinit', 'cymelatabegi', 'jumuvufotextasa', 'cotharasyfukakiwoc', 'fuvyvavi', 'gohavelomet', 'hibymomotohywehathi', 'jyzucakaq', 'chihyx', 'wukikogy', 'pegydozetebegafugyf', 'chywadetextekesyjup', 'xysecaw', 'ryzafusul', 'lojychurep', 'vivutolimifa', 'pysiquikywoty', 'thitexturykasoquifet', 'va', 'nagetextilac', 'tex', 'zechocha', 'susatexty', 'ch'], b=['vesaredu', 'textyjun', 'hijilenafotycoch', 'fofytextulidajekymos', 'thudothukuzaxug', 'dythezutolihibinafyj', 'hadid', 'zyly', 'mu', 'chywadetextekesyjup', 'zekyrivequi', 'pebycipohivam', 'texterekuwudut', 'c', 'sanidithuh', 'ritextuchik', 'ny', 'cym', 'cirok', 'kavuquithochazethej', 'zikechep', 'kesitabuduzu', 'duchequ', 'fuluhesowyjugehusab', 'tof', 'tu', 'textichagekochoquovo', 'bo', 'thac', 'hytextac', 'nerehufymex', 'jezyletextiquebositi', 'm', 'kathithowefyvoced', 'rityjivoxadydyzatiq', 'nuxaritutebacygevyq', 'thyjaxirumenaquuxy', 'gizydylot', 'textite', 'guchikek', 'fas', 'pabipapiro', 'fechiduchu', 'pexijis', 'gojep', 'quinatextit', 'chaqu', 'xyxyjos', 'pudibothytigiwumucex', 'josadubizy', 'jy', 'komazibomapothequev', 'licogatextuliletuxi', 'gus', 'nylyxyjibikimet', 'tafo']):\n    return s in a and s in b",
+  "sol_header": "def sol(a=['xetex', 'jomuboxuc', 'nyfiranuri', 'curu', 'jehykexethinun', 'bumekynuxinit', 'cymelatabegi', 'jumuvufotextasa', 'cotharasyfukakiwoc', 'fuvyvavi', 'gohavelomet', 'hibymomotohywehathi', 'jyzucakaq', 'chihyx', 'wukikogy', 'pegydozetebegafugyf', 'chywadetextekesyjup', 'xysecaw', 'ryzafusul', 'lojychurep', 'vivutolimifa', 'pysiquikywoty', 'thitexturykasoquifet', 'va', 'nagetextilac', 'tex', 'zechocha', 'susatexty', 'ch'], b=['vesaredu', 'textyjun', 'hijilenafotycoch', 'fofytextulidajekymos', 'thudothukuzaxug', 'dythezutolihibinafyj', 'hadid', 'zyly', 'mu', 'chywadetextekesyjup', 'zekyrivequi', 'pebycipohivam', 'texterekuwudut', 'c', 'sanidithuh', 'ritextuchik', 'ny', 'cym', 'cirok', 'kavuquithochazethej', 'zikechep', 'kesitabuduzu', 'duchequ', 'fuluhesowyjugehusab', 'tof', 'tu', 'textichagekochoquovo', 'bo', 'thac', 'hytextac', 'nerehufymex', 'jezyletextiquebositi', 'm', 'kathithowefyvoced', 'rityjivoxadydyzatiq', 'nuxaritutebacygevyq', 'thyjaxirumenaquuxy', 'gizydylot', 'textite', 'guchikek', 'fas', 'pabipapiro', 'fechiduchu', 'pexijis', 'gojep', 'quinatextit', 'chaqu', 'xyxyjos', 'pudibothytigiwumucex', 'josadubizy', 'jy', 'komazibomapothequev', 'licogatextuliletuxi', 'gus', 'nylyxyjibikimet', 'tafo']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "ListIn:2",
+  "sat": "def sat(s: str, a=['bututimatabel', 'zezahabiry', 'mipytext', 'bujokacyrulihir', 'cyvagofaquothoseza', 'guhebalequepytex', 'tyhithuthygatextity', 'chizichuc', 'textoxodenekokechona', 'texte', 'mygafifet', 'vixathokivy', 'xe', 'moq', 'quokopy', 'cixoka', 'wiz', 'wyturasutabidipif', 'q', 'gochujuvub', 'textogow', 'rogizasog', 'fimoxynudob', 'byjythohimowyquich', 'moduxatanogococ', 'tunuchikywichykyxyge', 'namixotextes', 'nocoguthosoxonahu', 'xorydyhi', 'dadohojex', 'pi', 'wiquocaso', 'tyjegu', 'juquath', 'dythufyn', 'sehafur', 'sylupivyzequefujet', 'hotextylyquahudivov', 'wunich', 'fijyhilyc', 'rirymequunezuv', 'zizunylihadowys', 'zesuxikevaquus', 'thecisequevyth', 'cucyquefytextu', 'xy', 'quuxin', 'miherahita', 'texatextoxyta', 'tythyjuly', 'tehesyju', 'reg', 'ridilusycanejap', 'fo', 'chucatazyrejucathibi', 'textythacete', 'huhiquekychyh', 'xykuvebylyhinyc', 'zadedixoxoparyducena', 'wycathomoniva', 'textuwuwathiziq', 'textijiw', 'rigidichukuchexorute', 'majixodokalij', 'hexebitoxumuvodese', 'hybat', 'thojutextomochote', 'textaxuquyg', 'queluhatex'], b=['gume', 'zatum', 'kochaxybupy', 'gex', 'vithiby', 'lygarethaquedehabub', 'tochek', 'v', 'wis', 'remywerinyboweropot', 'nybichychafizurup', 'zokabugyc', 'ny', 'moruwicoponuricuw', 'zirijikuhabivywah', 'dus', 'toxirit', 'gilanih', 'hif', 'vuhezobinehahewi', 'quujihus', 'chej', 'g', 'pypomaquiwusisyvuma', 'to', 'c', 'chutesumalanozeb', 'chupehozukiquodisese', 'xygiwot', 'semubaquav', 'pihiwidosudetextet', 'quegatagicu', 'quutydychy', 'chuzeby', 'jefythasapag', 'bytathoti', 'thimobaquykisabepec', 'saluwax', 'thi', 'kyneroravexuquoto', 'jusudybahebuxypepahe', 'f', 'zapufefek', 'mumogawen', 'quotyhot', 'hybamukelo', 'picatextujycotodyj', 'be', 'pytextyfa', 'tile', 'dotextazuchubuk', 'choguc', 'wi', 'setepicydavumahebe', 'wyjo', 'mirukuwyfuwihoqu', 'q', 'kegytegu', 'kegoquibyguxexajebid', 'hyfech', 'humovomefoly', 'tupetox', 'gevogibax', 'vuxotext', 'miluparaj', 'bathad', 'tily', 'theranydygiryc', 'dasaxatext', 'guhebalequepytex', 'v', 'gocuxomecapylewaj']):\n    return s in a and s in b",
+  "sol_header": "def sol(a=['bututimatabel', 'zezahabiry', 'mipytext', 'bujokacyrulihir', 'cyvagofaquothoseza', 'guhebalequepytex', 'tyhithuthygatextity', 'chizichuc', 'textoxodenekokechona', 'texte', 'mygafifet', 'vixathokivy', 'xe', 'moq', 'quokopy', 'cixoka', 'wiz', 'wyturasutabidipif', 'q', 'gochujuvub', 'textogow', 'rogizasog', 'fimoxynudob', 'byjythohimowyquich', 'moduxatanogococ', 'tunuchikywichykyxyge', 'namixotextes', 'nocoguthosoxonahu', 'xorydyhi', 'dadohojex', 'pi', 'wiquocaso', 'tyjegu', 'juquath', 'dythufyn', 'sehafur', 'sylupivyzequefujet', 'hotextylyquahudivov', 'wunich', 'fijyhilyc', 'rirymequunezuv', 'zizunylihadowys', 'zesuxikevaquus', 'thecisequevyth', 'cucyquefytextu', 'xy', 'quuxin', 'miherahita', 'texatextoxyta', 'tythyjuly', 'tehesyju', 'reg', 'ridilusycanejap', 'fo', 'chucatazyrejucathibi', 'textythacete', 'huhiquekychyh', 'xykuvebylyhinyc', 'zadedixoxoparyducena', 'wycathomoniva', 'textuwuwathiziq', 'textijiw', 'rigidichukuchexorute', 'majixodokalij', 'hexebitoxumuvodese', 'hybat', 'thojutextomochote', 'textaxuquyg', 'queluhatex'], b=['gume', 'zatum', 'kochaxybupy', 'gex', 'vithiby', 'lygarethaquedehabub', 'tochek', 'v', 'wis', 'remywerinyboweropot', 'nybichychafizurup', 'zokabugyc', 'ny', 'moruwicoponuricuw', 'zirijikuhabivywah', 'dus', 'toxirit', 'gilanih', 'hif', 'vuhezobinehahewi', 'quujihus', 'chej', 'g', 'pypomaquiwusisyvuma', 'to', 'c', 'chutesumalanozeb', 'chupehozukiquodisese', 'xygiwot', 'semubaquav', 'pihiwidosudetextet', 'quegatagicu', 'quutydychy', 'chuzeby', 'jefythasapag', 'bytathoti', 'thimobaquykisabepec', 'saluwax', 'thi', 'kyneroravexuquoto', 'jusudybahebuxypepahe', 'f', 'zapufefek', 'mumogawen', 'quotyhot', 'hybamukelo', 'picatextujycotodyj', 'be', 'pytextyfa', 'tile', 'dotextazuchubuk', 'choguc', 'wi', 'setepicydavumahebe', 'wyjo', 'mirukuwyfuwihoqu', 'q', 'kegytegu', 'kegoquibyguxexajebid', 'hyfech', 'humovomefoly', 'tupetox', 'gevogibax', 'vuxotext', 'miluparaj', 'bathad', 'tily', 'theranydygiryc', 'dasaxatext', 'guhebalequepytex', 'v', 'gocuxomecapylewaj']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "ListIn:3",
+  "sat": "def sat(s: str, a=['thachak', 'xuchyzyzazi', 'bilewejoquowylo', 'chogokim', 'kuloxozu', 'capokaf', 'didadadejunukosazi', 'zethucun', 'tygorub', 'lochydigyt', 'dyquuhycusi', 'wagupolovapy', 'chowace', 'zozawethychax', 'xohuhuqui', 'tatylisigar', 'c', 'kakopuzysycasewit', 'rekatebinidyvuchitet', 'popi', 'chepebaze', 'textut', 'fymehap', 'c', 'wodumogovolacabasot', 'tixihidafutexto', 'dycubichucyneweve', 'setofa', 'cudaxediquy', 'namof', 'qua', 'chetextof', 'cochydededaxyzuj', 'winutaj', 'nidyjutothovobydizy', 'sichequaxohojethihy', 'cubusycip', 'pynoconic', 'kyt', 'thop', 'kewotochelocyboz', 'z', 'c', 'q', 'bonyquyx', 'jothec', 'fyzozynygiperythada', 'lipadatuzisaduthyt', 'nithujyxymethot', 'vewariq', 'nejitextole', 'raxiv', 'hamim', 'qua', 'kytextehekaryp', 'jaquu', 'wozuthevith', 'f', 'jugevizyfu', 'cywo', 'w', 'surajotext', 'vilujetutitachivy', 'textequysuninutuqu', 'fevawybok', 'lythehythu', 'nykochachofitit', 'gikenadubit', 'thexyjy', 'piquyzyxichoc', 'rilaquucham', 'fa', 'mysihumotexto', 'xochogekumipoquidi', 'jimynusyte', 'textexysuzipichaw', 'mut', 'jiwyx', 'tojiwedoxevosubavy', 'dix', 'dogetexto', 'chysafyzelefocothin', 'xitext', 'machibokudyh', 'ronebupapapygyceb', 'dedytejyretavewytasi', 'jobog', 'namychyt', 'textycapudul', 'jaxybatexto', 'pamuwysafupaxowus', 'lycazivafyj', 'lelologufenofajogofi', 'thety', 'bunotextoca', 'nexaravuq', 'natu'], b=['namychyt', 'mathapachobat', 'timorohopotak']):\n    return s in a and s in b",
+  "sol_header": "def sol(a=['thachak', 'xuchyzyzazi', 'bilewejoquowylo', 'chogokim', 'kuloxozu', 'capokaf', 'didadadejunukosazi', 'zethucun', 'tygorub', 'lochydigyt', 'dyquuhycusi', 'wagupolovapy', 'chowace', 'zozawethychax', 'xohuhuqui', 'tatylisigar', 'c', 'kakopuzysycasewit', 'rekatebinidyvuchitet', 'popi', 'chepebaze', 'textut', 'fymehap', 'c', 'wodumogovolacabasot', 'tixihidafutexto', 'dycubichucyneweve', 'setofa', 'cudaxediquy', 'namof', 'qua', 'chetextof', 'cochydededaxyzuj', 'winutaj', 'nidyjutothovobydizy', 'sichequaxohojethihy', 'cubusycip', 'pynoconic', 'kyt', 'thop', 'kewotochelocyboz', 'z', 'c', 'q', 'bonyquyx', 'jothec', 'fyzozynygiperythada', 'lipadatuzisaduthyt', 'nithujyxymethot', 'vewariq', 'nejitextole', 'raxiv', 'hamim', 'qua', 'kytextehekaryp', 'jaquu', 'wozuthevith', 'f', 'jugevizyfu', 'cywo', 'w', 'surajotext', 'vilujetutitachivy', 'textequysuninutuqu', 'fevawybok', 'lythehythu', 'nykochachofitit', 'gikenadubit', 'thexyjy', 'piquyzyxichoc', 'rilaquucham', 'fa', 'mysihumotexto', 'xochogekumipoquidi', 'jimynusyte', 'textexysuzipichaw', 'mut', 'jiwyx', 'tojiwedoxevosubavy', 'dix', 'dogetexto', 'chysafyzelefocothin', 'xitext', 'machibokudyh', 'ronebupapapygyceb', 'dedytejyretavewytasi', 'jobog', 'namychyt', 'textycapudul', 'jaxybatexto', 'pamuwysafupaxowus', 'lycazivafyj', 'lelologufenofajogofi', 'thety', 'bunotextoca', 'nexaravuq', 'natu'], b=['namychyt', 'mathapachobat', 'timorohopotak']):"
+ },
+ {
+  "ans_type": "str",
+  "module": "trivial_inverse.py",
+  "name": "ListIn:4",
+  "sat": "def sat(s: str, a=['quisolu', 'nixyquigaseq', 'fawaholafojelaxud', 'cuxoniso', 'defejaz', 'mytext', 'gochavowetheva', 'xijehychojexat', 'duthagobejudozi', 'thiquijuquorybu'], b=['cys', 'zatext', 'cifihihechujozimo', 'jycichithetyk', 'becitonamuhuligyv', 'sadak', 'hochavinapatanapiz', 'fiwidifop', 'funidosikeput', 'fewat', 'mypyhalevituvit', 'quytynuthothy', 'c', 'zydecodul', 'vahychuke', 'wy', 'mytext', 'tex', 'quevasowodique', 'hythiquunymychilyl', 'luxivyvocuwa']):\n    return s in a and s in b",
+  "sol_header": "def sol(a=['quisolu', 'nixyquigaseq', 'fawaholafojelaxud', 'cuxoniso', 'defejaz', 'mytext', 'gochavowetheva', 'xijehychojexat', 'duthagobejudozi', 'thiquijuquorybu'], b=['cys', 'zatext', 'cifihihechujozimo', 'jycichithetyk', 'becitonamuhuligyv', 'sadak', 'hochavinapatanapiz', 'fiwidifop', 'funidosikeput', 'fewat', 'mypyhalevituvit', 'quytynuthothy', 'c', 'zydecodul', 'vahychuke', 'wy', 'mytext', 'tex', 'quevasowodique', 'hythiquunymychilyl', 'luxivyvocuwa']):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntNeg:0",
+  "sat": "def sat(x: int, a=93252338):\n    return -x == a",
+  "sol_header": "def sol(a=93252338):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntNeg:1",
+  "sat": "def sat(x: int, a=-7788910835979672):\n    return -x == a",
+  "sol_header": "def sol(a=-7788910835979672):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntNeg:2",
+  "sat": "def sat(x: int, a=6734672221833987):\n    return -x == a",
+  "sol_header": "def sol(a=6734672221833987):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntNeg:3",
+  "sat": "def sat(x: int, a=-6405550227918699):\n    return -x == a",
+  "sol_header": "def sol(a=-6405550227918699):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntNeg:4",
+  "sat": "def sat(x: int, a=-5741705983914418):\n    return -x == a",
+  "sol_header": "def sol(a=-5741705983914418):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntSum:0",
+  "sat": "def sat(x: int, a=1073258, b=72352549):\n    return a + x == b",
+  "sol_header": "def sol(a=1073258, b=72352549):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntSum:1",
+  "sat": "def sat(x: int, a=7176599374880969, b=1013347182263591):\n    return a + x == b",
+  "sol_header": "def sol(a=7176599374880969, b=1013347182263591):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntSum:2",
+  "sat": "def sat(x: int, a=-6408240447142191, b=7741323537672506):\n    return a + x == b",
+  "sol_header": "def sol(a=-6408240447142191, b=7741323537672506):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntSum:3",
+  "sat": "def sat(x: int, a=1918969259925371, b=3648647147996329):\n    return a + x == b",
+  "sol_header": "def sol(a=1918969259925371, b=3648647147996329):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntSum:4",
+  "sat": "def sat(x: int, a=6476308373242647, b=-1096573562602401):\n    return a + x == b",
+  "sol_header": "def sol(a=6476308373242647, b=-1096573562602401):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntSub:0",
+  "sat": "def sat(x: int, a=-382, b=14546310):\n    return x - a == b",
+  "sol_header": "def sol(a=-382, b=14546310):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntSub:1",
+  "sat": "def sat(x: int, a=4461955033869751, b=-3951840325269410):\n    return x - a == b",
+  "sol_header": "def sol(a=4461955033869751, b=-3951840325269410):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntSub:2",
+  "sat": "def sat(x: int, a=9688203125538303, b=-293093369321912):\n    return x - a == b",
+  "sol_header": "def sol(a=9688203125538303, b=-293093369321912):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntSub:3",
+  "sat": "def sat(x: int, a=-8057207922876252, b=-3934955257447294):\n    return x - a == b",
+  "sol_header": "def sol(a=-8057207922876252, b=-3934955257447294):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntSub:4",
+  "sat": "def sat(x: int, a=-5902383651753979, b=304676399871652):\n    return x - a == b",
+  "sol_header": "def sol(a=-5902383651753979, b=304676399871652):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntSub2:0",
+  "sat": "def sat(x: int, a=8665464, b=-93206):\n    return a - x == b",
+  "sol_header": "def sol(a=8665464, b=-93206):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntSub2:1",
+  "sat": "def sat(x: int, a=1954051265970332, b=1312727165482691):\n    return a - x == b",
+  "sol_header": "def sol(a=1954051265970332, b=1312727165482691):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntSub2:2",
+  "sat": "def sat(x: int, a=-1159353965692778, b=4654551691407885):\n    return a - x == b",
+  "sol_header": "def sol(a=-1159353965692778, b=4654551691407885):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntSub2:3",
+  "sat": "def sat(x: int, a=7793575617602525, b=-4351726326349125):\n    return a - x == b",
+  "sol_header": "def sol(a=7793575617602525, b=-4351726326349125):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntSub2:4",
+  "sat": "def sat(x: int, a=-8783800228130606, b=-508993556991975):\n    return a - x == b",
+  "sol_header": "def sol(a=-8783800228130606, b=-508993556991975):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntMul:0",
+  "sat": "def sat(n: int, a=14302, b=5):\n    return b * n + (a % b) == a",
+  "sol_header": "def sol(a=14302, b=5):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntMul:1",
+  "sat": "def sat(n: int, a=-646156, b=-63):\n    return b * n + (a % b) == a",
+  "sol_header": "def sol(a=-646156, b=-63):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntMul:2",
+  "sat": "def sat(n: int, a=159568, b=59):\n    return b * n + (a % b) == a",
+  "sol_header": "def sol(a=159568, b=59):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntMul:3",
+  "sat": "def sat(n: int, a=-141336, b=72):\n    return b * n + (a % b) == a",
+  "sol_header": "def sol(a=-141336, b=72):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntMul:4",
+  "sat": "def sat(n: int, a=855955, b=33):\n    return b * n + (a % b) == a",
+  "sol_header": "def sol(a=855955, b=33):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntDiv:0",
+  "sat": "def sat(n: int, a=3, b=23463462):\n    return b // n == a",
+  "sol_header": "def sol(a=3, b=23463462):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntDiv:1",
+  "sat": "def sat(n: int, a=-1, b=1594400229362061):\n    return b // n == a",
+  "sol_header": "def sol(a=-1, b=1594400229362061):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntDiv:2",
+  "sat": "def sat(n: int, a=12, b=-9988218457242775):\n    return b // n == a",
+  "sol_header": "def sol(a=12, b=-9988218457242775):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntDiv:3",
+  "sat": "def sat(n: int, a=0, b=-1230085432451862):\n    return b // n == a",
+  "sol_header": "def sol(a=0, b=-1230085432451862):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntDiv:4",
+  "sat": "def sat(n: int, a=1, b=9554566410382856):\n    return b // n == a",
+  "sol_header": "def sol(a=1, b=9554566410382856):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntDiv2:0",
+  "sat": "def sat(n: int, a=345346363, b=10):\n    return n // b == a",
+  "sol_header": "def sol(a=345346363, b=10):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntDiv2:1",
+  "sat": "def sat(n: int, a=-3411193412414137, b=-9070455318026063):\n    return n // b == a",
+  "sol_header": "def sol(a=-3411193412414137, b=-9070455318026063):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntDiv2:2",
+  "sat": "def sat(n: int, a=-1950797984487873, b=6211965468307518):\n    return n // b == a",
+  "sol_header": "def sol(a=-1950797984487873, b=6211965468307518):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntDiv2:3",
+  "sat": "def sat(n: int, a=1186580710227962, b=5023840456205809):\n    return n // b == a",
+  "sol_header": "def sol(a=1186580710227962, b=5023840456205809):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntDiv2:4",
+  "sat": "def sat(n: int, a=6976962948831358, b=7353202892973126):\n    return n // b == a",
+  "sol_header": "def sol(a=6976962948831358, b=7353202892973126):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntSquareRoot:0",
+  "sat": "def sat(x: int, a=10201202001):\n    return x ** 2 == a",
+  "sol_header": "def sol(a=10201202001):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntSquareRoot:1",
+  "sat": "def sat(x: int, a=2617350631613713636):\n    return x ** 2 == a",
+  "sol_header": "def sol(a=2617350631613713636):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntSquareRoot:2",
+  "sat": "def sat(x: int, a=100703210763886864):\n    return x ** 2 == a",
+  "sol_header": "def sol(a=100703210763886864):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntSquareRoot:3",
+  "sat": "def sat(x: int, a=12515426721927424):\n    return x ** 2 == a",
+  "sol_header": "def sol(a=12515426721927424):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntSquareRoot:4",
+  "sat": "def sat(x: int, a=717898768141464900):\n    return x ** 2 == a",
+  "sol_header": "def sol(a=717898768141464900):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntNegSquareRoot:0",
+  "sat": "def sat(n: int, a=10000200001):\n    return a == n * n and n < 0",
+  "sol_header": "def sol(a=10000200001):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntNegSquareRoot:1",
+  "sat": "def sat(n: int, a=1153723843107852129):\n    return a == n * n and n < 0",
+  "sol_header": "def sol(a=1153723843107852129):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntNegSquareRoot:2",
+  "sat": "def sat(n: int, a=1940392439040171204):\n    return a == n * n and n < 0",
+  "sol_header": "def sol(a=1940392439040171204):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntNegSquareRoot:3",
+  "sat": "def sat(n: int, a=1256820805863398416):\n    return a == n * n and n < 0",
+  "sol_header": "def sol(a=1256820805863398416):"
+ },
+ {
+  "ans_type": "int",
+  "module": "trivial_inverse.py",
+  "name": "IntNegSquareRoot:4",
+  "sat": "def sat(n: int, a=1001282815140004804):\n    return a == n * n and n < 0",
+  "sol_header": "def sol(a=1001282815140004804):"
+ },
+ {
+  "ans_type": "float",
+  "module": "trivial_inverse.py",
+  "name": "FloatSquareRoot:0",
+  "sat": "def sat(x: float, a=1020):\n    return abs(x ** 2 - a) < 10 ** -3",
+  "sol_header": "def sol(a=1020):"
+ },
+ {
+  "ans_type": "float",
+  "module": "trivial_inverse.py",
+  "name": "FloatSquareRoot:1",
+  "sat": "def sat(x: float, a=6173281296):\n    return abs(x ** 2 - a) < 10 ** -3",
+  "sol_header": "def sol(a=6173281296):"
+ },
+ {
+  "ans_type": "float",
+  "module": "trivial_inverse.py",
+  "name": "FloatSquareRoot:2",
+  "sat": "def sat(x: float, a=7987622700):\n    return abs(x ** 2 - a) < 10 ** -3",
+  "sol_header": "def sol(a=7987622700):"
+ },
+ {
+  "ans_type": "float",
+  "module": "trivial_inverse.py",
+  "name": "FloatSquareRoot:3",
+  "sat": "def sat(x: float, a=2732656229):\n    return abs(x ** 2 - a) < 10 ** -3",
+  "sol_header": "def sol(a=2732656229):"
+ },
+ {
+  "ans_type": "float",
+  "module": "trivial_inverse.py",
+  "name": "FloatSquareRoot:4",
+  "sat": "def sat(x: float, a=1873585696):\n    return abs(x ** 2 - a) < 10 ** -3",
+  "sol_header": "def sol(a=1873585696):"
+ },
+ {
+  "ans_type": "float",
+  "module": "trivial_inverse.py",
+  "name": "FloatNegSquareRoot:0",
+  "sat": "def sat(x: float, a=1020):\n    return abs(x ** 2 - a) < 10 ** -3 and x < 0",
+  "sol_header": "def sol(a=1020):"
+ },
+ {
+  "ans_type": "float",
+  "module": "trivial_inverse.py",
+  "name": "FloatNegSquareRoot:1",
+  "sat": "def sat(x: float, a=2681275499):\n    return abs(x ** 2 - a) < 10 ** -3 and x < 0",
+  "sol_header": "def sol(a=2681275499):"
+ },
+ {
+  "ans_type": "float",
+  "module": "trivial_inverse.py",
+  "name": "FloatNegSquareRoot:2",
+  "sat": "def sat(x: float, a=1363713245):\n    return abs(x ** 2 - a) < 10 ** -3 and x < 0",
+  "sol_header": "def sol(a=1363713245):"
+ },
+ {
+  "ans_type": "float",
+  "module": "trivial_inverse.py",
+  "name": "FloatNegSquareRoot:3",
+  "sat": "def sat(x: float, a=3858703402):\n    return abs(x ** 2 - a) < 10 ** -3 and x < 0",
+  "sol_header": "def sol(a=3858703402):"
+ },
+ {
+  "ans_type": "float",
+  "module": "trivial_inverse.py",
+  "name": "FloatNegSquareRoot:4",
+  "sat": "def sat(x: float, a=3804892221):\n    return abs(x ** 2 - a) < 10 ** -3 and x < 0",
+  "sol_header": "def sol(a=3804892221):"
+ },
+ {
+  "ans_type": "str",
+  "module": "tutorial.py",
+  "name": "Tutorial1:0",
+  "sat": "def sat(s: str):\n    return \"Hello \" + s == \"Hello world\"",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "str",
+  "module": "tutorial.py",
+  "name": "Tutorial2:0",
+  "sat": "def sat(s: str):\n    return \"Hello \" + s[::-1] == \"Hello world\"",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[int]",
+  "module": "tutorial.py",
+  "name": "Tutorial3:0",
+  "sat": "def sat(x: List[int]):\n    return len(x) == 2 and sum(x) == 3",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "List[str]",
+  "module": "tutorial.py",
+  "name": "Tutorial4:0",
+  "sat": "def sat(s: List[str]):\n    return len(set(s)) == 1000 and all((x.count(\"a\") > x.count(\"b\")) and ('b' in x) for x in s)",
+  "sol_header": "def sol():"
+ },
+ {
+  "ans_type": "int",
+  "module": "tutorial.py",
+  "name": "Tutorial5:0",
+  "sat": "def sat(n: int):\n    return str(n * n).startswith(\"123456789\")",
+  "sol_header": "def sol():"
+ }
+]

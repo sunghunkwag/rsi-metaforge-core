@@ -1,0 +1,138 @@
+{
+ "verdict": "admit",
+ "summary": "Audit 1 of the routing adapter (CVRPLIB sets A, B, P; 74 instances): no blocking and no major finding; three minor findings and five notes. Verdict: admit.\n\nWhat I did, independently of the adapter (my own parser and evaluator in <scratch>/targets/routing/audit1/own.py; scripts idx.py, a1.py, a2.py, a3.py, alter.py, obs.py, mc.py, t11.py and their outputs in the same directory):\n- Data: the two named CVRPLIB addresses redirect to galgos.inf.puc-rio.br/cvrplib (the old media/com_vrp paths give 404; the TSPLIB95 host gave 503 and was not needed). I parsed the source's instance table myself, downloaded all 148 files again and found them byte-identical to REPO/rsi6/data/routing and to the SHA-256 pins of the manifest. The source's table marks all 74 as optimal and states for sets A, B and P: 'Distance: Euclidean rounded to the nearest integer (TSPLIB); Number of Routes: Fixed'.\n- Form (R1): exact. A sequence of the n-1 customers and K-1 depot copies, each once, in order; the three group totals are the length, the load above capacity and the number of empty routes. All 74 published solutions have exactly K non-empty routes (K of the name = K of the COMMENT = K of the table), are valid under my evaluator, and my length equals the printed cost, the table's value and env.reference. Exactly-K is the source's stated convention; only P-n55-k8 has a total demand that would fit K-1 vehicles.\n- Exactness (R2): on all 74 instances my evaluator agrees exactly (difference 0.0) with Environment.score, partial_totals, evaluate and the step path start/candidates/assign/totals through the learner's view; the fast methods equal the kernel's slow specification; published solutions score exactly 1.0 (also with routes reordered and reversed); every invalid answer scores 0.\n- No privileged information (R5): in a copy of the package in which all 74 references (.sol routes and cost) and the 'Optimal value' of every COMMENT were replaced, everything the learner can observe (public fields of the view, candidates/allowed/totals/evaluate on a fixed panel, two seeds, training and fresh) is byte-identical for all 74 instances, while env.reference changed for all 74.\n- Relabelling, one layout, split, cost: all pass (details in the checks). Interface with both learner designs on made-up instances of the benchmark's real sizes: passes, about 4 to 5 CPU-seconds for acquire.\n- The learner was never run on a benchmark instance, learner.py was not opened, nothing under REPO was changed (0 files newer than the start of the audit; byte-code writing disabled), no quality of any learner answer on made-up instances was printed.\n\nDecisions I took and why: (1) I accepted the number of vehicles K as instance data, because the source states 'Number of Routes: Fixed' for these sets and in 73 of 74 instances K equals the demand bound ceil(sum of demands / capacity) anyway. (2) I classed the low end of the score scale (random routes, capacity ignored, instead of random valid routes as R2 words it) as minor, not major, because I measured the difference: a Metropolis chain over valid answers gives means within 0.5% of the adapter's closed form on six fresh-side instances, with no visible effect on the threshold. (3) I classed the feasibility floor (see notes) as a property of the published problem under the fixed-K convention, not as a defect of the adapter; it is something the experiment's owner should know before reading the result.",
+ "checks": [
+  {
+   "id": "0 data, instances, vehicle convention",
+   "n": "148 files re-downloaded; 74 instances",
+   "what_was_run": "curl -L -A research-data-check/1.0 on http://vrp.galgos.inf.puc-rio.br/... (redirects to https://galgos.inf.puc-rio.br/cvrplib/...); idx.py (own parse of the instance table); sha256 comparison; a1.py block 0",
+   "result": "PASS. idx.py printed: 74 rows, Counter({'A': 27, 'P': 24, 'B': 23}), optimal flag 'yes' for 74, conventions of A, B (and P) 'Euclidean rounded to the nearest integer (TSPLIB) ... Number of Routes: Fixed'. Hash comparison printed 'same 148 diff 0 manifest 148 data 148'. a1.py: {n_index 74, env_ids 74, same_ids true, left_out {}, bad [], demand_fits_K-1 ['P-n55-k8'], comment_value_differs_from_sol []}: for every instance K(name) = K(COMMENT) = number of routes in the .sol = K of the table, the solution is valid under my evaluator and my length = printed cost = table value = env.reference. Old paths media/com_vrp/instances/A/A-n32-k5.vrp return 404 on both named hosts; comopt.ifi.uni-heidelberg.de returned 503 (not worked around, not needed)."
+  },
+  {
+   "id": "1 no hidden solver or heuristic",
+   "n": "routing.py, 296 lines read in full",
+   "what_was_run": "reading; grep -n -E 'argsort|argmin|argmax|scipy|heapq|itertools|minimize|linear_sum|sorted\\(|\\.sort\\(|import ' routing.py",
+   "result": "PASS. Imports: re, numpy, rsi6.fetch, kernel Environment/relabel/AssignProblem. The only sorted() calls are over file paths and node numbers. No search over answers, no ordering or pruning by the objective, no optimisation routine. The only tables are the instance's distances, demands, depot flags; the published routes and cost are held by the Environment (kernel side) and read by score/reference/reference_answer only. random_length is a closed form over the distance matrix."
+  },
+  {
+   "id": "2 no privileged information",
+   "n": "74 instances x 2 seeds x training/fresh x 3 panel answers with candidates at every step",
+   "what_was_run": "alter.py (copy audit1/repo2: every .sol replaced by another valid answer with its own cost, every COMMENT 'Optimal value' replaced by a random number, manifest re-pinned in the copy); obs.py run in REPO and in the copy; digests compared",
+   "result": "PASS. Printed: 'instances with a changed reference value: 74'; 'ids equal True 74 74'; 'refs differing 74 thresholds 0.9330833269773706 0.8417160564338767'; 'digests equal 74 of 74'. The digest covers every public field of view(problem), decode's label map, allowed/candidates/totals at every step of three fixed constructions, evaluate and construction_units."
+  },
+  {
+   "id": "3 traceability",
+   "n": "74 instances x 3 seeds",
+   "what_was_run": "a1.py: every element of opt_attr and opt_opt[0] rebuilt from my own parse",
+   "result": "PASS. attr_mismatch 0, dist_mismatch 0. opt_attr = [DEMAND_SECTION value, CAPACITY, x, y of NODE_COORD_SECTION, 1 for a depot copy (DEPOT_SECTION)], opt_opt[0] = nint Euclidean distance (EDGE_WEIGHT_TYPE EUC_2D). No variable attributes, no other relation, capacity all ones, domain/start_answer/start_totals None. K is visible only as the number of depot copies (K-1); it is instance data under the source's fixed-routes convention. Nothing exposed is untraceable."
+  },
+  {
+   "id": "4 relabelling",
+   "n": "74 instances x 3 seeds (222)",
+   "what_was_run": "a1.py block c4",
+   "result": "PASS. Under each seed the exposed arrays are exactly my own arrays permuted by decode's label map (isomorphic data); the published answer written in each relabelled problem evaluates to [reference, 0, 0] under all three seeds (seed_totals_mismatch 0 of 222); identity_perms 0, depot_copies_last 0 (the copies are mixed among the customers), same seed gives the same relabelling (same_seed_differs 0), the training flag changes nothing (training_flag_differs 0). Stops carry no attributes."
+  },
+  {
+   "id": "5 evaluator agreement and attainable reference",
+   "n": "all 74 instances (A 27, B 23, P 24); 74 published + 222 variants; 428 + 592 random valid; 444 random orders; 1776 prefixes; 4049 steps with 43414 candidate rows; 4708 invalid; 1480 corrupted",
+   "what_was_run": "a1.py block c5, a2.py, a3.py",
+   "result": "PASS. sol_score_1 74/74, sol_variants_1 222/222 (routes reordered/reversed). Corrupted published answers (two stops exchanged, 1480): 1010 score 0, 449 strictly between 0 and 1, 21 still 1 (equal length), 0 valid and shorter than the reference; score difference to mine 0.0. Random valid answers: max score difference 0.0; in problem labels evaluate = [my length, 0, 0] for 592/592, 571 strictly between 0 and 1. Random orders of all entities: totals_mismatch 0, evaluate_mismatch 0, partial_mismatch 0, step_mismatch 0, seq_score_maxdiff 0.0. Overloaded-only answers: group [1] equals my overload (476); answers with one emptied route: group [2] = 1 and score 0 (592). Invalid answers (short, long, float, customer twice, out of range, negative, depot copies first/last/together): invalid_scored_nonzero 0 of 4708. Fast methods against the kernel's slow AssignProblem._rows with array_equal: 'mismatches 0 states compared 960'. The reference is attained in the answer form on every instance (not a bound)."
+  },
+  {
+   "id": "6 leak scan of the task files",
+   "n": "74 instances x 3 seeds, every attribute of the adapter's object and of the view",
+   "what_was_run": "a1.py block c6; check 2",
+   "result": "PASS. The .vrp COMMENT prints the optimal value (equal to the .sol cost in all 74) and the name carries K. No numeric element of any attribute equals the reference or the COMMENT value (hits []), no string attribute (strings []). Attributes of the adapter's object: D, cap, demand, depot, home and the generic fields. Replacing the COMMENT value changes nothing observable (check 2)."
+  },
+  {
+   "id": "7 one layout",
+   "n": "74 instances x 3 seeds",
+   "what_was_run": "a1.py: run.layout(P) and rsi6.learner.learner.Layout(view(P), version.default()).names",
+   "result": "PASS. One layout: ('assign', True, False, False, (False, True, True), (False, False, False), 0, 5, 0, 1, 0, 0, True, True). One list of 13 descriptor names: opt:dsoft, opt:viol, opt:dhard, opt:d[0..2], opt:last[0], opt:rem[0], opt:oa[0..4]. No padded columns; K = 2 instances have the same layout because the depot copies are separate options of capacity 1."
+  },
+  {
+   "id": "8 split",
+   "n": "split(env, 16, 24), halves",
+   "what_was_run": "a1.py block 8",
+   "result": "PASS. Training: P 16. Fresh: A 13, B 11; overlap []. Halves: A 13 (deciding), B 11 (confirming). threshold_for: fresh 0.9453, half A 0.9408, half B 0.9506, all 74 0.9331. No pair of instances from different groups shares more than half of its points; identical coordinate sets exist only inside P (P-n50-k7/k8/k10, P-n55-k7/k8/k10/k15, P-n76-k4/k5), all on the training side. 24 fresh instances from two published families is enough for a mean to mean something, with the caveat in the findings: an invalid answer scores 0, so on a half of 13 or 11 one invalid answer alone puts the mean below the threshold."
+  },
+  {
+   "id": "9 instances left out; traces in the builder's scratch",
+   "n": "74 of 74 used; work/*.py, checks.out, checks.err",
+   "what_was_run": "env.left_out; grep -n -i -E 'acquire|\\.apply\\(|measure\\(|run\\.run|learner|designs' work/*.py; reading checks.py lines 364-420 and the tail of checks.out; file times in REPO",
+   "result": "PASS. left_out {} ; the size rule (more than 1,000 stops or more than 30,000 stop-entity pairs) is stated in the module text and leaves all 74 in. The learner appears only in checks.py lines 364-414, on made-up instances (10-18 customers, random numbers), and no length or feasibility of its answers is printed. survey.py and scale.py do arithmetic on (random length, reference) only (score at 5/10/20% above the optimum) and a random-fit baseline; no learner. Only routing.py, manifests/routing.json and environments/__init__.py are newer than the copy of the package; kernel and learner files are untouched."
+  },
+  {
+   "id": "10 threshold anchor",
+   "n": "1",
+   "what_was_run": "env.anchor, threshold_for",
+   "result": "PASS. Anchor: 'an operating point, not an external fact: the mean score of answers 10% longer than the published optimum on every scored instance, on the scale from the expected length of random routes to the optimum'. Worded as what it is, and it says 'random routes', not 'random valid routes'. It does not say that it presumes a valid answer on every instance (see findings)."
+  },
+  {
+   "id": "11 cost and interface with both designs",
+   "n": "designs a and b; 16 made-up training problems with the sizes of the real training instances (19 to 103 stops), 12 made-up test problems each",
+   "what_was_run": "a1.py block 11; t11.py a; t11.py b (made-up random coordinates and demands in RoutingProblem; no benchmark instance; no quality printed)",
+   "result": "PASS. Largest instance P-n101-k4: 103 stops x 103 entities, 10,713 units per construction (max n_vars*n_opts 10,609, under the 30,000 guide). Training budget 40 x 60,130 = 2,405,200 units. Design a: acquire 4.0 CPU-seconds, used 2,188,412 units, within budget; design b: 4.2 to 4.8 CPU-seconds, used 2,334,772. apply at most 0.03 CPU-seconds per instance; every answer well-formed (run._valid) and its totals equal a plain evaluation, without and with the capability. Made-up problems have the benchmark's layout. A run cannot be unreasonably slow."
+  },
+  {
+   "id": "scale (R2)",
+   "n": "74 instances closed form; 10 instances Metropolis chain of 400,000 steps",
+   "what_was_run": "a1.py block scale; mc.py (own evaluator only)",
+   "result": "PASS with a minor finding. My closed form of the expected length of a random answer with exactly K non-empty routes equals the adapter's (max difference 0.0). Plain ratio reference/random above 0.5 on P-n16-k8 (0.809), P-n22-k8, P-n23-k8, P-n55-k15, so the share-of-the-way scale is the right one under R2. Mean length of random VALID answers / adapter's low end: A-n32-k5 0.9992, A-n45-k7 1.0047, A-n64-k9 0.9989, B-n35-k5 1.0009, B-n50-k7 0.9991, B-n66-k9 1.0006, P-n22-k8 0.9994, P-n50-k7 0.9989, P-n101-k4 1.0004, P-n16-k8 0.9813. The 10% threshold on the two scales differs by at most 0.0007 on these A/B instances."
+  }
+ ],
+ "findings": [
+  {
+   "severity": "minor",
+   "where": "rsi6/environments/routing.py: random_length, score, module text 'Score'",
+   "what": "The low end of the score scale is the expected length of a uniformly random answer with exactly K non-empty routes, capacity ignored. R2 words it as the expected value of a uniformly random VALID answer. The module and the anchor say this plainly, so it is a stated deviation, and it is immaterial in size.",
+   "evidence": "mc.py (Metropolis chain over valid sequences, 400,000 steps, own evaluator) printed ratio_valid/chance: A-n32-k5 0.9992, A-n45-k7 1.0047, A-n64-k9 0.9989, B-n35-k5 1.0009, B-n50-k7 0.9991, B-n66-k9 1.0006, P-n22-k8 0.9994, P-n50-k7 0.9989, P-n101-k4 1.0004, P-n16-k8 0.9813; thr_10pct_on_adapter_scale vs thr_10pct_on_valid_scale e.g. 0.9224 vs 0.9231 (A-n45-k7), 0.9449 vs 0.9450 (B-n66-k9), 0.5755 vs 0.5294 (P-n16-k8, training side only).",
+   "suggested_fix": "None required. If wanted, replace the module's supporting sentence ('random fit scored 0.03') by the measured statement that the mean over valid answers is within 0.5% of the closed form on sets A and B and 2% lower on P-n16-k8."
+  },
+  {
+   "severity": "minor",
+   "where": "rsi6/environments/routing.py lines 235-251 (Routing.__init__)",
+   "what": "Besides the size rule there are three silent leave-out rules: no solution file or a file not carrying its own name; published routes that do not reproduce the published cost; and 'inst[\"chance\"] > cost > 0'. The last one depends on the reference and is not stated in the module text. R6 allows leaving instances out by a size rule only. None of the three is active: all 74 instances are used.",
+   "evidence": "a1.py printed left_out {} and env_ids 74. In the altered copy (references replaced by longer valid answers) the instance set stayed at 74 (obs.py: 'ids equal True 74 74'), so the filter did not move the set there either; but a reference at or above the random length would drop the instance without an error.",
+   "suggested_fix": "Raise an error instead of leaving the instance out for these three conditions (a data fault should stop the run, not change the instance set), or state the 'reference below the random length' condition in the module text."
+  },
+  {
+   "severity": "minor",
+   "where": "rsi6/environments/routing.py module text, first paragraph, last sentence",
+   "what": "The text says that 'at most K' would be another problem on P-n55-k8 and adds '(the source lists P-n55-k7 separately, with a smaller value)'. P-n55-k7 is a different instance (capacity 170, value 568), not P-n55-k8 (capacity 160, value 588) with one vehicle fewer, so the parenthesis does not support the sentence it is attached to.",
+   "evidence": "a3.py printed from the source's table: {'P-n55-k7': ['54', '7', '170', '568'], 'P-n55-k8': ['54', '8', '160', '588']}.",
+   "suggested_fix": "Drop the parenthesis or say that P-n55-k7 has another capacity. The adapter's behaviour is right as it is: the source states 'Number of Routes: Fixed' and the published P-n55-k8 solution has 8 routes."
+  },
+  {
+   "severity": "note",
+   "where": "the published problem under the fixed-K convention; threshold and anchor",
+   "what": "Feasibility is itself hard here, and an invalid answer scores 0. No uniformly random well-formed answer of the form was valid, and the capacity is tight. On a half of 13 (A) or 11 (B) fresh instances one invalid answer alone caps the mean at 12/13 = 0.923 or 10/11 = 0.909, below the half's threshold (0.9408, 0.9506); on all 24, one invalid answer leaves 23/24 = 0.958, so the others would have to be within about 2.5% of the optimum. The threshold therefore presumes a valid answer on every fresh instance. This is exact presentation of the published problem, not a defect, but scores may sit at a floor for reasons of packing rather than routing. The threshold has not been shown to be attainable within the test budget (the builder says so too).",
+   "evidence": "a1.py: random_seq 444, random_seq_valid 0. a2.py: tightness sum(demand)/(K*capacity) min/mean/max A (0.814, 0.923, 0.988), B (0.824, 0.916, 0.996), P (0.814, 0.938, 0.992); instances at 0.95 or more: A 9, B 6, P 11. My random fit found no valid answer in 200 draws on B-n57-k7, P-n23-k8, P-n50-k8, P-n55-k15 for some of its tries. Thresholds from a1.py: threshold_a 0.9408, threshold_b 0.9506, threshold_fresh 0.9453.",
+   "suggested_fix": "Optionally add to the anchor: 'which presumes a valid answer on every instance'. No change to the adapter."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/environments/manifests/routing.json",
+   "what": "The files are fetched by the site's numeric download ids (index.php/en/download/instance/N and .../bks/N), not by name; the older per-file paths under media/com_vrp no longer exist. If the site renumbers, the SHA-256 pins and the adapter's check that NAME in the file equals the path will stop the fetch rather than load a wrong file.",
+   "evidence": "curl on http://vrp.galgos.inf.puc-rio.br/media/com_vrp/instances/A/A-n32-k5.vrp and on the atd-lab host: '404 https://galgos.inf.puc-rio.br/cvrplib/media/com_vrp/instances/A/A-n32-k5.vrp'. My own download by the ids parsed from the table: 'same 148 diff 0'."
+  },
+  {
+   "severity": "note",
+   "where": "split(env, 16, 24)",
+   "what": "The training side is set P alone (modified instances from the literature, with 2 to 15 routes and three families of identical coordinates among them); the fresh side is A (deciding half) and B (confirming half). This is the kernel's seeded choice, not the adapter's, and no instance data are shared across the two sides.",
+   "evidence": "a1.py: train {'P': 16}, fresh {'A': 13, 'B': 11}, overlap []. a2.py: identical coordinate sets [['P-n50-k10','P-n50-k7','P-n50-k8'], ['P-n55-k10','P-n55-k15','P-n55-k7','P-n55-k8'], ['P-n76-k4','P-n76-k5']]; pairs from different groups sharing more than half of their points: [] 0."
+  },
+  {
+   "severity": "note",
+   "where": "builder's check g (work/checks.py lines 364-414)",
+   "what": "The builder's interface check with the learner used made-up instances of 10 to 18 customers only. I repeated it at the benchmark's real sizes (19 to 103 stops) with both designs; it passes.",
+   "evidence": "t11.py a: cpu_acquire 4.0, within_budget true, every apply answer (well-formed, exact) = (True, True). t11.py b: 'b True 4.2 True', {(True, True)}, largest apply 0.02 CPU-seconds."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/environments/routing.py RoutingProblem._rows",
+   "what": "candidates() raises ValueError when asked for a variable other than the next one, where the kernel's slow default would return rows of zeros. This is the same convention as the existing ordered adapter jobshop.py, the registered property test only asks for unassigned(state), and both learner designs ran without meeting it.",
+   "evidence": "grep -n 'def _rows' -A 8 rsi6/environments/jobshop.py shows the identical guard at lines 100-101; a2.py: 'fast == specification: mismatches 0 states compared 960'."
+  }
+ ]
+}

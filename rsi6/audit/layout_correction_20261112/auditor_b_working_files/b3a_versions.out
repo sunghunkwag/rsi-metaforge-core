@@ -1,0 +1,38 @@
+default version digest: 4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a | equals freeze_L0 version_digest: True
+digests known from default() and nominee_version: 5
+search:1:self: improver learner, recorded evaluated 42, replayed 42, costs consumed 42/42, count ok True, jobs missing from ledger 0, new digests 41, replayed best is the recorded nominee: True
+search:1:fixed: improver learner, recorded evaluated 42, replayed 42, costs consumed 42/42, count ok True, jobs missing from ledger 0, new digests 0, replayed best is the recorded nominee: True
+search:1:random: improver random, recorded evaluated 41, replayed 41, costs consumed 41/41, count ok True, jobs missing from ledger 0, new digests 38, replayed best is the recorded nominee: True
+search:2:self: improver learner, recorded evaluated 37, replayed 37, costs consumed 37/37, count ok True, jobs missing from ledger 0, new digests 35, replayed best is the recorded nominee: True
+search:2:fixed: improver learner, recorded evaluated 37, replayed 37, costs consumed 37/37, count ok True, jobs missing from ledger 0, new digests 0, replayed best is the recorded nominee: True
+search:2:random: improver random, recorded evaluated 35, replayed 35, costs consumed 35/35, count ok True, jobs missing from ledger 0, new digests 19, replayed best is the recorded nominee: True
+search:2:fixed@self: improver learner, recorded evaluated 37, replayed 37, costs consumed 37/37, count ok True, jobs missing from ledger 0, new digests 0, replayed best is the recorded nominee: True
+search:2:random@self: improver random, recorded evaluated 35, replayed 35, costs consumed 35/35, count ok True, jobs missing from ledger 0, new digests 0, replayed best is the recorded nominee: True
+gate:1:self: jobs missing from ledger 0
+confirm:1:self: jobs missing from ledger 0
+gate:1:fixed: jobs missing from ledger 0
+confirm:1:fixed: jobs missing from ledger 0
+gate:1:random: jobs missing from ledger 0
+confirm:1:random: jobs missing from ledger 0
+keys implied by the replay: 1192 | keys in the ledger: 1192 | implied == ledger: True | ledger keys not implied: 0 | implied keys not in ledger: 0
+version digests in run records: 138 | recovered: 138 | not recovered: 0
+run records whose key differs from the key recomputed from the recovered version: 0
+search:1:self: recorded costs 42, distinct 23, pairs closer than 2e-6 but not equal: 0
+search:1:fixed: recorded costs 42, distinct 23, pairs closer than 2e-6 but not equal: 0
+search:1:random: recorded costs 41, distinct 23, pairs closer than 2e-6 but not equal: 0
+search:2:self: recorded costs 37, distinct 30, pairs closer than 2e-6 but not equal: 0
+search:2:fixed: recorded costs 37, distinct 30, pairs closer than 2e-6 but not equal: 0
+search:2:random: recorded costs 35, distinct 28, pairs closer than 2e-6 but not equal: 0
+search:2:fixed@self: recorded costs 37, distinct 30, pairs closer than 2e-6 but not equal: 0
+search:2:random@self: recorded costs 35, distinct 28, pairs closer than 2e-6 but not equal: 0
+recorded CPU-seconds (acquire + apply) per run:
+    ('binpacking', 12, 'A') n 276 mean 9.7  median 9.5  max 28.4
+    ('forecasting', 12, 'A') n 276 mean 0.0  median 0.0  max 0.1
+    ('jobshop', 12, 'A') n 276 mean 8.2  median 7.7  max 22.9
+    ('pmedian', 12, 'A') n 146 mean 2.8  median 2.5  max 7.1
+    ('pmedian', 16, 'A') n 18 mean 2.8  median 2.8  max 4.1
+    ('pmedian', 16, 'B') n 18 mean 3.0  median 2.9  max 3.6
+    ('quadassign', 12, 'A') n 146 mean 0.7  median 0.7  max 1.5
+    ('quadassign', 16, 'A') n 18 mean 0.8  median 0.7  max 1.4
+    ('quadassign', 16, 'B') n 18 mean 0.7  median 0.8  max 1.1
+versions by number of fields changed from the default: {0: 1, 1: 61, 2: 4, 3: 13, 4: 23, 5: 17, 6: 10, 7: 2, 8: 6, 9: 1}

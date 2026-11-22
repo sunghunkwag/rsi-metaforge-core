@@ -1,0 +1,67 @@
+{
+ "what": "the learner at generation 0, frozen before any data of an adoption category were fetched",
+ "time_utc": "2026-11-12T10:45:08Z",
+ "files": {
+  "rsi6/learner/learner.py": "e7744665e3a08cbf130e3e4f3a4539f88f92d6d81278b11e566ed2387161b8a3",
+  "rsi6/learner/version.py": "96764716cedea50c2f0844644948790f6b373c3c2c47db74c8017beb57f0cdfa",
+  "rsi6/kernel/problem.py": "13fd05d2761a9d1e38e993691bd78bccc4bfcef34b95b0feb038a98de3c752fa"
+ },
+ "version": {
+  "prior.dsoft": -1.0,
+  "prior.dhard": -6.0,
+  "feat.per_group": 1,
+  "feat.usage": 1,
+  "feat.last": 1,
+  "feat.rem": 1,
+  "feat.var_opt": 1,
+  "feat.opt_attr": 1,
+  "feat.occ": 1,
+  "feat.optsum": 1,
+  "feat.scale": "minmax",
+  "feat.template1": "none",
+  "feat.template2": "none",
+  "shortlist": 4,
+  "model.variant": "cem",
+  "model.pop": 16,
+  "model.elite": 0.25,
+  "model.sigma": 1.0,
+  "model.decay": 0.9,
+  "model.batch": 4,
+  "model.keep_best": 1,
+  "model.lr": 0.3,
+  "assess.holdback": 0.25,
+  "assess.strict": 1,
+  "edit.reassign": 1,
+  "edit.swap": 1,
+  "edit.chain": 1,
+  "edit.accept_equal": 0,
+  "edit.adaptive": 0,
+  "test.sampled": 0,
+  "test.temperature": 0.3,
+  "transfer.on": 1,
+  "transfer.blend": 1.0,
+  "predict.K": 8,
+  "predict.ridge": 0.0,
+  "predict.selfsup": 0,
+  "predict.diff": 0,
+  "predict.attrs": 1
+ },
+ "version_digest": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a",
+ "rule": "after this record a change to these files is a recorded correction needed for the contract (a crash, a budget violation, non-repeatability, or support for a generic array an adapter needs); a change made to raise a score is not allowed",
+ "corrections": [
+  {
+   "utc": "2026-11-12T12:44:41Z",
+   "before_any_registered_round": true,
+   "files": {
+    "rsi6/learner/learner.py": "a30b3c28d38357d1297efb36e04d1a83b5bf0010386100171ba9f4a0cd20683b",
+    "rsi6/learner/version.py": "96764716cedea50c2f0844644948790f6b373c3c2c47db74c8017beb57f0cdfa",
+    "rsi6/kernel/problem.py": "1b74f1af5bab5a20caac0b1d2a5fc21f07d074bd702a86f8e6c47d4943ab28c5"
+   },
+   "what": [
+    "rsi6/kernel/problem.py: assign() is charged one unit and a construction's units include it (an independent audit showed that a complete answer could be evaluated for one unit through start/assign/totals); the learner now receives a generic view of a problem (read-only copies of the generic fields, no adapter class, attribute or working table)",
+    "rsi6/learner/learner.py: the learner's estimate of the cost of one construction follows the meter (one more unit per variable). No other line of the learner changed."
+   ],
+   "why": "contract corrections required by the independent audit of the adapters and the kernel (2026-11-12); none was made to raise a score"
+  }
+ ]
+}

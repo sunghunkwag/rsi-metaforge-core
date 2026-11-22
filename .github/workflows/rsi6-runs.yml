@@ -1,0 +1,187 @@
+name: RSI-6 runs
+
+# Long runs of the package on GitHub-hosted runners, so that an experiment does not depend on the
+# machine or the time limits of an interactive session. Triggered by a push to a branch named
+# rsi6/run-<name> (the plan is rsi6/runs/<name>.json on that branch) or by hand with a plan name.
+# The published benchmark data of the plan are fetched once (pinned by hash) and kept in the Actions
+# cache of the branch; then one job per entry of the plan restores them, runs the plan's tests, runs
+# the plan's module, and uploads what the module wrote as an artifact. Nothing is written back to
+# the repository: a result enters it only by a reviewed commit.
+#
+# All runs of one job are measured on one machine, so CPU-seconds are comparable inside a job and
+# not between jobs. A plan must not compare CPU across its jobs.
+on:
+  push:
+    branches:
+      - "rsi6/run-*"
+  workflow_dispatch:
+    inputs:
+      plan:
+        description: "plan name (rsi6/runs/<name>.json)"
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rsi6-runs-${{ github.ref }}-${{ github.event.inputs.plan }}
+  cancel-in-progress: true
+
+env:
+  OPENBLAS_NUM_THREADS: "1"
+  OMP_NUM_THREADS: "1"
+  PYTHONHASHSEED: "0"
+
+jobs:
+  plan:
+    name: Read the plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      name: ${{ steps.plan.outputs.name }}
+      fetch: ${{ steps.plan.outputs.fetch }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: plan
+        env:
+          PLAN_INPUT: ${{ github.event.inputs.plan }}
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            name="${PLAN_INPUT}"
+          else
+            name="${GITHUB_REF_NAME#rsi6/run-}"
+          fi
+          python3 - "$name" <<'PY'
+          import json, os, re, sys
+
+          name = sys.argv[1]
+          if not re.fullmatch(r"[A-Za-z0-9_-]+", name):
+              raise SystemExit("a plan name is letters, digits, '-' and '_'")
+          plan = json.load(open(f"rsi6/runs/{name}.json"))
+          jobs = []
+          for job in plan["jobs"]:
+              if not re.fullmatch(r"[A-Za-z0-9_-]+", job["id"]):
+                  raise SystemExit("a job id is letters, digits, '-' and '_'")
+              if not re.fullmatch(r"rsi6(\.[A-Za-z0-9_]+)+", job["module"]):
+                  raise SystemExit("a plan runs modules of the package only")
+              jobs.append({"id": job["id"], "job": json.dumps({"module": job["module"], "args": [str(a) for a in job["args"]],
+                                                              "tests": plan.get("tests", []), "fetch": job.get("fetch", plan["fetch"])})})
+          for data in plan["fetch"]:
+              if not re.fullmatch(r"[a-z]+", data):
+                  raise SystemExit("a data set is named by lower-case letters")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write(f"matrix={json.dumps({'include': jobs})}\n")
+              out.write(f"name={name}\n")
+              out.write(f"fetch={json.dumps(plan['fetch'])}\n")
+          print(json.dumps(plan, indent=1))
+          PY
+
+  data:
+    name: Fetch the published benchmark data
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      FETCH: ${{ needs.plan.outputs.fetch }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Restore the published benchmark data
+        uses: actions/cache@v4
+        with:
+          path: rsi6/data
+          key: rsi6-data-${{ needs.plan.outputs.name }}-${{ hashFiles('rsi6/environments/manifests/*.json') }}
+
+      - name: Fetch what is missing
+        run: |
+          python - <<'PY'
+          import json, os, subprocess, sys
+
+          for name in json.loads(os.environ["FETCH"]):
+              done = subprocess.run([sys.executable, "-m", "rsi6.fetch", name], capture_output=True, text=True)
+              if done.returncode != 0:
+                  print(done.stdout[-2000:], done.stderr[-2000:])
+                  raise SystemExit(f"{name}: the data could not be fetched")
+              print(name, done.stdout.count(" bytes"), "files")
+          PY
+
+  run:
+    name: ${{ needs.plan.outputs.name }} / ${{ matrix.id }}
+    needs: [plan, data]
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.plan.outputs.matrix) }}
+    env:
+      JOB: ${{ matrix.job }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install NumPy
+        run: python -m pip install numpy==2.5.3
+
+      - name: The machine
+        run: |
+          nproc
+          grep -m1 "model name" /proc/cpuinfo || true
+          python -c "import sys, numpy; print(sys.version.split()[0], numpy.__version__)"
+
+      - name: Restore the published benchmark data
+        uses: actions/cache/restore@v4
+        with:
+          path: rsi6/data
+          key: rsi6-data-${{ needs.plan.outputs.name }}-${{ hashFiles('rsi6/environments/manifests/*.json') }}
+
+      - name: Check the data of this job against the manifests (fetches only what is missing)
+        run: |
+          python - <<'PY'
+          import json, os, subprocess, sys
+
+          for name in json.loads(os.environ["JOB"])["fetch"]:
+              done = subprocess.run([sys.executable, "-m", "rsi6.fetch", name], capture_output=True, text=True)
+              if done.returncode != 0:
+                  print(done.stdout[-2000:], done.stderr[-2000:])
+                  raise SystemExit(f"{name}: the data could not be fetched")
+              print(name, done.stdout.count(" bytes"), "files")
+          PY
+
+      - name: Tests of the plan
+        run: |
+          python - <<'PY'
+          import json, os, subprocess, sys
+
+          for module in json.loads(os.environ["JOB"])["tests"]:
+              print("::group::" + module, flush=True)
+              code = subprocess.run([sys.executable, "-u", "-m", module]).returncode
+              print("::endgroup::", flush=True)
+              if code != 0:
+                  raise SystemExit(f"{module} failed: nothing is run")
+          PY
+
+      - name: Run
+        run: |
+          python - <<'PY'
+          import json, os, subprocess, sys
+
+          job = json.loads(os.environ["JOB"])
+          sys.exit(subprocess.run([sys.executable, "-u", "-m", job["module"]] + job["args"]).returncode)
+          PY
+
+      - name: Upload what the run wrote
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ needs.plan.outputs.name }}-${{ matrix.id }}
+          path: run_out/
+          if-no-files-found: warn
+          retention-days: 90

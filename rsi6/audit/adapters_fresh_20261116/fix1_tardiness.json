@@ -1,0 +1,67 @@
+{
+ "fixed": [
+  {
+   "finding": "Major: the 0.90 threshold is met on the fresh instances by the better of two sorting rules, and the anchor does not say so",
+   "change": "Raised the threshold from 0.90 to 0.98, the audit's example value, before any learner answer is scored. No learner was run. The anchor and a rewritten threshold paragraph now give the audit's fresh-side numbers, reproduced: the better of the due-date and w/p orders scores 0.908 on the fresh instances, 0.967 on the deciding half and 0.826 on the confirming half. An adjacent-swap descent from it scores 0.969, 0.994 and 0.933. 9 fresh instances, all in the deciding half (9 of its 14), have R = 0, which the due-date order attains. 0.98 is above both sorting rules on every part, and above the descent on the fresh side and on the confirming half. It is also close to what answers 10% above R would score on the fresh side (0.978), the operating point of the tour and routing adapters. While placing the threshold I found something new, now stated in the anchor and the module: one-pass textbook dispatching rules for this objective already reach 0.98. ATC (k=2) scores 0.992, 0.995 and 0.987, and WMDD 0.993, 0.995 and 0.989 (fresh, deciding, confirming). So 'held' means the level of such a rule. I added a paragraph, 'What the fresh instances can show', modelled on colouring.py: the deciding half is nearly saturated, and the headroom is in the confirming half. I did not take the audit's other option (leaving out the 53 instances where the due-date order has no tardiness), for three reasons. Measured, the better of the two sorts would still average 0.903 on the new deciding half, so at 0.90 it would not fix the finding. It selects instances by difficulty, which colouring.py says an adapter may not do. And the work order's scale is designed to include R = 0 instances."
+  },
+  {
+   "finding": "Minor: the module text says the order of the jobs in the files carries nothing, but wt100 lists every instance in w/p order",
+   "change": "Replaced the sentence with the audit's wording, with verified numbers. In wt100 all 125 instances are listed in non-increasing w/p (exact integer test), and the file order averages 0.807. In wt40 and wt50 the rank correlation of position with p, w, d and w/p averages between -0.024 and +0.004 (0 of 250 instances in w/p order). The relabelling removes the file order, and the w/p order can be computed from the exposed attributes anyway."
+  },
+  {
+   "finding": "Minor: decode accepts negative labels (and truncates floats), so a malformed answer can decode to a valid order",
+   "change": "decode now returns n copies of -1 unless the answer has shape (n,), an integer dtype and values 0..n-1; otherwise it returns perm[answer]. It equals the old decode on all 240 valid answers tested (int64, uint8, list). 156 malformed answers (negative labels, float, NaN, bool, short, long, 2-d, object, strings, out of range, empty, scalar, None) all decode to -1s and score 0. Example: the due-date order of wt40-001 written with labels -n..-1 scored 0.9404 through the old decode and scores 0 now. The module text says so. The same pattern in other adapters (jobshop etc.) is outside my files and was not touched."
+  }
+ ],
+ "not_fixed": [
+  {
+   "finding": "Minor: 'tardiness' has no entry in rsi6/registry/roles.json, so test_kernel.py fails at import (roles.role_of raises KeyError)",
+   "why": "The fix belongs in rsi6/tests/test_kernel.py or the registry, both outside the two files I may change. It also cannot be done by adding 'tardiness' to roles.json. The stored roles equal roles.draw(commit) over roles.CANDIDATES (checked: True), and CANDIDATES has no 'tardiness', so test_draw_is_reproducible_and_complete would then fail. Confirmed that role_of('tardiness') raises KeyError. The kernel's owner should use roles.load()['roles'].get(name) in ASSIGN_ENVIRONMENTS, test_problem_carries_no_reference and test_split_keeps_groups_apart, or keep the fresh categories' roles in a separate registry. Meanwhile the builder's check_kernel.py covers the learner-free generic checks, and it passes."
+  },
+  {
+   "finding": "Leftover from the major finding, found by the fixer and not in the audit: 0.98 is reached by one-pass textbook dispatching rules (ATC, WMDD)",
+   "why": "To require more than every rule I measured on the fresh side and on both halves, the threshold would have to be 0.996 or more (ATC with k=1 or 3 averages 0.9958 on the deciding half). That would ask for nearly the published value on every instance and would change what 'capability held' means, so it is a decision for the owner of the experiment. The anchor and the module state it plainly, so a 'held' result reads as the level of a textbook dispatching rule, not more."
+  }
+ ],
+ "files_changed": [
+  "<scratch>/fresh/tardiness/repo/rsi6/environments/tardiness.py"
+ ],
+ "checks": [
+  {
+   "id": "builder work/check_kernel.py (A0-A10), run unchanged through fix1/run_builder.py with a stub in place of rsi6.learner",
+   "result": "All pass on the edited adapter. 375 instances, none left out. Fast rows equal the slow defaults exactly on 1900 partial states. One layout. View hides the adapter. Metering correct. _valid rejects the malformed answers. Decode correct on 18 (instance, seed) pairs, and the score is invariant under relabelling. Problems byte-identical when references, zero points and status change. split: 16 training instances in 15 groups, 24 fresh in 5 groups, no shared group. 7.1 CPU-s; no learner module loaded."
+  },
+  {
+   "id": "builder work/check_eval.py (B1-B4)",
+   "result": "Pass. Own parse equals the adapter on all 375. R = 0 exactly when the due-date order has no tardiness. 330 valid answers: score difference at most 3.2e-16, evaluate exact, monotone. 48 invalid answers all score 0 and are all rejected by _valid. 18.2 CPU-s."
+  },
+  {
+   "id": "builder work/check_zero.py and check_zero_114.py",
+   "result": "Pass (zero-point code unchanged). All n! orders: 2.2e-16. Exact Fractions on 5 whole instances: at most 1.7e-16. wt100 #114 exact: 3.2e-16. 2.4 and 11.4 CPU-s, run under ulimit -t 55."
+  },
+  {
+   "id": "builder work/measure2.py",
+   "result": "Reproduces 0.510 / 0.801 / 0.887 over all instances, 54% of instances at or above 0.90, and a median excess of 23.5% at 0.90."
+  },
+  {
+   "id": "fix1/base.py + variants.py (option comparison)",
+   "result": "Reproduces the audit: the better of the two sorts scores fresh 0.908, deciding 0.967, confirming 0.826, train 0.893. Descent scores fresh 0.969 and all 0.946. Due-date order with no tardiness happens exactly when R = 0 (53 instances). Without those 53: 322 instances, 66 groups, and the better of the two sorts scores 0.885 fresh, 0.903 deciding, 0.869 confirming."
+  },
+  {
+   "id": "fix1/rules.py + claims.py (dispatching rules, file order)",
+   "result": "Fresh / deciding / confirming / all: ATC k=1 0.983/0.996/0.965/0.975; k=2 0.992/0.995/0.987/0.984; k=3 0.991/0.996/0.984/0.985; WMDD 0.993/0.995/0.989/0.990. A second, plain-Python implementation agrees on 750/750, and random tie-breaks (3 seeds) do not change the means at 3 decimals. File order: wt100 125/125 in w/p order; wt40 and wt50 0/125, with mean rank correlations from -0.024 to +0.004."
+  },
+  {
+   "id": "fix1/fixcheck.py F1 (numbers quoted in the text, recomputed through env.score)",
+   "result": "All six quoted rows of the module text match. Every number in the anchor is present. threshold and threshold_for(A or B) are 0.98. At 0.98 the excess over R has a median of 4.7% (quartiles 2.6% and 14.4%) over the 322 instances with R > 0, and a median of 14.3% (range 1.8% to 330%) over the 15 fresh ones with R > 0. Answers 10% above R would score 0.978 on the fresh side. R = 0 occurs on 9 fresh instances, 9 of 14 in the deciding half and 0 of 10 in the confirming half."
+  },
+  {
+   "id": "fix1/fixcheck.py F2-F5",
+   "result": "F2: decode passes (see above). F3: problems byte-identical to the old construction and across the training flag, 750/750. F4: file-order statements confirmed. F5: role_of('tardiness') raises KeyError, and an entry in roles.json would break the draw test."
+  },
+  {
+   "id": "hygiene and compute",
+   "result": "Only tardiness.py changed under the repository; manifest and data unchanged (SHA-256 checked: they match the manifest). No bytecode written under the repository; learner never imported (stub module). One process at a time. Largest single run about 25 CPU-s; total about 100 CPU-s. Scripts are in <scratch>/fresh/tardiness/fix1."
+  }
+ ]
+}

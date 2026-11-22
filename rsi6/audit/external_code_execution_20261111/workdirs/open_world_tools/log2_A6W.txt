@@ -1,0 +1,1 @@
+arm A6W B 300 E 5000 baselib 120 solved 145 / 336 families 40 /97 {'study.py': '3/30', 'basic.py': '43/115', 'trivial_inverse.py': '98/186', 'tutorial.py': '1/5'} mean_calls_solved 22.6 100s denied 0

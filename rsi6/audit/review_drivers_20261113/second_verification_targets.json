@@ -1,0 +1,127 @@
+{
+ "summary": "I checked experiments/targets.py and experiments/guard.py as they are after the corrections. All the scripts are in <review>/work_a (v_harness.py, v_t1.py to v_t7.py, v_spent.py, v_rounds.py, v_rectypes.py). They called main() on WORK copies of dev_ledger.jsonl. guard.MAIN and guard.LIVE were redirected to WORK files. environments.load, run.measure, run.run and run.Cache were replaced by stubs, so no learner ran and no adapter was loaded. The stub cache still applies roles.check. Nothing under REPO was modified. Total compute was a few CPU-seconds, one process at a time, all under nice -n 19.\n\nMost of the corrections hold:\n- **Order of writes:** nothing is written before the list is accepted, and the replace record and the unlock come only after check_list. Every refused case appended 0 records.\n- **Second start:** a second start with a different list stops before writing anything.\n- **Closing record:** after target_done, a start returns at once and writes nothing.\n- **Restart:** a restart in the middle of the matched arms writes each matched record once, and its target_done arms equal those of a run that was not interrupted.\n- **Real list:** registry/targets.json, which has no 'missing' key, is accepted against the real ledger copy and returns the one pending replacement flowshop->genassign. It is still accepted after tour and colouring are reassigned and released.\n- **Full stubbed run:** it completes with no name or field error after the unlock: replace, unlock, 7 matched records and target_done, primary arms frozen, b:frozen and c:self.\n- **Spending on the real ledger copy:**\n  - spent_by for the first two processes is 3619.553 and 13814.993 CPU-s (the earlier figures plus the start runs).\n  - spent_by_process_c is 25382.04, partial, because the copy ends during generation 2.\n  - Only the self-lineage records are counted, and the process c adopt record (lineage 'c') is excluded from the first process.\n- **guard.amendment:** it writes the same keys as amendments 1 to 3. Its hash of amendment_4.json equals the dev record, and it is written once.\n\nTwo new major defects remain in check_list; both need a wrong targets.json. The current file is correct and passes.\n1. A target can be declared missing while the reserve genassign, which has a registered adapter, is still unused. The test then runs on three targets, against amendment 4 decision 3.\n2. A target that has an adapter can be 'replaced'. For example satisfiability->genassign with flowshop declared missing is accepted, which drops satisfiability although amendment 4 says it stays.\n\nI also found two minor defects in guard.py:\n- Two drivers can hold locks on main.jsonl and live.jsonl at once. A driver on main is allowed whenever the two files are equal, and checkpoint takes no lock, so the two histories can fork, or a record can be lost if a driver on main.jsonl writes while checkpoint runs.\n- A hard link to a registered ledger passes as a scratch ledger. --dev then writes, target_done included, into the registered file.\n\nThe development mode skips the amendment checks, check_list, the replacements and the unlock. It cannot unlock anything; on a scratch copy without an unlock, the role lock refuses target categories.",
+ "checks_run": [
+  "Read targets.py and guard.py in full; read README.md, review_targets.json and verification_targets.json (all findings and refinements); kernel/roles.py, kernel/ledger.py, run.py Cache/run/key_of, meta/rounds.py pool/jobs_for, environments/__init__.py REGISTRY, external.py 82-162, report.py 185-266, amendment_4.json decisions 3-4",
+  "v_rectypes.py / v_rounds.py on rsi6/ledger/main.jsonl: 4442 records; amendment records 1-3 have keys amendment, record, record_sha256, type, utc, what; sha of amendment_3.json equals the recorded one; the two freeze records have self=fixed=random=generation 0 (4766c8e4..., baa19744...); the only adopt record is process c, lineage 'c'",
+  "v_spent.py on main.jsonl: spent_by a=3619.553 (search 1499.3+1542.4, plus gate, confirm and start runs), b=13814.993, spent_by_process_c=25382.04; start-run purposes search:1:self:start (6 runs), search:2:self:start (4), search:b1:self:start (14); no 'self'-named search or gate record from process c",
+  "v_t1.py: main() non-dev with the real targets.json on the dev ledger prefix 0..4006 (through recursion_done), stubs -> rc=0, appended replace(flowshop->genassign), unlock(targets [facility, genassign, routing, satisfiability], missing []), 731 runs, 7 matched, 1 target_done with memory_from and three primary arms; second start -> 'the target test is recorded', 0 records appended",
+  "v_t3.py: ledger cut 5 records after the third matched record, restart -> one matched record per arm (7), one unlock, one replace, target_done arms identical to the uninterrupted run",
+  "v_t4.py: after the unlock, four other lists (three of four; flowshop->colouring; extra sat->colouring; routing missing) -> all stop, 0 records appended",
+  "v_t5.py: twelve lists before the unlock on fresh copies; refused with 0 appended: subset, duplicate, empty, reserve with a run, binpacking replaced, ledger already holding flowshop->colouring or routing->genassign, no why, same reserve twice; accepted: flowshop missing with genassign unused; satisfiability->genassign with flowshop missing; sat->colouring plus flowshop->genassign (only possible while colouring is still a reserve)",
+  "v_t6.py: check_list(real targets.json, Ledger(main.jsonl)) -> pending [flowshop->genassign]; same after an in-memory reassign and release of tour and colouring; --dev 1 with the real list on a scratch copy -> PermissionError, facility is locked; --dev 0 refused; --dev on a symlink to MAIN refused; --dev on a hard link to MAIN -> rc=0 and MAIN grew by 52 records including target_done; --dev on a scratch copy holding a target unlock runs the target list",
+  "v_t7.py: single_writer(main) and then single_writer(live) both succeed; main twice and a symlink to main are refused; same_history in 7 states (no live; live ahead on live or main; main ahead; same length but different; equal on main allowed); checkpoint with a partial last line (12 committed, chain verifies), main ahead (refused), altered record (AssertionError, MAIN unchanged, temp file left), no live (FileNotFoundError, nothing written), blank lines; guard.amendment(4) on the dev prefix before idx 3953 -> same keys as amendment 3, sha equal to the dev record, idempotent; amendment(3) matches the recorded sha"
+ ],
+ "fixes": [
+  {
+   "finding": "major 200-211: the check of the admitted list accepts wrong lists (subset with fewer_than_drawn, duplicates, no comparison with the target set)",
+   "status": "partly_fixed",
+   "evidence": "v_t5.py, non-dev main() with stubs, fresh copy of the dev ledger prefix for each case. Now refused with nothing written: a subset of 3 with no missing entry, a duplicate (F4+['routing']), an empty list, 'routing' declared missing although its adapter exists (v_t4). The real list passes, both on the dev prefix and through check_list on the main.jsonl copy (v_t6). Two wrong lists are still accepted and go on to the unlock, replace plus unlock and the full stubbed run: (a) {admitted:[facility,routing,satisfiability], missing:[flowshop]} with genassign unused; (b) {admitted:[facility,genassign,routing], replacements:[satisfiability->genassign], missing:[flowshop]}. See new defects 1 and 2."
+  },
+  {
+   "finding": "major 202-205: the replace record is appended before validation, and neither side of a replacement is checked",
+   "status": "fixed",
+   "evidence": "targets.py:277-287: check_list runs first and only reads the ledger; the replace records and the unlock are appended afterwards. v_t5.py refusals with 0 records appended: binpacking replaced ('does not have the role of a target'); a run record on genassign ('the ledger holds a run on genassign'); the ledger already replacing flowshop by colouring; the ledger already replacing routing by genassign ('not an unused reserve'); a replacement with no why. Tour and colouring, once external.py reassigns and releases them, have effective role source and cannot be reserves (v_t6). What remains open is the replaced side having an adapter (new defect 2)."
+  },
+  {
+   "finding": "major/minor 210-211, 131-132, 252: no run-once rule, no tie to the unlocked list, matched and target_done appended on every start",
+   "status": "fixed",
+   "evidence": "targets.py:268-270 returns before anything else once target_done exists. v_t1 T2: rc=0 and 0 records appended. targets.py:279-280 compares with the unlock record before any append. v_t4: four other lists after the unlock all stop with 0 records appended. targets.py:144 writes a matched record once. v_t3: a restart mid-run leaves exactly one matched record per arm, and the target_done arms equal those of the uninterrupted run."
+  },
+  {
+   "finding": "major report.py 236-243, 308-317: comparisons against a matched arm are never voided",
+   "status": "fixed",
+   "evidence": "Outside my part; checked only against what targets.py writes. report.py:210-235 reads 'arm', 'share_per_run' and 'reached' from the matched records and sets 'void' when a pair is short or when the matched arm has less CPU than the other side in a pair. The matched record written in v_t1 holds arm, field, share_per_run, spent, keys, pairs, matched_cpu, cpu, levels, budget and reached, one entry per pair in key order, so every field report.py reads is present."
+  },
+  {
+   "finding": "minor 186, 208-213: --dev 0 counted as a registered run; abspath does not resolve a symlink",
+   "status": "fixed",
+   "evidence": "targets.py:247-251: dev is 'args.dev is not None', dev<1 is refused, and is_registered uses realpath. v_t6: '--dev 0' -> 'needs a scratch ledger and at least one seed'; --dev on a symlink to MAIN is refused. A hard link is not detected (new defect 4)."
+  },
+  {
+   "finding": "minor 110-127: deviations from reading (d) (1.1 aim, factor 8 when CPU is flat, base level counted)",
+   "status": "partly_fixed",
+   "evidence": "targets.py:138: slope<=0 now gives 64, the largest factor allowed, as amendment 4 decision 4(d) words it. The doubling at first, the factor between 2 and 64 and at most twelve levels all hold: range(12), factor 2 when len(seen)==1, min(64, max(2, .)). The 1.1 aim and the base budget as the first level are listed as 'stated, not changed', and the text at targets.py:39-45 describes them accurately. Termination: at most 12 iterations, and reached is computed from the last record. In v_t1 every arm ended between 1.1 and 1.22 times its matched CPU, the 1.22 coming from the minimum factor of 2."
+  },
+  {
+   "finding": "minor 162-175: spending of the first two processes leaves out the start runs",
+   "status": "fixed",
+   "evidence": "targets.py:181-182 adds the runs whose purpose is tag+':start'. v_spent.py on main.jsonl: a=3619.553 (3576.0+43.6) and b=13814.993 (13672.8+142.2). The search cpu_used (1499.3) equals the run sum 1535.6 minus the start runs 36.4, so nothing is counted twice."
+  },
+  {
+   "finding": "minor 66, 180, 189-199: any path accepted; different default ledgers; live.jsonl ahead not checked; amendment 4 not required",
+   "status": "fixed",
+   "evidence": "targets.py:250-251 refuses a non-registered path outside dev; default=guard.working(); guard.same_history is called first (v_t7: live ahead with path=main is refused, histories that differ are refused); targets.py:274-276 requires amendment records 3 and 4 when registration_c is present. What remains is the two-file writer gap (new defect 3)."
+  },
+  {
+   "finding": "note 74-87, 148-152, 214: memory arms depend on whether the external gate ran",
+   "status": "fixed",
+   "evidence": "Listed as 'stated, not changed'. target_done now holds memory_from: in v_t1 it lists 9 categories on the dev prefix, which has no reassign record."
+  },
+  {
+   "finding": "note 106-135, 157-158, 249-250: observations on the matched arms (search insensitive to budget, scoring CPU excluded, shared records, misnamed spend field)",
+   "status": "fixed",
+   "evidence": "Item (4) is fixed: the field is now 'spent' (targets.py:145), and it is the process's own spend for every call site, compute@b included (line 308-309). Items (1) to (3) are properties of the learner or of the kernel and are stated in the README; they were not changed."
+  },
+  {
+   "finding": "note 170-175, 236-251: checked and correct (arms of c, spending of c, reproducibility)",
+   "status": "fixed",
+   "evidence": "Still holds. In v_t1 c:frozen and c:skills alias frozen and skills, and primary_arm_c is c:self when the freeze holds adoptions. spent_by_process_c's regex does not match gate:c:external or recursion: purposes. A restart reproduces the same keys (v_t3)."
+  }
+ ],
+ "new_defects": [
+  {
+   "severity": "major",
+   "file": "rsi6/experiments/targets.py",
+   "line": "223-228",
+   "what": "A target can be declared 'missing' while a reserve with a registered adapter is still unused. check_list only requires the missing category to be a target without an adapter. Nothing requires that no reserve remains, although the docstring (line 49-50) says 'missing ... when no reserve remains'.",
+   "why_it_matters": "Amendment 4 decision 3: genassign takes the role of flow shop if its adapter is admitted. A wrong targets.json that leaves out the replacement makes the irreversible unlock and the whole target test run on three categories. The primary endpoint, the shares of the matched arms (spent/(targets x seeds)) and C6 then change. This is the same class as the confirmed major finding: check_list is the only code-level defence.",
+   "evidence": "v_t5.py, case 'flowshop missing, reserve unused': {admitted:[facility,routing,satisfiability], missing:[{category:flowshop, why:x}]} on the dev prefix -> rc=0; appended unlock (targets [facility, routing, satisfiability], missing [flowshop]), 7 matched, target_done. genassign is in environments.REGISTRY and has effective role 'reserve' with no run.",
+   "suggested_fix": "Refuse a missing entry while any category with effective role 'reserve' and an adapter in environments.REGISTRY is neither used by a replacement in the list nor already used in the ledger. Equivalently, require len(missing) <= max(0, number of missing adapters among the targets minus the number of usable reserves)."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/experiments/targets.py",
+   "line": "206-222",
+   "what": "The replaced side of a replacement is not required to lack an adapter. A target that has an admitted adapter can be replaced by a reserve, and the target that really has no adapter is then declared missing.",
+   "why_it_matters": "This drops a target that amendment 4 says stays (satisfiability, where all arms are expected to score 0). The irreversible unlock is then written for the wrong set, and the primary endpoint and the c success part change. The missing branch refuses a target with an adapter (line 225), but the replacement branch does not, so the guard can be routed around.",
+   "evidence": "v_t5.py, case 'sat (adapter) replaced, flowshop missing': {admitted:[facility,genassign,routing], replacements:[{replaced:satisfiability, reserve:genassign, why:x}], missing:[{category:flowshop, why:x}]} -> rc=0; appended replace(satisfiability->genassign), unlock (targets [facility, genassign, routing]), the full stubbed run and target_done. A second variant, sat->colouring plus flowshop->genassign, is also accepted, but only while colouring is still a reserve, i.e. before external.py's reassign.",
+   "suggested_fix": "In the replacement branch, also refuse when change['replaced'] is in environments.REGISTRY (the same criterion as for 'missing'). Also refuse a replacement whose replaced category is in the admitted list or appears twice."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/experiments/guard.py",
+   "line": "41-49, 56-65, 73-90",
+   "what": "The lock is per file: main.jsonl.lock and live.jsonl.lock. same_history lets a driver run on main.jsonl whenever the two files are equal, so a driver on main.jsonl and a driver on live.jsonl can both hold their locks and append at the same time. checkpoint() takes no lock, so a record that a driver on main.jsonl appends between checkpoint's prefix check and os.replace is lost, and that driver's next append then breaks the chain of main.jsonl.",
+   "why_it_matters": "Both cases fork or break the registered ledger, which the lock was introduced to prevent. Both need a driver started with an explicit --ledger pointing to main.jsonl, which the error text at targets.py:251 offers as valid. A forked history stops every later start ('the two histories differ') and needs manual repair.",
+   "evidence": "v_t7.py: single_writer(main) -> None, then single_writer(live) while main is held -> None (acquired); single_writer(main) again and a symlink to main are refused. same_history(main) with main == live -> None (allowed).",
+   "suggested_fix": "Take one lock for both registered files (e.g. ledger/writer.lock) in single_writer whenever is_registered(path), and take the same lock in checkpoint(). Refuse path == MAIN whenever LIVE exists."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/experiments/guard.py",
+   "line": "35-38, 43",
+   "what": "is_registered and single_writer compare realpath, which does not identify a hard link. A hard link to main.jsonl or live.jsonl counts as a scratch ledger: --dev is accepted on it, same_history is skipped and the lock is taken on a different sidecar file.",
+   "why_it_matters": "--dev would then write development records into the registered file, including a target_done. After that the real target test returns 'the target test is recorded' and never measures. This needs someone to create a hard link, so it is unlikely.",
+   "evidence": "v_t6.py: os.link(fake MAIN, WORK/hard_main.jsonl), then main() with --ledger hard_main.jsonl --dev 1 --targets targets_dev.json -> rc=0; the fake MAIN grew by 52 records (44 runs, 7 matched, 1 target_done).",
+   "suggested_fix": "Compare os.stat(path).st_dev/st_ino (os.path.samefile) with MAIN and LIVE when they exist, in addition to realpath."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/experiments/targets.py",
+   "line": "247-249, 273-287",
+   "what": "--dev skips every new check: the amendment records, check_list, the replace records, the unlock and the comparison with an unlock list. It does not require the dev list to be source categories. On a scratch ledger without a target unlock the role lock still refuses target categories. On a scratch copy of a ledger that already holds the target unlock, --dev with the real list runs the learner on the targets, though it writes only to the scratch file. The development runs in dev_run.log therefore never exercised check_list or the unlock path.",
+   "why_it_matters": "--dev cannot unlock anything and cannot touch a registered ledger except through a hard link (defect above). The dev log is not evidence that the list checks work; only synthetic checks such as these are.",
+   "evidence": "v_t6.py: --dev 1 with the real list on a scratch copy -> PermissionError, 'facility' has role 'target', which is locked; --dev 1 with the real list on a scratch copy holding a target unlock -> rc=0, 78 stub runs on the targets.",
+   "suggested_fix": "In --dev, refuse any listed category whose effective role is not 'source'."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/kernel/ledger.py",
+   "line": "28-32",
+   "what": "A driver killed in the middle of a write leaves a partial last line. Ledger() then fails at json.loads, so targets.py (and every driver) cannot be restarted on that file until the line is removed by hand. guard.checkpoint drops such a line, but the drivers do not.",
+   "why_it_matters": "After the irreversible unlock, a crash in the middle of a write stops the target test until manual repair. Nothing is lost or corrupted. This is not new code.",
+   "evidence": "ledger.py:31: [json.loads(line) for line in handle if line.strip()]; guard.py:77-81 handles the partial line only in checkpoint (v_t7: 'checkpoint, partial last line' -> 12 committed, chain verifies).",
+   "suggested_fix": "Document the repair, or have Ledger refuse with a clear message naming the partial last line."
+  }
+ ]
+}

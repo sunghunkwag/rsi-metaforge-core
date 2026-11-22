@@ -1,0 +1,31 @@
+{
+ "what": "computed outside the ledger on a second machine; not a registered record. The 18 gate runs of the nominee were stopped before they ended",
+ "utc_started": "2026-11-22T13:21:18Z",
+ "utc_stopped": "2026-11-22T13:53:50Z",
+ "generation": 2,
+ "technique": "climb",
+ "incumbent": "7e8fdaf5eaab020c1409bc3bbfad96d6f464e03199122a9d272c366d8715ce9a",
+ "nominee": "13cec8cbdee61acdf719e63fcb7a2be18714130d515aeda4fd8e5ea60f11405b",
+ "set_aside": ["jobshop", "knapsack", "setcover"],
+ "gate_seeds": [2021, 2022, 2023, 2024, 2025, 2026],
+ "harness_reproduces_recorded_gate_c2_single": true,
+ "machine": {"cpus": 2, "workers": 4, "python": "3.13.18", "numpy": "2.5.3"},
+ "incumbent_18_gate_runs_on_this_machine": {
+  "cpu_the_rule_counts": 704.452,
+  "wall_seconds": 454.6,
+  "process_cpu_at_most": 909.2,
+  "note": "cpu_the_rule_counts is acquisition plus answering the fresh instances (kernel/run.py); process CPU also holds building the problems and answering the training instances"
+ },
+ "nominee_18_gate_runs_on_this_machine": {
+  "finished": false,
+  "process_cpu_after_20_minutes_with_nothing_else_running": 2393,
+  "process_cpu_when_stopped": 3726,
+  "note": "process CPU of the four worker processes, read from the system. From minute 20 to minute 22.5 a development smoke run shared the two cores. The pool hands its records over when all 18 runs have ended, so no run record exists"
+ },
+ "process_cpu_ratio_nominee_over_incumbent": {"after_20_minutes": 2.63, "when_stopped": 4.10, "both_are_lower_bounds": true},
+ "cpu_ratio_limit_of_the_rule": 1.15,
+ "cpu_ratio_in_the_rule_s_own_count": "not obtained: it needs the run records",
+ "score_conditions": "not measured",
+ "confirmation": "not run",
+ "reading": "the CPU condition of the gate was out of reach before the runs ended, so the nominee would not be adopted by the registered rule; generation 2 would close with no adoption"
+}

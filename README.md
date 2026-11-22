@@ -1,197 +1,167 @@
 # RSI MetaForge Core
 
-[![Quick CI](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/quick-ci.yml/badge.svg)](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/quick-ci.yml)
-[![Full Evidence](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/full-evidence.yml/badge.svg)](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/full-evidence.yml)
-[![DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/sunghunkwag/rsi-metaforge-core)
+[![CI](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/ci.yml/badge.svg)](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/ci.yml)
+[![RSI-6 tests](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/rsi6-tests.yml/badge.svg)](https://github.com/sunghunkwag/rsi-metaforge-core/actions/workflows/rsi6-tests.yml)
 
-> A research runtime that lets a program **propose, test, and adopt its own improvements** — and only keeps the ones a sealed verifier can't reject.
+An experiment on **recursive improvement of a capability-acquisition mechanism**: one
+learner enters every environment with the same code, modifies its own learning mechanism,
+and keeps a modification only when it passes a gate on kinds of environment the search did
+not see. The environments are published benchmark families from operations research and
+prediction, fetched as data and scored against their published references.
 
-The question this repository is built to answer is not *"can a system look like it's improving?"* but *"is each improvement actually validated, or just plausible?"* Everything here exists to make that distinction measurable.
+**Status: no recursive self-improvement has been observed.** Every number below is in the
+hash-chained ledger [`rsi6/ledger/main.jsonl`](rsi6/ledger/main.jsonl); the full account,
+misses first, is [`rsi6/RESULTS.md`](rsi6/RESULTS.md).
 
-Project write-ups: [research overview](https://sunghunkwag.github.io/research/#program-synthesis) · [recursive self-improvement guide and test checklist](https://sunghunkwag.github.io/research/recursive-self-improvement/).
+## The hypothesis
 
----
+> A system that modifies its own capability-acquisition mechanism, and adopts only
+> independently validated modifications, becomes better at acquiring capabilities in kinds
+> of environment it has never met, at matched compute; and the modified mechanism is also
+> better at producing the next modification.
 
-## How it works
+It fails if the modified mechanism is not better on unseen kinds of environment, or is
+better only by what extra compute, retained solutions, better uninformed search or chance
+explain. The protocol is [`rsi6/RESEARCH_PLAN.md`](rsi6/RESEARCH_PLAN.md); the directive it
+answers is recorded verbatim in [`rsi6/OWNER_DIRECTIVE.md`](rsi6/OWNER_DIRECTIVE.md).
 
-Every change — a synthesized program, a new macro, a forged primitive — goes through the same loop. Nothing is kept unless it survives **hidden, sealed gates** the search never sees.
+## What has been measured
 
-```mermaid
-flowchart LR
-    A[Propose<br/>candidate] --> B[Run in<br/>sandbox]
-    B --> C{Sealed<br/>gates}
-    C -->|pass| D[Adopt &<br/>record lineage]
-    C -->|fail| E[Reject &<br/>roll back]
-    D --> A
-    E --> A
-```
-
-| Guardrail | What it prevents |
-| --- | --- |
-| **Hidden evaluation** | Answers aren't on disk — the search can't peek. |
-| **Frozen baseline** | Every gain is measured against a fixed reference, not itself. |
-| **Rollback on failure** | Speculative changes that fail finalization are reverted. |
-| **Anti-cheat gates** | Train-only fits and weakened verifiers are rejected, not counted. |
-
----
-
-## Results at a glance
-
-A staged research program (Phases 0–J) generalized these gated rules to the top-level searcher — and then to the instruction set itself — measuring every result on **frozen instruments** fixed *before* the runs. Each arm was reproduced twice, byte-for-byte.
-
-```
-Extended ISA (Phase J)  ████████████████████████████   28 / 33   ← T29 · T30 crossed their certificates
-Adaptive (live)         ██████████████████████████     26 / 33   ← T15 · T27 · T28 solved together
-Frozen baseline         ███████████████████            19 / 33
-                        └────────────────────────────┘
-                         designer tasks solved on the frozen Phase 0 instrument
-```
-
-**A separate domain — real file tasks.** The same gated discipline runs on CSV / log / config / repo files, scored by sealed hidden A/B on unseen eval seeds (the hidden expectations never touch the workspace):
-
-```
-File-world (csv_normalize · log_aggregate · config_migrate · repo_repair)
-Adaptive         ████████████████████████████   1.000   ← mean over the four families
-Frozen baseline  ██████                          0.204
-```
-
-Per-family breakdown in [EVIDENCE.md](EVIDENCE.md#file-world-evidence-battery).
-
-- **+7 tasks** over the frozen baseline in Phase I, then **+2 certified-infeasible tasks** in Phase J — none lost, every arm deterministic (two byte-identical runs each).
-- **Open, and labeled honestly:** T18 · T21 · T22 remain unsolved (missing vocabulary); T31 · T32 remain certified out of reach at the certified horizon even in the extended ISA; T29 · T30 crossed — each base-ISA impossibility certificate is committed beside its adopted solution.
-- Predictions were **registered before** the final runs and scored after — misses included, in [`SEQUENCING_RESULT.md`](docs/SEQUENCING_RESULT.md) and [`CROSSING_RESULT.md`](docs/CROSSING_RESULT.md).
-
-**Phase J: the certified boundary, crossed.** The closure certificates define where the base ISA ends; Phase J extended it through the same gate discipline and converted two certified-infeasible tasks into gate-adopted, instrument-verified solutions. From the gap analysis ([`ISA_GAP_J.md`](docs/ISA_GAP_J.md)), a two-primitive extension — `BCAST` (constant broadcast, lemma-justified) and `ZGT` (elementwise order test) — was frozen and user-approved in [`ISA_EXTENSION_SPEC.md`](docs/ISA_EXTENSION_SPEC.md); grants stay dormant by default (the incumbent configuration reproduces the committed Phase I artifact byte for byte) and became permanent only through the unchanged A/B + sealed-holdout discipline. Against pre-registered predictions ([`PREDICTIONS_J.md`](docs/PREDICTIONS_J.md)) and instruments frozen before any run, the crossing arm solved **28/33** (digest `1b36ff714b128546`, two byte-identical runs): **T29** fell at wave 1 with the certified-minimal 6-token program, and **T30** fell at wave 2 by composing the granted `ZGT` with an exploration-origin macro mined from the frozen Track 2 archive — a route no designer witness used. T31/T32 remain honest nulls with quantified bands; each crossed task's base-ISA impossibility certificate and its adopted solution are committed side by side. Full record: [`CROSSING_RESULT.md`](docs/CROSSING_RESULT.md).
-
----
-
-## Domains
-
-The same gated loop is measured across several substrates — not only the integer benchmark:
-
-- **Stack VM (33 integer tasks):** the core RSI-loop measurement baseline — synthesis, macros, and the extended ISA (`--mode demo`, `--mode test`).
-- **General-domain — list / string / grid / record** (Section 11): an oracle-scarce debate pipeline with four strategies — S1 a process scorer (`StepScorer`), S2 committee debate with an adversarial distinguisher, S3 a learned world model (`OpSemanticsModel`), and S4 oracle-free meta-learning config selection with a held-out Goodhart audit (`--mode directive-battery`).
-- **File-world — CSV / JSON / log / repo:** real file I/O scored by sealed hidden A/B; skill proposals mined from failure residues and adopted only through a validation gate (`--mode file-battery`).
-- **Self-forge → GD bridge:** system-synthesized fold primitives, admitted through sealed gates, are registered as general-domain feature atoms that extend the vocabulary the debate pipeline searches (`--mode forge-battery`).
-- **Abstract strategic planning — HDC/VSA + Kuramoto oscillators** (Section 14, *"measured, not mystified"*): an illustrative demo (`--mode hdc-rsi`) that encodes a symbolic action plan into hypervectors, performs analogical transfer via VSA bind/unbind, and selects steps by oscillator phase-locking; the measured interference-field battery is `--mode hdc-battery`.
-- **Self-curriculum — a closed task-generation loop** (Phase SC): the system poses its own tasks (each admitted only with a machine-checked feasibility witness, constructed from invertible primitives), solves them against sealed held-outs under an MDL cap, and composes adopted solutions into harder tasks — zero human-authored tasks added. Fourteen anti-gaming invariants each ship with a dedicated in-suite test — twelve construct the attack outright, determinism is proven by two-run digest identity, budgets are literal-pinned and bound into the source pin — and an append-only hash-chained ledger keeps every failure in the denominator (`--mode self-curriculum`, `--mode sc-battery`). Claim boundary: this is a closed-world compounding *measurement*, not an open-ended autonomy claim — transfer to the frozen human instrument is the pre-registered external test ([`SELF_CURRICULUM_SPEC.md`](docs/SELF_CURRICULUM_SPEC.md), [`PREDICTIONS_SC.md`](docs/PREDICTIONS_SC.md), [`SC_RESULT.md`](docs/SC_RESULT.md)). Phase SC2 makes the fence itself an evolution target: the system invents new task *kinds* as pure data over a human-frozen five-form meta-checker algebra, taps hash-pinned external corpus material, and spans capsule products (`--mode schema-forge`, `--mode sc2-battery`) — with schema admission gated by mutation-kill soundness, discrimination, non-collusion, and novelty checks, and headline credit granted only on measured transfer (I15–I23, [`SELF_CURRICULUM_SPEC_V2.md`](docs/SELF_CURRICULUM_SPEC_V2.md), [`PREDICTIONS_SC2.md`](docs/PREDICTIONS_SC2.md), [`SC2_RESULT.md`](docs/SC2_RESULT.md)). Claim boundary, verbatim from the directive: *the check-form algebra is the new fence. This directive moves the boundary one level up and measures whether the move pays; it does not remove the boundary.*
-- **Witness-sealed setter–solver — the oracle factory** (Ascent Phase K): the system manufactures its own tasks as `(task_spec, checker, witness)` triples — the checker is a budget-capped VM program, the witness is vault-sealed at emission — and admits a task only through four hermetic certificates: sealed-witness feasibility, strategy-level non-triviality against a null battery and a seeded random-program sampler, descriptor-cell novelty, and frozen-frontier difficulty (the current solver snapshot must certifiably fail the task at the frozen instrument budget). The headline event is a *crossing*: an admitted task later solved at the same frozen budget with the task's own mined macros excluded — improvement attributable only to library growth from other tasks. The final record certifies one crossing, credited to its setter lineage through the learnability-band reward, with pose allocation visibly following the credit; nine families remain archived as frontier markers, witnesses still sealed (`--mode ascent-k`, `--mode ascent-k-battery`; [`ASCENT_K_SPEC.md`](docs/ASCENT_K_SPEC.md), [`PREDICTIONS_K.md`](docs/PREDICTIONS_K.md), [`K_RESULT.md`](docs/K_RESULT.md)). Claim boundary: one certified crossing at the frozen budgets is the measured claim; the flywheel's throughput ceiling and the credit-vs-supplier gap are recorded findings, not smoothed curves.
-- **The ascent line, closed end to end** (Phases L–O): a single frozen MDL coding formula judges all vocabulary growth (2 adoptions, 203 exact-bit-delta rejections, and MORE certified crossings than raw adoption at identical budgets — [`L_RESULT.md`](docs/L_RESULT.md)); a proposal-ordering amortizer trained only on the system's own chain-verified ledgers triples certified passes per budget on sealed holdout families, with a failing retrain rolled back on record ([`M_RESULT.md`](docs/M_RESULT.md)); a frozen propositional proof kernel adopts 35 kernel-checked theorems with zero axiom adoptions and countermodel-archived refutations ([`N_RESULT.md`](docs/N_RESULT.md)); and the improver itself becomes a citizen — kernel-certified search transformations through one channel, counterfactual A/B adoptions (including an end-to-end ISA-extender protocol from impossibility pre-certificate to crossing evidence) through the other, with rejections and rollbacks on the same record ([`O_RESULT.md`](docs/O_RESULT.md)). Directive-level scoring, misses included: [`ASCENT_RESULT.md`](docs/ASCENT_RESULT.md).
-- **The ISA-extension coupling loop — does an open closure revive or re-saturate?** (Ascent Phase P): the mechanism a budget ladder cannot substitute for — a coupling loop that feeds K8-gated ISA extension back into K's task factory, so a crossed extension enlarges the closure the setter draws from (extended executor `ak_run_tokens_ext`, provably byte-equivalent to the untouched base executor at the base ISA; a mechanical request locator retargeted to K's own frontier markers; the Phase J speculative-grant discipline as the frozen admission gate K8; an append-only, hash-chained per-generation closure ledger K10). The pre-registered question — revive or re-saturate — is answered by measurement: from a base start under the frozen two-op catalog the trajectory **re-saturates** at exactly the frozen-K ceiling (coupling cum-crossed `[0,3,3,…]` = frozen 3, ISA never grows, at every mining budget), because K's setter never manufactures a task shaped like the capability it lacks — while a designer-stocked positive control certifies the same gate + extended executor DO cross genuine extension-requiring tasks (base 0 → admitted). The instrument budget is set above the extension-crossing search reach, so the null is a closure-shape result, not a budget artifact (`--mode ascent-p`, `--mode ascent-p-battery`; [`ASCENT_P_SPEC.md`](docs/ASCENT_P_SPEC.md), [`PREDICTIONS_P.md`](docs/PREDICTIONS_P.md), [`P_RESULT.md`](docs/P_RESULT.md)). Both outcomes were pre-declared wins; this is the definitive "even an open closure with a self-driven extender saturates" result. Claim boundary: exactly the gate-certified trajectory, bounded by the frozen catalog; no AGI / singularity / unbounded-capability claim.
-
----
-
-## Program-synthesis packages: RSI-2 and RSI-3
-
-Two standalone packages ask the same question on an external corpus (60 DreamCoder list-processing tasks; TRAIN 36 / VALIDATION 12 / sealed TEST 12) without importing the unified runtime. Both report their headline criteria as measured, misses included.
-
-| Package | What it tests | Measured outcome |
+| Process | What could be modified | Outcome |
 | --- | --- | --- |
-| [`rsi2/`](rsi2/) | A typed functional DSL with wake–sleep library learning, a recognition model, and a search heuristic the system synthesizes for itself | Null: 2/12 TEST on every arm and seed; no library entry and no heuristic adopted; criteria (a)–(e) fail ([`rsi2/RESULTS.md`](rsi2/RESULTS.md)) |
-| [`rsi3/`](rsi3/) | A memory-feedback core on RSI-2's frozen synthesizer: a frozen external verifier with receipts, episodic memory, a replay-trained value model, a budget controller, dormant pathways created from verified solutions, resumable search, and a binding integrator | First study: learned controller null, 6/36 TRAIN on every seed, equal to RSI-2; resumption alone with an even budget split, 7/36; all five pre-registered comparisons fail ([`rsi3/RESULTS.md`](rsi3/RESULTS.md)). Failure-memory study: keeping each task's public failures across grammar changes and pathways reaches **8/36 on every seed** at the same budget; the learned controller rises to 7/8/7, and a pathway created from the system's own earlier solution produces a verified solve on every seed; all 12 pre-registered predictions hit ([`rsi3/FAILURE_MEMORY_RESULTS.md`](rsi3/FAILURE_MEMORY_RESULTS.md)). VALIDATION unchanged in both studies |
+| Rounds 1 and 2 (first design) | a version record of 38 fields written by the experimenter | 4 nominees (the learner's own and a random proposer's, in each round); none passed its gate |
+| Round b1 (second design) | the same kind of record, redesigned | 2 nominees; none passed. At equal counted units the redesign acquired no more than the first design and cost 1.3 to 3.8 times the CPU |
+| Process c (four techniques in turn) | the 38-field record | generation 1 adopted one version provisionally (7 fields; gate +0.0176 with lower bound +0.0066, confirmation +0.0035). Generation 2, from the adopted version: three nominees did not pass; the fourth has no registered gate yet, and computed outside the ledger it costs at least 2.6 times the incumbent's CPU where the rule allows 1.15. Stopped there; six generations are registered |
+| Open design | the learner's representation and its learning principle, as programs of a small vector machine; in the recursive arm each accepted mechanism re-learns how the next candidates are generated | 152 discovery steps, 912 candidates, 18 confirmations, **0 accepted** in every arm. The recursion was never exercised |
+| Relay (design r) | the discovery machinery, rebuilt at every acquisition from the learner's own record | development only. Its second development check is negative: on a category it had not met, the learner carrying the relay's memory acquired 0.0078 less than the learner carrying nothing (24 chains, 80% interval −0.0147 to −0.0010). Not registered, not run |
 
-RSI-3 replicates RSI-2's measured waste exactly — 99.1% of RSI-2's wake candidates go to tasks it leaves unsolved — and records its open problems as target properties with criteria. Its choice of experience replay over parameter anchoring comes from a separate regulation study ([`rsi3/studies/REGULATION_TOY_RESULTS.md`](rsi3/studies/REGULATION_TOY_RESULTS.md)). Predictions were committed before each study's final runs ([`rsi3/PREDICTIONS.md`](rsi3/PREDICTIONS.md), [`rsi3/PREDICTIONS_FAILURE_MEMORY.md`](rsi3/PREDICTIONS_FAILURE_MEMORY.md)).
+Not run yet: the external gate of process c, the recursion check, and the test on the
+sealed target categories that decides the hypothesis.
+
+What limits the result, as measured (details in `rsi6/RESULTS.md`):
+
+* Modifications found on one set of categories did not carry over to new ones. Every
+  nominee the learner found by following its own measurements lost on the gate categories;
+  the two that came closest were single-field changes proposed at random.
+* In the open design almost every edit of a program made the learner worse (mean effect
+  -0.018 against a one-seed noise of 0.009), and the few that looked better on the
+  discovery seeds were not better on fresh seeds (+0.0080 against +0.0000).
+* The versions of the first three processes are points of a closed list. The improver
+  chooses among values; it cannot write a mechanism that is not on the list.
+* Every environment is an assignment problem or a prediction problem in one generic form.
+  Nothing is claimed about software, proof, planning or judgement: they are not in the
+  experiment.
+
+## The learner and its interface
+
+The learner (`rsi6/learner/`) sees no environment by name. The kernel
+(`rsi6/kernel/problem.py`) presents every instance in one of two generic forms: an
+*assignment* problem (variables take options; the published objective and constraints appear
+as term groups with exact incremental totals) or a *prediction* problem (observed entities
+with targets, query entities to predict). Entity order and labels are permuted on every run.
+Compute is enforced in counted work units and measured in CPU-seconds. No code of the
+experiment calls a language model or executes third-party code.
+
+Three numbers are measured on fresh instances, never on training ones: *untrained* (the
+learner's uninformed behaviour), *acquired* (after acquisition) and *gain* (the difference).
+
+## Environments
+
+Adapters exist for 19 published benchmark families. Data are not committed: `rsi6/fetch.py`
+downloads each file from its publisher and pins it by SHA-256 in
+[`rsi6/environments/manifests/`](rsi6/environments/manifests/).
+
+| Role | Categories | Source |
+| --- | --- | --- |
+| source | bin packing, job shop, forecasting | OR-Library, JSPLIB, M4 |
+| adoption sets 1 to 3 (used once as gates, then joined the pool) | quadratic assignment, p-median; multidimensional knapsack, regression; set covering, graph partitioning | QAPLIB, OR-Library, SRSD-Feynman, DIMACS |
+| targets (sealed; no learner has run on them) | satisfiability, vehicle routing, facility location, generalised assignment | SATLIB, CVRPLIB, OR-Library |
+| reserves (external gate of process c; no learner has run on them) | travelling salesman, graph colouring | TSPLIB, DIMACS |
+| fresh (held out for the relay experiment; no learner has run on them) | weighted tardiness, quadratic 0-1, project scheduling, maximum clique | OR-Library, Biq Mac, PSPLIB, DIMACS |
+
+Learner runs recorded so far: 9,118, all on the nine source and adoption categories.
+
+## Reproduce
+
+Python 3.13 and NumPy; nothing else.
 
 ```bash
-pip install numpy   # rsi2/ and rsi3/ need NumPy; the unified runtime does not
+pip install numpy
 export PYTHONPATH=$PWD OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
-python -m unittest discover -s rsi2/tests        # 470 tests
-python -m unittest discover -s rsi3/tests -t .   # 39 tests
-python -m rsi3.experiment --config rsi3/experiment_config.json --output NEW_EMPTY_DIR
-python -m rsi3.experiment --config rsi3/experiment_config_failure_memory.json --output NEW_EMPTY_DIR2
+
+python -m rsi6.tests.test_kernel         # kernel, adapters and the learner's contract (fetches the data)
+python -m rsi6.tests.test_fresh          # the adapter checks on the fresh categories
+python -m rsi6.tests.test_design_q
+python -m rsi6.tests.test_design_r
+python -m rsi6.tests.test_relay
+
+python -m rsi6.experiments.report        # every number of the rounds, from the ledger
+python -m rsi6.experiments.replay        # every search again, from the ledger alone
+python -m rsi6.open.report               # every number of the open experiment
+python -m rsi6.open.diagnose --ledger rsi6/ledger/main.jsonl   # what limited its discovery
 ```
 
----
+## Layout
 
-## What this is — and isn't
-
-| It is | It is not |
-| --- | --- |
-| Bounded, validation-gated self-modification | A general-intelligence claim |
-| A reference harness for verifier discipline | Proof of unrestricted recursive self-improvement |
-| Reproducible, gate-checked, artifact-backed | A drop-in production code-evolution system |
-| Multi-domain verifier (list / string / grid / record / file) | A single-domain benchmark |
-| Cross-substrate lesson transfer (VM → general-domain) | Domain-specific tuning |
-
-Full claim boundary and public validation record: **[EVIDENCE.md](EVIDENCE.md)**.
-
----
-
-## Quick start
-
-Single-file runtime, standard library only — no install step.
-
-```bash
-# See it run
-python rsi_levels_metaforge_unified.py --mode demo
-
-# Reproduce the headline comparison
-python rsi_levels_metaforge_unified.py --mode crossing-anchor   # extended ISA (Phase J)
-python rsi_levels_metaforge_unified.py --mode transfer-anchor   # adaptive (live)
-python rsi_levels_metaforge_unified.py --mode run-frozen        # frozen baseline
-
-# Run the full test suite (270 tests)
-python rsi_levels_metaforge_unified.py --mode test
+```
+rsi6/
+  OWNER_DIRECTIVE.md   the research directive and every later instruction, verbatim
+  RESEARCH_PLAN.md     the protocol
+  RESULTS.md           what was measured, misses first
+  kernel/              problem forms, environment contract, measured runs, ledger, role locks
+  learner/             the learner: first and second design, the open design (o), designs q and r
+  meta/                the space of versions and the rounds of self-modification
+  experiments/         drivers of the registered rounds, process c, external gate, recursion check, target test
+  open/                discovery of mechanisms for the open design; the relay driver and report
+  environments/        adapters and data manifests of the 19 benchmark families
+  registry/            registrations, amendments, roles, corrections (written before the runs they govern)
+  runs/                plans for long runs on GitHub-hosted runners (.github/workflows/rsi6-runs.yml)
+  ledger/main.jsonl    append-only, hash-chained record of every run and decision
+  results/             reports printed from the ledger, development records, the check on a second machine
+  audit/               records of independent reviews and audits
+  tests/
+docs/                  governance records: work orders, a draft amendment, the outer-loop ledger
+OUTER_LOOP_CONSTITUTION.md
 ```
 
-<details>
-<summary>More modes (evidence batteries, help)</summary>
+## What is not claimed
 
-```bash
-python rsi_levels_metaforge_unified.py --mode file-battery      # hidden A/B on real file tasks (csv, log, config, repo)
-python rsi_levels_metaforge_unified.py --mode forge-battery     # self-synthesized primitives lifted into the GD pipeline
-python rsi_levels_metaforge_unified.py --mode horizon-scan      # closure certificates
-python rsi_levels_metaforge_unified.py --mode cfs-battery       # continuous functional substrate search
-python rsi_levels_metaforge_unified.py --mode expansion-battery # residue-driven vocabulary expansion
-python rsi_levels_metaforge_unified.py --mode grammar-battery   # depth-1 grammar feature search
-python rsi_levels_metaforge_unified.py --mode grammar2-battery  # depth-2 grammar feature search
-python rsi_levels_metaforge_unified.py --mode self-curriculum   # closed self-curriculum loop (demo)
-python rsi_levels_metaforge_unified.py --mode sc-battery        # self-curriculum evidence battery
-python rsi_levels_metaforge_unified.py --mode schema-forge      # fence-expansion schema forge (demo)
-python rsi_levels_metaforge_unified.py --mode sc2-battery       # fence-expansion evidence battery
-python rsi_levels_metaforge_unified.py --mode ascent-k          # witness-sealed setter-solver (demo)
-python rsi_levels_metaforge_unified.py --mode ascent-k-battery  # ascent phase K evidence battery
-python rsi_levels_metaforge_unified.py --mode ascent-l-battery  # MDL master gate battery
-python rsi_levels_metaforge_unified.py --mode ascent-m-battery  # ledger-trained amortizer battery
-python rsi_levels_metaforge_unified.py --mode ascent-n-battery  # proof kernel & formal domain battery
-python rsi_levels_metaforge_unified.py --mode ascent-o-battery  # meta-improvement (two channels) battery
-python rsi_levels_metaforge_unified.py --mode ascent-p          # ISA-extension coupling loop (demo)
-python rsi_levels_metaforge_unified.py --mode ascent-p-battery  # ISA-extension coupling loop battery
-python rsi_levels_metaforge_unified.py --mode crossing-anchor   # Phase J: live arm + capability-grant channel
-python rsi_levels_metaforge_unified.py --help                   # everything else
-```
+* No recursive self-improvement was observed.
+* An adoption inside process c is provisional and is not evidence of improvement on unseen
+  categories; that is decided once, on the reserves and the sealed targets.
+* The thresholds are operating points chosen before the runs, not external facts.
+* Nothing here is evidence about artificial general intelligence.
 
-</details>
+## Governance
 
----
+The repository is run under [`OUTER_LOOP_CONSTITUTION.md`](OUTER_LOOP_CONSTITUTION.md):
+work orders are approved by the Owner, predictions are registered before final runs, and
+misses are scored, not reinterpreted. The constitution and its two earliest drafts
+(`docs/amendments/A1_learned_proposal_layer.md`,
+`docs/work_orders/WO-1_phase_r_learned_proposal_layer.md`) were written for the earlier
+runtime and still refer to it; they are kept unchanged because only the Owner amends them.
 
-## Continuous validation
+## Earlier work
 
-Two workflows keep the claims honest on every change:
+Until 2026-11-22 this repository also held the earlier program-synthesis line of the
+project: a stack-VM runtime on integer-list tasks (`rsi_levels_metaforge_unified.py`,
+Phases 0 to P) and the packages RSI-2, RSI-3 and RSI-5 on DreamCoder's list tasks. They were
+removed from the tree by the Owner's instruction of that date
+(`rsi6/OWNER_DIRECTIVE.md`, instruction 15) so that the repository is about one question.
+Nothing was rewritten: the complete earlier tree, with its results and its negative
+findings, stays in the history.
 
-- **Quick CI** — compiles the runtime, checks the CLI, runs anti-cheat guards. Fast, on every push.
-- **Full Evidence** — runs every evidence battery (including the self-curriculum, fence-expansion, and all five ascent batteries twice each, asserting byte-identical digests and artifact equality) plus the full 270-test suite, then uploads the logs and JSON artifacts. Green means the whole record reproduced on a clean machine.
+* [`c4f0a86`](https://github.com/sunghunkwag/rsi-metaforge-core/tree/c4f0a8627a1c9f37dd3aa6291b0eee0c78648210):
+  the unified runtime, `EVIDENCE.md`, the Phase 0 to P records under `docs/`, RSI-2 and the
+  first two studies of RSI-3.
+* [`572100d`](https://github.com/sunghunkwag/rsi-metaforge-core/tree/572100d05234b5d48f4ce01b34c28a87bc8ad0d0): the same, with
+  the later studies of RSI-3, RSI-5 and the exploratory loops.
 
----
+## Support
 
-## Learn more
-
-Explore interactively on **[DeepWiki](https://deepwiki.com/sunghunkwag/rsi-metaforge-core)**, or read the reviewer docs:
-
-| Doc | Answers |
-| --- | --- |
-| [Overview](docs/00_overview.md) | Where do I start? |
-| [Architecture](docs/01_architecture.md) | How is it built? |
-| [RSI Loop](docs/02_rsi_loop.md) | Where is the self-improvement loop? |
-| [Validation Gates](docs/03_validation_gates.md) | How is cheating prevented? |
-| [Evidence Logs](docs/04_evidence_logs.md) | What was actually shown? |
-| [Limitations](docs/05_limitations.md) | Where does it stop? |
-| [General-Domain RSI](rsi_levels_metaforge_unified.py) | What domains beyond integer tasks are covered? (Section 11, line ~3384) |
-| [RSI-2](rsi2/RESULTS.md) | Does a self-improving program synthesizer compound on external tasks? |
-| [RSI-3](rsi3/ARCHITECTURE.md) | Does memory-regulated compute allocation change verified capability? |
-
-The Phases 0–I record — frozen instruments, registered predictions, per-phase reports, and final evaluations — lives under [`docs/`](docs/), starting from [`SEQUENCING_RESULT.md`](docs/SEQUENCING_RESULT.md). The Phase J record (certified-boundary crossing) runs from the gap analysis ([`ISA_GAP_J.md`](docs/ISA_GAP_J.md)) and the frozen, user-approved extension spec ([`ISA_EXTENSION_SPEC.md`](docs/ISA_EXTENSION_SPEC.md)) through the frozen evaluation instrument ([`frozen_holdout_extJ.json`](docs/frozen_holdout_extJ.json)), the pre-registered predictions ([`PREDICTIONS_J.md`](docs/PREDICTIONS_J.md)), and the final result with its committed artifact ([`CROSSING_RESULT.md`](docs/CROSSING_RESULT.md), [`final_live_phaseJ.json`](docs/final_live_phaseJ.json)).
+See [FUNDING.md](FUNDING.md).
 
 ---
 
-<sub>Maintained as a research artifact. Results, terminology, and implementation are experimental, bounded, and subject to revision.</sub>
+<sub>Intelligence Research Project. A research artifact: results, terminology and
+implementation are experimental and subject to revision.</sub>

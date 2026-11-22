@@ -1,0 +1,175 @@
+{
+ "categories": [
+  "jobshop",
+  "knapsack",
+  "pmedian",
+  "quadassign"
+ ],
+ "noise_var_one_seed": {
+  "jobshop": 0.0003688041530368984,
+  "knapsack": 0.00015082833046150545,
+  "pmedian": 4.6272449620528614e-05,
+  "quadassign": 0.0006689747806998798
+ },
+ "all candidates": {
+  "n": 741,
+  "rho": {
+   "jobshop~knapsack": 0.19747384978553761,
+   "jobshop~pmedian": 0.3459784830786076,
+   "jobshop~quadassign": 0.08541382150385435,
+   "knapsack~pmedian": 0.7463278542051139,
+   "knapsack~quadassign": 0.3055020225321735,
+   "pmedian~quadassign": 0.1598431919501848
+  },
+  "raw_correlation": {
+   "jobshop~knapsack": 0.1595867986290222,
+   "jobshop~pmedian": 0.28590974151914295,
+   "jobshop~quadassign": 0.05305002743018605,
+   "knapsack~pmedian": 0.7279238526382459,
+   "knapsack~quadassign": 0.22394841180118621,
+   "pmedian~quadassign": 0.11981757716834684
+  },
+  "degenerate": [],
+  "interval": {
+   "jobshop~knapsack": [
+    0.06492375281447375,
+    0.32493932519960556
+   ],
+   "jobshop~pmedian": [
+    0.21788419110611346,
+    0.46833999138218274
+   ],
+   "jobshop~quadassign": [
+    -0.0240598378878703,
+    0.18888991983359205
+   ],
+   "knapsack~pmedian": [
+    0.6690657316939954,
+    0.8120763651740341
+   ],
+   "knapsack~quadassign": [
+    0.20194146109399919,
+    0.42146636088991574
+   ],
+   "pmedian~quadassign": [
+    0.042051587289551655,
+    0.2770027406827064
+   ]
+  },
+  "covariance": [
+   [
+    0.00117,
+    0.000312,
+    0.001293,
+    7.1e-05
+   ],
+   [
+    0.000312,
+    0.003266,
+    0.0055,
+    0.000501
+   ],
+   [
+    0.001293,
+    0.0055,
+    0.017479,
+    0.00062
+   ],
+   [
+    7.1e-05,
+    0.000501,
+    0.00062,
+    0.001532
+   ]
+  ],
+  "true_sd": {
+   "jobshop": 0.028301072707587506,
+   "knapsack": 0.05581094451176363,
+   "pmedian": 0.13203492276523,
+   "quadassign": 0.02938033249547661
+  },
+  "mean": {
+   "jobshop": -0.000685765449604249,
+   "knapsack": -0.02223952999095508,
+   "pmedian": -0.04243482488638178,
+   "quadassign": -0.008324092848482345
+  }
+ },
+ "mild cells (chosen in advance)": {
+  "n": 213,
+  "rho": {
+   "jobshop~knapsack": 1.2835470040830317,
+   "jobshop~pmedian": 1.03187008032714,
+   "jobshop~quadassign": null,
+   "knapsack~pmedian": 1.225286884112399,
+   "knapsack~quadassign": null,
+   "pmedian~quadassign": null
+  },
+  "raw_correlation": {
+   "jobshop~knapsack": 0.7440023128291716,
+   "jobshop~pmedian": 0.8618938771600857,
+   "jobshop~quadassign": 0.1667834799446054,
+   "knapsack~pmedian": 0.8348996914046233,
+   "knapsack~quadassign": 0.3589257664159782,
+   "pmedian~quadassign": 0.16508424659460533
+  },
+  "degenerate": [
+   "quadassign"
+  ],
+  "interval": {
+   "jobshop~knapsack": [
+    0.9881640477240277,
+    7.9659409288179
+   ],
+   "jobshop~pmedian": [
+    0.9750157440003586,
+    1.165137701841478
+   ],
+   "jobshop~quadassign": null,
+   "knapsack~pmedian": [
+    0.9794825002093498,
+    7.277409886368519
+   ],
+   "knapsack~quadassign": null,
+   "pmedian~quadassign": null
+  },
+  "covariance": [
+   [
+    0.001274,
+    0.000449,
+    0.001555,
+    0.00012
+   ],
+   [
+    0.000449,
+    0.000286,
+    0.000714,
+    0.000122
+   ],
+   [
+    0.001555,
+    0.000714,
+    0.002555,
+    0.000168
+   ],
+   [
+    0.00012,
+    0.000122,
+    0.000168,
+    0.000404
+   ]
+  ],
+  "true_sd": {
+   "jobshop": 0.030089062806430433,
+   "knapsack": 0.011631682934613686,
+   "pmedian": 0.050087799284660735,
+   "quadassign": 0.0
+  },
+  "mean": {
+   "jobshop": 0.001140317287477172,
+   "knapsack": -0.0027250405968929246,
+   "pmedian": -0.006618665471353834,
+   "quadassign": 0.014796055896971538
+  }
+ }
+}

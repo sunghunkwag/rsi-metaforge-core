@@ -1,0 +1,134 @@
+{
+ "summary": "The recursion pathway does what it claims, which I checked by reading the code and with a stubbed run (a fake cache returned made-up records; no learner ran; scripts are in work_b/stub.py and work_b/checks.py). In the recursive arm the discoverer is rebuilt on each accepted mechanism's init/propose/update programs. In the frozen and shuffled arms it is rebuilt on the starting mechanism's programs, at the same moments. Uniform never learns. Shuffled permutes the feedback but also uses generation 0's principle, so it is a control for weight learning, not for the recursion. The stub found 0 cases where the principle in use did not match the arm. Recursive and frozen produced identical records up to the first acceptance that changed a principle program. After that, the only difference was the principle used.\n\nThe main problems are in selection:\n- **Noise acceptance:** confirmation only requires a positive sign on 2 seeds. Under a pure-noise stub, 41% of confirmation attempts passed and 7.6% of steps accepted a candidate.\n- **Confirmation is not on fresh instances:** the train/fresh split does not depend on the seed, so confirmation uses the same instances as selection. The kernel's held-out half \"B\" is never used.\n- **Growth edits are not neutral:** \"term\"/\"cross\" add a dimension, which re-rolls the learner's random draws, and can load the noise sensor. They act like reseeds.\n- **Behaviour key:** it ignores constants that no live instruction reads, but the mean/norm ops in the learning programs still read them. Two mechanisms that behave differently can share a key. The memo, shared across lineages, then serves one's score for the other.\n- **Dead code in learning programs:** it is not stripped, so a behaviour-identical candidate counts as new. The dev ledger has one that scores exactly the parent's 0.6965102983628095.\n- **CPU guard:** it compares against the starting mechanism, never the parent, so each acceptance may use up to 25% more CPU.\n- **Parent score:** after an acceptance it is the selected, upward-biased value. Later steps, migration and the final report all use it.\n- **Records:** they cannot link rejected candidates to their runs. They do not record the confirmation seeds, the absolute values, the CPU-guard cause or the feedback vector given to the learner. The o_migrate record lacks the step, the adopted mechanism and what was transferred.\n\napply_edit never raised in 6000 random edits: each produced a valid mechanism or None. Library blocks and migration carry only validated, generic instructions, knobs and weights. I found no path to the held-out categories.",
+ "checks_run": [
+  "Read rsi6/open/discovery.py, edits.py, run_dev.py in full; read design_o.py (validate, live, compile_vector_program, Sensors, Acquirer, _avec, _acquire_open), kernel/run.py (measure, key_of, Cache), kernel/environment.py split, kernel/ledger.py append",
+  "Stubbed run (work_b/stub.py): fake Cache.get returning made-up records (acquired = 0.7 + 0.01*N(0,1) per digest/seed/env), fake ledger; 4 arms x 2 lineages x 40 steps with migration; asserted after every step that D.principle.g's init/propose/update equal the parent's (recursive) or start's (frozen/shuffled): 0 mismatches in all arms",
+  "Recursive vs frozen with identical seeds, 1 lineage, 25 steps: records identical (ignoring name/mode/principle_of) until record 12, right after the first acceptance that changed 'propose' (record 10)",
+  "Null false-acceptance estimate: frozen arm, 30 salts x 15 steps: 450 steps, 82 confirmation attempts, 34 acceptances (confirmation pass rate 0.41, 7.6% of steps)",
+  "Behaviour-key counterexample: init ['ones',1,0,0],['mean',1,0,0] plus an unused 11th constant set to 0.0 vs 40.0: behaviour equal, digest different, Acquirer step size on dim 0 -0.909 vs 2.727, proposals differ",
+  "Dead update instruction ['sq',3,7,5]: behaviour key differs from parent; dev_o1.jsonl shows a candidate with an update-only edit scoring 0.6965102983628095 == parent_score",
+  "Fuzz of apply_edit: 6000 random edits with library splicing: 4825 valid (validate idempotent), 1175 None, 0 exceptions",
+  "term/cross value-neutrality on deterministic sensors: 300 edits, max change of register 0 = 0.0; 27/400 term blocks load the 'noise' sensor",
+  "Confirm-seed stride check with 3 confirm seeds: [[101,102,103],[103,104,105],...] overlap",
+  "Inspected dev_o1.jsonl o_step/o_accept/o_migrate field sets"
+ ],
+ "findings": [
+  {
+   "severity": "major",
+   "file": "rsi6/open/discovery.py",
+   "line": "182-193",
+   "what": "Acceptance can be driven by noise alone much more easily than the docstring implies. The margin (0.002) is applied to a value that includes the screen seed, on which the candidate was already selected for being positive (winner's curse). The confirmation only requires s2 - p2 > 0 on 2 seeds. It has no margin and no test of size relative to seed noise, so under the null it passes about half the time. The best of up to 10 candidates is the one confirmed.",
+   "why_it_matters": "Accepted mechanisms, and in particular the principle changes that drive the recursive arm, can be pure noise. Counts of acceptances, discovery-seed gains, and how much each arm's principle changed are then not evidence for claims (1) or (2).",
+   "evidence": "Stub with pure-noise scores (no candidate truly differs from its parent), frozen arm, 30 salts x 15 steps: 82 confirmation attempts, 34 accepted (pass rate 0.41), 7.6% of steps accept a candidate. The dev ledger's only o_accept has value 0.00308 (margin 0.002) and confirmation 0.0012.",
+   "suggested_fix": "Require confirmation to clear a margin scaled to the measured seed-to-seed SD of paired differences, or use a sequential/paired test with a pre-set error rate. Exclude the screen seed from the promoted value, or correct for selection. Calibrate the false-acceptance rate per step with a null run (e.g. candidates that are reseeded copies of the parent) and record it."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/open/discovery.py",
+   "line": "187-192 (with rsi6/kernel/run.py:80-82, rsi6/kernel/environment.py:61-84)",
+   "what": "Confirmation seeds are not fresh instances. split(env, n_train, n_fresh) does not depend on the seed, and SEARCH_BUDGET has part 'A', so every discovery and confirmation run scores the same part-A fresh instances. A seed only changes the relabelling and the learner's random draws. The kernel's held-out half (part 'B', meant to 'confirm afterwards') is never used by discovery.",
+   "why_it_matters": "Confirmation cannot detect specialisation to the fixed discovery instance set, which the comment at line 186 implies it does. Accepted mechanisms are selected and confirmed on the same 12 fresh instances per category.",
+   "evidence": "run.py:80 'train_ids, fresh_ids = split(env, budget[\"n_train\"], budget[\"n_fresh\"])' takes no seed. environment.py:64 says 'every version and every seed is scored on the same fresh instances'. discovery.py:39 sets part 'A' for all jobs, including confirmation.",
+   "suggested_fix": "Confirm with budget part 'B' (instances not selected on), in addition to fresh seeds. Say in the docs that seeds alone vary only learner randomness."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/open/edits.py",
+   "line": "107-125, 162-174",
+   "what": "The 'term'/'cross' (and 'grow') edits are not neutral before learning in the sense claimed ('It changes nothing until the learning principle moves the new constant'). Adding a constant increases d. The learner's population draws rng.standard_normal((K, d)) (design_o.py:598), so the noise of every row and dimension changes and the learned trajectory is re-rolled. A term block that loads the 'noise' sensor also consumes the construction rng (design_o.py:414, 445), which shifts all later random draws. 'grow' multiplies or overwrites a register with a random N(0,1) constant, so it is not neutral at all.",
+   "why_it_matters": "These edits act as reseeds of the learner while being recorded as structural additions (o_accept 'edits'). Combined with the sign-only confirmation, they give a cheap way to accept noise, and the records make that look like a discovered representation change. The dev ledger's one acceptance is a pick 'term' plus an update delete.",
+   "evidence": "checks.py: the register-0 value is unchanged (max diff 0.0 over 300 term/cross edits on deterministic sensors), but 27/400 term blocks load the noise sensor. Acquirer.propose draws (K, d) normals, so changing d changes the draws of every row after the first.",
+   "suggested_fix": "State the neutrality claim correctly. Exclude 'noise' from term/cross loads, or draw sensor noise from a separate stream. Draw the population noise per dimension from independent streams, so that adding a dimension leaves existing dimensions' draws unchanged. Add a reseed-only null candidate class to calibrate."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/open/edits.py",
+   "line": "187-201 (used in discovery.py:103-115, 131-133, 138)",
+   "what": "The behaviour key treats mechanisms that behave differently as identical. effective() zeroes constants that no live score/pick instruction reads, but theta is also the learner's starting vector (design_o.py:694, 698). The init/propose/update ops 'mean' and 'norm' (design_o.py:515-519) mix all dimensions, so unread constants change the learning of the read ones. The memo is keyed by (behaviour, seeds) and shared across lineages (run_dev.py:63-66). A candidate can therefore be scored with another mechanism's records, and a genuinely different candidate is skipped as 'seen'.",
+   "why_it_matters": "A score in o_step/o_accept can belong to a different mechanism (different digest) than the one recorded and later evaluated. Re-running the accepted digest would give different numbers. This can happen once an edit inserts mean/norm into a learning program (both are in A_UNARY, which random_instruction can draw).",
+   "evidence": "checks.py: init [['ones',1,0,0],['mean',1,0,0]] with an unread 11th constant of 0.0 vs 40.0 gives the same behaviour key and different digests. Acquirer step size on used dim 0 is -0.909 vs 2.727, and the proposals differ.",
+   "suggested_fix": "Zero unread constants only when no learning program contains a dimension-mixing op, or keep the values in the key. Key the memo by digest, or by (behaviour, envs, seeds, budget), and record which digest's runs supplied each score."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/open/discovery.py",
+   "line": "107, 164, 174, 192",
+   "what": "The CPU guard's reference is the lineage's starting mechanism, measured once (possibly a cached record from another session or load). It is never the parent. The parent's CPU on the confirmation seeds is measured and discarded (p2, _). Each accepted mechanism may use up to 1.25 times the start's CPU, and so up to 25% more than its parent. The extra CPU can go to operations the unit meter does not count (e.g. neigh/usedrel sensor upkeep).",
+   "why_it_matters": "During discovery a gain can come from more compute without being refused, which contradicts 'so that a gain cannot come from more compute' (docstring lines 21-22). Claim (1) at matched CPU then depends entirely on evaluate.py's compute-matched control. CPU-seconds measured under a concurrent experiment also make the guard itself noisy.",
+   "evidence": "Line 107: reference_cpu = start's cpu. Line 164: 'cpu <= CPU_RATIO * self.reference_cpu * share'. Line 190: 'p2, _ = self.measure(self.parent, ...)' drops the parent's CPU.",
+   "suggested_fix": "Compare the candidate's CPU with the parent's on the same seeds (paired), with a cumulative cap relative to generation 0. Record both CPUs and the ratio in o_step."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/open/discovery.py",
+   "line": "203-205, 229-239",
+   "what": "After an acceptance, parent_score is the candidate's own promoted measurement on the discovery seeds. That value was selected as the maximum over the promoted candidates and as at least the margin, and it includes the screen seed it was selected on. It is never re-measured. It is the baseline for all later values, the key by which migrate picks the 'best' and 'worst' lineages, the score handed to the worst lineage, and the 'final' reported by run_dev.",
+   "why_it_matters": "Reported discovery-seed trajectories are biased upward, and migration selects lineages partly by luck. Later steps measure against an inflated baseline, which changes the acceptance rate over time in a way unrelated to capability.",
+   "evidence": "accept(): 'self.parent_score, _ = self.measure(mechanism, \"accepted\")' is a memo hit on the promoted measurement. migrate(): 'order = sorted(lineages, key=lambda L: L.parent_score)'.",
+   "suggested_fix": "Re-measure an accepted parent on seeds not used in its selection before it is used as a baseline or for migration, or use the confirmation-seed paired difference."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/open/discovery.py",
+   "line": "166, 176, 191, 194-198, 219-221, 243",
+   "what": "The records are not sufficient to reproduce or audit the decisions:\n- **o_step rows:** they hold only a 16-hex prefix of the behaviour key, with no digest or mechanism, so rejected candidates cannot be linked to their run records or rebuilt. They do not record the screen seed, the discovery seeds, the confirmation seeds, parent_screen, s2/p2, cpu2, the CPU reference or ratio, whether rejection came from the confirmation sign or the CPU guard, the promoted set, or the fitness vector actually given to the learner (with the floor values and, in the shuffled arm, the permutation).\n- **principle_of:** it is taken after the rebuild and hashes the whole mechanism, so it names the next step's principle and changes on any acceptance, even one that leaves the learning programs unchanged.\n- **Purposes:** confirmation runs are labelled 'step{t}', not 'confirm{t}', because _batch runs them first and the Cache key ignores the purpose.\n- **o_accept:** it lacks the parent's digest, the confirmation seeds and the mode.\n- **o_migrate:** it lacks the step, the adopted mechanism and its digest, the transferred weights and library, the mode, and the worst lineage's previous parent and score.",
+   "why_it_matters": "A registered discovery path cannot be checked or replayed from the ledger. Whether a principle actually changed (claim 2) cannot be read from principle_of.",
+   "evidence": "Line 166: rows hold 'key': key[:16]. Line 191: only 'confirmation': s2-p2 is stored. Line 196: 'principle_of': self.D.source[:16] is built after accept() rebuilt D. Line 243: o_migrate holds only from/to/knobs/score. Dev ledger o_step keys: accepted, candidates, knobs, library, lineage, mode, parent, parent_score, principle_of, step, type, weights.",
+   "suggested_fix": "Record per candidate the digest (and the mechanism, or the edit list plus the rng state). Record the seeds of each stage, parent_screen, s2/p2/cpu2/cpu_parent, the reject reason, the F vector after the floor and permutation, and a hash of the principle programs used for learn(), taken before the rebuild. Label confirmation runs. Add the step, digest, weights and library hash to o_migrate."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/open/edits.py",
+   "line": "187-201",
+   "what": "Dead code in init/propose/update (writes to registers never read) is not stripped, and neither is reordering of independent instructions. Behaviour-identical candidates therefore count as new and are measured, taking candidate slots and feeding the learner zero values.",
+   "why_it_matters": "This lowers the power of each step, and the module docstring overstates what the key recognises.",
+   "evidence": "checks.py: appending ['sq',3,7,5] to update changes the key. dev_o1.jsonl: the recursive0 step 0 candidate with only an update insert ['sq',3,7,5] scores 0.6965102983628095, exactly the parent_score.",
+   "suggested_fix": "Extend the liveness analysis to the A/W/C registers of the learning programs."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/open/discovery.py",
+   "line": "111-115, 138",
+   "what": "The memo key has no envs, budget or lineage. The memo is shared across lineages that are assumed to have the same envs and seeds, and migrate copies parent_score across lineages on the same assumption. Line 187 hard-codes a stride of 2 when advancing the confirmation seeds, and nothing checks them against the discovery seeds.",
+   "why_it_matters": "With different envs or seeds per lineage, scores measured under other conditions would be returned. With 3 or more confirmation seeds, seeds are reused across steps: [101,102,103] then [103,104,105]. Neither happens with run_dev's defaults.",
+   "evidence": "Line 111: key = (behaviour, tuple(seeds)). checks.py output: 'confirm seeds with 3 confirm seeds: [[101, 102, 103], [103, 104, 105], [105, 106, 107]]'.",
+   "suggested_fix": "Include envs and budget in the memo key. Use a stride of len(confirm_seeds). Assert that confirmation seeds are disjoint from discovery seeds and from all earlier confirmation seeds, across lineages."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/open/discovery.py",
+   "line": "206-211",
+   "what": "The library harvests the blocks of every edit in an accepted candidate, including blocks that a later edit in the same candidate deleted or overwrote, or that are dead in the accepted mechanism.",
+   "why_it_matters": "'What was found becomes material' includes material that was not part of what was found.",
+   "evidence": "accept() iterates over desc without checking the final mechanism.",
+   "suggested_fix": "Harvest only blocks still present, and live, in the accepted mechanism."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/open/discovery.py",
+   "line": "80-91, 214-217, 240",
+   "what": "The arm mechanics are verified:\n- The recursive arm rebuilds the discoverer on the accepted mechanism.\n- Frozen and shuffled rebuild on the start at the same moments.\n- Uniform never learns.\n- Migration follows the same rule.\nThe arms are identical until the first acceptance that changes init/propose/update. The shuffled arm uses generation 0's principle, so it controls for weight learning, not for the recursion.",
+   "why_it_matters": "There is no control for 'principle changes that carry no information', such as a recursive arm whose principle changes are random. Since the arms differ only after principle-changing acceptances, which noise can drive, the power of the recursion test depends on how many such acceptances happen.",
+   "evidence": "stub.py: 0 principle mismatches in all four arms. checks.py: recursive and frozen records are identical until record 12, right after the o_accept at record 10 that changed 'propose'.",
+   "suggested_fix": "Report the number of principle-changing acceptances per arm. Consider a control that rebuilds on a random, unselected principle variant."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/open/edits.py",
+   "line": "90-184",
+   "what": "apply_edit always returns a validated mechanism or None. Library blocks and migration carry only validated, generic [op, int, int, int] instructions, knobs and weights learned from discovery-category values. No path to held-out categories or references was found in discovery, edits or run_dev.",
+   "why_it_matters": "This answers item 4: there is no information leak through edits, the library or migration.",
+   "evidence": "Fuzz: 6000 edits, 4825 valid (validate(new) == new), 1175 None, 0 exceptions. run_dev.py:52-54 refuses non-source categories.",
+   "suggested_fix": "None."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/open/discovery.py",
+   "line": "165, 175, 177-180",
+   "what": "The fitness vector given to the discoverer's learner mixes screen-only differences (1 seed, relative to parent_screen) and full-seed differences (3 seeds, relative to the possibly inflated parent_score), and floors the refused candidates.",
+   "why_it_matters": "The values differ in noise scale and reference. A scale-sensitive principle (e.g. 'wfit' with raw F) learns partly from these artefacts.",
+   "evidence": "values[k] is overwritten only for promoted k.",
+   "suggested_fix": "Feed ranks, or values on a common footing, and record F."
+  }
+ ]
+}

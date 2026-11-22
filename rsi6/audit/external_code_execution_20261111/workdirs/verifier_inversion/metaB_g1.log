@@ -1,0 +1,5 @@
+pool size 107 M0 active 24 train 28 valid 69
+gen0 train 10 valid 28 calls 8437
+gen1 no train-improving proposal (10 tried)
+final active added: [] removed: []
+final stages [{'op': 'enum', 'depth': 2, 'share': 0.6}, {'op': 'climb', 'seed': 'best', 'share': 0.4}] leafcap 30 meta train calls 27052
