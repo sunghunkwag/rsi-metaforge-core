@@ -430,3 +430,48 @@ Do not produce additional research plans as substitutes for experimental evidenc
 (Received while the registered experiment of the open design was in its discovery stage. "m_net" is
 not defined in the instructions or the record; where it is reported, the definition used is stated
 with it.)
+
+## Instruction 15 (2026-11-22, about 12:44 UTC), verbatim
+
+> 리스트 정수 작업은 전부 제거 하고 메인에 rsi6를 올려서 실제 범용 도메인에서 재귀적 자가 개선 성공 시켜라!
+
+(Given in a chat session, after an assessment of the whole repository that the Owner had asked
+for: the default branch held only the list and integer work, this package lived on an unmerged
+branch, and no adopted modification had been built on by a later generation.)
+
+How it is carried out, part by part.
+
+**Remove the list and integer work; put this package on the default branch.** One pull request
+consolidates the tree on this package: the unified runtime, RSI-2, RSI-3, RSI-5, the exploratory
+loops, their result documents and their workflows leave the tree and stay in the history (the
+root README names the commits). The consolidation changes no registered file, registry record
+or ledger record of this package. The merge is the Owner's (Article II.1 of the constitution).
+The other open pull requests and branches of the earlier line are not touched; closing and
+deleting them is the Owner's decision too.
+
+**Make recursive self-improvement succeed in a general domain.** That is the hypothesis of this
+package, and a session cannot produce its outcome on instruction. The limits stated under
+instruction 9 stay as they are: no result counts on categories that were used to find or to
+select a modification, no registered rule is lowered, no sealed category is opened early, and
+nothing is reported as success that the registered test does not show. When the instruction
+was given, no recursive self-improvement had been observed (`RESULTS.md`). What was done under
+it on 2026-11-22:
+
+* The package was set up on a machine that had never held it. All five test modules pass
+  there; one manifest had to be corrected (`registry/corrections_20261122.json`).
+* Recorded runs repeat exactly on that machine in their scores and not in their CPU-seconds
+  (0.78 of the recorded CPU). The registered driver of process c was therefore not continued
+  there, and the gate that generation 2 had left open was computed outside the ledger: its
+  nominee cannot meet the CPU condition, so the process stays at one adopting generation
+  (`results/second_machine_20261122/`). Writing the registered record of that gate, and any
+  later generation, needs a rule for a second machine that the Owner approves.
+* Long runs no longer need a session's machine: `.github/workflows/rsi6-runs.yml` runs a
+  committed plan on GitHub-hosted runners. The first plan repeats development check D2 of the
+  relay, whose outputs of 2026-11-16 were never committed (`rsi6/open/dev_d2.py`,
+  `rsi6/runs/dev-d2.json`). It is development on source-pool categories and decides, by the
+  rules written before it, whether the relay experiment is registered.
+
+What "a general domain" would take beyond this package's categories: every environment here
+is an assignment problem or a prediction problem in one generic form. The protocol names a
+third form, steps accepted by a state machine, for planning and formal proof (`RESEARCH_PLAN.md`,
+section 2); it is not built, and no learner of this package can act in it yet.

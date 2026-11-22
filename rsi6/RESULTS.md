@@ -203,6 +203,51 @@ designs.
 came closest were single-field changes proposed at random; every nominee the learner found by
 following its own measurements on the pool lost on the new categories.
 
+## Process c (amendment 3): where it stopped
+
+Registration: `registry/registration_c.json` (ledger record 2196). `python -m rsi6.experiments.report`
+prints the process from the ledger. Six generations are registered. The ledger holds
+generation 1 and most of generation 2 (2,280 runs, 27,506 CPU-seconds); the process was set
+aside for the open experiment and has not been taken up again.
+
+**Generation 1** searched on bin packing, job shop, quadratic assignment and set covering and
+was gated on forecasting, graph partitioning and p-median.
+
+| technique | nominee | gate | lower bound | CPU ratio | confirmation | adopted |
+|---|---|---|---|---|---|---|
+| single, remeasure, combine (the same nominee) | `model.pop` 16 to 8 | +0.0106 | −0.0077 | 1.00 | +0.0127 | no |
+| climb (the learner's own search over versions) | seven fields | +0.0176 | +0.0066 | 1.00 | +0.0035 | yes |
+
+The adoption is provisional by registration: the categories set aside belong to the pool, and
+every generation tests up to four nominees. It is not evidence of improvement on unseen
+categories.
+
+**Generation 2** started from the adopted version, searched on bin packing, p-median,
+quadratic assignment and graph partitioning, and was to be gated on job shop, knapsack and
+set covering. Its climb was run by the adopted version as improver.
+
+| technique | nominee | gate | lower bound | CPU ratio | confirmation | adopted |
+|---|---|---|---|---|---|---|
+| single, remeasure, combine (the same nominee) | `model.pop` 16 to 8 | +0.0376 | −0.0065 | 0.88 | +0.0178 | no |
+| climb | ledger record 4504 | not run | | | | |
+
+So far the process has one adopting generation. Predictions: C1 (at least one provisional
+adoption) held; C2 to C5 are not scored, because the process has not ended.
+
+**On a second machine, outside the ledger (2026-11-22;
+`results/second_machine_20261122/`).** The 18 recorded incumbent runs of generation 2's gate
+were measured again on another machine: all 18 have the recorded scores, per-instance scores,
+units and capability digests, and they took 0.78 of the recorded CPU. Scores do not depend on
+the machine; CPU-seconds do. A driver started again on another machine would therefore compute
+the gate's CPU ratio from two machines, and the registered driver was not continued there.
+The gate of the climb's nominee was then computed with the package's rule and no ledger: its
+18 gate runs had used at least 2.6 times the incumbent's CPU when nothing else was running,
+and at least 4.1 times when they were stopped unfinished; the rule allows 1.15. By the
+registered rule the nominee is not adopted whatever its scores, and generation 2 closes with
+no adoption. The nominee was found within 1.25 times the current version's CPU on the
+categories searched; on the categories it had not seen its cost did not hold. The registered
+record of this gate is still to be written.
+
 ## The open design and the discovery of its mechanisms (amendment 5)
 
 Registration: `registry/registration_o.json` (written to the ledger before the first run of the
