@@ -75,3 +75,6 @@ jobs:
 
       - name: The gate of process d, before it runs (amendment 6)
         run: python -m rsi6.tests.test_gate_d
+
+      - name: Design s and its chains on tables
+        run: python -m rsi6.tests.test_design_s

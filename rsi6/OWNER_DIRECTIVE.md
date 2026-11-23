@@ -619,3 +619,43 @@ needs a new design, not another run.
 process as registered would not adopt the change because amendment 2 counts it at +0.0037
 against a margin of 0.005. That confused the search's ranking statistic with the gate; the
 records are corrected (`results/dev_landscape_20261122/README.md`).
+
+## Instruction 19 (2026-11-23, 21:16 UTC), verbatim
+
+> 새 설계 해서 테스트 검증 해라!
+
+(Given after the report on step 2 of the scan one step on, which ended: what is needed next is
+not another run but a new design, in which the learner adapts inside an acquisition and its
+acquisition procedure is also what produces the next modification; development work on it is
+inside the standing instruction; a registered gate, which needs the two reserves or newly built
+categories, and the merge of the pull request stay the Owner's decisions.)
+
+How it is carried out. The reading below was sent to the Owner in a message before any code
+was written.
+
+**"A new design."** Design s (`learner/design_s.py`, `meta/chain_s.py`,
+`results/design_s_20261124/DESIGN.md`): one search procedure that is the learner's acquisition
+and, called on the space of versions with the fields of the improving version, the improver;
+and two steps that adapt inside a search (`adapt.spread`, `adapt.race`) as fields a chain can
+turn on.
+
+**"Test."** The unit tests (`tests/test_design_s.py`, in the workflow of the RSI-6 tests), and a
+development measurement on categories of the pool: every mechanism of the design's list on
+eight categories (`runs/dev-grid-s.json`), chains of self-modification run on those tables,
+read by rules committed before the plan runs (`results/design_s_20261124/PREDICTION.md`).
+
+**"Verify."** Read as: an independent, registered test, and only if the development reading
+holds. For it, categories no learner has run on are to be built. The two reserves and the four
+sealed targets are not opened: the instruction does not name them, and opening them cannot be
+undone.
+
+**What counts as success, unchanged.** The hypothesis of the README with both halves, by a
+registered test. A development reading is not that, and neither is one half. Nothing is merged
+and nothing is pushed to the main branch on less.
+
+**What the design cannot give, said before it runs** (`DESIGN.md`, "What was known before it
+was written"). On the categories where it was tried, sixteen times the training budget adds
+about 0.02 to what the first design acquires: its acquisition is bounded by what its policy can
+express, not by its search. Design s does not change the policy. It can show whether an
+improved improver compounds inside a closed list of mechanisms; it is not expected to lift the
+top of that list much above the adopted version.
