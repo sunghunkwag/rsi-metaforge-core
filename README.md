@@ -41,6 +41,12 @@ answers is recorded verbatim in [`rsi6/OWNER_DIRECTIVE.md`](rsi6/OWNER_DIRECTIVE
 | After the adoption (development, 2026-11-23) | the same scan one step on, and the recursion question asked with the learner's own acquisition loop as the improver | no second step: of the five changes the scan around the adopted version picked out, none held on new seeds (largest mean +0.0015, 5 % point −0.0025), while settings that help one category hurt another. The recursion run gave no answer: no improver, changed or not, produced a next step. [`G1.md`](rsi6/results/dev_landscape_20261122/G1.md), [`rsi6/results/dev_recursion_20261122/`](rsi6/results/dev_recursion_20261122/) |
 | Process d, generation 1 (amendment 6) | one field, `model.batch` 4 → 2, the change the scan left standing; put once through the registered gate against generation 0 on four categories no learner had run on, 32 seeds at the gate and 32 at the confirmation | **passed, narrowly.** Gate +0.0195 (10 % point +0.0135, CPU 1.04 times generation 0's); confirmation +0.0009. With both halves, quadratic 0-1 is up by 0.055, weighted tardiness by 0.005, project scheduling is flat and maximum clique is down by 0.018. Adopted as generation 1 of process d. Not recursion: as an improver the adopted learner is generation 0 exactly. [`rsi6/results/gate_d1_20261122/`](rsi6/results/gate_d1_20261122/) |
 
+In development since 2026-11-23 (instruction 19): design s, in which one search procedure is both the
+learner's acquisition and the improver of versions, so that a change of how the learner acquires is a
+change of how it improves itself. Its design, what was known before it was written, and the reading
+fixed before its first measurement are in
+[`rsi6/results/design_s_20261124/`](rsi6/results/design_s_20261124/). No result yet.
+
 Not run yet: the external gate of process c, the recursion check, and the test on the
 sealed target categories that decides the hypothesis. No learner has run on the two reserves
 or the four sealed targets.
@@ -102,6 +108,7 @@ python -m rsi6.tests.test_fresh          # the adapter checks on the fresh categ
 python -m rsi6.tests.test_design_q
 python -m rsi6.tests.test_design_r
 python -m rsi6.tests.test_relay
+python -m rsi6.tests.test_design_s       # design s: the learner, its list of mechanisms, chains on tables
 
 python -m rsi6.experiments.report        # every number of the rounds, from the ledger
 python -m rsi6.experiments.replay        # every search again, from the ledger alone
@@ -117,8 +124,8 @@ rsi6/
   RESEARCH_PLAN.md     the protocol
   RESULTS.md           what was measured, misses first
   kernel/              problem forms, environment contract, measured runs, ledger, role locks
-  learner/             the learner: first and second design, the open design (o), designs q and r
-  meta/                the space of versions and the rounds of self-modification
+  learner/             the learner: first and second design, the open design (o), designs q, r and s
+  meta/                the space of versions and the rounds of self-modification; chains of design s on tables of measured runs
   experiments/         drivers of the registered rounds, process c, external gate, recursion check, target test
   open/                discovery of mechanisms for the open design; the relay driver and report
   environments/        adapters and data manifests of the 19 benchmark families
