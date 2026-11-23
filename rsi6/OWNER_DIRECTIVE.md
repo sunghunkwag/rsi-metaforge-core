@@ -605,6 +605,16 @@ tardiness by 0.005, project scheduling is flat and maximum clique is down by 0.0
 resting on one category, and, as said before it ran, not recursion. This is not the success
 the instruction asks for, and nothing was merged or pushed to the main branch on it.
 
+**Where it stands after that (added 2026-11-23, 02:35 UTC).** The scan around the adopted
+version found no second step: none of the five changes it picked out held on new seeds
+(`results/dev_landscape_20261122/G1.md`). The recursion question, asked in development with the
+learner's own acquisition loop as the improver, got no answer: no improver produced a next step
+(`results/dev_recursion_20261122/`). So what exists is one validated step that rests on one
+category, no second step, and no recursion. Two things are left that an instruction does not
+remove: what remains to gain differs by category, so it is not a setting of one version; and a
+learner that is better at acquiring is, in this design, not thereby better at improving. Either
+needs a new design, not another run.
+
 **A correction made under this instruction.** The report on instruction 16 said the continued
 process as registered would not adopt the change because amendment 2 counts it at +0.0037
 against a margin of 0.005. That confused the search's ranking statistic with the gate; the
