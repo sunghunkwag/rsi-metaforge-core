@@ -1,0 +1,361 @@
+{
+ "categories": {
+  "binpacking": [
+   730301,
+   730302,
+   730303,
+   730304,
+   730305,
+   730306,
+   730307,
+   730308
+  ],
+  "forecasting": [
+   730301,
+   730302,
+   730303,
+   730304,
+   730305,
+   730306,
+   730307,
+   730308
+  ],
+  "jobshop": [
+   730301,
+   730302,
+   730303,
+   730304,
+   730305,
+   730306,
+   730307,
+   730308
+  ],
+  "knapsack": [
+   730301,
+   730302,
+   730303,
+   730304,
+   730305,
+   730306,
+   730307,
+   730308
+  ],
+  "partitioning": [
+   730301,
+   730302,
+   730303,
+   730304
+  ],
+  "pmedian": [
+   730301,
+   730302,
+   730303,
+   730304,
+   730305,
+   730306,
+   730307,
+   730308
+  ],
+  "quadassign": [
+   730301,
+   730302,
+   730303,
+   730304,
+   730305,
+   730306,
+   730307,
+   730308
+  ],
+  "regression": [
+   730301,
+   730302,
+   730303,
+   730304,
+   730305,
+   730306,
+   730307,
+   730308
+  ],
+  "setcover": [
+   730301,
+   730302,
+   730303,
+   730304
+  ]
+ },
+ "eligible": 78,
+ "next": [
+  {
+   "amendment_2": 0.0017765307490169436,
+   "cpu_ratio": 0.9605879050456474,
+   "field": "feat.optsum",
+   "per_category": {
+    "binpacking": -0.004011223258847507,
+    "forecasting": 0.0,
+    "jobshop": 0.0,
+    "knapsack": 0.016377350731500956,
+    "partitioning": 0.0,
+    "pmedian": 0.0,
+    "quadassign": 0.0,
+    "regression": 0.0,
+    "setcover": 0.047192210565156226
+   },
+   "plain": 0.006617593115312186,
+   "value_json": "0"
+  },
+  {
+   "amendment_2": 0.0012606698052876895,
+   "cpu_ratio": 0.9986130562841112,
+   "field": "prior.dsoft",
+   "per_category": {
+    "binpacking": 0.0017960677160653443,
+    "forecasting": 0.0,
+    "jobshop": 0.0017242320530748423,
+    "knapsack": -0.0020056396746949146,
+    "partitioning": -0.005997397566182172,
+    "pmedian": 0.006444925009317759,
+    "quadassign": -0.0006161592899916538,
+    "regression": 0.0,
+    "setcover": 0.027110399150401338
+   },
+   "plain": 0.0031618252664433934,
+   "value_json": "-3.0"
+  },
+  {
+   "amendment_2": 0.0008470192979543691,
+   "cpu_ratio": 1.0025924861554207,
+   "field": "model.keep_best",
+   "per_category": {
+    "binpacking": 0.00020424836601307117,
+    "forecasting": 0.0,
+    "jobshop": 0.0021996281624402786,
+    "knapsack": -0.0032752595865454676,
+    "partitioning": -0.005747527919035933,
+    "pmedian": 0.0017349282834620422,
+    "quadassign": 0.0025071563752553302,
+    "regression": 0.0,
+    "setcover": 0.01910167554520159
+   },
+   "plain": 0.0018583165807545458,
+   "value_json": "0"
+  },
+  {
+   "amendment_2": 0.0003780512061986777,
+   "cpu_ratio": 0.9902661724209431,
+   "field": "model.elite",
+   "per_category": {
+    "binpacking": -0.00042751524832614074,
+    "forecasting": 0.0,
+    "jobshop": -0.00019627138847323755,
+    "knapsack": -0.0015757879745594977,
+    "partitioning": -0.01409957499370773,
+    "pmedian": -0.000298389539145294,
+    "quadassign": 0.015452624129607587,
+    "regression": 0.0,
+    "setcover": 0.05114085370318734
+   },
+   "plain": 0.0055551042987314475,
+   "value_json": "0.4"
+  },
+  {
+   "amendment_2": 0.00024039790010517195,
+   "cpu_ratio": 0.9882828841347853,
+   "field": "feat.last",
+   "per_category": {
+    "binpacking": 0.0,
+    "forecasting": 0.0,
+    "jobshop": 0.0,
+    "knapsack": 0.0,
+    "partitioning": 0.0,
+    "pmedian": 0.0,
+    "quadassign": 0.0021635811009465475,
+    "regression": 0.0,
+    "setcover": 0.0
+   },
+   "plain": 0.00024039790010517195,
+   "value_json": "0"
+  },
+  {
+   "amendment_2": 0.00022087819450929906,
+   "cpu_ratio": 0.9941592669254301,
+   "field": "feat.opt_attr",
+   "per_category": {
+    "binpacking": 0.0019879037505836916,
+    "forecasting": 0.0,
+    "jobshop": 0.0,
+    "knapsack": 0.0,
+    "partitioning": 0.0,
+    "pmedian": 0.0,
+    "quadassign": 0.0,
+    "regression": 0.0,
+    "setcover": 0.0
+   },
+   "plain": 0.00022087819450929906,
+   "value_json": "0"
+  },
+  {
+   "amendment_2": 6.496023093137095e-05,
+   "cpu_ratio": 0.9964112619150689,
+   "field": "prior.dhard",
+   "per_category": {
+    "binpacking": 0.0,
+    "forecasting": 0.0,
+    "jobshop": 0.0,
+    "knapsack": 0.0005846420783823386,
+    "partitioning": 0.0,
+    "pmedian": 0.0,
+    "quadassign": 0.0,
+    "regression": 0.0,
+    "setcover": 0.0
+   },
+   "plain": 6.496023093137095e-05,
+   "value_json": "-12.0"
+  },
+  {
+   "amendment_2": 6.496023093137095e-05,
+   "cpu_ratio": 0.9974046036636754,
+   "field": "prior.dhard",
+   "per_category": {
+    "binpacking": 0.0,
+    "forecasting": 0.0,
+    "jobshop": 0.0,
+    "knapsack": 0.0005846420783823386,
+    "partitioning": 0.0,
+    "pmedian": 0.0,
+    "quadassign": 0.0,
+    "regression": 0.0,
+    "setcover": 0.0
+   },
+   "plain": 6.496023093137095e-05,
+   "value_json": "-9.0"
+  },
+  {
+   "amendment_2": 0.0,
+   "cpu_ratio": 1.0062852632076742,
+   "field": "model.lr",
+   "per_category": {
+    "binpacking": 0.0,
+    "forecasting": 0.0,
+    "jobshop": 0.0,
+    "knapsack": 0.0,
+    "partitioning": 0.0,
+    "pmedian": 0.0,
+    "quadassign": 0.0,
+    "regression": 0.0,
+    "setcover": 0.0
+   },
+   "plain": 0.0,
+   "value_json": "0.05"
+  },
+  {
+   "amendment_2": 0.0,
+   "cpu_ratio": 1.0038339208261036,
+   "field": "model.lr",
+   "per_category": {
+    "binpacking": 0.0,
+    "forecasting": 0.0,
+    "jobshop": 0.0,
+    "knapsack": 0.0,
+    "partitioning": 0.0,
+    "pmedian": 0.0,
+    "quadassign": 0.0,
+    "regression": 0.0,
+    "setcover": 0.0
+   },
+   "plain": 0.0,
+   "value_json": "0.2875"
+  }
+ ],
+ "short_list": [
+  {
+   "amendment_2": 0.003118370999924916,
+   "cpu_ratio": 0.9880697133835583,
+   "field": "model.sigma",
+   "per_category": {
+    "binpacking": 0.0008894457671812517,
+    "forecasting": 0.0,
+    "jobshop": 0.005861933790437673,
+    "knapsack": 0.009180796206629288,
+    "partitioning": -0.00431197425975291,
+    "pmedian": 0.009534838989892894,
+    "quadassign": -0.0030897014950639554,
+    "regression": 0.0,
+    "setcover": 0.027466790177230957
+   },
+   "plain": 0.005059125464061689,
+   "value_json": "0.2"
+  },
+  {
+   "amendment_2": 0.0028277360080795444,
+   "cpu_ratio": 1.0147662579075074,
+   "field": "feat.template1",
+   "per_category": {
+    "binpacking": 0.002396400482609834,
+    "forecasting": 0.0,
+    "jobshop": 0.0,
+    "knapsack": 0.006951783154557023,
+    "partitioning": 0.0,
+    "pmedian": 0.006101440435549041,
+    "quadassign": 0.0,
+    "regression": 0.0,
+    "setcover": 0.07393044313247008
+   },
+   "plain": 0.009931118578353998,
+   "value_json": "\"dhard*progress\""
+  },
+  {
+   "amendment_2": 0.0028277360080795444,
+   "cpu_ratio": 1.0097651120237763,
+   "field": "feat.template2",
+   "per_category": {
+    "binpacking": 0.002396400482609834,
+    "forecasting": 0.0,
+    "jobshop": 0.0,
+    "knapsack": 0.006951783154557023,
+    "partitioning": 0.0,
+    "pmedian": 0.006101440435549041,
+    "quadassign": 0.0,
+    "regression": 0.0,
+    "setcover": 0.07393044313247008
+   },
+   "plain": 0.009931118578353998,
+   "value_json": "\"dhard*progress\""
+  },
+  {
+   "amendment_2": 0.0024306842035378335,
+   "cpu_ratio": 0.9970015436084546,
+   "field": "prior.dsoft",
+   "per_category": {
+    "binpacking": 0.0008894457671812517,
+    "forecasting": 0.0,
+    "jobshop": -0.0017446352829795786,
+    "knapsack": 0.011424816867495205,
+    "partitioning": -0.007094307297903002,
+    "pmedian": 0.00865848293749441,
+    "quadassign": 0.0011671717080474209,
+    "regression": 0.0,
+    "setcover": 0.04172080717139574
+   },
+   "plain": 0.006113531318970161,
+   "value_json": "-4.0"
+  },
+  {
+   "amendment_2": 0.0021185190129199383,
+   "cpu_ratio": 1.0161444710806835,
+   "field": "assess.holdback",
+   "per_category": {
+    "binpacking": 0.0018896333103321228,
+    "forecasting": 0.0,
+    "jobshop": 0.00519883739608655,
+    "knapsack": 0.010089165792876442,
+    "partitioning": 0.002832440145162818,
+    "pmedian": 0.011922940144976274,
+    "quadassign": -0.020854239735302045,
+    "regression": 0.0,
+    "setcover": 0.034047346610360324
+   },
+   "plain": 0.005014013740499165,
+   "value_json": "0.5"
+  }
+ ]
+}
