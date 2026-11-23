@@ -417,6 +417,37 @@ pass, with a probability of 0.4 given to a pass) and three were right (nothing o
 ordered categories, at least +0.01 on one of the two unordered ones, CPU between 0.95 and
 1.10).
 
+## Development: no second step among single-field changes (2026-11-23)
+
+Not registered; `results/dev_landscape_20261122/G1.md`. The same scan, centred on the adopted
+version (generation 0 with `model.batch` 2), on the nine categories of the first scans with new
+seeds; what would be done with it was fixed before it ran (`PREDICTION_3.md`).
+
+* The way back (`model.batch` 4, which is generation 0) is 74th of 78 changes, at −0.021: a
+  third measurement of the first step, from the other side, with the same sign.
+* The five changes of its short list were measured again on 32 new seeds per category (16 on
+  the two heavy ones). None has a 5 % point above zero; the largest mean is +0.0015. By the
+  rule fixed beforehand there is no second step among single-field changes at this precision.
+* One of them, `model.sigma` 0.2, is clearly above the centre on knapsack (14 runs of 32 above,
+  1 below) and clearly below it on job shop (8 above, 19 below). What is left to gain is in
+  settings that differ by category, which a search over one version for all categories cannot
+  hold.
+
+So process d has one generation. A second would need either a modification of another kind
+than a single field, or a learner that chooses such settings per category while it acquires.
+
+## The recursion question in development (2026-11-22 to 23)
+
+Not registered; `results/dev_recursion_20261122/`. In the first design a changed learner can be
+a better improver only through its fields `edit.*`; the adopted change is not among them. To
+ask the question where it can have an answer, the learner's acquisition loop was transcribed
+into an improver of versions and run from the adopted version by that version itself, by
+generation 0, and by a random proposer, twelve times each at the same counted budget, with the
+reading fixed beforehand. No arm produced a next step: the run gives no answer. The record
+says why (on a grid of field values the loop stops exploring after a few rounds; a candidate is
+measured on two or four runs) and what an answer would take. **No recursion has been
+observed, and none could have been by the registered check.**
+
 ## How to reproduce
 
     OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m rsi6.tests.test_kernel
