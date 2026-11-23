@@ -1,5 +1,5 @@
 {
- "mean_over_categories": 0.03632272502727414,
+ "mean_over_categories": 0.04474708194299851,
  "per_category": {
   "binpacking": {
    "fresh_change_of_the_pick": 0.0017150568241966202,
@@ -119,15 +119,15 @@
    "seeds_below": 3
   },
   "setcover": {
-   "fresh_change_of_the_pick": 0.1421635993355027,
+   "fresh_change_of_the_pick": 0.21798281157702198,
    "picked": {
     "assess.holdback": 1,
-    "shortlist": 2
+    "shortlist": 3
    },
-   "rank_correlation_train_fresh": 0.8999228567855592,
-   "se": 0.017117179882793102,
-   "seeds": 3,
-   "seeds_above": 3,
+   "rank_correlation_train_fresh": 0.9229541516771278,
+   "se": 0.07677924112997273,
+   "seeds": 4,
+   "seeds_above": 4,
    "seeds_below": 0
   }
  },

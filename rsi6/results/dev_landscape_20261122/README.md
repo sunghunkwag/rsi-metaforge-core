@@ -42,7 +42,7 @@ The artifacts of the three runs are in `artifacts/` as they were uploaded (GitHu
 days). `scripts/` has what read them; every number below is printed by one of them:
 
 ```
-mkdir x && for f in artifacts/*.tar.gz; do tar xzf $f -C x; done     # landscape.tar.gz: see ADDENDUM.md
+mkdir x && for f in artifacts/*.tar.gz; do tar xzf $f -C x; done
 python3 -I scripts/landscape_loco.py x/landscape --out loco.json        # leave one category out
 python3 -I scripts/reading_1.py      x/landscape --out reading_1.json
 python3 -I scripts/reading_2.py      x/pair      --out reading_2.json
@@ -183,8 +183,7 @@ compute has not been measured.
 
 `ADDENDUM.md`. In short: reading 1 is negative as well (the first choice does not carry to the
 three categories it was made without), and with all nine categories in, leaving each out in
-turn chooses `model.batch` 2 in every fold. One job of the scan (set covering, one seed) was
-still running when the addendum was written; it says what is provisional for that reason.
+turn chooses `model.batch` 2 in every fold.
 
 ## What this is, and what it is not
 
