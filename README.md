@@ -9,9 +9,12 @@ and keeps a modification only when it passes a gate on kinds of environment the 
 not see. The environments are published benchmark families from operations research and
 prediction, fetched as data and scored against their published references.
 
-**Status: no recursive self-improvement has been observed.** Every number below is in the
-hash-chained ledger [`rsi6/ledger/main.jsonl`](rsi6/ledger/main.jsonl); the full account,
-misses first, is [`rsi6/RESULTS.md`](rsi6/RESULTS.md).
+**Status: no recursive self-improvement has been observed.** One modification of the learner
+has passed a registered gate on four categories no learner had run on (process d, generation
+1; below). That is the first half of the hypothesis for one step, and it rests on one of the
+four categories. Every registered number is in the hash-chained ledger
+[`rsi6/ledger/main.jsonl`](rsi6/ledger/main.jsonl); the full account, misses first, is
+[`rsi6/RESULTS.md`](rsi6/RESULTS.md).
 
 ## The hypothesis
 
@@ -35,11 +38,11 @@ answers is recorded verbatim in [`rsi6/OWNER_DIRECTIVE.md`](rsi6/OWNER_DIRECTIVE
 | Open design | the learner's representation and its learning principle, as programs of a small vector machine; in the recursive arm each accepted mechanism re-learns how the next candidates are generated | 152 discovery steps, 912 candidates, 18 confirmations, **0 accepted** in every arm. The recursion was never exercised |
 | Relay (design r) | the discovery machinery, rebuilt at every acquisition from the learner's own record | development only. Its second development check is negative: on a category it had not met, the learner carrying the relay's memory acquired 0.0078 less than the learner carrying nothing (24 chains, 80% interval −0.0147 to −0.0010). Not registered, not run |
 | Scan of generation 0 (development, 2026-11-22) | one field of the 38-field record at a time, every change measured on every category of the pool, the few it picks out measured again on new seeds | development only. The change the scan put first did not hold on new seeds. One did, twice, the second time fixed before the run: `model.batch` 4 → 2 adds +0.0246 to what is acquired over the nine categories (5 % point +0.0154) at 1.04 times the CPU, +0.0066 (5 % point +0.0009) with set covering, which carries most of it, left out, and is above zero on the three categories it was picked without. The statistic by which the continued process ranks candidates in its search (amendment 2: no category counts for more than +0.01) puts it at +0.0037; the registered gate, which decides an adoption, counts the plain mean. A candidate for a registered test, not a result: [`rsi6/results/dev_landscape_20261122/`](rsi6/results/dev_landscape_20261122/) |
+| Process d, generation 1 (amendment 6) | one field, `model.batch` 4 → 2, the change the scan left standing; put once through the registered gate against generation 0 on four categories no learner had run on, 32 seeds at the gate and 32 at the confirmation | **passed, narrowly.** Gate +0.0195 (10 % point +0.0135, CPU 1.04 times generation 0's); confirmation +0.0009. With both halves, quadratic 0-1 is up by 0.055, weighted tardiness by 0.005, project scheduling is flat and maximum clique is down by 0.018. Adopted as generation 1 of process d. Not recursion: as an improver the adopted learner is generation 0 exactly. [`rsi6/results/gate_d1_20261122/`](rsi6/results/gate_d1_20261122/) |
 
 Not run yet: the external gate of process c, the recursion check, and the test on the
-sealed target categories that decides the hypothesis. No learner has run on any of the ten
-categories outside the pool; a registered test of the one change the scan left standing would
-be the first, and registering it is the Owner's decision.
+sealed target categories that decides the hypothesis. No learner has run on the two reserves
+or the four sealed targets.
 
 What limits the result, as measured (details in `rsi6/RESULTS.md`):
 
@@ -80,9 +83,10 @@ downloads each file from its publisher and pins it by SHA-256 in
 | adoption sets 1 to 3 (used once as gates, then joined the pool) | quadratic assignment, p-median; multidimensional knapsack, regression; set covering, graph partitioning | QAPLIB, OR-Library, SRSD-Feynman, DIMACS |
 | targets (sealed; no learner has run on them) | satisfiability, vehicle routing, facility location, generalised assignment | SATLIB, CVRPLIB, OR-Library |
 | reserves (external gate of process c; no learner has run on them) | travelling salesman, graph colouring | TSPLIB, DIMACS |
-| fresh (held out for the relay experiment; no learner has run on them) | weighted tardiness, quadratic 0-1, project scheduling, maximum clique | OR-Library, Biq Mac, PSPLIB, DIMACS |
+| adoption set 5 (held out until 2026-11-22, used once as the gate of process d, then joined the pool) | weighted tardiness, quadratic 0-1, project scheduling, maximum clique | OR-Library, Biq Mac, PSPLIB, DIMACS |
 
-Learner runs recorded so far: 9,118, all on the nine source and adoption categories.
+Learner runs recorded so far: 9,630: 9,118 on the nine source and adoption categories of
+the first processes and 512 at the gate of process d.
 
 ## Reproduce
 

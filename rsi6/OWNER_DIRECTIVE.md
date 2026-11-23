@@ -597,6 +597,14 @@ amendment 6 is "recursive self-improvement succeeded", and none will be reported
 halves, by registered tests. Records of the work go to the branch of the open pull request as
 before. Nothing is merged, and nothing is pushed to the main branch, on a partial result.
 
+**The outcome of amendment 6 (added 2026-11-23, 00:40 UTC; `results/gate_d1_20261122/`).**
+Passed by the registered rule, narrowly: gate +0.0195 (10 % point +0.0135, CPU 1.04 times
+generation 0's), confirmation +0.0009. Generation 0 with `model.batch` 2 is adopted as
+generation 1 of process d. With both halves together quadratic 0-1 is up by 0.055, weighted
+tardiness by 0.005, project scheduling is flat and maximum clique is down by 0.018: one step,
+resting on one category, and, as said before it ran, not recursion. This is not the success
+the instruction asks for, and nothing was merged or pushed to the main branch on it.
+
 **A correction made under this instruction.** The report on instruction 16 said the continued
 process as registered would not adopt the change because amendment 2 counts it at +0.0037
 against a margin of 0.005. That confused the search's ranking statistic with the gate; the

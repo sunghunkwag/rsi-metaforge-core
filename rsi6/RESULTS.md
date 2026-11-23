@@ -380,8 +380,42 @@ changes on every category of the pool (8 seeds; 4 on partitioning and set coveri
   (`model.batch` 2 with `model.pop` 8) are not better together than the first alone. And one
   changed field is not recursion.
 
-No learner has run on a category outside the pool. Whether this change is tested on such
-categories, on which of them, and under which rule, is the Owner's decision.
+When this section was written no learner had run on a category outside the pool. The Owner's
+instruction 18 then opened the test of this change: the next section.
+
+## Process d, generation 1 (amendment 6): the change through the registered gate (2026-11-22)
+
+Registered; in the ledger (records 9373 to 9895); the record is `results/gate_d1_20261122/`.
+
+One nominee, generation 0 with `model.batch` 2, against generation 0, on the four categories
+that had been held out since 2026-11-16 (weighted tardiness, quadratic 0-1, project scheduling,
+maximum clique), by the registered gate with its rules unchanged, 32 seeds at the gate and 32
+at the confirmation. The records that open the categories were committed before anything was
+measured; the gate ran in one job on a hosted runner; the returned ledger was verified and a
+sample of 32 runs was measured again on the session's machine with identical scores.
+
+| | Gate (deciding half) | Confirmation (other half) | Both halves |
+|---|---|---|---|
+| quadratic 0-1 | +0.0722 | +0.0381 | +0.0552 (48 runs above, 16 below) |
+| weighted tardiness | +0.0032 | +0.0067 | +0.0050 (44 / 20) |
+| project scheduling | −0.0002 | −0.0015 | −0.0009 (20 / 26) |
+| maximum clique | +0.0030 | −0.0396 | −0.0183 (28 / 35) |
+| mean | **+0.0195**, 10 % point +0.0135, CPU 1.04 | **+0.0009** | +0.0102 |
+
+**Passed** by the rule fixed beforehand (the gate's three conditions and a confirmation above
+zero), and the version is adopted as generation 1 of process d. It passed narrowly: the
+confirmation is above zero by 0.0009, because on that half the gain on quadratic 0-1 is met by
+a loss of the same size on maximum clique.
+
+What it is: the first modification of this package to pass a gate on categories that no
+search, no development run and no learner had touched; one independently validated step. What
+it is not: broad (it rests on one category of four), and recursive. The amendment fixed the
+second point before the run: the learner improves versions with its fields `edit.*` only, the
+adopted change is not among them, and as an improver the adopted learner is generation 0
+exactly. Of the four predictions of the amendment the first was wrong (the gate would not
+pass, with a probability of 0.4 given to a pass) and three were right (nothing on the two
+ordered categories, at least +0.01 on one of the two unordered ones, CPU between 0.95 and
+1.10).
 
 ## How to reproduce
 
