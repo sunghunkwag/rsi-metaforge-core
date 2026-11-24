@@ -719,9 +719,23 @@ step to find. Nothing was registered, since a registered test of a design whose 
 reading lacks one half would spend unseen kinds on a known answer.
 
 The next attempt, under the same instruction, changes the one thing these measurements point
-at: the space. It needs parts that recur across problems, a search too large to exhaust, and
-solutions that can be checked exactly, so that one finding makes the next findable and nothing
-is selected among noise. Constructed attributes were looked at first and are not it (the gain
-is one kind's, and a greedy search finds most of it without knowing anything). The physical
-laws of the `regression` kind have all three properties; the next design is built there
-(`results/design_t_20261124/README.md`, "What follows").
+at: the space. It needs parts or moves that recur across problems, a search too large to
+exhaust, and results that can be checked exactly, so that one finding makes the next findable.
+Three places were looked at (`results/design_t_20261124/README.md`, "What follows").
+Constructed attributes: the gain is one kind's and a greedy search finds it without knowing
+anything. The physical laws of the `regression` kind: 60 of 118 are monomials, 17 need one
+part more and 8 two, which is too few to carry a second step. The assignment kinds with a
+learner that *searches* after it constructs: a plain exchange of two options lifts quadassign
+from 0.38 to 0.66, 0.75 and 0.83 with 5, 20 and 50 evaluations per variable, where the first
+design stood at 0.52 whatever its budget. There what is acquired depends on how well the
+evaluations are spent, which can be learned from the search's own record. The next design is
+built there.
+
+The Owner was asked on 2026-11-25 (01:30 UTC) whether mathematical integer sequences may be
+added as kinds of the prediction form, because self-improvement that compounds over
+generations is documented there. The question should not have been put as an open choice: the
+directive's hard constraint excludes integer arithmetic, list manipulation, fixed DSL puzzles
+"or their disguised equivalents" as the primary experimental domain, and instruction 15 removed
+the list and integer work. That constraint is the Owner's to keep or to lift; unless it is
+lifted in so many words, no such kind is added and the work stays inside the benchmark
+families of the repository, where the last look above found a place to continue.

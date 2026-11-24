@@ -135,10 +135,39 @@ what there is, which leaves little for knowledge to add. Constructed attributes 
 the space this needs.
 
 What the measurements ask for is narrower: parts that recur, a search too large to exhaust, and
-solutions that can be checked exactly. The laws of the `regression` kind have all three (a
-fitted monomial recovers 36 of the 118; the others are built from factors such as 1 − v²/c²,
-sums and exponentials, each with a constant inside that has to be found). That is the next
-design.
+solutions that can be checked exactly. Two places were looked at.
+
+**The laws of the `regression` kind: too few** (`scripts/sr_proto.py`; every candidate tried,
+76 seconds for all 118 laws). As a monomial with signs, 60 laws are recovered exactly; with one
+part more (1 + k·m, sin, cos or an exponential factor, on a monomial of one or two variables,
+the constant inside found by a scan) 17 more; with two parts 8 more; 33 are not recovered in
+this language. A learned order of trying would raise what a fresh problem's budget finds
+(about 200 fits of the 2,500 that all candidates of one part cost). But the second step rests
+on 25 laws, the search of the improver is cheap enough to try everything, and the law kinds no
+learner has run on would carry a difference of one or two laws. Not pursued.
+
+**The assignment kinds, with a learner that searches: a long way up** (`scripts/ls_probe.py`;
+six training instances per kind). After a greedy construction, a plain local search that
+exchanges the options of two random variables and keeps what is not worse, with E·n full
+evaluations:
+
+| kind | greedy | E = 5 | E = 20 | E = 50 |
+|---|---|---|---|---|
+| quadassign | 0.382 | 0.664 | 0.749 | 0.829 |
+| jobshop | 0.751 | 0.820 | 0.873 | 0.892 |
+| knapsack | 0.852 | 0.902 | 0.938 | 0.954 |
+| setcover | 0.086 | 0.089 | 0.093 | 0.108 |
+| pmedian, binpacking | 0.698, 0.950 | no change | no change | no change |
+
+The first design acquires about 0.52 on quadassign, and 16 times its training budget adds 0.02.
+Here ten times the evaluations still add 0.17: what is acquired is no longer bounded by a
+policy but by how well the evaluations are spent, and moves drawn at random spend them badly.
+Which move to try next can be learned from the search's own record (what a move looked like,
+what it gained); a search that is better guided reaches assignments an unguided one does not,
+and what is worth trying there can only be learned from there. That is a space with the three
+properties, inside the benchmark families of this repository. The registered budget of the
+first design allows one evaluation per variable (E = 1); a design that searches needs its own.
+That is the next design.
 
 `data.tar.gz` holds the measurements behind the tables (one file per reading);
 `scripts/show_loko.py FILE` prints a reading.
