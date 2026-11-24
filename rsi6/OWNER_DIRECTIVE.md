@@ -719,10 +719,9 @@ step to find. Nothing was registered, since a registered test of a design whose 
 reading lacks one half would spend unseen kinds on a known answer.
 
 The next attempt, under the same instruction, changes the one thing these measurements point
-at: the space. It needs programs built from parts, where a part once found is reused inside
-larger ones. A first look found such a space on the development kinds: attributes constructed
-from the columns, level on level. On `friedman` two levels of construction reach a mean skill
-of 0.56 where the best flat program reaches 0.35 and one level 0.16; scoring every candidate
-costs about fifty times the budget of a fresh problem, so what a learner tries first decides
-what it builds, and what is worth trying at the second level can only be learned by a learner
-that gets there (`results/design_t_20261124/README.md`, "What follows").
+at: the space. It needs parts that recur across problems, a search too large to exhaust, and
+solutions that can be checked exactly, so that one finding makes the next findable and nothing
+is selected among noise. Constructed attributes were looked at first and are not it (the gain
+is one kind's, and a greedy search finds most of it without knowing anything). The physical
+laws of the `regression` kind have all three properties; the next design is built there
+(`results/design_t_20261124/README.md`, "What follows").

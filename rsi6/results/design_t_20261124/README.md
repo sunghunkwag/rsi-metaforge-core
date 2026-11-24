@@ -126,11 +126,19 @@ gain is in the second level, which is only reachable through the first. On `regr
 recovers laws exactly where they are products and ratios (`scripts/sr_probe.py`: a fitted
 monomial alone recovers 36 of the 118 laws).
 
-Scoring every candidate at every step, as that look does, costs about fifty times what a fresh
-problem allows. Within the budget a learner can score a tenth of the candidates of a step, so
-*which* candidates it scores decides what it builds; and what is worth scoring at the second
-level can only be learned by a learner that gets there. That is the next design: constructed
-attributes, with the order of trying them learned from the learner's own searches.
+Two cautions, measured after that look (`scripts/fx_fast.py`). With every candidate of a step
+scored at once, six steps cost 1.4 passes on `regression`, about 5 on `table` and `binary`, and
+15.5 on `friedman`, against the four a fresh problem allows; so the order of trying matters only
+where the columns are many. And the gain is one kind's: 0.46 on `friedman`, level with the best
+flat program on `table`, below it on `regression` and `binary`. Greedy construction mostly finds
+what there is, which leaves little for knowledge to add. Constructed attributes alone are not
+the space this needs.
+
+What the measurements ask for is narrower: parts that recur, a search too large to exhaust, and
+solutions that can be checked exactly. The laws of the `regression` kind have all three (a
+fitted monomial recovers 36 of the 118; the others are built from factors such as 1 − v²/c²,
+sums and exponentials, each with a constant inside that has to be found). That is the next
+design.
 
 `data.tar.gz` holds the measurements behind the tables (one file per reading);
 `scripts/show_loko.py FILE` prints a reading.
