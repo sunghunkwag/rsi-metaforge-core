@@ -753,3 +753,18 @@ Seven mechanisms of self-modification have now been measured under this instruct
 has a second half; an eighth (the laws) was too thin to say. The reason is the same each time
 and is measured in both forms of problem: within these benchmark families, what a kind needs is
 found on the kind, and what carries between kinds is small and known after one pass.
+
+**The obstacle, stated as the directive asks (section 4 of this file, instruction 2, item 6).**
+No credible further mechanism was found inside what this repository can run. The specific
+obstacle: the second half needs something that carries between kinds and has depth, so that
+having part of it makes the rest easier to find. In these benchmark families that does not
+exist at the scale measured. The kinds are heterogeneous; what they share is a handful of facts
+that one pass of unbiased trying finds (design t: a perfect guide adds +0.0015 on a kind left
+out; design v: the kinds split into two groups that want opposite ways). So the improver's own
+task is easy next to its budget, and a better improver has nothing to gain. Two things would
+supply depth, and neither is available here: kinds that share deep structure (formal ones;
+the directive excludes integer, list and DSL domains as the primary one), or a proposer that
+can write mechanisms that are on no list (a language model in the loop; the runs of this
+repository have no model credentials, which the directive names as an infrastructure limit).
+A third, building some dozens of related kinds so that a group of kinds is itself deep, is
+weeks of adapters and audits with no measurement yet that says it would be enough.

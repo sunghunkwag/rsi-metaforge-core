@@ -86,6 +86,13 @@ cost when they were assigned, by how little they had to lose, or by how late the
 than choosing them at random (knapsack, twelve variables: 0.958 at random, 0.852 otherwise,
 which is where the construction left it). Nothing to learn there with these descriptions.
 
+**Moves built from the same parts** (`scripts/op_probe.py`; six training instances, the budget
+of a fresh problem). Taking every variable off one option and assigning them again, with that
+option closed or open, or redoing a run of consecutive variables: p-median 0.705 and 0.703
+against 0.702 for the generic way; quadratic 0-1 0.962 with the option left open against 0.943;
+knapsack, clique, quadratic assignment and tardiness lower than the generic way. No move of
+that sort is worth what would make constructing moves a space of its own.
+
 ## Where this leaves the second half
 
 The same thing as in design t, in a different form of problem and with effects ten times the
