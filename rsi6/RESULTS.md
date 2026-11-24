@@ -527,6 +527,41 @@ carries over. One step exhausts what can be known about it in general.
 a stage of the most expensive model costs twelve times the cheapest, and one version used 3.4
 times the CPU of generation 0 on one kind. Four kinds per form. No gate.
 
+## Design v in development: a learner that searches, and what it can carry between kinds (2026-11-24)
+
+Development only; nothing registered. The account with every table is
+`results/design_v_20261124/README.md`.
+
+**What was built.** A learner whose capability is a search instead of one or two constructions
+(`learner/design_v.py`): a greedy construction, then generic moves until the meter of the
+problem ends, the moves sharing the units by what each gained per unit. A way to search is six
+settings of three levels, 729 ways; every one was measured on the training problems of six
+kinds (`experiments/dev_ways.py`).
+
+**What it gives.** More, on some kinds, at the budget of the registrations: knapsack 0.918
+against 0.840 for the first design; quadratic assignment 0.371 against 0.472, because the
+generic way is the wrong one there (its best way reaches 0.585 on the training problems where
+the generic way reaches 0.507; on weighted tardiness 0.452 against 0.267). This is the
+designer's change to the learner, not the learner's to itself.
+
+**What missed.** Everything that was to carry from kind to kind.
+
+* A better generic way: there is none. One setting decides (which operators there are), with
+  opposite signs in two groups of kinds; the way that is best on the other kinds is 0.081 worse
+  than the generic way on a kind left out.
+* The settings of the race that acquires, which the improver would share: a race gains what its
+  trials buy; a setting good on some kinds is not good on another, and its worth as an acquirer
+  says nothing about its worth as an improver (rank correlation +0.03).
+* A memory of ways keyed by what a problem looks like: +0.004 on a kind left out (the first
+  half, small, for the one pair of kinds that look alike), and a memory made by a learner that
+  itself started from memory is no better than one made by generation 0 again (+0.0005 and
+  +0.0010 at generations 2 and 3, standard error 0.0017).
+
+**What it says with design t.** In both forms of problem, with effects of very different size,
+what a kind needs is found on the kind by the learner as it is; what carries between kinds is
+known after one pass; and a version that knows it has nothing further of that sort to find, so
+no improver, changed or not, produces a better next step.
+
 ## How to reproduce
 
     OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m rsi6.tests.test_kernel

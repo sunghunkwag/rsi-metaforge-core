@@ -739,3 +739,17 @@ directive's hard constraint excludes integer arithmetic, list manipulation, fixe
 the list and integer work. That constraint is the Owner's to keep or to lift; unless it is
 lifted in so many words, no such kind is added and the work stays inside the benchmark
 families of the repository, where the last look above found a place to continue.
+
+**Where it stands (2026-11-24, 17:40 UTC).** The learner that searches was built (design v,
+`learner/design_v.py`) and its 729 ways to search were measured on six kinds
+(`results/design_v_20261124/README.md`). It acquires far more than the first design on some
+kinds; that is its designer's change. Of what could carry from kind to kind, three things were
+tried on those tables: a better generic way (there is none: the kinds fall into two groups that
+want opposite ways), the settings of the acquiring race (nothing carries over), and a memory of
+ways keyed by what a problem looks like (a small first half, +0.004 on a kind left out; no
+second half, +0.0005 with a standard error of 0.0017).
+
+Seven mechanisms of self-modification have now been measured under this instruction and none
+has a second half; an eighth (the laws) was too thin to say. The reason is the same each time
+and is measured in both forms of problem: within these benchmark families, what a kind needs is
+found on the kind, and what carries between kinds is small and known after one pass.
