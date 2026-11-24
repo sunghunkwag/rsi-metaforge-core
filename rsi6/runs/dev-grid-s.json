@@ -1,0 +1,774 @@
+{
+ "what": "Development: the table of design s (rsi6/results/design_s_20261124/DESIGN.md). Every mechanism of its list of 324 (288 different searches) on eight assignment categories of the source pool, seeds 731001 to 731016, used by no earlier run, at the run budget of the registrations. Development only: scratch ledgers, nothing here is evidence. CPU is compared inside a job only. What is read from the tables, and how, is fixed in PREDICTION.md of the same directory before this plan runs.",
+ "tests": [
+  "rsi6.tests.test_design_s"
+ ],
+ "fetch": [
+  "binpacking",
+  "clique",
+  "jobshop",
+  "knapsack",
+  "pmedian",
+  "quadassign",
+  "quadratic",
+  "tardiness"
+ ],
+ "jobs": [
+  {
+   "id": "quadassign-1",
+   "fetch": [
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "quadassign",
+    "--seeds",
+    "731001",
+    "731002",
+    "731003",
+    "731004",
+    "731005",
+    "731006",
+    "731007",
+    "731008",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "quadassign-2",
+   "fetch": [
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "quadassign",
+    "--seeds",
+    "731009",
+    "731010",
+    "731011",
+    "731012",
+    "731013",
+    "731014",
+    "731015",
+    "731016",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "pmedian-1",
+   "fetch": [
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "pmedian",
+    "--seeds",
+    "731001",
+    "731002",
+    "731003",
+    "731004",
+    "731005",
+    "731006",
+    "731007",
+    "731008",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "pmedian-2",
+   "fetch": [
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "pmedian",
+    "--seeds",
+    "731009",
+    "731010",
+    "731011",
+    "731012",
+    "731013",
+    "731014",
+    "731015",
+    "731016",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "tardiness-1",
+   "fetch": [
+    "jobshop",
+    "pmedian",
+    "quadassign",
+    "tardiness"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "tardiness",
+    "--seeds",
+    "731001",
+    "731002",
+    "731003",
+    "731004",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "tardiness-2",
+   "fetch": [
+    "jobshop",
+    "pmedian",
+    "quadassign",
+    "tardiness"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "tardiness",
+    "--seeds",
+    "731005",
+    "731006",
+    "731007",
+    "731008",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "tardiness-3",
+   "fetch": [
+    "jobshop",
+    "pmedian",
+    "quadassign",
+    "tardiness"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "tardiness",
+    "--seeds",
+    "731009",
+    "731010",
+    "731011",
+    "731012",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "tardiness-4",
+   "fetch": [
+    "jobshop",
+    "pmedian",
+    "quadassign",
+    "tardiness"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "tardiness",
+    "--seeds",
+    "731013",
+    "731014",
+    "731015",
+    "731016",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "binpacking-1",
+   "fetch": [
+    "binpacking",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "binpacking",
+    "--seeds",
+    "731001",
+    "731002",
+    "731003",
+    "731004",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "binpacking-2",
+   "fetch": [
+    "binpacking",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "binpacking",
+    "--seeds",
+    "731005",
+    "731006",
+    "731007",
+    "731008",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "binpacking-3",
+   "fetch": [
+    "binpacking",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "binpacking",
+    "--seeds",
+    "731009",
+    "731010",
+    "731011",
+    "731012",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "binpacking-4",
+   "fetch": [
+    "binpacking",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "binpacking",
+    "--seeds",
+    "731013",
+    "731014",
+    "731015",
+    "731016",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "quadratic-1",
+   "fetch": [
+    "jobshop",
+    "pmedian",
+    "quadassign",
+    "quadratic"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "quadratic",
+    "--seeds",
+    "731001",
+    "731002",
+    "731003",
+    "731004",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "quadratic-2",
+   "fetch": [
+    "jobshop",
+    "pmedian",
+    "quadassign",
+    "quadratic"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "quadratic",
+    "--seeds",
+    "731005",
+    "731006",
+    "731007",
+    "731008",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "quadratic-3",
+   "fetch": [
+    "jobshop",
+    "pmedian",
+    "quadassign",
+    "quadratic"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "quadratic",
+    "--seeds",
+    "731009",
+    "731010",
+    "731011",
+    "731012",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "quadratic-4",
+   "fetch": [
+    "jobshop",
+    "pmedian",
+    "quadassign",
+    "quadratic"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "quadratic",
+    "--seeds",
+    "731013",
+    "731014",
+    "731015",
+    "731016",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "jobshop-1",
+   "fetch": [
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "jobshop",
+    "--seeds",
+    "731001",
+    "731002",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "jobshop-2",
+   "fetch": [
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "jobshop",
+    "--seeds",
+    "731003",
+    "731004",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "jobshop-3",
+   "fetch": [
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "jobshop",
+    "--seeds",
+    "731005",
+    "731006",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "jobshop-4",
+   "fetch": [
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "jobshop",
+    "--seeds",
+    "731007",
+    "731008",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "jobshop-5",
+   "fetch": [
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "jobshop",
+    "--seeds",
+    "731009",
+    "731010",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "jobshop-6",
+   "fetch": [
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "jobshop",
+    "--seeds",
+    "731011",
+    "731012",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "jobshop-7",
+   "fetch": [
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "jobshop",
+    "--seeds",
+    "731013",
+    "731014",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "jobshop-8",
+   "fetch": [
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "jobshop",
+    "--seeds",
+    "731015",
+    "731016",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "knapsack-1",
+   "fetch": [
+    "jobshop",
+    "knapsack",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "knapsack",
+    "--seeds",
+    "731001",
+    "731002",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "knapsack-2",
+   "fetch": [
+    "jobshop",
+    "knapsack",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "knapsack",
+    "--seeds",
+    "731003",
+    "731004",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "knapsack-3",
+   "fetch": [
+    "jobshop",
+    "knapsack",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "knapsack",
+    "--seeds",
+    "731005",
+    "731006",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "knapsack-4",
+   "fetch": [
+    "jobshop",
+    "knapsack",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "knapsack",
+    "--seeds",
+    "731007",
+    "731008",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "knapsack-5",
+   "fetch": [
+    "jobshop",
+    "knapsack",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "knapsack",
+    "--seeds",
+    "731009",
+    "731010",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "knapsack-6",
+   "fetch": [
+    "jobshop",
+    "knapsack",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "knapsack",
+    "--seeds",
+    "731011",
+    "731012",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "knapsack-7",
+   "fetch": [
+    "jobshop",
+    "knapsack",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "knapsack",
+    "--seeds",
+    "731013",
+    "731014",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "knapsack-8",
+   "fetch": [
+    "jobshop",
+    "knapsack",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "knapsack",
+    "--seeds",
+    "731015",
+    "731016",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "clique-1",
+   "fetch": [
+    "clique",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "clique",
+    "--seeds",
+    "731001",
+    "731002",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "clique-2",
+   "fetch": [
+    "clique",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "clique",
+    "--seeds",
+    "731003",
+    "731004",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "clique-3",
+   "fetch": [
+    "clique",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "clique",
+    "--seeds",
+    "731005",
+    "731006",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "clique-4",
+   "fetch": [
+    "clique",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "clique",
+    "--seeds",
+    "731007",
+    "731008",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "clique-5",
+   "fetch": [
+    "clique",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "clique",
+    "--seeds",
+    "731009",
+    "731010",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "clique-6",
+   "fetch": [
+    "clique",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "clique",
+    "--seeds",
+    "731011",
+    "731012",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "clique-7",
+   "fetch": [
+    "clique",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "clique",
+    "--seeds",
+    "731013",
+    "731014",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "clique-8",
+   "fetch": [
+    "clique",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_grid",
+   "args": [
+    "clique",
+    "--seeds",
+    "731015",
+    "731016",
+    "--out",
+    "run_out"
+   ]
+  }
+ ]
+}

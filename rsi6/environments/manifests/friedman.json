@@ -1,0 +1,361 @@
+{
+ "name": "friedman",
+ "category": "friedman",
+ "source": "Penn Machine Learning Benchmarks (github.com/EpistasisLab/pmlb), the data set tables as published",
+ "terms": "MIT licence (the repository's LICENSE). Fetched by hash, not committed.",
+ "reference": "the target column of the rows used as queries (kernel only)",
+ "rule": "regression data sets of the Friedman generator (name contains '_fri_c', or is 564_fried) with at least 100 rows and at most 25 attributes",
+ "summary_table_sha256": "d658820a844a555776273a2c1b6766eba983bb078e3bcc539141b1ac2cc33960",
+ "files": [
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/564_fried/564_fried.tsv.gz",
+   "path": "564_fried.tsv.gz",
+   "sha256": "f64bb4a6d214a59a50b70b0f3270e334725b6cc010443a484cc751b595a46fe9",
+   "rows": 40768,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/579_fri_c0_250_5/579_fri_c0_250_5.tsv.gz",
+   "path": "579_fri_c0_250_5.tsv.gz",
+   "sha256": "d32597bb1043df296ac3be1fff926646b26f268f89185310ea898e59b5fff896",
+   "rows": 250,
+   "features": 5
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/581_fri_c3_500_25/581_fri_c3_500_25.tsv.gz",
+   "path": "581_fri_c3_500_25.tsv.gz",
+   "sha256": "c894c39ab4164e11c82c792b5774d990ee12da947e74348ebe96138643586278",
+   "rows": 500,
+   "features": 25
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/582_fri_c1_500_25/582_fri_c1_500_25.tsv.gz",
+   "path": "582_fri_c1_500_25.tsv.gz",
+   "sha256": "7e6adcc066efe13d876fc6fcb124846abff5cef3893a79267afb5224d963d90a",
+   "rows": 500,
+   "features": 25
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/584_fri_c4_500_25/584_fri_c4_500_25.tsv.gz",
+   "path": "584_fri_c4_500_25.tsv.gz",
+   "sha256": "7a709393b5d54b8b08330c0f11921b9c5fd7b91ca835ac359aa239377cfdd1f5",
+   "rows": 500,
+   "features": 25
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/586_fri_c3_1000_25/586_fri_c3_1000_25.tsv.gz",
+   "path": "586_fri_c3_1000_25.tsv.gz",
+   "sha256": "30e1ff10a1b395027a93215492f6169ab6fef904da29bf16e88412c33a07d5d6",
+   "rows": 1000,
+   "features": 25
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/589_fri_c2_1000_25/589_fri_c2_1000_25.tsv.gz",
+   "path": "589_fri_c2_1000_25.tsv.gz",
+   "sha256": "3de46f4cd634b3e98a6fd4bd36f80f8037ca157236f4015920c92a2eee7ef254",
+   "rows": 1000,
+   "features": 25
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/591_fri_c1_100_10/591_fri_c1_100_10.tsv.gz",
+   "path": "591_fri_c1_100_10.tsv.gz",
+   "sha256": "b599d25b7d4484970721af1b7df8b38acab21012ce555f582998370e6936990c",
+   "rows": 100,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/592_fri_c4_1000_25/592_fri_c4_1000_25.tsv.gz",
+   "path": "592_fri_c4_1000_25.tsv.gz",
+   "sha256": "961a3859b8da7e721a1857f8f5467a9b6ebc3d735bbebff206ed1df36e628e1d",
+   "rows": 1000,
+   "features": 25
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/593_fri_c1_1000_10/593_fri_c1_1000_10.tsv.gz",
+   "path": "593_fri_c1_1000_10.tsv.gz",
+   "sha256": "e25c8392e2234206a80a2f9b9488906b9875b47f0bedbd055c36cf26e0a93bfd",
+   "rows": 1000,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/594_fri_c2_100_5/594_fri_c2_100_5.tsv.gz",
+   "path": "594_fri_c2_100_5.tsv.gz",
+   "sha256": "d8a4edf1f3696611762bdf2b492c0062bfdaafb3e5e2ea0ec8ef469bcab415ad",
+   "rows": 100,
+   "features": 5
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/595_fri_c0_1000_10/595_fri_c0_1000_10.tsv.gz",
+   "path": "595_fri_c0_1000_10.tsv.gz",
+   "sha256": "68f0a5b79e4bf5b23e812ca4a1fe431fc754d5c3955d02ce8d2951fae449ffdf",
+   "rows": 1000,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/596_fri_c2_250_5/596_fri_c2_250_5.tsv.gz",
+   "path": "596_fri_c2_250_5.tsv.gz",
+   "sha256": "5940ac21f3c7e93dd1dca45266304d160c45256f0628419f001c8b54e1c98360",
+   "rows": 250,
+   "features": 5
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/597_fri_c2_500_5/597_fri_c2_500_5.tsv.gz",
+   "path": "597_fri_c2_500_5.tsv.gz",
+   "sha256": "1a6dec52a56fc471f5bb8be372bdc25f65eb8b39542a25f4e3e590392dbceb27",
+   "rows": 500,
+   "features": 5
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/598_fri_c0_1000_25/598_fri_c0_1000_25.tsv.gz",
+   "path": "598_fri_c0_1000_25.tsv.gz",
+   "sha256": "89d2d744364e39e161145784d570fe04c1105d0bbc6ec364634d754eb8212e71",
+   "rows": 1000,
+   "features": 25
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/599_fri_c2_1000_5/599_fri_c2_1000_5.tsv.gz",
+   "path": "599_fri_c2_1000_5.tsv.gz",
+   "sha256": "4f7c486b471f2a5dcd94c97f52089b487c3f4aa1bbee14c3ac19472e4144b2eb",
+   "rows": 1000,
+   "features": 5
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/601_fri_c1_250_5/601_fri_c1_250_5.tsv.gz",
+   "path": "601_fri_c1_250_5.tsv.gz",
+   "sha256": "32bdeb725bc79d00349bcc66c41d306f463005cf6ac623cf8c15b5f3f7bbbb83",
+   "rows": 250,
+   "features": 5
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/602_fri_c3_250_10/602_fri_c3_250_10.tsv.gz",
+   "path": "602_fri_c3_250_10.tsv.gz",
+   "sha256": "8a24109b1e1037d35f8deddb3ea6ee3ccf295fa8cf6a44b10338395378957140",
+   "rows": 250,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/604_fri_c4_500_10/604_fri_c4_500_10.tsv.gz",
+   "path": "604_fri_c4_500_10.tsv.gz",
+   "sha256": "961c38abd7be4216ebf941f85633ac6bde68442ce804ed84ab1cfa7336e884ef",
+   "rows": 500,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/605_fri_c2_250_25/605_fri_c2_250_25.tsv.gz",
+   "path": "605_fri_c2_250_25.tsv.gz",
+   "sha256": "56f81f2a4cdd1968cc83d45bfdaa049c90cf7cdf3141b2db9979d31c000e3937",
+   "rows": 250,
+   "features": 25
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/606_fri_c2_1000_10/606_fri_c2_1000_10.tsv.gz",
+   "path": "606_fri_c2_1000_10.tsv.gz",
+   "sha256": "4757ff95609abb91a98577cf6023c804ba2b0b749a9dfcc48597ac49d4bf72a0",
+   "rows": 1000,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/608_fri_c3_1000_10/608_fri_c3_1000_10.tsv.gz",
+   "path": "608_fri_c3_1000_10.tsv.gz",
+   "sha256": "09754d4c7db37ea29fddfcca840ceba97aae3b70905f25f8432fd9f48145c02e",
+   "rows": 1000,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/609_fri_c0_1000_5/609_fri_c0_1000_5.tsv.gz",
+   "path": "609_fri_c0_1000_5.tsv.gz",
+   "sha256": "01fa62d89cd626cebaed7a6975a9488848c1764e4a6ef4798597894c93a1379c",
+   "rows": 1000,
+   "features": 5
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/611_fri_c3_100_5/611_fri_c3_100_5.tsv.gz",
+   "path": "611_fri_c3_100_5.tsv.gz",
+   "sha256": "c413fd972449c1b57e6bb4cf5c00d7f0c4ac5591faaf0ad5f40461531da346a3",
+   "rows": 100,
+   "features": 5
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/612_fri_c1_1000_5/612_fri_c1_1000_5.tsv.gz",
+   "path": "612_fri_c1_1000_5.tsv.gz",
+   "sha256": "6b0ff453a469843fb4bcdc51dd602d0395b8fe3714326fd0e6eefa21f0683c9e",
+   "rows": 1000,
+   "features": 5
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/613_fri_c3_250_5/613_fri_c3_250_5.tsv.gz",
+   "path": "613_fri_c3_250_5.tsv.gz",
+   "sha256": "24776e0eb2ca28529d8913612c14fdb6eb822bd991628272034b3c3176b42c5b",
+   "rows": 250,
+   "features": 5
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/615_fri_c4_250_10/615_fri_c4_250_10.tsv.gz",
+   "path": "615_fri_c4_250_10.tsv.gz",
+   "sha256": "4b856f1f454ad4619683e621bbdb2cf480de225837d582eb520b5292cd579792",
+   "rows": 250,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/617_fri_c3_500_5/617_fri_c3_500_5.tsv.gz",
+   "path": "617_fri_c3_500_5.tsv.gz",
+   "sha256": "a4e3dfadeb34bba861ef56046d2fc99c4d50d8475882d610a0b652d39c510f6b",
+   "rows": 500,
+   "features": 5
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/620_fri_c1_1000_25/620_fri_c1_1000_25.tsv.gz",
+   "path": "620_fri_c1_1000_25.tsv.gz",
+   "sha256": "93a4486c3ad84002ae5506dee5827e2da3c03660b5fa28efab2975af81f8e303",
+   "rows": 1000,
+   "features": 25
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/621_fri_c0_100_10/621_fri_c0_100_10.tsv.gz",
+   "path": "621_fri_c0_100_10.tsv.gz",
+   "sha256": "6ec32e9502e1529993d9b8ec5e859d3e81c0f911e291f3cd7e9e145df4677998",
+   "rows": 100,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/623_fri_c4_1000_10/623_fri_c4_1000_10.tsv.gz",
+   "path": "623_fri_c4_1000_10.tsv.gz",
+   "sha256": "f3a0b514802c80c42d42dfcc9eb260278a46e09293a9cb9d59420548e30a5a25",
+   "rows": 1000,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/624_fri_c0_100_5/624_fri_c0_100_5.tsv.gz",
+   "path": "624_fri_c0_100_5.tsv.gz",
+   "sha256": "0443c7987f602af94da4ff78a9105b84def1fd8a755b65b4e92907ed148b0c9d",
+   "rows": 100,
+   "features": 5
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/627_fri_c2_500_10/627_fri_c2_500_10.tsv.gz",
+   "path": "627_fri_c2_500_10.tsv.gz",
+   "sha256": "638db3e132b98e5bdaf919592ab3cc9d5c2fc11a4360dfd2a59cebdd51225551",
+   "rows": 500,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/628_fri_c3_1000_5/628_fri_c3_1000_5.tsv.gz",
+   "path": "628_fri_c3_1000_5.tsv.gz",
+   "sha256": "395dac2c4bc2e6dd925d4a63cc0dd609db3ddfb5cb5e5a4ff8085bc06aadd3de",
+   "rows": 1000,
+   "features": 5
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/631_fri_c1_500_5/631_fri_c1_500_5.tsv.gz",
+   "path": "631_fri_c1_500_5.tsv.gz",
+   "sha256": "0b1b989e2bb2501020f011c569300329c57f3da1eec5e294b44e06c29fc515f7",
+   "rows": 500,
+   "features": 5
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/633_fri_c0_500_25/633_fri_c0_500_25.tsv.gz",
+   "path": "633_fri_c0_500_25.tsv.gz",
+   "sha256": "630e12d0aee328644928b35c8083bceb964118537e2e8f541384d0fae5654c92",
+   "rows": 500,
+   "features": 25
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/634_fri_c2_100_10/634_fri_c2_100_10.tsv.gz",
+   "path": "634_fri_c2_100_10.tsv.gz",
+   "sha256": "813241b766ce440f3556b3056bd63ca304d98d19f6f2fde9c11cf945143917fe",
+   "rows": 100,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/635_fri_c0_250_10/635_fri_c0_250_10.tsv.gz",
+   "path": "635_fri_c0_250_10.tsv.gz",
+   "sha256": "60c909d5dd423662965b602d5beca52eb74340346ec59a4bf41c2a2084461520",
+   "rows": 250,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/641_fri_c1_500_10/641_fri_c1_500_10.tsv.gz",
+   "path": "641_fri_c1_500_10.tsv.gz",
+   "sha256": "c0a5688112ff3de7307d79885c4e6a1e0bfb47a72ee5866cfd5a0f3cd15a9c6e",
+   "rows": 500,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/643_fri_c2_500_25/643_fri_c2_500_25.tsv.gz",
+   "path": "643_fri_c2_500_25.tsv.gz",
+   "sha256": "6a198d0f25215def0d2fb5f53a177018a2420c4e2c721ced87f33452cfb5628e",
+   "rows": 500,
+   "features": 25
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/644_fri_c4_250_25/644_fri_c4_250_25.tsv.gz",
+   "path": "644_fri_c4_250_25.tsv.gz",
+   "sha256": "9c2b046e90d8d62e1446b9d2287de6c751eb74a8715a9e108e89b5b875ce1100",
+   "rows": 250,
+   "features": 25
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/646_fri_c3_500_10/646_fri_c3_500_10.tsv.gz",
+   "path": "646_fri_c3_500_10.tsv.gz",
+   "sha256": "bbe46db284f0e29f95dfd9984ca32565b52d83217aa084c90de5f6edf82bfea1",
+   "rows": 500,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/647_fri_c1_250_10/647_fri_c1_250_10.tsv.gz",
+   "path": "647_fri_c1_250_10.tsv.gz",
+   "sha256": "d48ba83a9a47fb7db444babf1102c155c0cd68280f956369a57bae859943d4eb",
+   "rows": 250,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/649_fri_c0_500_5/649_fri_c0_500_5.tsv.gz",
+   "path": "649_fri_c0_500_5.tsv.gz",
+   "sha256": "371be1ecf615b8f56151182c133ca9dd554128348b395a118953dd338340cee0",
+   "rows": 500,
+   "features": 5
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/651_fri_c0_100_25/651_fri_c0_100_25.tsv.gz",
+   "path": "651_fri_c0_100_25.tsv.gz",
+   "sha256": "4331dd8ab60fed92bc17da4a52d96a464932ab822194f95ba217e4a761e50429",
+   "rows": 100,
+   "features": 25
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/653_fri_c0_250_25/653_fri_c0_250_25.tsv.gz",
+   "path": "653_fri_c0_250_25.tsv.gz",
+   "sha256": "32abe7e2579387f0439d1595cb72f1f0fe79f41822ec99d06f0e219a65dda362",
+   "rows": 250,
+   "features": 25
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/654_fri_c0_500_10/654_fri_c0_500_10.tsv.gz",
+   "path": "654_fri_c0_500_10.tsv.gz",
+   "sha256": "97c5134b825cef5fc2df40ee26c69a2c7406ab3a738b7b89ee60142a392a1619",
+   "rows": 500,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/656_fri_c1_100_5/656_fri_c1_100_5.tsv.gz",
+   "path": "656_fri_c1_100_5.tsv.gz",
+   "sha256": "e1bcb938c249aa3415149793145e9499923cebf7fbc80421c5487efd88e3ad5f",
+   "rows": 100,
+   "features": 5
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/657_fri_c2_250_10/657_fri_c2_250_10.tsv.gz",
+   "path": "657_fri_c2_250_10.tsv.gz",
+   "sha256": "b8c73c4552648f302e53b9bc72ddcc65e7d17a694532498040e47047a6ff8e27",
+   "rows": 250,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/658_fri_c3_250_25/658_fri_c3_250_25.tsv.gz",
+   "path": "658_fri_c3_250_25.tsv.gz",
+   "sha256": "5adc7d62cd741fde41554ad50ba608973a19f87f795787156e7f16855a227a49",
+   "rows": 250,
+   "features": 25
+  }
+ ]
+}

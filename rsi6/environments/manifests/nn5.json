@@ -1,0 +1,14 @@
+{
+ "name": "nn5",
+ "category": "nn5",
+ "source": "Monash Time Series Forecasting Archive (forecastingdata.org), the NN5 daily data set without missing values, as published on Zenodo",
+ "terms": "CC BY 4.0 (the Zenodo records). Fetched by hash, not committed.",
+ "reference": "the last values of each series, the horizon of its file (kernel only)",
+ "files": [
+  {
+   "url": "https://zenodo.org/api/records/4656117/files/nn5_daily_dataset_without_missing_values.zip/content",
+   "path": "nn5_daily_dataset_without_missing_values.zip",
+   "sha256": "14d504384a97f7730a4b2595da9f35f77ee82b1974ffcf515eb17d607f7a07bb"
+  }
+ ]
+}

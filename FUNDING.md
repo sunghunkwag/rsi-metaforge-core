@@ -13,6 +13,8 @@ The research this supports, with its results, retractions and limits, is publish
 
 This repository is also listed with FLOSS/fund, which funds open-source projects through fixed grants. The rest of this page is that application. FLOSS/fund's smallest grant is USD 10,000, so the application uses that amount. It is the grant program's format, not a fundraising target.
 
+**Note, 2026-11-22.** The application below was written for the repository as it stood at commit [`c4f0a86`](https://github.com/sunghunkwag/rsi-metaforge-core/tree/c4f0a8627a1c9f37dd3aa6291b0eee0c78648210): the standard-library runtime, its 286 tests, its two workflows and its result documents are preserved there. The tree has since been consolidated on the RSI-6 package, which is described in [README.md](README.md) and needs NumPy. The request, the plan and the budget are unchanged.
+
 ### Request
 
 A **USD 10,000 one-time sustainability grant** covering ten months of public maintenance.

@@ -1,0 +1,86 @@
+name: RSI-6 tests
+
+# The kernel, adapter and design tests. They load every adapter, so the published benchmark
+# data are fetched first (rsi6/fetch.py; every file is pinned by SHA-256 in its manifest) and
+# kept in the Actions cache. A red run can mean that a publisher's host did not answer.
+on:
+  push:
+    paths:
+      - "rsi6/**"
+      - ".github/workflows/rsi6-tests.yml"
+  pull_request:
+    paths:
+      - "rsi6/**"
+      - ".github/workflows/rsi6-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rsi6-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  OPENBLAS_NUM_THREADS: "1"
+  OMP_NUM_THREADS: "1"
+
+jobs:
+  tests:
+    name: Kernel, adapter and design tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install NumPy
+        run: python -m pip install numpy==2.5.3
+
+      - name: Restore the published benchmark data
+        uses: actions/cache@v4
+        with:
+          path: rsi6/data
+          key: rsi6-data-${{ hashFiles('rsi6/environments/manifests/*.json') }}
+
+      - name: Fetch the published benchmark data
+        run: |
+          for name in binpacking jobshop forecasting quadassign pmedian knapsack regression \
+                      partitioning setcover satisfiability routing facility tour colouring genassign \
+                      tardiness quadratic projects clique; do
+            python -m rsi6.fetch "$name" > "fetch_$name.log" || { tail -5 "fetch_$name.log"; exit 1; }
+            echo "$name: $(grep -c bytes "fetch_$name.log") files"
+          done
+
+      - name: Kernel and learner contract
+        run: python -m rsi6.tests.test_kernel
+
+      - name: Adapter checks on the fresh categories
+        run: python -m rsi6.tests.test_fresh
+
+      - name: Design q
+        run: python -m rsi6.tests.test_design_q
+
+      - name: Design r
+        run: python -m rsi6.tests.test_design_r
+
+      - name: Relay driver and report
+        run: python -m rsi6.tests.test_relay
+
+      - name: The gate of process d, before it runs (amendment 6)
+        run: python -m rsi6.tests.test_gate_d
+
+      - name: Design s and its chains on tables
+        run: python -m rsi6.tests.test_design_s
+
+      - name: Design t (the learner of the prediction form) and the parts of its improver
+        run: python -m rsi6.tests.test_design_t
+
+      - name: Design v (the learner that searches)
+        run: python -m rsi6.tests.test_design_v

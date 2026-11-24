@@ -1,0 +1,135 @@
+{
+ "summary": "I checked report.py after the corrections. Every finding from review_report.json is now fixed or partly fixed. The void rule is right in targets_section: every comparison with one of the seven matched arms on either side carries a void flag, and it is set whenever the arm falls short of its matched CPU or gets less CPU than the other side in a pair. I tested all seven arms on both sides of \"minus\" with synthetic copies of the dev ledger, each rewritten record by record through Ledger.append so the chain verifies. Process c success can never be True while 'c:self minus c:compute' is void. In that case the targets part reads \"void\" and success reads False, never \"void\". Success is still True when only c:search is void, which matches amendment 4 reading (c).\n\nWhat is left, from most to least serious:\n- **Major (new):** prediction B5 is still scored from 'b:frozen minus compute@b' when that comparison is void. The verifier had asked for this check.\n- **Minor:** the targets part reads \"void\" even when the primary margin has already failed.\n- **Minor:** C4 is scored as held when the only part that is not True is \"void\".\n- **Minor:** \"<matched arm> minus frozen\" is marked void because the arm missed the CPU of the arm it was matched to, although it received more CPU than frozen in every pair.\n- **Notes:** a missing matched record turns off every void check; compare() silently collapses a duplicate (category, seed) pair and ignores a category present only on the left side; on a ledger with no target unlock, C6 is scored from the file without looking at target_done.\n\nOther checks: the success parts and C1 to C6 behave as registered in every synthetic case (two adopting generations, a duplicate adoption, an external gate that passed, an inconsistent external record, a targets part that holds, everything holding, no adoption, an adoption tied between two techniques). On main.jsonl, rounds 1, 2 and b1 agree field by field with the search, gate and confirm records. The process c adoption appears only in the process c section, and process c's CPU recomputes to 25382.04 s over 2226 runs. Records of the new types (recursion_search, recursion_gate, recursion_confirm, recursion_done, the extended matched records, external_gate, the process c freeze) change only the recursion line and C5. Total compute was about 2.5 CPU-minutes, one process at a time under nice 19. No learner was run and nothing under REPO was modified. My scripts are in <review>/work_c: synth.py, void_test.py, success_test.py, compare_test.py and leak_test.py, with the synthetic ledgers in ledgers/ and the two report outputs (main.txt, main.json, dev_ledger.txt, dev_ledger.json).",
+ "checks_run": [
+  "report CLI on rsi6/ledger/main.jsonl and dev_ledger.jsonl (work_c/main.txt, dev_ledger.txt, *.json); main 0.6 s, dev 11 s user CPU",
+  "work_c/void_test.py: 22 synthetic ledgers (built from dev_ledger via Ledger.append, verify() passes). For each of compute, search, b:compute, b:search, compute@b, c:compute, c:search it makes three cases: the matched record short in one pair; one run cloned with CPU 0.001 and the record short; CPU 0.001 with the record still saying reached. Then two more: c:compute CPU between c:self and c:self+share; matched record of c:compute deleted",
+  "work_c/success_test.py: dev as is; two adopting generations; duplicate adopt of generation 1; external gate passed; external record passed while measurements say not (SystemExit); targets part holds; all three parts hold; all hold with c:compute short; primary +0.005 with c:compute short; all hold with c:search short; no adoption (primary_arm_c c:frozen, external run False); adoption credited to single while climb named the same version; primary arms self:2 and b:self:b1 with search, b:search and compute@b short",
+  "score_predictions_b on the ledger low_compute_b (compute@b below b:frozen in one pair): B5 still scored",
+  "work_c/compare_test.py: two seeds (cloned runs, seed 302); point estimates of all 22 comparisons recomputed by my own (env, seed) pairing, all equal; listing order of frozen, c:compute, c:self, b:frozen and skills reversed gives identical comparisons; aliases c:frozen and c:skills never compared; arm one run short; extra category only on the c:self side; duplicate pair",
+  "work_c/leak_test.py: recursion_search, recursion_gate and recursion_confirm records plus recursion runs and a recursion_done with one compared generation added to dev; full report JSON compared with the base: only process_c.recursion_check and C5 change",
+  "regression on main.json: every field of rounds 1, 2 and b1 equal to the search, gate and confirm records; no ADOPTED under any round; process c runs and CPU recomputed (2226 runs, 25382.04 s); R1-R4 and B1-B3 checked by hand against the records; registration.json equal to the ledger's registration record",
+  "reading: report.py in full; targets.py matched(), process_arms() and main(); external.py 104-162; recursion.py 95-145; alternating.py tie-break (line 241, order single, remeasure, combine, climb); registration.json failure_conditions and controls; registration_c.json decision and predictions; amendment_4.json readings (a)-(d), C5, C6; targets.json"
+ ],
+ "fixes": [
+  {
+   "finding": "review_report major (315-319): the targets part of success ignored whether c:compute reached its matched CPU",
+   "status": "partly_fixed",
+   "evidence": "report.py 228-235 sets void on every comparison with a matched arm on either side. 348-349 set parts['targets']='void', and 356 makes success False, never True. void_test.py: 'short/low/low-but-record-reached c:compute' gives targets='void', success=False. success_test 'ALL hold but c:compute short' gives success=False and C4 True; 'ALL hold' gives success True. Still missing from the verifier's better_fix: score_predictions_b (469-471) does not read the flag, so B5 is scored on a void comparison (new defect below)."
+  },
+  {
+   "finding": "review_targets major (report part): no comparison against a matched arm was voided",
+   "status": "fixed",
+   "evidence": "void_test.py: for all seven matched arms, every comparison involving the arm on either side is void and none other (wrongly_void=[] not_void_but_should=[] in 21 cases). With primaries self:2 and b:self:b1 (success_test 's_prim'): 'self:2 minus search', 'b:self:b1 minus b:search', 'b:self:b1 minus compute@b', 'b:frozen minus compute@b' are void, and 'self:2 minus compute' and 'b:self:b1 minus b:compute' are not. The control's CPU below the other arm's is caught even when the matched record says reached. Over-voiding and the missing-record case are listed as new defects."
+  },
+  {
+   "finding": "review_report major->minor (351-353): C6 scored from registry/targets.json alone",
+   "status": "fixed",
+   "evidence": "report.py 397-405: if the ledger holds a target unlock and its list differs from the file, C6 is not scored; otherwise it is scored on the file, as the registered criterion says ('targets.json lists four admitted categories'), with 'recorded in the ledger' in the detail. main.txt: C6 held, recorded False. Residual: target_done is not consulted when there is no unlock (note below)."
+  },
+  {
+   "finding": "minor (306): adopting generations counted as adopt records",
+   "status": "fixed",
+   "evidence": "report.py 309 counts the distinct rounds. success_test 'duplicate adopt of generation 1' gives adopting=[1] and two_adopting_generations False. alternating.py 242 guards the second append. C2 still counts records (climb 2 in that case), which can only matter with a duplicate."
+  },
+  {
+   "finding": "minor: the PROCESS C header mixed finished generations with runs and CPU of the generation in progress",
+   "status": "fixed",
+   "evidence": "report.py 315 and 532. main.txt: '1 of 6 generations recorded ... 2226 runs and 25382 CPU-seconds so far, including generation [2] in progress'; the totals recompute exactly."
+  },
+  {
+   "finding": "minor: search_section dropped or mislabelled the recursion searches",
+   "status": "fixed",
+   "evidence": "recursion.py 113, 123, 128 write recursion_search, recursion_gate and recursion_confirm; report.py selects type='search', 'gate', 'confirm' exactly. leak_test.py: adding those records and runs leaves the searches, rounds, generation0 and targets sections unchanged."
+  },
+  {
+   "finding": "minor: C2 did not show when the adopted version was named by several techniques",
+   "status": "partly_fixed",
+   "evidence": "report.py 305-308 adds named_by and 381-383 adds the count to C2's detail. success_test 'credited to single, also named by climb': named_by lists 4 techniques, C2 is held with detail {'single-field techniques': 1, 'climb': 0, ...shared: 1}. The tie is still decided by alternating.py 241 (max keeps the first, single before climb) and scored for the single-field side. No registered text settles that tie. Shown, not resolved."
+  },
+  {
+   "finding": "minor: printed texts not from the ledger (C5/C6 from amendment_4.json, R texts from registration.json, label 'the reserves')",
+   "status": "fixed",
+   "evidence": "report.py 366-371: SHA-256 checked against the amendment-4 record when it exists, otherwise the texts say '[amendment 4 is not yet recorded in this ledger]' (main.txt C5, C6). Line 557 prints external['envs']. R texts still come from the file, but registration.json equals the ledger's registration record (checked: True)."
+  },
+  {
+   "finding": "minor (206-212): compare() zipped sorted lists, so a missing or extra run mispaired silently",
+   "status": "fixed",
+   "evidence": "report.py 220-223 pair by seed and stop if the seed sets differ from done['seeds']. compare_test.py: one run missing in either arm raises SystemExit; reversing listing order changes nothing; all 22 point estimates equal my own pairing. Residual corner cases listed as a note."
+  },
+  {
+   "finding": "note: search_section re-read the registration for every run",
+   "status": "fixed",
+   "evidence": "report.py 109 reads it once; the report on main takes 0.6 s user CPU."
+  },
+  {
+   "finding": "note (b), (c): external 'passed' not recomputed and final digest not compared; targets part None when primary_arm_c is c:frozen",
+   "status": "fixed",
+   "evidence": "report.py 324-327: success_test 'external record passed, measurements say not' raises SystemExit. 344-345: 'no adoption at all' gives targets False, success False, C1 False, C3 True, C4 True. Note (a), the shared rng, is unchanged and deterministic."
+  }
+ ],
+ "new_defects": [
+  {
+   "severity": "major",
+   "file": "rsi6/experiments/report.py",
+   "line": "469-471",
+   "what": "B5 is scored from 'b:frozen minus compute@b' without reading the void flag that targets_section now puts on that same comparison.",
+   "why_it_matters": "compute@b is a matched arm. When it falls short of b:frozen's CPU, the registration (failure_conditions, last item) makes the comparison void. B5 ('at equal measured CPU that advantage is not established') is still scored held or missed from it. An under-resourced compute@b biases the comparison towards b:frozen, so B5 can be scored MISSED wrongly. The verifier of the major finding asked for exactly this check.",
+   "evidence": "Ledger work_c/ledgers/low_compute_b.jsonl (compute@b run with CPU 0.001 in one pair, matched record short): targets_section gives 'b:frozen minus compute@b' void=True, pairs_short 1, less 1. score_predictions_b returns ('B5', True, [-0.0154, -0.0309, 0.0]).",
+   "suggested_fix": "In score_predictions_b, when c['b:frozen minus compute@b'].get('void') is set, add B5 as None with the void counts as detail."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/experiments/report.py",
+   "line": "346-351",
+   "what": "When 'c:self minus c:compute' is void, the targets part becomes 'void' even if the primary margin (c:self minus frozen, which no matched arm touches) has already failed.",
+   "why_it_matters": "Part (3) has then failed independently of the control, but it is reported as void, i.e. undetermined. The registration says 'anything less is reported as what it is'. Success is False either way.",
+   "evidence": "success_test 's_small_void' (c:self +0.005 over frozen, c:compute short): parts targets='void' instead of False.",
+   "suggested_fix": "Check the primary margin first: if point < 0.01 or low <= 0, set False; only otherwise set 'void' when the comparison against c:compute is void."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/experiments/report.py",
+   "line": "356, 388",
+   "what": "A 'void' part makes success False, so C4 ('the success condition is not met', criterion 'one of the three parts of the success condition fails') is scored as held although no part failed; one part could not be decided.",
+   "why_it_matters": "A scored prediction is decided by a void comparison. If the comparison had been matched, C4 could have been missed. The README itself says success is then 'not established'. The detail does show targets: 'void', so the reader can see it.",
+   "evidence": "success_test 'ALL hold but c:compute short': parts {True, True, 'void'}, success False, C4 True.",
+   "suggested_fix": "Score C4 as None, with the reason, when a part is 'void' and no part is False. Or state in the report that a void part counts as a failure for C4."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/experiments/report.py",
+   "line": "229-235",
+   "what": "The 'short' count is relative to the arm a control was matched to, but it voids every comparison of that control, including '<arm> minus frozen' where the control received more CPU than frozen in every pair. The same applies to 'compute minus frozen' when the primary of process a is self:x, and to 'b:frozen minus compute@b' when primary_b is b:self:x.",
+   "why_it_matters": "The registered rule voids a comparison only when the control received less CPU than the arm it is compared with. Valid comparisons are printed as VOID. None of them is scored today.",
+   "evidence": "void_test 'c:compute between c:self and c:self+share' (c:compute CPU above c:self and frozen, below the matched CPU): 'c:compute minus frozen' void although pairs_with_less_cpu_than_the_other_arm = 0.",
+   "suggested_fix": "Apply the short count only when the other side is the arm the control was matched to (the primary of its process); elsewhere use only the per-pair CPU comparison."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/experiments/report.py",
+   "line": "230",
+   "what": "If an arm that should be matched has no matched record, none of the void checks run, not even the per-pair CPU check.",
+   "why_it_matters": "Such a comparison would count as valid, and success could be True. targets.py always writes the record before target_done, so this cannot happen with the current driver.",
+   "evidence": "void_test 'matched record of c:compute missing, c:compute below c:self': no comparison void.",
+   "suggested_fix": "Treat the seven matched arm names as matched by name: a missing record means void."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/experiments/report.py",
+   "line": "219-223",
+   "what": "compare() checks seeds only for the categories of the reference side. An arm holding two runs of one (category, seed) keeps only the last in the comparison but both in its arm table. A category present only on the left side is ignored without a message.",
+   "why_it_matters": "Silent mispairing in shapes targets.py does not produce (one job per pair), so this is a robustness gap only.",
+   "evidence": "compare_test: 'c:self duplicate pair' changes 'c:self minus frozen' from -0.0100 to +0.1150 with no error; 'c:self extra env' gives no error. 'frozen extra env' and any missing run raise SystemExit.",
+   "suggested_fix": "Check that both sides hold exactly the categories of done['targets'] times done['seeds'], with no duplicates."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/experiments/report.py",
+   "line": "397-405",
+   "what": "C6 compares the file only with the target unlock record. On a ledger that has a target_done but no unlock (the development mode writes none), C6 is scored from the file without looking at what the test ran on.",
+   "why_it_matters": "The registered run always writes the unlock (targets.py 286-287), so this affects development reports only.",
+   "evidence": "dev_ledger.txt: C6 held with 'recorded in the ledger': False, although target_done in that ledger ran on ['binpacking', 'pmedian'].",
+   "suggested_fix": "Also compare with target_done['targets'] when it exists."
+  }
+ ]
+}

@@ -1,0 +1,82 @@
+{
+ "amendment": 6,
+ "utc": "2026-11-22T22:48:22Z",
+ "after": "the development scan of generation 0 of the first design on the nine categories of the pool and two measurements on new seeds (rsi6/results/dev_landscape_20261122/), which left one single-field change standing (model.batch 4 -> 2: +0.0188 and +0.0246 over the nine categories, 5 % points +0.0106 and +0.0154, CPU 1.03 and 1.04 times generation 0's); before any learner run on a category outside the pool",
+ "why": "the Owner's instruction 18 (rsi6/OWNER_DIRECTIVE.md), given after the report that named a registered test of this change, its categories and its rule as the Owner's decision and recommended the four categories used here",
+ "registered": {
+  "nominee": "54945fe097230388cd33a38da70f1618d6b86cd7467b9accd6bf578abff332c6",
+  "incumbent": "4766c8e406dd0b04e1302d98f94466a987e1654bfc60fa9fd64419bcd95b453a",
+  "changes": {
+   "model.batch": 2
+  },
+  "categories": [
+   "clique",
+   "projects",
+   "quadratic",
+   "tardiness"
+  ],
+  "role": "adoption:5",
+  "gate_seeds": [
+   8101,
+   8132
+  ],
+  "confirm_seeds": [
+   9101,
+   9132
+  ],
+  "budget": {
+   "train": 40.0,
+   "test_c": 2.0,
+   "test_e": 1.0,
+   "n_train": 16,
+   "n_fresh": 24
+  },
+  "rules": {
+   "margin": 0.005,
+   "cpu_ratio": 1.15,
+   "bootstrap": 2000,
+   "level": 0.9
+  },
+  "bootstrap_seed": 600,
+  "block": 4
+ },
+ "decisions": [
+  "Process d, generation 1 (rsi6/experiments/gate_d.py). The nominee is generation 0 of the first design with model.batch 2. No registered search produced it: it comes from development measurements on the pool, with the second measurement's choice and reading committed before its run. What is registered here is its gate and nothing else.",
+  "Categories. The four with the role fresh (weighted tardiness, quadratic 0-1, project scheduling, maximum clique). No learner has run on them; their adapters were built and audited by independent agents (rsi6/audit/adapters_fresh_20261116) and their files are checked against the hashes of rsi6/registry/fresh.json before anything runs. They were held out for the relay experiment, which was not registered after its second development check was negative. They get the role adoption:5 (reassign records), the role is unlocked for this gate and released after it, and from then on they belong to the pool. The reserves and the sealed targets are not touched.",
+  "The gate. The registered gate, unchanged (rsi6.meta.rounds.gate with the rules of registration c): incumbent generation 0; the smaller of the mean changes of the acquired score and of the gain at least 0.005; the 10 % point of the mean gain change, runs resampled within categories, above zero; measured CPU of the nominee at most 1.15 times the incumbent's. On the deciding half of the fresh instances, seeds 8101 to 8132. The confirmation (rounds.confirm) on the other half, seeds 9101 to 9132. The run budget of the registrations. 32 seeds where the earlier gates had 6: the development scan showed what 18 paired runs are worth.",
+  "Outcome. Passed if the gate's three conditions hold and the confirmation is above zero (amendment 4, reading a, applied to this gate). If passed, the nominee is adopted as generation 1 of process d; the adoption is not provisional in the sense of process c, because the categories of its gate were never searched on. If not passed, nothing is adopted, the categories join the pool all the same, and this change is not put through another gate: one nominee, one gate.",
+  "Where it is measured. On one GitHub-hosted runner, in one job, by the driver at the commit that carries this file. The two versions are measured in alternating blocks of four seeds (both versions of a block in one call of the kernel), so every CPU comparison is between runs of that one machine. The reassign and unlock records are written on the session's machine and committed before the job starts, so that the opening of the categories is on record whatever happens to the job. The job uploads the working ledger; it is verified (chain, the committed ledger a prefix of it, the hash of this file in its amendment record), a sample of its runs is measured again on the session's machine, where the scores must agree to the last digit, and then it is checkpointed.",
+  "What a pass shows, fixed now. One independently validated modification of the acquisition mechanism: the first half of the hypothesis, for one step. Nothing about the second half. The improver that found the nominee was a scan run by the experimenter's harness. The learner as improver (rounds.search) works with the fields edit.* only; the nominee does not change them, so as an improver it is generation 0 exactly. A pass is therefore not recursive self-improvement and is not reported as that."
+ ],
+ "seen_before_registration": [
+  "without running a learner: the four categories built with a dummy meter (as rsi6/open/relay.py does). Tardiness and projects are ordered problems (50 and 30 variables), quadratic and clique are unordered with two options (120 and 300 variables); no instance has a known starting answer. On the pool, the registered budget gives generation 0 about ten rounds of learning on the one ordered category (job shop), where a batch of 2 changed nothing (-0.006 and -0.004), and one to three on the unordered ones, where it changed between +0.001 and +0.168",
+  "the choice of the four categories was stated before that was looked at (report of 2026-11-22, about 22:25 UTC) and was not changed"
+ ],
+ "predictions": [
+  {
+   "id": "D1",
+   "text": "the gate does not pass (the experimenter's probability of a pass: about 0.4)",
+   "criterion": "gate_d.passed is false"
+  },
+  {
+   "id": "D2",
+   "text": "tardiness and projects, the two ordered categories, change by less than 0.005 either way at the gate",
+   "criterion": "the absolute acquired change of both at the gate is below 0.005"
+  },
+  {
+   "id": "D3",
+   "text": "at least one of quadratic and clique changes by +0.01 or more at the gate",
+   "criterion": "the acquired change of quadratic or of clique at the gate is at least 0.01"
+  },
+  {
+   "id": "D4",
+   "text": "the nominee's CPU is between 0.95 and 1.10 times the incumbent's at the gate",
+   "criterion": "0.95 <= cpu_ratio <= 1.10"
+  }
+ ],
+ "not_claimed": [
+  "that a pass is recursive self-improvement: it is one changed field, found by a scan the experimenter's harness ran, of a learner whose improver the change does not touch",
+  "anything about the sealed targets or the reserves",
+  "anything about artificial general intelligence"
+ ]
+}

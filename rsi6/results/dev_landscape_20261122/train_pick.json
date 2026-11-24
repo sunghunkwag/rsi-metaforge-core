@@ -1,0 +1,135 @@
+{
+ "mean_over_categories": 0.04474708194299851,
+ "per_category": {
+  "binpacking": {
+   "fresh_change_of_the_pick": 0.0017150568241966202,
+   "picked": {
+    "feat.usage": 2,
+    "generation 0": 5,
+    "prior.dsoft": 1
+   },
+   "rank_correlation_train_fresh": 0.8853081965700206,
+   "se": 0.0010494025577800993,
+   "seeds": 8,
+   "seeds_above": 3,
+   "seeds_below": 0
+  },
+  "forecasting": {
+   "fresh_change_of_the_pick": -0.002879313729060959,
+   "picked": {
+    "assess.holdback": 1,
+    "assess.strict": 2,
+    "generation 0": 5
+   },
+   "rank_correlation_train_fresh": 0.06367008124337689,
+   "se": 0.001860587748936459,
+   "seeds": 8,
+   "seeds_above": 0,
+   "seeds_below": 3
+  },
+  "jobshop": {
+   "fresh_change_of_the_pick": 0.06685654722989044,
+   "picked": {
+    "feat.template1": 2,
+    "generation 0": 1,
+    "model.decay": 1,
+    "model.elite": 1,
+    "model.pop": 1,
+    "model.sigma": 1,
+    "prior.dsoft": 1
+   },
+   "rank_correlation_train_fresh": 0.40297635729055364,
+   "se": 0.014610843522730179,
+   "seeds": 8,
+   "seeds_above": 7,
+   "seeds_below": 0
+  },
+  "knapsack": {
+   "fresh_change_of_the_pick": 0.012118665208334475,
+   "picked": {
+    "edit.accept_equal": 1,
+    "feat.optsum": 1,
+    "generation 0": 3,
+    "model.batch": 1,
+    "model.elite": 1,
+    "prior.dsoft": 1
+   },
+   "rank_correlation_train_fresh": 0.20102917431539363,
+   "se": 0.005028094688411063,
+   "seeds": 8,
+   "seeds_above": 4,
+   "seeds_below": 0
+  },
+  "partitioning": {
+   "fresh_change_of_the_pick": -0.007068850696990675,
+   "picked": {
+    "assess.holdback": 1,
+    "model.decay": 1,
+    "model.elite": 2
+   },
+   "rank_correlation_train_fresh": 0.6082878829958281,
+   "se": 0.009221575715885626,
+   "seeds": 4,
+   "seeds_above": 2,
+   "seeds_below": 2
+  },
+  "pmedian": {
+   "fresh_change_of_the_pick": 0.026929026810032175,
+   "picked": {
+    "assess.holdback": 1,
+    "feat.scale": 1,
+    "feat.template1": 1,
+    "model.batch": 1,
+    "model.sigma": 1,
+    "model.variant": 1,
+    "prior.dsoft": 1,
+    "shortlist": 1
+   },
+   "rank_correlation_train_fresh": 0.877850276576402,
+   "se": 0.007824532633355917,
+   "seeds": 8,
+   "seeds_above": 7,
+   "seeds_below": 1
+  },
+  "quadassign": {
+   "fresh_change_of_the_pick": 0.09382170127454897,
+   "picked": {
+    "assess.holdback": 2,
+    "feat.template1": 2,
+    "model.batch": 1,
+    "prior.dsoft": 1,
+    "shortlist": 2
+   },
+   "rank_correlation_train_fresh": 0.7489164173689397,
+   "se": 0.02641796232569625,
+   "seeds": 8,
+   "seeds_above": 7,
+   "seeds_below": 1
+  },
+  "regression": {
+   "fresh_change_of_the_pick": -0.006751907010986491,
+   "picked": {
+    "assess.strict": 3,
+    "generation 0": 5
+   },
+   "rank_correlation_train_fresh": null,
+   "se": 0.004024827150206725,
+   "seeds": 8,
+   "seeds_above": 0,
+   "seeds_below": 3
+  },
+  "setcover": {
+   "fresh_change_of_the_pick": 0.21798281157702198,
+   "picked": {
+    "assess.holdback": 1,
+    "shortlist": 3
+   },
+   "rank_correlation_train_fresh": 0.9229541516771278,
+   "se": 0.07677924112997273,
+   "seeds": 4,
+   "seeds_above": 4,
+   "seeds_below": 0
+  }
+ },
+ "what": "development: the version with the best training score per category and seed, on the fresh instances"
+}

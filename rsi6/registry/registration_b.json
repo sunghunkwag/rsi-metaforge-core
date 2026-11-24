@@ -1,0 +1,257 @@
+{
+ "what": "amendment 2: the continued process. Rounds of self-modification of the second design of the learner, on the same ledger, kernel, gate rule and sealed targets as the two registered rounds",
+ "registered_utc": "2026-11-12T19:39:26Z",
+ "why": "the two registered rounds adopted nothing (amendment 1): generation 0 of the first design got one to three rounds of learning at the registered budget and gained nothing on four of seven categories, and what its improver found was carried by one category and failed the gate",
+ "generation_0": {
+  "design": "b",
+  "version": {
+   "prior.dsoft": -1.0,
+   "prior.dhard": -6.0,
+   "feat.scale": "minmax",
+   "shortlist": 4,
+   "plan.min_tests": 16,
+   "plan.batch": 0.6,
+   "plan.checks": 5,
+   "line.step": 1.0,
+   "line.expand": 1,
+   "accept.margin": 0.0,
+   "assess.holdback": 0.25,
+   "assess.strict": 1,
+   "pi.dsoft": 1.0,
+   "pi.viol": 1.0,
+   "pi.dhard": 1.0,
+   "pi.group": 1.0,
+   "pi.usage": 1.0,
+   "pi.last": 1.0,
+   "pi.rem": 1.0,
+   "pi.var_opt": 1.0,
+   "pi.opt_attr": 1.0,
+   "pi.occ": 1.0,
+   "pi.optsum": 1.0,
+   "pi.ahead": 1.0,
+   "pi.mem": 1.0,
+   "pi.va": 1.0,
+   "pi.vv": 1.0,
+   "pi.var2": 1.0,
+   "pi.built": 1.0,
+   "new.share": 0.2,
+   "new.mul": 1.0,
+   "new.prog": 1.0,
+   "new.sq": 1.0,
+   "edit.reassign": 1,
+   "edit.swap": 1,
+   "edit.chain": 1,
+   "edit.accept_equal": 0,
+   "edit.adaptive": 0,
+   "test.sampled": 0,
+   "test.temperature": 0.3,
+   "transfer.on": 1,
+   "transfer.blend": 1.0,
+   "predict.K": 8,
+   "predict.ridge": 0.0,
+   "predict.selfsup": 0,
+   "predict.diff": 0,
+   "predict.attrs": 1,
+   "design": "b"
+  },
+  "version_digest": "baa1974496845ac36539b1d029079999a3bf7a4a734140e7e65cf5da1b267318",
+  "files": {
+   "rsi6/learner/design_b.py": "1214cf5980a31e23a74c5d73b7b3be70b20c52283750faa54b7ad2d58ef825e4",
+   "rsi6/learner/designs.py": "0e76a7ad415c7008cecb6006fb744d0ace7fb0d0dccbf3f73c9e872b272e5867",
+   "rsi6/learner/learner.py": "a30b3c28d38357d1297efb36e04d1a83b5bf0010386100171ba9f4a0cd20683b",
+   "rsi6/learner/version.py": "96764716cedea50c2f0844644948790f6b373c3c2c47db74c8017beb57f0cdfa",
+   "rsi6/kernel/problem.py": "1b74f1af5bab5a20caac0b1d2a5fc21f07d074bd702a86f8e6c47d4943ab28c5"
+  },
+  "written_by": "the experimenter, after reading the records of the two rounds. It is not a product of the system's self-modification, and its comparison with the first design is not a test of recursion",
+  "development": "on the source pool only, as it stood after the two rounds (five assignment categories: bin packing, job shop, quadratic assignment, p-median, knapsack; the prediction form was not changed). No run on any category of the third adoption set, a target or a reserve. Its defaults plan.min_tests and plan.batch were chosen by comparing variants on those five categories with seeds 11 to 16 of the search budget",
+  "development_numbers": {
+   "what": "development comparison on the five assignment categories of the source pool, fresh instances of the search budget (12 training instances, the deciding half), seeds 11 to 16; scratch runs, not in the ledger",
+   "mean_acquired_over_the_five_categories": {
+    "first design, registered budget": 0.7503,
+    "first design, training budget x2": 0.7622,
+    "first design, training budget x4": 0.779,
+    "second design, registered budget": 0.769
+   },
+   "measured_cpu_seconds_per_run": {
+    "first design, registered budget": 6.0,
+    "first design, training budget x2": 12.6,
+    "first design, training budget x4": 24.2,
+    "second design, registered budget": 14.8
+   },
+   "per_category_acquired": {
+    "first design, registered budget": {
+     "binpacking": 0.9862,
+     "jobshop": 0.8519,
+     "quadassign": 0.3833,
+     "pmedian": 0.6828,
+     "knapsack": 0.847
+    },
+    "first design, training budget x2": {
+     "binpacking": 0.9881,
+     "jobshop": 0.8585,
+     "quadassign": 0.4355,
+     "pmedian": 0.682,
+     "knapsack": 0.847
+    },
+    "first design, training budget x4": {
+     "binpacking": 0.9877,
+     "jobshop": 0.8569,
+     "quadassign": 0.5057,
+     "pmedian": 0.6874,
+     "knapsack": 0.8572
+    },
+    "second design, registered budget": {
+     "binpacking": 0.987,
+     "jobshop": 0.8693,
+     "quadassign": 0.4127,
+     "pmedian": 0.6946,
+     "knapsack": 0.8815
+    }
+   },
+   "reading": "at equal counted units the second design is ahead by 0.019 (better in four categories, worse in none); it spends about 2.5 times the CPU, and at equal measured CPU the two designs are level on the mean (the first design at 2 to 4 times its budget), with different profiles: the second ahead on job shop, p-median and knapsack, the first ahead on quadratic assignment",
+   "variants_compared_for_the_defaults": {
+    "plan.min_tests 8, plan.batch 0.4": 0.0107,
+    "plan.min_tests 16": 0.0198,
+    "plan.min_tests 16, plan.batch 0.6 (chosen)": 0.0188,
+    "plan.min_tests 16, new.share 0": 0.0173,
+    "note": "mean change of the acquired score against the first design at the registered budget; the chosen one was better in four categories and worse in none"
+   }
+  },
+  "rule": "after this record a change to the files of the second design is a recorded correction needed for the contract; a change made to raise a score is not allowed"
+ },
+ "rounds_planned": 2,
+ "second_round_rule": "round b2 is run only if the self lineage adopted a version in round b1; from an unchanged version it would repeat round b1",
+ "gates": {
+  "1": {
+   "role": "adoption:3",
+   "environments": [
+    "partitioning",
+    "setcover"
+   ]
+  },
+  "2": {
+   "role": "adoption:4",
+   "environments": [
+    "colouring",
+    "tour"
+   ],
+   "from": "reserve",
+   "note": "the first two reserves of the draw's order become the gate of round b2 if it is run; one reserve (genassign) remains for the targets. Their adapters are built and audited only if round b2 is run"
+  }
+ },
+ "budgets": {
+  "run": {
+   "train": 40.0,
+   "test_c": 2.0,
+   "test_e": 1.0,
+   "n_train": 16,
+   "n_fresh": 24
+  },
+  "search": {
+   "train": 40.0,
+   "test_c": 2.0,
+   "test_e": 1.0,
+   "n_train": 12,
+   "n_fresh": 24,
+   "part": "A"
+  }
+ },
+ "seeds": {
+  "search": [
+   21,
+   22
+  ],
+  "gate": [
+   401,
+   402,
+   403,
+   404,
+   405,
+   406
+  ],
+  "confirm": [
+   501,
+   502,
+   503,
+   504,
+   505,
+   506
+  ],
+  "target": [
+   301,
+   302,
+   303,
+   304,
+   305,
+   306,
+   307,
+   308
+  ]
+ },
+ "seeds_note": "the searches use seeds that the development of the second design did not use",
+ "search_cpu_limit": 4000.0,
+ "search_cpu_note": "a candidate is measured on seven categories instead of three to five, and a run of the second design costs more CPU; the limit is raised so that a search can measure about as many candidates as before",
+ "rules": {
+  "margin": 0.005,
+  "cpu_ratio": 1.15,
+  "search_cpu_ratio": 1.25,
+  "bootstrap": 2000,
+  "level": 0.9,
+  "breadth_cap": 0.01,
+  "breadth_floor": -0.03
+ },
+ "search_objective": "rounds.breadth: the change in each source category is cut to [-0.03, +0.01] before the mean over categories is taken, for the acquired score and for the gain; the smaller of the two means. A nominee is the best candidate with a positive value. The gate, the confirmation and the adoption rule are those of the two registered rounds, on the uncut changes",
+ "lineages": "self (the improver is the lineage's newest version), fixed (the improver is generation 0 of the second design), random (random single-field changes); from round b2 also fixed@self and random@self",
+ "target_test": "one run of targets.py after this process is frozen: the eight arms registered for the two rounds (first design), the same eight for this process (prefix b:), and compute@b (generation 0 of the first design with its training budget raised to the measured CPU of this process's primary arm plus an equal share of what this process spent on its rounds)",
+ "primary_endpoint": "on the target categories, runs with empty memory: the smaller of the mean change in the acquired score and the mean change in gain (means over seeds within a category, then over categories) between the final version of the b:self lineage and generation 0 of the second design; claimed only if it is at least 0.01 and its 95% bootstrap interval, resampling categories and seeds, excludes zero. If the b:self lineage adopts nothing there is nothing to compare and nothing is claimed",
+ "design_comparison": "b:frozen minus frozen, and b:frozen minus compute@b, on the targets. Reported as what it is: a comparison of two designs written by the experimenter, at equal counted units and at equal measured CPU",
+ "predictions": [
+  {
+   "id": "B1",
+   "text": "round b1: the self search finds a candidate that counts as an improvement of the source pool",
+   "criterion": "best_cost < 0"
+  },
+  {
+   "id": "B2",
+   "text": "round b1: the self nominee is not adopted",
+   "criterion": "gate.adopted is false, or there is no nominee"
+  },
+  {
+   "id": "B3",
+   "text": "the self search ranks candidates more reliably than noise",
+   "criterion": "correlation between the two seeds of the improvement over its candidates is at least 0.3"
+  },
+  {
+   "id": "B4",
+   "text": "on the targets the second design at generation 0 acquires more than the first design at generation 0, at equal counted units",
+   "criterion": "b:frozen minus frozen: mean change of the acquired score above 0"
+  },
+  {
+   "id": "B5",
+   "text": "at equal measured CPU that advantage is not established",
+   "criterion": "b:frozen minus compute@b: the 95% interval of the change of the acquired score includes zero or lies below it"
+  },
+  {
+   "id": "B6",
+   "text": "memory of earlier categories does not help the second design on unseen categories",
+   "criterion": "b:skills minus b:frozen: mean change of the acquired score below 0.005"
+  },
+  {
+   "id": "B7",
+   "text": "the primary endpoint of this process is not met",
+   "criterion": "no adoption by b:self, or the smaller mean change below 0.01, or an interval that includes zero"
+  }
+ ],
+ "failure_conditions": [
+  "no version adopted by the self lineage: no generation exists to compare, and the result is 'no modification passed independent validation'",
+  "primary endpoint below 0.01 or interval including zero: 'no improvement of acquisition on unseen categories established'",
+  "self nominees not better than the random proposer's: 'the mechanism does not acquire the capability of improving itself'",
+  "any comparison in which the control received less measured CPU than the arm it is compared with is void"
+ ],
+ "not_claimed": [
+  "that the second design's advantage over the first is a result of self-modification: it was written by the experimenter",
+  "open-endedness: the descriptors the second design can build are compositions of the descriptors it starts with (products, a product with progress, squares); the fields of a version are a list written by the experimenter",
+  "anything about prediction-form categories: no unseen category of that form is left, and the prediction form was not changed",
+  "anything about artificial general intelligence"
+ ]
+}

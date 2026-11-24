@@ -1,0 +1,749 @@
+{
+ "name": "routing",
+ "category": "routing",
+ "source": "CVRPLIB (galgos.inf.puc-rio.br/cvrplib, where the earlier addresses vrp.galgos.inf.puc-rio.br and vrp.atd-lab.inf.puc-rio.br now redirect): capacitated vehicle routing, the sets A, B and P of Augerat et al. (1995), 74 instances, each with its instance file (.vrp, TSPLIB format) and its best known solution file (.sol). The addresses are the download links of the page 'All Instances' (cvrp/instances); the site names a file by a number, the name is in the file's NAME field and in the Content-Disposition header",
+ "terms": "CVRPLib Terms of Use (last updated December 2025), section 6: 'CVRPLib instances, datasets, and challenge materials are provided for research use. Redistribution may be subject to additional terms specified in the dataset documentation.' Fetched by hash, not redistributed here.",
+ "reference": "the best known solution of each instance in its .sol file (routes and cost), which the source's table marks as optimal for all 74 instances, under the conventions the source states for these sets: Euclidean distances rounded to the nearest integer, number of routes fixed (kernel only)",
+ "files": [
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/4",
+   "path": "A-n32-k5.vrp",
+   "sha256": "2ebedd0631c4c56c08ba3b1476ac874a7d54cc448bd3795de534f43b2c099ce2"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/4",
+   "path": "A-n32-k5.sol",
+   "sha256": "a23da588e19d97533c94fb574ed42edfade007465d7448e4840885b0888404ca"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/5",
+   "path": "A-n33-k5.vrp",
+   "sha256": "35712de0054a0fbfd609d5cdb4ec638c39f7c181b6e39e3c8bf6f8e359b78aef"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/5",
+   "path": "A-n33-k5.sol",
+   "sha256": "d8045df85ee1f1cee362f884ea0c52f0a5f6c3e3dcd06bcc644a0da79974e43b"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/7",
+   "path": "A-n33-k6.vrp",
+   "sha256": "4d01ebe9842743ee0c66f14ecb86ab9c84d3198b3280d0dbcc8a8d9a69f1592f"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/7",
+   "path": "A-n33-k6.sol",
+   "sha256": "a5395d65af5807fb05606f0abfd6a2a7ad6d98ef52e1fa4d9780667a09e2c649"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/8",
+   "path": "A-n34-k5.vrp",
+   "sha256": "393117f10a26d0e803a8206e7dd1157a67de2429d6b9fd2d60c070a98b7c73bb"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/8",
+   "path": "A-n34-k5.sol",
+   "sha256": "f1e5feaeff4a28ebb04a20f56beacaa9ce0926bc90be070069dbb4f5f16939c4"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/9",
+   "path": "A-n36-k5.vrp",
+   "sha256": "794360562d60d66a358eaf57721432b43318abba710f3c55f3240aef18e69b03"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/9",
+   "path": "A-n36-k5.sol",
+   "sha256": "68917f8c5bb34b240ab7e234ba9a86f09017a9821cc1e72d9a9fe83a748d7977"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/10",
+   "path": "A-n37-k5.vrp",
+   "sha256": "8b3c9c86c6ec147d6699ef1a7e9b33d7d2637c6b8f254922ff3494d56efed3d0"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/10",
+   "path": "A-n37-k5.sol",
+   "sha256": "b2141e45f0f7ce786cd1fbdbffff854d1526b045b39dc969c77a8576b0346741"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/11",
+   "path": "A-n37-k6.vrp",
+   "sha256": "65615d1b371722c00089443548bff64a5b6385055eeac3ec6f0b5c8cc8c9bdab"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/11",
+   "path": "A-n37-k6.sol",
+   "sha256": "f7133cab3ff610cea2c08b4e12a68356c4e71a9af46bf133e11001f82342f723"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/12",
+   "path": "A-n38-k5.vrp",
+   "sha256": "59a822563b0c59b86f0652e9249e6073cb1f22f19b30da45554ca47055e91051"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/12",
+   "path": "A-n38-k5.sol",
+   "sha256": "cbf89b9edd2fe4ca544e894c15424a0fa058e6add0bfb316c611a0cbe4518100"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/13",
+   "path": "A-n39-k5.vrp",
+   "sha256": "d3afcea200df090c673805d02d4f3c3fad84f4ebaee26a54edc28b30a72cbac9"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/13",
+   "path": "A-n39-k5.sol",
+   "sha256": "989e4e2de2c78dfd00f3110a0b5941b9109fd8be74b62769d9f710fa0b6589da"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/14",
+   "path": "A-n39-k6.vrp",
+   "sha256": "28b83a6afdaa1a2f1f6691313b8977ac3003201584ccb8387fa5ac91ee195cfe"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/14",
+   "path": "A-n39-k6.sol",
+   "sha256": "9eb445abda9085c6a54b5ee9dd6bb4ff15a1018dba036517f0c40059d1d15a4b"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/15",
+   "path": "A-n44-k6.vrp",
+   "sha256": "4303b6c5ad8c5f09901808bd72e7e8920cc81e4b1f725900cf9a63e0bfbb0bec"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/15",
+   "path": "A-n44-k6.sol",
+   "sha256": "6db1a90fb265bbd57a543c51332b6ee80a90163dcb0501a7b864cf2f9e6932ba"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/16",
+   "path": "A-n45-k6.vrp",
+   "sha256": "b3e7a3290b732e2140aa180b0b8a83b4dcccc6297045af270c50f62edcb15f31"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/16",
+   "path": "A-n45-k6.sol",
+   "sha256": "9096a70bad3a523db0cff59911eeae3e961d76fa9ccc4580bf939c1756a6c958"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/17",
+   "path": "A-n45-k7.vrp",
+   "sha256": "ab22ac5adcd03923127d41c394fd32971ecae0a7d6854c148bfb430dc1b462de"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/17",
+   "path": "A-n45-k7.sol",
+   "sha256": "0cc5673c67a1cb47d4b886b827ef4f5912970d5797e723b0f5f4b9700ac5450b"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/18",
+   "path": "A-n46-k7.vrp",
+   "sha256": "843d960f050ed93387dad6ead572f647a631ea90f1dc15879740c98ed7211060"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/18",
+   "path": "A-n46-k7.sol",
+   "sha256": "c644f383642406ee5d939be751bb14a242a1ae5e831d738150fb467e7ef6d8a1"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/19",
+   "path": "A-n48-k7.vrp",
+   "sha256": "0457ce2d3921efb0e55b248517df2b77c061474fe120b9a07b382cc3a884845c"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/19",
+   "path": "A-n48-k7.sol",
+   "sha256": "661767bf580478067aa5547b84e835f443a0cedf1577eb2359d578e641fa9579"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/20",
+   "path": "A-n53-k7.vrp",
+   "sha256": "7a22295b926b50f54ecca7da21924b942ef60949f7707b071936c7cdf3d9006c"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/20",
+   "path": "A-n53-k7.sol",
+   "sha256": "c6111158c9a57f5d95c31c8e0f0ceeb708d8fdfff4d08842ae7748aac22a0f76"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/21",
+   "path": "A-n54-k7.vrp",
+   "sha256": "a85afa8f15544b168ce3413d759a5c4f5fbfef5e1f7ea0972839c2761c958438"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/21",
+   "path": "A-n54-k7.sol",
+   "sha256": "014e861aaca7fc1637856da3dd68b86782865d23599ad437377bd6ae043fd371"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/22",
+   "path": "A-n55-k9.vrp",
+   "sha256": "0ec4706e6efb69217bc11ea4942edd12626f4c41bd6e6b0227aff1035c8f6eda"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/22",
+   "path": "A-n55-k9.sol",
+   "sha256": "4a07706e98cb8ac0a9335775a119f9ac613ab17d4479b709a1584fa3a2c45cf0"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/23",
+   "path": "A-n60-k9.vrp",
+   "sha256": "d60d067db572ee49d265be1f01f5f03b88bb8fb543308d96de1b913408a67de7"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/23",
+   "path": "A-n60-k9.sol",
+   "sha256": "4211e1e8b7cad6ab4df3c87cb2c9a0c15714a083d9c7cc25e129967c5c7e2e14"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/24",
+   "path": "A-n61-k9.vrp",
+   "sha256": "210b68819f2f8b1a525b5415fa3559f3d23b90e119ef79a2f16d638f9ad884ab"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/24",
+   "path": "A-n61-k9.sol",
+   "sha256": "d00e19a9407b9522ee0a6e893531df80a79fd8e86d2fdddc6dc41f07d70f92f9"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/25",
+   "path": "A-n62-k8.vrp",
+   "sha256": "06c2ee55bb37e610d7772e93c1d92e0679f6baca5b878469a954d8da3eb803d5"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/25",
+   "path": "A-n62-k8.sol",
+   "sha256": "9135d2f95db6a77d99b5c5af922476360df487a97781e84be66f2332578a19db"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/27",
+   "path": "A-n63-k10.vrp",
+   "sha256": "d837c6c264249b2c1bf643cdb113785bf3b0e6eb9596539d1cb705454a61724b"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/27",
+   "path": "A-n63-k10.sol",
+   "sha256": "6912213df0e0246da58911bd9c13ad300b4b77be3ffa393b1aa1fe74ab3d2032"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/26",
+   "path": "A-n63-k9.vrp",
+   "sha256": "4bb0410d5e0cee22f9a0af7854b1e09652314e75acb48703250b33277b0a7033"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/26",
+   "path": "A-n63-k9.sol",
+   "sha256": "aa30a68a712e25aee234bb80c9b4df0b3bb0c38670cf9d4b443c94a4c2496f87"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/28",
+   "path": "A-n64-k9.vrp",
+   "sha256": "1d690e428ea2de12f5996cf1e84aaa0508ec9977dfdb3d0c106e9006e9cc5124"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/28",
+   "path": "A-n64-k9.sol",
+   "sha256": "28f689c79aaa0b9aed18b4b63aa9ed41cc6aa62fa23e58dcbed9d02b54e27759"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/29",
+   "path": "A-n65-k9.vrp",
+   "sha256": "2f2768011d0dc41fb912ad3d4a8c34678334607bf0263cf4cd20b6c1b4ab4cd6"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/29",
+   "path": "A-n65-k9.sol",
+   "sha256": "aa28a75ac5996fb73ee9bf2610130649ad55188b76212a644a4ec83d487ca00e"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/30",
+   "path": "A-n69-k9.vrp",
+   "sha256": "7b9bd50d901639c15a9f4ff1cf38ccef7a5bf050697b4e6796ff07bc95920c64"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/30",
+   "path": "A-n69-k9.sol",
+   "sha256": "f97cad8f6c747633e1ea9360db4709b026440692085842d81851d2d0bf4a3678"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/31",
+   "path": "A-n80-k10.vrp",
+   "sha256": "f74d5d9f8e24245d94cad53ac20892a70b554aa7559f9dfcd962c8f83a68a410"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/31",
+   "path": "A-n80-k10.sol",
+   "sha256": "eb6f41c97e197918753b50b3bd8283bc91a5261486e12c8eb9e0fd87acf498d2"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/6",
+   "path": "B-n31-k5.vrp",
+   "sha256": "4c21caba6dd9c2e62d9e51defe45b9b318a931456e4d6e714c0ebd910447fad9"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/6",
+   "path": "B-n31-k5.sol",
+   "sha256": "508df4497a714d7627f32f6993ff637a79ea6452235b318539757ff848a077e5"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/32",
+   "path": "B-n34-k5.vrp",
+   "sha256": "e4dee2fb80782ea7d922a890715d85ac8488f089d72d3ceb6b744e82ccd407ac"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/32",
+   "path": "B-n34-k5.sol",
+   "sha256": "08a7b3ee54aac0f6e8b9bf63d0a7afd94443fd7770861823017c9087487ad17c"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/33",
+   "path": "B-n35-k5.vrp",
+   "sha256": "d5047a1b09c3b55127fe2954c01412b847b2f436e7c4eae3d4e932dc3374c765"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/33",
+   "path": "B-n35-k5.sol",
+   "sha256": "542e9b721fa3c9684726e2e084755fc9c3cc9bfc1eda27c0ee32d0fa5a1f1ca1"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/34",
+   "path": "B-n38-k6.vrp",
+   "sha256": "89f6b1fa8e877b2ba62a1a49148e74b72a53be1ce37698a6b2bf73d1db375fbf"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/34",
+   "path": "B-n38-k6.sol",
+   "sha256": "a98d460827987f12d11bad5aa0e3bf56f3e5629d480e71ee3aff47f20b1139cb"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/35",
+   "path": "B-n39-k5.vrp",
+   "sha256": "7d7fba1dddaeb87906db5f3ba7ac50732dd8f75268ae67af7e25ee6d76cffb35"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/35",
+   "path": "B-n39-k5.sol",
+   "sha256": "94630ddd1fbeebc6507f400bef0f88acd083ab883ba211a0b993eb1014636e27"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/36",
+   "path": "B-n41-k6.vrp",
+   "sha256": "4cfd58b86fdb61fecf6a946b3256323016383ea25f9856bd18b4b2cd0b6abce2"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/36",
+   "path": "B-n41-k6.sol",
+   "sha256": "70e199fa32dcf98343c92d3ac56a714365daebf99ad2e8f30751b32a32562856"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/37",
+   "path": "B-n43-k6.vrp",
+   "sha256": "233cb752cbe018e44e45160631e020be7c76dd8f4173cceecb1521d39ff70154"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/37",
+   "path": "B-n43-k6.sol",
+   "sha256": "6a2d257948f798ff211a673151cd90ee9d7734c96142eeec2fd9251c956a1bfe"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/38",
+   "path": "B-n44-k7.vrp",
+   "sha256": "d55e850549cd77f83dd8089f5909eff70e99caf57a8a342f2a4ef6ec95e07fe8"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/38",
+   "path": "B-n44-k7.sol",
+   "sha256": "afee4283b861d129f01cad143551fb83f90bec0f0a42bce3bb5e5cebb33a0079"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/39",
+   "path": "B-n45-k5.vrp",
+   "sha256": "0f33ce95389eef121532dc517e49a438df7fcb95825bc1bbf0d96e330396a90a"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/39",
+   "path": "B-n45-k5.sol",
+   "sha256": "4959aabbc3b174c2f58b56be65b07e87175849b970483ae339b3ce798f7b6121"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/40",
+   "path": "B-n45-k6.vrp",
+   "sha256": "94af6daaef0441af10da930751bc428b1a3e2fb9dd0ce883600f80f7eecdb0bb"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/40",
+   "path": "B-n45-k6.sol",
+   "sha256": "b63ef42b4927b4c215c926d4d009709f7d9b7bf28d6a105679e56568f2d97512"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/41",
+   "path": "B-n50-k7.vrp",
+   "sha256": "9ee38d8e358a7690dd2ac3959b9787f14de885ae9db35e92f0c2d2f5221078f6"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/41",
+   "path": "B-n50-k7.sol",
+   "sha256": "3cab642bd9805d37b09e3ed2a7d2dcfbb0185ce098c46aa1dfaaa56ef306b4f7"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/42",
+   "path": "B-n50-k8.vrp",
+   "sha256": "510cc7613c23b6c7100bb1ed738f6f14c815799c8260bc84eb80478bdca07dc7"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/42",
+   "path": "B-n50-k8.sol",
+   "sha256": "b05354df3cabbbb85da38dcf653493965f1906169f937462d2010d3f44a642a5"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/43",
+   "path": "B-n51-k7.vrp",
+   "sha256": "2067347938f788f2342b8f44cff98a0f524468fa191849691a1a3629c49a30c1"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/43",
+   "path": "B-n51-k7.sol",
+   "sha256": "9db09061b9d1e2964cebc23c8916b4b36cd06a7baeab8fbb7c24256d4cada452"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/44",
+   "path": "B-n52-k7.vrp",
+   "sha256": "9bb124f58ca8e1d7f38d1f87af6882fad00d2eae510d5c9064f1eea783046a23"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/44",
+   "path": "B-n52-k7.sol",
+   "sha256": "833c0a193997fddec3d05e2fac65edc23f13574e1b118cc69261a586d375707a"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/45",
+   "path": "B-n56-k7.vrp",
+   "sha256": "40d1314e4932be8643bbf21ad512fc42a315d0c067bb7da010a27522a3333b8c"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/45",
+   "path": "B-n56-k7.sol",
+   "sha256": "4800a73d9edb45768043004a18b7dab7c4599ecb440638578bd54e07fd67bcb8"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/46",
+   "path": "B-n57-k7.vrp",
+   "sha256": "11fa3e11cc5a67ed3643eed6e53496c531125f0f13a266a7848886d59712ff6a"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/46",
+   "path": "B-n57-k7.sol",
+   "sha256": "55425d6b164d3518ba6afd67a147bc2d99c1f63f1401b71727bec6525b87cf33"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/47",
+   "path": "B-n57-k9.vrp",
+   "sha256": "8524695df2202fb5075db3789cc73d3c27386f00200476201b93a69e0131fd6a"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/47",
+   "path": "B-n57-k9.sol",
+   "sha256": "213a06eaa1680709c450eee5041b02119a475c26f6bf15b984530e125bd4752a"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/48",
+   "path": "B-n63-k10.vrp",
+   "sha256": "333f4871bcb4d3bf87aa936a65ceb63b6300a4b0d64a001ee7eabb538eee8115"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/48",
+   "path": "B-n63-k10.sol",
+   "sha256": "3435555a785b77d3da8226a216d5bc40b17f09eb243c2cad10ba8e543adabe73"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/49",
+   "path": "B-n64-k9.vrp",
+   "sha256": "9c4fd160e4f8272409574abea40a2356f64dade7078cd274b4e7e49b1d7bcd98"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/49",
+   "path": "B-n64-k9.sol",
+   "sha256": "006a1db3539799b67d2b92465ce0fa22a000e63ebd24d18749a18e4a2f91af86"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/50",
+   "path": "B-n66-k9.vrp",
+   "sha256": "06420798fb07f2fa7e4a35a3ad03b1ce328d51c5542713b9831bfb49bded3223"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/50",
+   "path": "B-n66-k9.sol",
+   "sha256": "9fe5d318f1c9848e4b01bedd6eb947dbea8876e39ea8d5cd8c9aecd64d0f5aab"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/51",
+   "path": "B-n67-k10.vrp",
+   "sha256": "6bfa7a1b04102069a36181e3f4ec7dc8758fe4b774566a9c424612fc786e3d96"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/51",
+   "path": "B-n67-k10.sol",
+   "sha256": "43179019bda499d28797a13a2006e30c04c7189e9738781b8a96f7233b3c51fd"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/52",
+   "path": "B-n68-k9.vrp",
+   "sha256": "e09fb3cbf4ace034fb0347d1a0792c818cc6ffd1e35bc643e9a87bea8657dfa2"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/52",
+   "path": "B-n68-k9.sol",
+   "sha256": "94ee7235751125f31f5c55f8f4b0fffeafd0525f6e96eaa7e48cae3b1282d9bb"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/53",
+   "path": "B-n78-k10.vrp",
+   "sha256": "eb45a07763a5fdf05417d5d55254e68ce88ec5b905c5b001d4c50ed203395ff2"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/53",
+   "path": "B-n78-k10.sol",
+   "sha256": "bb94bf4d6ae81eb18192510687b665f27bf5c3c09944eedaf7715dce80a4b891"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/98",
+   "path": "P-n101-k4.vrp",
+   "sha256": "2661f9e2f69d0ccac08df9745f4abb237883b0d94399242fa5ae01978e180720"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/98",
+   "path": "P-n101-k4.sol",
+   "sha256": "29a646646640c9493373a5d067b581c039510a7eb1b472b6e3ed40fa8b7d5c06"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/75",
+   "path": "P-n16-k8.vrp",
+   "sha256": "122bf4349112f700d351def4ffee143f146346f2ec6e5618af07513d5cf8be7b"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/75",
+   "path": "P-n16-k8.sol",
+   "sha256": "e80109e94ee65cf026a0fb8f7431ac3945974f961e6ff8b573e7fba5b8396cce"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/76",
+   "path": "P-n19-k2.vrp",
+   "sha256": "ffce851458f3ccd4fb790403e91bb4ad6e495c37704a68f8563b995e97e38892"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/76",
+   "path": "P-n19-k2.sol",
+   "sha256": "a72d1922d245ddc4d4abb6cfb929e8831bd17de4e438875dc97f13088709e45b"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/77",
+   "path": "P-n20-k2.vrp",
+   "sha256": "938bb79cfae6b17562ebd3de2c437a7955f67491d9449e8ab40d215d1f75df94"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/77",
+   "path": "P-n20-k2.sol",
+   "sha256": "8336f60043b8bcc5d94612972540263807fdab08b97373f6dfbee8daf050a707"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/78",
+   "path": "P-n21-k2.vrp",
+   "sha256": "1e7b84d0baad8993033ecf3df233b5297fb0dfe43c60ec49bd4f384b2955d774"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/78",
+   "path": "P-n21-k2.sol",
+   "sha256": "bf58ace7ca3a64616b4bad471ca36475166ded9f15679672ba60588626951bd9"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/79",
+   "path": "P-n22-k2.vrp",
+   "sha256": "bef647fd53eb85de8d555650f07c9c6dda4830bfddcedf6aedbc128ff622272e"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/79",
+   "path": "P-n22-k2.sol",
+   "sha256": "e65416054577f6079c6bf54f8e8ee6cf5192f9d839e12a69c2c863fa625d261b"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/80",
+   "path": "P-n22-k8.vrp",
+   "sha256": "50856ac63bdad3b833ecc76e70cb91bccc0c8aaad8ba9b6d1657878a257d2c7e"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/80",
+   "path": "P-n22-k8.sol",
+   "sha256": "561cd058b3cd8b2246b9b5798555009bc837c9f7319751be8c73ed3c6f4d232a"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/81",
+   "path": "P-n23-k8.vrp",
+   "sha256": "ed233a73ad6382eb4669d38a6267f8c9e80daf73e7115f93fdbd279e7243b453"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/81",
+   "path": "P-n23-k8.sol",
+   "sha256": "fafced50e649c7cd693cf041577ea81b938f1ccfc31c0cf049714a0dd84f57e3"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/82",
+   "path": "P-n40-k5.vrp",
+   "sha256": "fe488f065406366c6fed91b371cc4aa6f7cbd704f516239b055382e49db372b0"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/82",
+   "path": "P-n40-k5.sol",
+   "sha256": "03e3df8ead29cab9862c1922fe37bf7c1616b37dc8df9ae8fe094ac7b16b9e54"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/83",
+   "path": "P-n45-k5.vrp",
+   "sha256": "35a678e55fc5a0b9371a76d77a59d698da4df2c625ef6928ac0eac96912b15ca"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/83",
+   "path": "P-n45-k5.sol",
+   "sha256": "68cb1a6de37fc312e1b4ab0c2a704ce0b5331ef2aea9d1e72c8deab11400b804"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/86",
+   "path": "P-n50-k10.vrp",
+   "sha256": "4f11c9fdc78fb16223e035fc91aac8f43a7af111b65535c02bef2ce0d9e2b410"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/86",
+   "path": "P-n50-k10.sol",
+   "sha256": "87269cfa6a75575f030481812f975244f1b9ee536e2ffba9428f5b46b85df225"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/84",
+   "path": "P-n50-k7.vrp",
+   "sha256": "f3889788c4e2d5acac861031da9e1e49a8719ee223afe92f76bc20a0a98d262c"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/84",
+   "path": "P-n50-k7.sol",
+   "sha256": "bb839d57a756ffb896d8941e5f8a5906dfb6661be5d5d89ecc412a0f462126e8"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/85",
+   "path": "P-n50-k8.vrp",
+   "sha256": "9d013b40badea107147c8ef7414a699a7282305b6e6726bc925a69ae8aeaaebc"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/85",
+   "path": "P-n50-k8.sol",
+   "sha256": "0473166c73bcb49a97d1e7bf832d99f051b5d41fd8ab505c92eff7b4bd09bc61"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/87",
+   "path": "P-n51-k10.vrp",
+   "sha256": "79984f78057bad09655c1c5c32ab146231714c2d99bfcdfdafe3203ed70165e9"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/87",
+   "path": "P-n51-k10.sol",
+   "sha256": "c84e6d0547606508e9253c45960a2aa6c8f3f797b1405d4bc4130de090f1b0f9"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/90",
+   "path": "P-n55-k10.vrp",
+   "sha256": "3cc1d1a42da6b897fd0584373647dbf54afe6d67cb7185cbda60b402b6a86f8c"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/90",
+   "path": "P-n55-k10.sol",
+   "sha256": "06238ce50e568263a15169ddde93534f9765b195d3ce01dabb952406c768f9bc"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/91",
+   "path": "P-n55-k15.vrp",
+   "sha256": "9ffe8a99263ee459960db909fb61651a66f86815a1781f17140812119596bad4"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/91",
+   "path": "P-n55-k15.sol",
+   "sha256": "91cb7e6de9238f43e76303866653df449422cceb6944fc1a6587c518f02ae8c7"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/88",
+   "path": "P-n55-k7.vrp",
+   "sha256": "7e5c3ce67c9e788fb56e64387c9437c0fb08bdc947d6cd76dac1886e2d36916e"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/88",
+   "path": "P-n55-k7.sol",
+   "sha256": "efb8310d3659d8a43074125ba2f5982aef4965e022596584956c49f39003c3e2"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/89",
+   "path": "P-n55-k8.vrp",
+   "sha256": "f4fe2b93f6fcfa6c673d03114054ab533e25471d64fa3072fd7391e9909322ec"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/89",
+   "path": "P-n55-k8.sol",
+   "sha256": "5ea32abd71eb85000ac1fae44adb9a1e487954a9e9d86b44376fb8c55133d5e6"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/92",
+   "path": "P-n60-k10.vrp",
+   "sha256": "d192c2131618910bc7e752d82a3b3801ac655476d39b03d9a88f933bf401756b"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/92",
+   "path": "P-n60-k10.sol",
+   "sha256": "1cbbebae291784cef14a52b1b10d4c293a19e5202a5886b8565175d52a02a5a3"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/93",
+   "path": "P-n60-k15.vrp",
+   "sha256": "fa28fb1cfc39503559ceda3a44c2ddb0472af579ec150d863d9d23c041a617f4"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/93",
+   "path": "P-n60-k15.sol",
+   "sha256": "d08acf5a26da15ce9469108a07f700435da7fbfe02bb192c5a056eddfd99c9f1"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/94",
+   "path": "P-n65-k10.vrp",
+   "sha256": "4e89e3c679360e1227980708d64967d97c78a4d3156276d9975037a044e076b6"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/94",
+   "path": "P-n65-k10.sol",
+   "sha256": "e6de31b921b7776ff91c3f15807081e6a3626f86026e3dc60172d48e6468c68a"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/95",
+   "path": "P-n70-k10.vrp",
+   "sha256": "98ad82036799845d5728d806077adf80f8f3a21e5d11b46d0f23d09b906e6ae0"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/95",
+   "path": "P-n70-k10.sol",
+   "sha256": "62c8854b368fa6e4585af589e5d7538c2d78a4715513a7656bfdaf470bb01860"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/96",
+   "path": "P-n76-k4.vrp",
+   "sha256": "141992bec5fb14d1a21aa377de3b2ee42e20d711996b84368ab722658812909f"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/96",
+   "path": "P-n76-k4.sol",
+   "sha256": "ae568e3e01f28fb7a6fd81ef1369fc8956a7f6c929f1a0a54833603f4e95a121"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/instance/97",
+   "path": "P-n76-k5.vrp",
+   "sha256": "9e812bf5b7726f624bf22e0d9e8685322d386e573e96b647ce2374a5ade371ea"
+  },
+  {
+   "url": "https://galgos.inf.puc-rio.br/cvrplib/index.php/en/download/bks/97",
+   "path": "P-n76-k5.sol",
+   "sha256": "b627d64146d318d3b747bb80b96ce2c04413b357c3ae2057e862960979f174c1"
+  }
+ ]
+}

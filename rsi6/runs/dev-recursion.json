@@ -1,0 +1,192 @@
+{
+ "what": "Development: the recursion question asked where it can have an answer (rsi6/experiments/dev_recursion.py). The improver is the learner's acquisition loop applied to the space of versions; start generation 0 with model.batch 2; three arms per repetition (the start itself as improver, generation 0 as improver, no learning), same problems, same counted budget; every nominee measured against the start on seeds no search used. Twelve repetitions, one job each. The reading was fixed in rsi6/results/dev_recursion_20261122/PREDICTION.md before this run. Development only: four light categories of the source pool, scratch ledgers, seeds 740101 to 741204 and 745001 to 745016, nothing here is evidence.",
+ "tests": [],
+ "fetch": [
+  "binpacking",
+  "jobshop",
+  "pmedian",
+  "quadassign"
+ ],
+ "jobs": [
+  {
+   "id": "k01",
+   "fetch": [
+    "binpacking",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_recursion",
+   "args": [
+    "1",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "k02",
+   "fetch": [
+    "binpacking",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_recursion",
+   "args": [
+    "2",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "k03",
+   "fetch": [
+    "binpacking",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_recursion",
+   "args": [
+    "3",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "k04",
+   "fetch": [
+    "binpacking",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_recursion",
+   "args": [
+    "4",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "k05",
+   "fetch": [
+    "binpacking",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_recursion",
+   "args": [
+    "5",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "k06",
+   "fetch": [
+    "binpacking",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_recursion",
+   "args": [
+    "6",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "k07",
+   "fetch": [
+    "binpacking",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_recursion",
+   "args": [
+    "7",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "k08",
+   "fetch": [
+    "binpacking",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_recursion",
+   "args": [
+    "8",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "k09",
+   "fetch": [
+    "binpacking",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_recursion",
+   "args": [
+    "9",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "k10",
+   "fetch": [
+    "binpacking",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_recursion",
+   "args": [
+    "10",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "k11",
+   "fetch": [
+    "binpacking",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_recursion",
+   "args": [
+    "11",
+    "--out",
+    "run_out"
+   ]
+  },
+  {
+   "id": "k12",
+   "fetch": [
+    "binpacking",
+    "jobshop",
+    "pmedian",
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_recursion",
+   "args": [
+    "12",
+    "--out",
+    "run_out"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,8 @@
+259:def solve(src, ans_type, lib, B=500, E=60000, seeds=(0, 1, 2, -1), order=None, depth=2):
+arm A1 B 300 E 5000 baselib 24 solved 61 / 336 families 21 /97 {'study.py': '1/30', 'basic.py': '15/115', 'trivial_inverse.py': '45/186', 'tutorial.py': '0/5'} mean_calls_solved 16.0 146s denied 0
+
+real	2m25.571s
+user	2m13.235s
+sys	0m10.873s
+
+[exited with code 0]

@@ -1,0 +1,128 @@
+{
+ "verdict": "fix_then_audit_again",
+ "summary": "The colouring adapter is exact and leak-free, but its score scale together with the 0.90 threshold does not separate a capability from a rule with no search and no learning. That is one major, correctable finding, so the verdict is fix_then_audit_again.\n\n**What holds**\n- **Data:** I downloaded the page and all 46 .col files again from mat.tepper.cmu.edu; all 47 are byte-identical to REPO/rsi6/data/colouring and to the SHA-256 values in the manifest.\n- **Instances:** my own page reader finds 79 entries: 21 binary, 8 with \"?\", 4 over 500 vertices, 3 over 100,000 cells, 43 used. Ids, groups, references, vertex counts and colours on offer (largest degree + 1) all equal the adapter's.\n- **Evaluation:** my own evaluator agrees exactly with `Environment.score`, `partial_totals`, `evaluate` and the path start/candidates/assign/totals on all 43 instances under 2 relabellings. The relabelled matrix is exactly my edge set under the permutation recovered from `decode` alone.\n- **No privileged information:** the view fields and 2,108 feedback calls hash identically when the references are replaced by random numbers, both in memory and at the page reader.\n- **Layout and split:** one layout and one descriptor-name list for all instances. Training is 16 (LEI 11, SGB-miles 5); fresh is 24 (MYC 4, REG 7, SGB-queen 8, SGB-book 4, SGB-game 1), with no shared group.\n- **Source:** no search, ordering, pruning or optimisation call; the only array exposed is the 0/1 adjacency matrix.\n- **Reference:** the builder's 39 colourings are valid by my evaluator, use exactly the page's number and score 1.0. The other four (le450_15c/d, le450_25c/d) are attainable by construction, as their file comments state, and the module says so.\n- **Interface and cost:** both designs acquire and answer on made-up graphs of the training sizes; acquire took 6.7 CPU-s (design a) and 25.3 CPU-s (design b). The largest construction is 81,451 units.\n- **Builder's scratch:** the learner was run on made-up graphs only.\n\n**The major finding**\nThe scale is neither of R2's two scales: its zero is the worst valid value (largest degree + 1) instead of the plain ratio or the expected value of a random valid answer. Because largest degree + 1 is far above the chromatic number, 0.90 is reached with many extra colours (27 on le450_15c against 15).\n\nI measured a rule with no search and no learning: vertices in random order, each reusing a conflict-free colour already in use, otherwise opening a new one. This is my own code and evaluator, not the learner.\n\n| Fresh set | Adapter's scale | Plain ratio |\n|---|---|---|\n| All 24 | 0.909 to 0.936 | 0.834 to 0.891 |\n| Half A (queen 8, book 4) | 0.850 to 0.875 | 0.760 to 0.794 |\n| Half B (REG 7, MYC 4, game 1) | 0.969 to 0.998 | 0.907 to 0.988 |\n\nOn the adapter's scale the rule is at or above the threshold. By the builder's own check i, a random valid answer averages 0.298 on the plain ratio, so R2 does not call for leaving the plain ratio for the environment as a whole.\n\n**Fix:** score with the plain ratio, and restate the threshold and anchor with the no-search rule's level in view. On the plain ratio, 0.90 is still only about 1 point above first-fit.\n\n**Other findings**\n- **Fresh set (minor):** the signal is carried by the 8 queen graphs and games120; REG, MYC and book are nearly solved by first-fit, and half B is close to saturated. The adapter cannot change this, but the module text should say it.\n- **Module text (minor):** it says three queen files list each edge in both directions; all 18 SGB files do.\n- Four notes are in the findings list.\n\n**Decision for you:** I measured the no-search rule on benchmark instances because checks 8 and 10 ask whether the threshold means anything. Any new threshold should be declared as set with knowledge of that rule and of no learner result.\n\nMy scripts and outputs are in <scratch>/targets/colouring/audit1 (scripts/own.py and c1.py to c6.py, own_rows.json, split.json, c5_a.out, c5_b.out, dl/). No source or data file under REPO was changed; importing the package may have refreshed .pyc files.",
+ "checks": [
+  {
+   "id": "0 data",
+   "what_was_run": "curl -A research-data-check/1.0 of https://mat.tepper.cmu.edu/COLOR/instances.html and of the 46 .col files into audit1/dl; sha256sum against REPO/rsi6/data/colouring; scripts/c1.py against the manifest (own page reader, own DIMACS reader on Python sets)",
+   "n": "47 files; 79 page entries",
+   "result": "PASS. All 47 files are byte-identical to the repository's data and to the manifest's hashes. Own reading of the page: 79 entries = 21 binary (.col.b) + 8 text with '?' + 4 text over 500 vertices + 46 candidates; 3 of those exceed 100,000 cells (fpsol2.i.1 125,488, .2 156,497, .3 147,475); 43 used. No candidate is missing from the manifest and the manifest has no extra file. Vertex counts equal the page's. No self-loops and no unknown line types."
+  },
+  {
+   "id": "1 no hidden solver",
+   "what_was_run": "read rsi6/environments/colouring.py in full; grep for sort/argmin/argmax/scipy/heapq/minimize/itertools/while",
+   "n": "213 lines",
+   "result": "PASS. Only two readers, the problem class (counts and one matrix product) and the scorer. No search over answers, no ordering or pruning by the objective, no optimisation call. The only table beyond the instance is SGB_KINDS (name prefix to book/game/miles/queen), used for group() on the kernel side and not exposed."
+  },
+  {
+   "id": "2 no privileged information",
+   "what_was_run": "scripts/c3.py: SHA-256 over every public field of view(problem) plus evaluate, well_formed, candidates, allowed, assign, totals, state fields, assignment and decode on a fixed panel, for every instance with training=True and False. Compared (i) after replacing env.instances[*]['number'] by random integers and (ii) for a second Colouring() built with parse_page patched to return random numbers.",
+   "n": "43 instances x 2; 2,108 feedback calls hashed; 42 and 43 references actually changed",
+   "result": "PASS. Printed: fingerprints equal (in-memory alteration, alteration at the page reader): True True; same ids True. The problem object holds only adjacent, n_vars, n_opts, hard, detail, empty attribute arrays, var_var and the meter; no text field. State keys: a, count, n, near, tot, used."
+  },
+  {
+   "id": "3 traceability",
+   "what_was_run": "code reading plus scripts/c2.py isomorphism test",
+   "n": "43 instances x 2 seeds",
+   "result": "PASS. var_var[0] is the adjacency of the 'e' lines (0/1, symmetric, zero diagonal, sum = 2 x distinct edges, exactly my edge set under the recovered permutation). n_vars is n of the 'p' line (checked against the page). n_opts is largest degree + 1, a quantity of the instance. Group 0 is colours in use (the published value), group 1 is monochromatic edges (the published constraint). Nothing else is exposed."
+  },
+  {
+   "id": "4 order and names",
+   "what_was_run": "scripts/c2.py: vertex and colour permutations recovered from decode alone (constant and digit probes); matrix compared with my edge set; totals and scores compared across seeds 5 and 77",
+   "n": "86 problems",
+   "result": "PASS. Isomorphic data and equal evaluation under both relabellings; decode of a path-built assignment equals my own-label bookkeeping."
+  },
+  {
+   "id": "5 evaluator agreement and attainability",
+   "what_was_run": "scripts/c2.py (own evaluator against evaluate, partial_totals, the view path start/candidates/assign/totals, Environment.score through decode, malformed answers); scripts/c6.py (fast _rows/_push against AssignProblem._rows and partial_totals, exact equality); scripts/c3.py (the builder's work/attained.json checked with my evaluator on my reading of the files)",
+   "n": "all 43 instances (every group in full); 172 valid + 172 conflicting complete answers, 344 partial answers, 356,438 candidate cells, 18,230 assignment steps, 387 malformed answers; 60,408 rows fast against specification; 39 colourings",
+   "result": "PASS. Printed: max |score diff| 0.0; valid scores min 0.000 median 0.054 max 0.500. Malformed answers (wrong length, float, negative, 2-D, None, bool) score 0. The source publishes no colourings. The builder's 39 colourings are valid by my evaluator, use exactly the page's number, fit in largest degree + 1 colours and score 1.0; one edge made monochromatic scores 0; one extra colour scores 1 - 1/(largest degree + 1 - number). None is below the page's number. None is on file for le450_15c, le450_15d, le450_25c, le450_25d; their files' comment lines read 'number of classes : 25', 'Leighton's proof : 25 coloring' and list cliques of that size, so the number is attainable by construction, and the module text and manifest say it rests on the page."
+  },
+  {
+   "id": "6 leak scan of the files",
+   "what_was_run": "scripts/c3.py: comment lines of every used file searched for the page's number and for colouring words; attributes of the problem object listed",
+   "n": "43 files",
+   "result": "PASS. 22 files have comment lines that state or imply the answer: the 12 Leighton files print 'number of classes : k' and a clique vector, the Mycielski files 'clique number 2', the queen files their board size. The adapter reads only 'p' and 'e' lines; the problem object has no text and no array but the adjacency matrix."
+  },
+  {
+   "id": "7 one layout",
+   "what_was_run": "scripts/c2.py: run.layout(P) and tuple(Layout(view(P), version.default()).names) for every instance, two seeds, training and fresh",
+   "n": "86 problems",
+   "result": "PASS. One layout: ('assign', False, True, True, (False, True), (False, False), 0, 0, 1, 0, 0, 0, True, True). One descriptor-name list of 9 names. No zero padding is used. n_opts ranges from 6 to 180."
+  },
+  {
+   "id": "8 split",
+   "what_was_run": "scripts/c2.py: run.split(env, 16, 24) and run.halves; scripts/c4.py for what the fresh set can show",
+   "n": "43 instances",
+   "result": "PASS for separation, with a caveat on meaning. Training 16: LEI 11, SGB-miles 5. Fresh 24: MYC 4, REG 7, SGB-queen 8, SGB-book 4, SGB-game 1. No group and no id on both sides. Halves: A = 12 (queen 8, book 4), B = 12 (REG 7, MYC 4, game 1). Unused: le450_25c, myciel4, zeroin.i.2. Caveat: 16 of the 24 fresh instances are scored at 0.9 or more on the adapter's scale by a rule with no search, and all 12 of half B (see findings)."
+  },
+  {
+   "id": "9 instances left out; builder's scratch",
+   "what_was_run": "module text against my page reading; grep of work/*.py for acquire/apply/measure/designs; work/checks.py lines 268-318, work/iface.py, timing.out, attain_first.out; file times of kernel, learner and adapter sources",
+   "n": "7 scripts and 5 outputs",
+   "result": "PASS. Left out: binary format (21), no reference on the page (8, not a size rule but necessary and stated), more than 500 vertices (4), more than 100,000 cells (3). The learner appears only in check g and iface.py, on made-up random graphs; the one benchmark problem touched there is used for run.layout only. The builder scored its own DSATUR and tabu colourings and random valid answers on the benchmark, with no learner. The 21 kernel, learner and other adapter sources carry the copy time 23:54:40; only environments/__init__.py (00:01:46) and colouring.py (00:08:46) are later."
+  },
+  {
+   "id": "10 threshold and anchor",
+   "what_was_run": "scripts/c4.py: a rule with no search and no learning (vertices in random order; reuse a conflict-free colour already in use, the lowest or a random one, otherwise a new colour), 20 orders per instance, scored by my evaluator on the adapter's scale and on the plain ratio. Not the learner.",
+   "n": "43 instances x 2 variants x 20 orders",
+   "result": "FAIL on meaning, PASS on wording. The anchor says truthfully that 0.90 is an operating point on the way from largest degree + 1 to the page's number. But the rule scores 0.909 (random reuse) to 0.936 (first-fit) on the fresh 24 on that scale, at or above the threshold; half A 0.850 to 0.875, half B 0.969 to 0.998. On the plain ratio the same answers score 0.834 to 0.891 (half A 0.760 to 0.794, half B 0.907 to 0.988)."
+  },
+  {
+   "id": "11 cost and interface",
+   "what_was_run": "scripts/c5.py a and b: 16 made-up random graphs with the vertex counts of the 16 training instances and about their numbers of colours on offer; designs.make(designs.default('a')) and ('b'); acquire at the registered budget (40 constructions per instance); apply untrained and acquired on 6 made-up graphs of fresh sizes within run._test_limit; apply at a near-zero budget",
+   "n": "2 designs; 16 made-up training graphs (cells 2,816 to 64,800, 523,260 units per round of constructions); 12 apply calls each",
+   "result": "PASS. Design a: acquire 6.7 CPU-s, 14,432,932 of 20,930,400 units, 2 iterations, 128 constructions, learned True. Design b: acquire 25.3 CPU-s, 20,156,621 of 20,930,400 units, 41 iterations, 651 constructions, learned True. Every answer is well-formed, also at a near-zero budget, and its totals equal a direct count on the made-up matrix; each apply takes at most 0.06 CPU-s. Benchmark sizes: the largest construction is 81,451 units (le450_25c, which the split leaves unused); the training sum is 538,676 units, x40 = 21,547,040; the fresh sum is 270,468. A run is not unreasonably slow."
+  }
+ ],
+ "findings": [
+  {
+   "severity": "major",
+   "where": "rsi6/environments/colouring.py: Colouring.score (lines 201-213), threshold and anchor (lines 156-158), module text lines 37-50",
+   "what": "The score scale is neither of the two scales R2 allows, and with the 0.90 threshold it does not separate a capability from a rule with no search and no learning. The scale is the share of the way from the worst valid value (largest degree + 1) to the page's number. Largest degree + 1 is far above the chromatic number, so 0.90 is reached with many extra colours: up to 27 colours on le450_15c (number 15), 40 on le450_25c (25), 43 on mulsol.i.2 (31), 17 on anna (11), 8 on le450_5a (5). R2 prescribes the plain ratio unless a uniformly random valid answer scores above 0.5 on it. The builder's own check i gives a mean of 0.298 over all instances and above 0.5 on only 6 of 43, four of them training instances. So the plain ratio was abandoned for at least 37 instances on which R2 does not call for it, and the replacement's zero is not the expectation R2 names either. The module text states the choice openly and the anchor is truthful; the defect is in what the number means.",
+   "evidence": "cd audit1 && python3 -I scripts/c4.py (own readers and evaluator; rule: random vertex order, reuse a conflict-free colour already in use, else a new colour; 20 orders per instance). Printed: 'fresh 24  first-fit: scale 0.936 ratio 0.891 | random-fit: scale 0.909 ratio 0.834 | instances where even the worse rule averages >= 0.9 on the scale: 16 of 24'; 'half A  first-fit: scale 0.875 ratio 0.794 | random-fit: scale 0.850 ratio 0.760 | ... 4 of 12'; 'half B  first-fit: scale 0.998 ratio 0.988 | random-fit: scale 0.969 ratio 0.907 | ... 12 of 12'. Single rows: le450_15c ref 15, D+1 140, allowed at 0.9: 27, first-fit uses 30.4 colours and scores 0.876 on the scale against 0.493 on the ratio; le450_25c ref 25, D+1 180, 36.4 colours, 0.927 against 0.689; myciel7 random-fit 11.3 colours for 8, 0.962 against 0.712. Builder's work/checks.out line 67: 'mean over all instances: plain ratio 0.298, scale used 0.119'.",
+   "suggested_fix": "Score with the plain ratio min(1, number / colours used), 0 for a conflict or a malformed answer, as the bin packing adapter does for bins in use. Say in the module text that on games120, miles500, miles1500 and myciel3 no valid answer of the form can fall below 0.51 to 0.68 on it. Then restate the threshold and anchor with the no-search rule's level in view: on the plain ratio it scores 0.83 to 0.89 on the fresh set, so 0.90 is about 1 point above first-fit; 0.95, as pmedian and setcover use for ratio scales, leaves room. Declare the threshold as an operating point set with knowledge of that rule's score and of no learner result. If the present scale is kept, the anchor must say that a rule with no search already scores about 0.91 to 0.94 on it."
+  },
+  {
+   "severity": "minor",
+   "where": "rsi6/environments/colouring.py module text (groups of instances, threshold); consequence of the benchmark under rsi6.kernel.environment.split and run.halves",
+   "what": "What the fresh set can show is limited, and the module text does not say so. Of the 24 fresh instances, the REG (7), MYC (4) and SGB-book (4) graphs are nearly solved by first-fit in a random order; the signal is carried by the 8 queen graphs and games120. All 8 queen graphs are in half A. Half B (REG 7, MYC 4, game 1) is close to saturated, and on it the no-search rule passes any threshold up to about 0.97 on the adapter's scale. The REG graphs are near-duplicates, so the 24 are fewer independent instances than the count suggests. The adapter did not cause this and may not select instances by difficulty.",
+   "evidence": "scripts/c4.py rows: mulsol.i.1 to .5 and zeroin.i.1 to .3 first-fit 0.996 to 1.000 on the scale and 0.985 to 1.000 on the ratio; anna, david, huck, jean 0.987 to 1.000 and 0.923 to 1.000; myciel3 to myciel7 0.991 to 1.000 and 0.941 to 1.000; the queen graphs 0.783 to 0.852 and 0.653 to 0.796. Half B first-fit 0.998 (scale) and 0.988 (ratio). scripts/c1.py: mulsol.i.2 to .5 have 184 to 188 vertices, 3,885 to 3,973 edges, 157 to 160 colours on offer and number 31; zeroin.i.2 and .3 have 211 and 206 vertices, 3,541 and 3,540 edges, 141 colours on offer and number 30.",
+   "suggested_fix": "State in the module text and in the anchor that REG, MYC and book graphs are nearly solved by first-fit, that the queen graphs carry the signal, and that the confirming half B holds almost no headroom. Whether a confirmation on half B means anything is the owner's decision, not the adapter's."
+  },
+  {
+   "severity": "minor",
+   "where": "rsi6/environments/colouring.py module text, lines 31-34",
+   "what": "The text says 'the files queen9_9, queen11_11 and queen13_13 list every edge in both directions'. In fact all 18 SGB files used list each edge in both directions; the three named are only those where the page's edge count is also the doubled one. The matrix is right in every case; only the description is wrong.",
+   "evidence": "scripts/c1.py, columns name / page m / header m / 'e' lines / distinct edges: anna 493 986 986 493; games120 638 1276 1276 638; miles250 387 774 774 387; queen5_5 160 320 320 160; queen8_8 728 1456 1456 728; queen9_9 2112 2112 2112 1056; queen11_11 3960 3960 3960 1980; queen13_13 6656 6656 6656 3328. The LEI, REG and MYC files have equal counts throughout.",
+   "suggested_fix": "Say that every SGB file lists each edge in both directions (the 'p' line counts both), and that the page prints the doubled count for queen9_9, queen11_11 and queen13_13 and the number of distinct edges for the others."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/environments/colouring.py: answer form (n_opts = largest degree + 1) and score",
+   "what": "R1 holds with one stated restriction: a proper colouring with more than largest degree + 1 colours cannot be written in the answer form. On the present scale it scores 0 anyway. If the scale becomes the plain ratio, such a colouring has a positive published score that the form cannot produce. Only dominated answers are lost: every colouring with at most largest degree + 1 colours, the optimum included, is expressible, and the reference is always below largest degree + 1.",
+   "evidence": "scripts/c1.py printed 'ref >= D+1: []'. scripts/c2.py asserts env.score(k, good + 10**9) == env.score(k, good) on all 43 instances, so labels beyond the offered range are accepted by the scorer.",
+   "suggested_fix": "Keep the form. When changing the scale, let score() give number / used to any proper colouring in own labels, and keep the sentence that the form offers largest degree + 1 colours, which always suffices."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/environments/colouring.py: parse_page and ENTRY; data file instances.html",
+   "what": "The page's own markup is broken at le450_15a: its link sits inside an unterminated HREF of the latin_square_10 entry. The adapter strips tags and reads the entry as a browser shows it: (450, 8168), 15, LEI. A reader that splits on list items misses it, as my first reader did. The page is pinned by hash, so the reading is stable.",
+   "evidence": "Raw text of the page: '(900,307350), ?, <a HREF=\"#XXLAT&gt;LAT&lt;/A&gt; (Caution: 3 MB!)&lt;li&gt;&lt;A HREF=\" instances/le450_15a.col\">  le450_15a.col </a> (450,8168), 15, <a HREF=\"#XXLEI\">LEI</a>'. My first reader found 78 entries and reported 'manifest extra [le450_15a.col]'; the corrected one finds 79 and agrees with the adapter on all 43 ids, groups and references.",
+   "suggested_fix": "None needed; one sentence in the module text would help the next reader."
+  },
+  {
+   "severity": "note",
+   "where": "rsi6/environments/colouring.py: MAX_CELLS = 100000 and module text lines 62-67",
+   "what": "The cell limit is a size rule, but it was chosen to give the kernel's split 16 training instances, as the text says, and is more than three times the preferred 30,000. Ten used instances exceed 30,000 cells (le450_5c 30,150 up to le450_25c 81,000). The cost is acceptable. The claim that the limit was fixed before any answer was scored cannot be verified from file times, and I found nothing against it.",
+   "evidence": "scripts/c1.py: 'used 43 cells>30000: [(30150, le450_5c), (31050, le450_5d), (42750, le450_15b), (45000, le450_15a), (50400, le450_25b), (58050, le450_25a), (62550, le450_15d), (63000, le450_15c), (71100, le450_25d), (81000, le450_25c)]'. scripts/c5.py: acquire 6.7 CPU-s (design a) and 25.3 CPU-s (design b) on made-up graphs of the training sizes. File times: colouring.py 00:08:46, work/attain_first.out 00:05, work/checks.out 00:09.",
+   "suggested_fix": "None required."
+  },
+  {
+   "severity": "note",
+   "where": "audit procedure",
+   "what": "Two things I did that the owner should know. First, to judge whether the threshold means anything, I scored a no-search rule on benchmark instances with my own code and evaluator; no learner was run on any benchmark instance. Any new threshold should be declared as set with knowledge of that rule's score. Second, I changed no file under REPO, but importing the package from it may have refreshed .pyc files in its __pycache__ directories.",
+   "evidence": "scripts/c4.py imports no rsi6 module. scripts/c5.py passes only ColouringProblem objects built from numpy random matrices to the learner. ls --time-style of REPO sources: 21 files at 23:54:40, environments/__init__.py 00:01:46, colouring.py 00:08:46, manifest 00:08:54, all before the audit began at 00:44."
+  }
+ ]
+}

@@ -1,0 +1,351 @@
+{
+ "what": "Development: the scan of rsi6/experiments/dev_landscape.py one step on. The centre is generation 0 of the first design with model.batch 2; it and every version one field away from it are measured on every category of the source pool. Seeds 730301 to 730308 (partitioning and setcover 730301 to 730304), used by no earlier run. What is done with the scan was fixed in rsi6/results/dev_landscape_20261122/PREDICTION_3.md before this run. Development only: source-pool categories, scratch ledgers, nothing here is evidence. CPU is compared inside a job and seed only.",
+ "tests": [],
+ "fetch": [
+  "binpacking",
+  "forecasting",
+  "jobshop",
+  "knapsack",
+  "partitioning",
+  "pmedian",
+  "quadassign",
+  "regression",
+  "setcover"
+ ],
+ "jobs": [
+  {
+   "id": "forecasting",
+   "fetch": [
+    "forecasting"
+   ],
+   "module": "rsi6.experiments.dev_landscape",
+   "args": [
+    "forecasting",
+    "--seeds",
+    "730301",
+    "730302",
+    "730303",
+    "730304",
+    "730305",
+    "730306",
+    "730307",
+    "730308",
+    "--out",
+    "run_out",
+    "--base",
+    "model.batch=2"
+   ]
+  },
+  {
+   "id": "regression",
+   "fetch": [
+    "regression"
+   ],
+   "module": "rsi6.experiments.dev_landscape",
+   "args": [
+    "regression",
+    "--seeds",
+    "730301",
+    "730302",
+    "730303",
+    "730304",
+    "730305",
+    "730306",
+    "730307",
+    "730308",
+    "--out",
+    "run_out",
+    "--base",
+    "model.batch=2"
+   ]
+  },
+  {
+   "id": "quadassign",
+   "fetch": [
+    "quadassign"
+   ],
+   "module": "rsi6.experiments.dev_landscape",
+   "args": [
+    "quadassign",
+    "--seeds",
+    "730301",
+    "730302",
+    "730303",
+    "730304",
+    "730305",
+    "730306",
+    "730307",
+    "730308",
+    "--out",
+    "run_out",
+    "--base",
+    "model.batch=2"
+   ]
+  },
+  {
+   "id": "pmedian",
+   "fetch": [
+    "pmedian"
+   ],
+   "module": "rsi6.experiments.dev_landscape",
+   "args": [
+    "pmedian",
+    "--seeds",
+    "730301",
+    "730302",
+    "730303",
+    "730304",
+    "730305",
+    "730306",
+    "730307",
+    "730308",
+    "--out",
+    "run_out",
+    "--base",
+    "model.batch=2"
+   ]
+  },
+  {
+   "id": "binpacking-a",
+   "fetch": [
+    "binpacking"
+   ],
+   "module": "rsi6.experiments.dev_landscape",
+   "args": [
+    "binpacking",
+    "--seeds",
+    "730301",
+    "730302",
+    "730303",
+    "730304",
+    "--out",
+    "run_out",
+    "--base",
+    "model.batch=2"
+   ]
+  },
+  {
+   "id": "binpacking-b",
+   "fetch": [
+    "binpacking"
+   ],
+   "module": "rsi6.experiments.dev_landscape",
+   "args": [
+    "binpacking",
+    "--seeds",
+    "730305",
+    "730306",
+    "730307",
+    "730308",
+    "--out",
+    "run_out",
+    "--base",
+    "model.batch=2"
+   ]
+  },
+  {
+   "id": "jobshop-a",
+   "fetch": [
+    "jobshop"
+   ],
+   "module": "rsi6.experiments.dev_landscape",
+   "args": [
+    "jobshop",
+    "--seeds",
+    "730301",
+    "730302",
+    "730303",
+    "730304",
+    "--out",
+    "run_out",
+    "--base",
+    "model.batch=2"
+   ]
+  },
+  {
+   "id": "jobshop-b",
+   "fetch": [
+    "jobshop"
+   ],
+   "module": "rsi6.experiments.dev_landscape",
+   "args": [
+    "jobshop",
+    "--seeds",
+    "730305",
+    "730306",
+    "730307",
+    "730308",
+    "--out",
+    "run_out",
+    "--base",
+    "model.batch=2"
+   ]
+  },
+  {
+   "id": "knapsack-a",
+   "fetch": [
+    "knapsack"
+   ],
+   "module": "rsi6.experiments.dev_landscape",
+   "args": [
+    "knapsack",
+    "--seeds",
+    "730301",
+    "730302",
+    "730303",
+    "730304",
+    "--out",
+    "run_out",
+    "--base",
+    "model.batch=2"
+   ]
+  },
+  {
+   "id": "knapsack-b",
+   "fetch": [
+    "knapsack"
+   ],
+   "module": "rsi6.experiments.dev_landscape",
+   "args": [
+    "knapsack",
+    "--seeds",
+    "730305",
+    "730306",
+    "730307",
+    "730308",
+    "--out",
+    "run_out",
+    "--base",
+    "model.batch=2"
+   ]
+  },
+  {
+   "id": "partitioning-1",
+   "fetch": [
+    "partitioning"
+   ],
+   "module": "rsi6.experiments.dev_landscape",
+   "args": [
+    "partitioning",
+    "--seeds",
+    "730301",
+    "--out",
+    "run_out",
+    "--base",
+    "model.batch=2"
+   ]
+  },
+  {
+   "id": "partitioning-2",
+   "fetch": [
+    "partitioning"
+   ],
+   "module": "rsi6.experiments.dev_landscape",
+   "args": [
+    "partitioning",
+    "--seeds",
+    "730302",
+    "--out",
+    "run_out",
+    "--base",
+    "model.batch=2"
+   ]
+  },
+  {
+   "id": "partitioning-3",
+   "fetch": [
+    "partitioning"
+   ],
+   "module": "rsi6.experiments.dev_landscape",
+   "args": [
+    "partitioning",
+    "--seeds",
+    "730303",
+    "--out",
+    "run_out",
+    "--base",
+    "model.batch=2"
+   ]
+  },
+  {
+   "id": "partitioning-4",
+   "fetch": [
+    "partitioning"
+   ],
+   "module": "rsi6.experiments.dev_landscape",
+   "args": [
+    "partitioning",
+    "--seeds",
+    "730304",
+    "--out",
+    "run_out",
+    "--base",
+    "model.batch=2"
+   ]
+  },
+  {
+   "id": "setcover-1",
+   "fetch": [
+    "setcover"
+   ],
+   "module": "rsi6.experiments.dev_landscape",
+   "args": [
+    "setcover",
+    "--seeds",
+    "730301",
+    "--out",
+    "run_out",
+    "--base",
+    "model.batch=2"
+   ]
+  },
+  {
+   "id": "setcover-2",
+   "fetch": [
+    "setcover"
+   ],
+   "module": "rsi6.experiments.dev_landscape",
+   "args": [
+    "setcover",
+    "--seeds",
+    "730302",
+    "--out",
+    "run_out",
+    "--base",
+    "model.batch=2"
+   ]
+  },
+  {
+   "id": "setcover-3",
+   "fetch": [
+    "setcover"
+   ],
+   "module": "rsi6.experiments.dev_landscape",
+   "args": [
+    "setcover",
+    "--seeds",
+    "730303",
+    "--out",
+    "run_out",
+    "--base",
+    "model.batch=2"
+   ]
+  },
+  {
+   "id": "setcover-4",
+   "fetch": [
+    "setcover"
+   ],
+   "module": "rsi6.experiments.dev_landscape",
+   "args": [
+    "setcover",
+    "--seeds",
+    "730304",
+    "--out",
+    "run_out",
+    "--base",
+    "model.batch=2"
+   ]
+  }
+ ]
+}

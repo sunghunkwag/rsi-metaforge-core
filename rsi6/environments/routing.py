@@ -1,0 +1,294 @@
+"""Capacitated vehicle routing instances of CVRPLIB: the sets A, B and P of Augerat et al. (1995).
+
+Published form: a depot and n-1 customers, each with integer coordinates and a demand, and one
+vehicle capacity. An answer is a set of routes; each route starts and ends at the depot, every
+customer is on exactly one route, and the demand on a route is at most the capacity. Its value
+is the total length of the routes, with the distance between two points the Euclidean distance
+rounded to the nearest integer (EDGE_WEIGHT_TYPE EUC_2D of TSPLIB). The source states for these
+three sets "Number of Routes: Fixed": an answer has exactly K routes, K being the number of
+vehicles given with the instance ("No of trucks: K" in the COMMENT field, the same number as
+the "k" of the name). All 74 published solutions have exactly K routes and no route without a
+customer. A route without a customer is therefore not a route here: "at most K" would be another
+problem on P-n55-k8, the one instance whose total demand fits K-1 vehicles.
+
+Reference: the cost printed in each instance's solution file (.sol), with the routes that
+reach it. The source's table marks all 74 as optimal. It is a value an answer of the form below
+attains: the adapter refuses to load unless the published routes of every instance, written in the
+answer form, are valid and reproduce the published cost under this module's evaluation, and unless
+that cost is below the expected length of a random answer (all 74 pass). The reference and
+the published routes are read by ``score`` and ``reference`` only. The COMMENT field of an
+instance file also prints the optimal value; nothing but the number of trucks is read from it.
+
+Answer form: a sequence of n+K-2 stops, to be given in order (``ordered``). The entities to be
+placed are the n-1 customers and K-1 copies of the depot, each exactly once (every option has
+capacity 1). The vehicle leaves the depot before the first stop and returns to it after the last
+one; a depot copy in the sequence ends one route and starts the next. Every set of K routes can
+be written so (in several ways: the order and the direction of the routes are free), and every
+such sequence is K runs of customers, some of which may be empty or too heavy; that is what the
+two hard groups measure. The depot copies are K-1 options and not one option that may be taken
+K-1 times, so that instances with K = 2 have the same layout as the others. In the instance's own
+labels (the form ``score`` takes and ``decode`` returns) a stop is the customer's number as the
+solution files count it (customer c is node c+1 of the instance file) and 0 for a depot copy.
+
+Groups, each a sum of terms of the stops given so far; the term of a stop reads that stop and
+the stops before it:
+ [0] length (soft): the distance from the previous stop (from the depot, for the first stop) to
+     this one; the last stop adds the distance back to the depot.
+ [1] load above capacity (hard): the growth, by this stop, of the amount by which the demand of
+     the customers since the last depot copy exceeds the capacity. For a complete sequence it
+     is the sum over the routes of the demand above the capacity.
+ [2] routes without a customer (hard): 1 for a depot copy that is the first stop or follows
+     another depot copy, and 1 more for a depot copy that is the last stop.
+A complete sequence is a valid published answer exactly when [1] and [2] are zero, and [0] is
+then the published value.
+
+Exposed arrays. ``opt_attr``, one row per entity: [0] its demand (DEMAND_SECTION; the depot's
+is 0), [1] the vehicle capacity (CAPACITY, the same on every row), [2] and [3] its coordinates
+(NODE_COORD_SECTION; a depot copy has the depot's), [4] 1 for a depot copy (DEPOT_SECTION), else 0.
+``opt_opt[0]``: the rounded Euclidean distance between two entities, computed from the
+coordinates as EDGE_WEIGHT_TYPE prescribes (0 between two depot copies). The stops (variables)
+have no attributes. The entities are relabelled with the seed; the stops are not: their order is
+the answer.
+
+Score: the share of the way from the expected length of a random answer to the reference that
+an answer covers, cut to [0, 1]; 0 for an invalid answer. The plain ratio of reference to length
+is not used, because a random answer would score above 0.5 on it on four instances of set P
+(0.81 on P-n16-k8, where routes of two customers leave little to decide). The random answer is
+a uniformly random one among all answers with exactly K routes, none empty, the capacity not
+looked at; its expected length is exact: 2K times the mean distance from the depot to a
+customer plus (n-1-K) times the mean distance between two customers. The expectation over the
+answers that also respect the capacity has no closed form and is not used; said plainly, the
+lower end of the scale is that of random routes, not of random valid routes. (Valid answers made
+by fitting the customers into the K vehicles at random scored 0.03 on average in the adapter's
+own checks, so the two are close.)
+
+Threshold: an operating point, not an external fact: the mean score that answers 10% longer
+than the published optimum on every scored instance would get (``threshold_for``; 0.933 over all
+74 instances). The figure of 10% is this adapter's choice and was fixed before anything was scored.
+
+Groups of instances: the published sets, A (customers and depot placed at random), B (customers
+in clusters) and P (modified instances from the literature). Instances left out: none. The size
+rule (more than 1,000 stops, or more than 30,000 stop-entity pairs) leaves all 74 in; the
+largest, P-n101-k4, has 103 stops.
+"""
+from __future__ import annotations
+
+import re
+
+import numpy as np
+
+from rsi6 import fetch
+from rsi6.kernel.environment import Environment, relabel
+from rsi6.kernel.problem import AssignProblem
+
+MAX_STOPS = 1000              # the size rule: instances with more stops,
+MAX_PAIRS = 30000             # or more stop-entity pairs, are left out for run time
+GAP = 0.10                    # the operating point of the threshold: 10% above the reference
+SECTIONS = ("NODE_COORD_SECTION", "DEMAND_SECTION", "DEPOT_SECTION")
+
+
+def parse(text: str) -> dict:
+    """An instance file. Node 1 is the depot; row c of the arrays is node c+1."""
+    head, coords, demand, depot, section = {}, {}, {}, [], None
+    for line in text.splitlines():
+        line = line.strip()
+        if not line or line == "EOF":
+            continue
+        if line.split()[0] in SECTIONS:
+            section = line.split()[0]
+        elif section is None:
+            key, _, value = line.partition(":")
+            head[key.strip()] = value.strip()
+        elif section == "NODE_COORD_SECTION":
+            coords[int(line.split()[0])] = [float(x) for x in line.split()[1:3]]
+        elif section == "DEMAND_SECTION":
+            demand[int(line.split()[0])] = float(line.split()[1])
+        else:
+            depot.append(int(line.split()[0]))
+    n = int(head["DIMENSION"])
+    nodes = list(range(1, n + 1))
+    if head["TYPE"] != "CVRP" or head["EDGE_WEIGHT_TYPE"] != "EUC_2D" or depot != [1, -1] \
+            or sorted(coords) != nodes or sorted(demand) != nodes or demand[1] != 0:
+        raise ValueError("not an instance of the published form")
+    trucks = int(re.search(r"trucks:\s*(\d+)", head["COMMENT"]).group(1))       # nothing else is read from COMMENT
+    return {"name": head["NAME"], "trucks": trucks, "capacity": float(head["CAPACITY"]),
+            "xy": np.array([coords[i] for i in nodes]), "demand": np.array([demand[i] for i in nodes])}
+
+
+def parse_solution(text: str):
+    """A solution file: the routes (customer numbers) and the printed cost."""
+    routes = [[int(x) for x in rest.split()] for rest in re.findall(r"Route\s*#\s*\d+\s*:(.*)", text)]
+    return routes, float(re.search(r"Cost\s+(\S+)", text).group(1))
+
+
+def distances(xy: np.ndarray) -> np.ndarray:
+    """EUC_2D of TSPLIB: the Euclidean distance rounded to the nearest integer."""
+    diff = xy[:, None, :] - xy[None, :, :]
+    return np.floor(np.sqrt((diff ** 2).sum(axis=2)) + 0.5)
+
+
+def value(D, demand, capacity: float, sequence):
+    """Length, load above capacity and number of routes without a customer of a sequence in the
+    instance's own labels (0: a depot copy). Plain reference code."""
+    length = over = empty = load = 0.0
+    here = 0
+    for stop in list(sequence) + [0]:
+        length += D[here][stop]
+        if stop == 0:
+            over += max(load - capacity, 0.0)
+            empty += 1.0 if here == 0 else 0.0
+            load = 0.0
+        else:
+            load += demand[stop]
+        here = stop
+    return length, over, empty
+
+
+def random_length(D: np.ndarray, trucks: int) -> float:
+    """The expected length of a uniformly random answer with exactly ``trucks`` routes, none
+    empty, the capacity not looked at (exact)."""
+    customers = len(D) - 1
+    between = D[1:, 1:].sum() / (customers * (customers - 1)) if customers > 1 else 0.0
+    return float(2 * trucks * D[0, 1:].mean() + (customers - trucks) * between)
+
+
+class RoutingProblem(AssignProblem):
+    """``xy``, ``demand`` and ``depot`` describe the entities (customers and depot copies, in any
+    order; ``depot`` marks the copies); ``home`` is the depot's place."""
+
+    def __init__(self, xy: np.ndarray, demand: np.ndarray, depot: np.ndarray, home, capacity: float, meter):
+        stops = len(xy)
+        self.demand, self.depot, self.cap = np.asarray(demand, dtype=float), np.asarray(depot, dtype=bool), float(capacity)
+        both = distances(np.vstack([np.asarray(xy, dtype=float), np.asarray(home, dtype=float)[None, :]]))
+        self.D, self.home = both[:stops, :stops], both[stops, :stops]
+        attributes = np.column_stack([self.demand, np.full(stops, self.cap), np.asarray(xy, dtype=float), self.depot.astype(float)])
+        super().__init__(n_vars=stops, n_opts=stops, hard=[False, True, True], ordered=True,
+                         capacity=np.ones(stops, dtype=np.int64), opt_attr=attributes, opt_opt=(self.D,), meter=meter)
+
+    def partial_totals(self, a):
+        length = over = empty = load = 0.0
+        last = -1
+        for e in a:
+            if e < 0:
+                break
+            length += self.home[e] if last < 0 else self.D[last, e]
+            if self.depot[e]:
+                empty += 1.0 if last < 0 or self.depot[last] else 0.0
+                load = 0.0
+            else:
+                over += max(load + self.demand[e] - self.cap, 0.0) - max(load - self.cap, 0.0)
+                load += self.demand[e]
+            last = e
+        else:
+            if last >= 0:                                    # the last stop: back to the depot
+                length += self.home[last]
+                empty += 1.0 if self.depot[last] else 0.0
+        return np.array([length, over, empty])
+
+    def _new(self):
+        s = super()._new()
+        s["last"], s["load"] = -1, 0.0
+        return s
+
+    def _row(self, s):
+        last, load, final = s["last"], s["load"], s["n"] == self.n_vars - 1
+        row = np.empty((self.n_opts, 3))
+        row[:, 0] = (self.home if last < 0 else self.D[last]) + (self.home if final else 0.0)
+        row[:, 1] = np.where(self.depot, 0.0, np.maximum(load + self.demand - self.cap, 0.0) - max(load - self.cap, 0.0))
+        row[:, 2] = self.depot * (float(last < 0 or bool(self.depot[last])) + float(final))
+        return row
+
+    def _rows(self, s, variables):
+        variables = np.asarray(variables)
+        if len(variables) == 0:
+            return np.zeros((0, self.n_opts, 3))
+        if len(variables) != 1 or variables[0] != s["n"]:
+            raise ValueError("variables of this problem are assigned in index order")
+        out = self._row(s)[None]
+        out[0, s["used"] >= self.capacity] = 0.0             # an entity that is already placed
+        return out
+
+    def _push(self, s, v, o):
+        s["tot"] = s["tot"] + self._row(s)[o]
+        s["a"][v] = o
+        s["load"] = 0.0 if self.depot[o] else s["load"] + self.demand[o]
+        s["last"] = o
+
+
+class Routing(Environment):
+    name = category = "routing"
+    form = "assign"
+    threshold = 0.933             # over all instances; set again in __init__, and see threshold_for
+    anchor = ("an operating point, not an external fact: the mean score of answers 10% longer than the published "
+              "optimum on every scored instance, on the scale from the expected length of random routes to the optimum")
+
+    def __init__(self):
+        manifest = fetch.fetch("routing", quiet=True)
+        have = {e["path"] for e in manifest["files"] if not e.get("missing")}
+        self.instances, self.left_out = {}, {}
+        for path in sorted(have):
+            if not path.endswith(".vrp"):
+                continue
+            inst = parse(open(fetch.path("routing", path)).read())
+            name = inst["name"]
+            stops = len(inst["xy"]) + inst["trucks"] - 2         # the customers and K-1 depot copies
+            if name + ".vrp" != path or name + ".sol" not in have:
+                raise ValueError(f"{path}: no solution file, or a file that does not carry its own name")
+            if stops > MAX_STOPS or stops * stops > MAX_PAIRS:
+                self.left_out[name] = "the size rule"
+                continue
+            routes, cost = parse_solution(open(fetch.path("routing", name + ".sol")).read())
+            inst["D"] = distances(inst["xy"])
+            inst["routes"] = np.array([c for k, route in enumerate(routes) for c in ([0] if k else []) + route], dtype=np.int64)
+            inst["cost"], inst["stops"] = cost, stops
+            inst["chance"] = random_length(inst["D"], inst["trucks"])
+            # the published routes must be a valid answer of the published cost: no instance is left out for it
+            if not (self._valid(inst, inst["routes"]) and value(inst["D"], inst["demand"], inst["capacity"], inst["routes"])[0] == cost
+                    and inst["chance"] > cost > 0):
+                raise ValueError(f"{name}: its published routes do not reproduce its published cost")
+            self.instances[name] = inst
+        self.threshold = self.threshold_for(self.instance_ids())
+
+    @staticmethod
+    def _valid(inst, answer) -> bool:
+        a = np.asarray(answer)
+        customers = len(inst["xy"]) - 1
+        if a.shape != (inst["stops"],) or a.dtype.kind not in "iu" or a.min(initial=0) < 0 or a.max(initial=0) > customers:
+            return False
+        if np.any(np.bincount(a, minlength=customers + 1)[1:] != 1):
+            return False
+        _, over, empty = value(inst["D"], inst["demand"], inst["capacity"], a.tolist())
+        return over == 0 and empty == 0
+
+    def instance_ids(self):
+        return sorted(self.instances)
+
+    def reference(self, instance_id):
+        return float(self.instances[instance_id]["cost"])
+
+    def reference_answer(self, instance_id):
+        """The published routes in the answer form, own labels (for audits)."""
+        return self.instances[instance_id]["routes"].copy()
+
+    def group(self, instance_id):
+        return instance_id.split("-")[0]                   # the published set: A, B or P
+
+    def threshold_for(self, instance_ids):
+        rows = [self.instances[i] for i in instance_ids]
+        return float(np.mean([(r["chance"] - (1.0 + GAP) * r["cost"]) / (r["chance"] - r["cost"]) for r in rows]))
+
+    def problem(self, instance_id, meter, seed, training):
+        inst = self.instances[instance_id]
+        customers = len(inst["xy"]) - 1
+        rng = np.random.default_rng(seed)
+        perm, _ = relabel(rng, inst["stops"])                # new entity -> old entity; the old ones: customers, then depot copies
+        node = np.concatenate([np.arange(1, customers + 1), np.zeros(inst["stops"] - customers, dtype=np.int64)])[perm]
+        problem = RoutingProblem(inst["xy"][node], inst["demand"][node], node == 0, inst["xy"][0], inst["capacity"], meter)
+        return problem, (lambda answer: node[np.asarray(answer, dtype=np.int64)])
+
+    def score(self, instance_id, answer):
+        inst = self.instances[instance_id]
+        if not self._valid(inst, answer):
+            return 0.0
+        length = value(inst["D"], inst["demand"], inst["capacity"], np.asarray(answer).tolist())[0]
+        return float(min(1.0, max(0.0, (inst["chance"] - length) / (inst["chance"] - inst["cost"]))))

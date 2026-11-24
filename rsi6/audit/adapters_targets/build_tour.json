@@ -1,0 +1,89 @@
+{
+ "buildable": true,
+ "reason_if_not": "",
+ "files_written": [
+  "<scratch>/targets/tour/repo/rsi6/environments/tour.py",
+  "<scratch>/targets/tour/repo/rsi6/environments/manifests/tour.json",
+  "<scratch>/targets/tour/repo/rsi6/environments/__init__.py",
+  "<scratch>/targets/tour/repo/rsi6/data/tour/ (67 fetched files, pinned by SHA-256 in the manifest)",
+  "<scratch>/targets/tour/work/checks.py",
+  "<scratch>/targets/tour/work/checks.out",
+  "<scratch>/targets/tour/work/make_manifest.py",
+  "<scratch>/targets/tour/work/explore.py",
+  "<scratch>/targets/tour/work/pdftext.py"
+ ],
+ "source": "TSPLIB95 (G. Reinelt), symmetric TSP, from the author's group at comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/. The http addresses named in the task all returned 503 (upstream connection timeout); the same host and paths answer over https, so the manifest uses https. The list of optimal lengths is no longer at STSP.html (404); the site's index links it as tsp/TSP-BEST.html, which is what the manifest pins. Fetched: TSP-BEST.html, 43 <name>.tsp.gz, 23 <name>.opt.tour.gz (67 files with hashes). The source serves no tour for the other 20 instances, and st70.opt.tour (unpacked, as its index links it) is a 404; those 21 entries are marked missing under allow_missing. Terms: no licence text on the source's pages; fetched by hash, not redistributed. tsp95.pdf was fetched to WORK/dl and read as bytes to confirm the distance formulas (GEO section 2.4, ATT section 2.5); it is not in the manifest.",
+ "reference": "The optimal tour length listed per instance in TSP-BEST.html (\"all problems are now solved to optimality\"). It is an attained value, not a bound. For 23 of the 43 instances the source publishes an optimal tour, and each reproduces the listed length exactly under my distance functions (also in the independent evaluator). For the other 20 only the length is published; for burma14 and gr17 among them my check found the listed value by exact dynamic programming over subsets (also for ulysses16). One departure from the pdf, stated in the module text: for GEO the degrees are taken by truncation, not nint as the pdf prints. Only truncation reproduces the listed lengths on the source's own tours (ulysses16 6859, ulysses22 7013, gr96 55209; with nint the same tours measure 7030, 7230, 56120).",
+ "answer_form": "AssignProblem, exact. Variable i is city i; option k is position k of a cycle of n positions; capacity is 1 per position, so complete answers are exactly the permutations and every tour is one (in 2n ways, all the same length). There is one soft group, the length: the terms are ordered pairs of cities worth d(i,j)*c(p(i),p(j)), where c is the successor relation of the cycle, and a term counts once both cities are placed. The total of a complete answer is the published tour length. There is no hard group. Exposed: var_var[0] is the distance matrix (from NODE_COORD_SECTION by the EDGE_WEIGHT_TYPE function, or from EDGE_WEIGHT_SECTION; the diagonal, which no tour reads, is presented as 0); opt_opt[0] is the cycle successor matrix; capacity is all ones. Coordinates are not exposed (they exist for only part of the instances and the length reads d alone). Cities and positions are relabelled independently by the seed; decode returns own labels as answer[city] = position. Layout on all 43: ('assign', False, False, False, (False,), (False,), 0, 0, 1, 1, 0, 0, True, True).",
+ "score_scale": "Share of the way from the expected length of a uniformly random tour (n times the mean distance of two different cities, exact) to the listed optimal length, cut to [0, 1]; a non-permutation or non-integer answer scores 0. The plain ratio is not used because a random tour's expected length would score above 0.5 on it on one instance (ulysses16 0.526; next are burma14 0.498 and gr17 0.447; smallest is pr152 0.070). By the rule in R2, the one scale is applied to all instances.",
+ "threshold_and_anchor": "An operating point, not an external fact: the mean score that tours 10 % longer than the listed optimal length would have on the same instances. It is implemented as threshold_for(ids), the convention forecasting.py already uses; Environment.threshold is its value on the fresh instances of split(env, 16, 24), 0.974213 (0.970460 over all 43). I chose an excess over the optimum instead of a constant share because a random tour is about 1.9 times the optimum at 16 cities and 14.3 times at 152, so a constant 0.90 share would allow roughly 9 % excess on the smallest instances and over 100 % on the largest. The score of a tour 10 % too long runs from 0.889 (ulysses16) to 0.992 (pr152). The 10 % figure is my choice; nothing was measured to set it.",
+ "groups": "Family: the leading lower-case letters of the instance name (TSPLIB's contributor or origin naming). bayg29 and bays29 are the same 29 cities with two distance tables and form one family, \"bay\". There are 21 groups: att 1, bay 2, berlin 1, bier 1, brazil 1, burma 1, ch 2, dantzig 1, eil 3, fri 1, gr 7, hk 1, kro 7, lin 1, pr 6, rat 1, rd 1, st 1, swiss 1, u 1, ulysses 2. split(env, 16, 24) gives 16 training instances from burma, ch, dantzig, eil, fri, gr, hk, lin, swiss and 22 fresh instances from bay, berlin, brazil, kro, pr, rat, rd, st, ulysses, with no group on both sides. att48, bier127, gr24, gr48 and u159 fall on neither side. The halves of the fresh side are 11 and 11, with whole groups each.",
+ "instances_used": 43,
+ "instances_left_out": "One rule on size alone, fixed before anything was scored: n*n <= 30,000 (n <= 173), applied to the names on the source's list of optimal lengths. 68 instances are left out and named in the module text, from si175 and brg180 up to pla85900; their files are not fetched. No instance is left out for any other reason. The adapter raises if it does not find exactly 43 usable instances, so a file the source stops serving cannot shrink the set unnoticed.",
+ "checks": [
+  {
+   "id": "a",
+   "n": "43 instances (all of every group; 14 of the 21 groups are singletons), 408 partial states",
+   "result": "pass: fast _rows equals the specification rows (AssignProblem._rows, 3 variables by all options) at 408 random partial states; fast totals equal partial_totals after every assignment; the total of each complete answer equals the independent tour length of the decoded answer"
+  },
+  {
+   "id": "b",
+   "n": "516 valid, 932 invalid answers",
+   "result": "pass: an independent evaluator (own gzip reading, parser, scalar distance functions, reference parse, random-tour expectation) gives the same score as Environment.score on random valid answers through decode (largest difference 0.0); all invalid answers (a position twice, wrong length, out of range, wrong shape, non-integer, None) score 0. The distance matrices are identical on 43/43 instances."
+  },
+  {
+   "id": "c",
+   "n": "23 published tours",
+   "result": "pass: every published optimal tour reproduces the listed length and scores exactly 1.0 (also from another start and in the other direction); exchanging two cities scores < 1 in at least 15 of 20 exchanges per instance and never > 1; a position used twice scores 0"
+  },
+  {
+   "id": "c2",
+   "n": "3 instances with n <= 17",
+   "result": "pass: the exact optimum by dynamic programming over subsets equals the listed length: burma14 3323, gr17 2085, ulysses16 6859"
+  },
+  {
+   "id": "d",
+   "n": "43 instances, 2 seeds, training and fresh",
+   "result": "pass: one layout"
+  },
+  {
+   "id": "e",
+   "n": "43 instances, 3 relabellings",
+   "result": "pass: the same own-label answer written under three seeds decodes identically, has the published length as its total in each relabelled problem, and scores the same; cities and positions are both permuted"
+  },
+  {
+   "id": "f",
+   "n": "split(env, 16, 24)",
+   "result": "pass with a note: 16 training and 22 fresh instances (not 24) from disjoint groups; the kernel's split stops once fresh holds half of the 43 instances"
+  },
+  {
+   "id": "g",
+   "n": "made-up instances only, designs a and b, 3 size sets",
+   "result": "pass: both designs return well-formed answers with and without a capability, and the totals equal directly computed tour lengths. With 16 made-up problems both designs learn (a: 1 iteration, 64 constructions; b: 40 iterations, 619 constructions). With only 6 made-up problems design a reports 'decide: the budget did not allow one round of learning' and uses 0 units, while design b learns."
+  },
+  {
+   "id": "h",
+   "n": "1892 arrays (problem objects, views, a state; 43 instances, 2 seeds)",
+   "result": "pass: the reference value appears as an element, a column sum or a total in 0 arrays; no string attributes; var_attr and opt_attr have 0 columns; start_answer and domain are None; the view exposes only the generic fields"
+  },
+  {
+   "id": "doc",
+   "n": "111 names on the source's page",
+   "result": "pass: the module text names the 43 instances used and the 68 left out, which together are exactly the names on the page; every one left out has more than 173 cities"
+  }
+ ],
+ "hosts_used": [
+  "comopt.ifi.uni-heidelberg.de"
+ ],
+ "learner_run_on_benchmark_instances": false,
+ "open_issues": [
+  "The fresh side has 22 instances, not 24: with 43 instances the kernel's split stops at half of all instances. Reaching 24 would need at least 48 instances, i.e. loosening the size rule to about 200 cities (si175, brg180, rat195, d198, kroA200, kroB200); I kept the rule at n*n <= 30,000 as the guidance says.",
+  "Two addresses differ from the task text: files are fetched over https (the http port of the same host timed out through the proxy), and the list of optimal lengths is tsp/TSP-BEST.html (STSP.html is a 404). To find this I also fetched the site's TSPLIB95 index page and tsp/tspindex.html from the same host, which the task did not name; they are in WORK/dl only and not in the manifest. tspindex.html has errors (eil176 for eil76, linhp138, no eil51), so the instance set is taken from TSP-BEST.html instead.",
+  "GEO degrees use truncation, against the pdf's printed nint. This is justified only by evidence: the three published GEO tours and the exact optimum of burma14 and ulysses16. gr137 (GEO, no published tour, too large for the exact check) rests on the same function without a direct check of its own. I did not fetch the source's FAQ page, which was not named in the task.",
+  "For 20 instances the reference is the listed optimal length with no published tour; two of them (burma14, gr17) were confirmed by my exact check. The other 18 rest on the source's statement.",
+  "The 10 % excess behind the threshold is my choice, not an external fact. On this scale scores of good tours on large instances are compressed near 1 (a tour 10 % too long scores 0.99 on pr152), so the threshold of 0.9742 leaves little room between a decent and an optimal tour there.",
+  "Design a did not learn on 6 made-up problems of this layout ('the budget did not allow one round of learning', 0 units used) but did on 16, the number the kernel trains on. I did not open learner.py and did not adapt anything to this.",
+  "The largest instances cost up to 25,441 units per construction (u159); CPU time of a full registered run was not measured, because the learner was not run on benchmark instances.",
+  "I did not run rsi6/tests/test_kernel.py (its registry-wide tests would need the data of every environment); checks.py repeats the relevant properties for tour only. The __pycache__ directories my runs created under REPO, including in rsi6/kernel and rsi6/learner, were removed; nothing else under those two directories was touched."
+ ]
+}

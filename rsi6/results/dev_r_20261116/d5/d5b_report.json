@@ -1,0 +1,470 @@
+{
+ "registration": "development D5 (new code): dry run B (futility stop always; the CPU total set after the meta stage so that the plan's re-projection drops items)",
+ "generations": {
+  "on": {
+   "0": {
+    "acquisitions": 4,
+    "switches_per_round": 0.0,
+    "informative_share": 0.90625,
+    "dplus_per_informative": 0.05280169329666851,
+    "kept_switched_program": 0.0,
+    "kept_spliced_block": 0.0,
+    "env": "jobshop",
+    "acquired": 0.828238368959361,
+    "cpu": 4.104749999999999
+   },
+   "1": {
+    "acquisitions": 4,
+    "switches_per_round": 0.3333333333333333,
+    "informative_share": 0.9583333333333334,
+    "dplus_per_informative": 0.06453804628426288,
+    "kept_switched_program": 0.0,
+    "kept_spliced_block": 0.0,
+    "env": "jobshop",
+    "acquired": 0.8449621802860059,
+    "cpu": 4.10925
+   },
+   "2": {
+    "acquisitions": 4,
+    "switches_per_round": 0.6666666666666666,
+    "informative_share": 1.0,
+    "dplus_per_informative": 0.03971358498806604,
+    "kept_switched_program": 0.5,
+    "kept_spliced_block": 0.0,
+    "env": "quadassign",
+    "acquired": 0.4099343297418671,
+    "cpu": 0.7625
+   },
+   "3": {
+    "acquisitions": 4,
+    "switches_per_round": 0.6666666666666666,
+    "informative_share": 1.0,
+    "dplus_per_informative": 0.055338541666666664,
+    "kept_switched_program": 0.5,
+    "kept_spliced_block": 0.0,
+    "env": "quadassign",
+    "acquired": 0.4248740127977438,
+    "cpu": 0.80625
+   }
+  },
+  "off": {
+   "0": {
+    "acquisitions": 2,
+    "switches_per_round": 0.0,
+    "informative_share": 0.8125,
+    "dplus_per_informative": 0.08293278198965878,
+    "kept_switched_program": 0.0,
+    "kept_spliced_block": 0.0,
+    "env": "jobshop",
+    "acquired": 0.8127984170544149,
+    "cpu": 3.9575
+   },
+   "1": {
+    "acquisitions": 2,
+    "switches_per_round": 1.0,
+    "informative_share": 1.0,
+    "dplus_per_informative": 0.076171875,
+    "kept_switched_program": 0.0,
+    "kept_spliced_block": 0.0,
+    "env": "jobshop",
+    "acquired": 0.8455661741086014,
+    "cpu": 3.854
+   },
+   "2": {
+    "acquisitions": 2,
+    "switches_per_round": 1.0,
+    "informative_share": 1.0,
+    "dplus_per_informative": 0.005859375,
+    "kept_switched_program": 0.5,
+    "kept_spliced_block": 0.0,
+    "env": "quadassign",
+    "acquired": 0.4052241337709993,
+    "cpu": 0.7549999999999999
+   },
+   "3": {
+    "acquisitions": 2,
+    "switches_per_round": 1.0,
+    "informative_share": 1.0,
+    "dplus_per_informative": 0.080078125,
+    "kept_switched_program": 1.0,
+    "kept_spliced_block": 0.0,
+    "env": "quadassign",
+    "acquired": 0.4427982093061866,
+    "cpu": 0.8905000000000001
+   }
+  }
+ },
+ "meta per acquisition (on-policy)": {
+  "median_program_rounds": 1.0,
+  "median_informative_share": 1.0,
+  "median_switches_per_round": 0.0
+ },
+ "L4 cross-category correlation of the learned per-cell statistics": {
+  "categories": [
+   "jobshop",
+   "quadassign"
+  ],
+  "pairs": {
+   "jobshop/quadassign": 0.4480812641083521
+  },
+  "mean_pairwise_spearman": 0.4480812641083521,
+  "mean_pairwise_spearman, lower half (destructive cells)": -0.0303030303030303,
+  "mean_pairwise_spearman, upper half": 0.11515151515151514
+ },
+ "L7 discovery efficiency over generations (on- minus off-policy)": {
+  "switch_positions": [
+   2
+  ],
+  "positions 1 to 3": {
+   "dplus_relative": -0.015151515151515138,
+   "interval_95": [
+    -0.07407407407407396,
+    0.0
+   ],
+   "lower_95": -0.07407407407407396,
+   "upper_95": 0.0,
+   "chains": 2,
+   "switches_per_round": {
+    "on": 1.0,
+    "off": 1.0
+   },
+   "cpu_per_switch": {
+    "on": 2.7784999999999997,
+    "off": 2.74975
+   }
+  },
+  "category-switch positions": {
+   "dplus_relative": 0.0,
+   "interval_95": [
+    0.0,
+    0.0
+   ],
+   "lower_95": 0.0,
+   "upper_95": 0.0,
+   "chains": 1,
+   "switches_per_round": {
+    "on": 1.0,
+    "off": 1.0
+   },
+   "cpu_per_switch": {
+    "on": 1.532,
+    "off": 1.5099999999999998
+   }
+  }
+ },
+ "final memories": {
+  "chains": 4,
+  "library_size_median": 1.0,
+  "share_with_two_named_destructive_cells_among_four_lowest": 0.25
+ },
+ "retention": {
+  "R_jobshop: depth 4 minus depth 2": {
+   "mean": 0.0,
+   "se": 0.0,
+   "chains": 2
+  },
+  "within_jobshop: depth 2 minus no memory": {
+   "mean": 0.0,
+   "se": 0.0,
+   "chains": 2
+  }
+ },
+ "cpu rule": [
+  {
+   "arm": "frozen",
+   "part": "a",
+   "ratios": {
+    "pmedian": 0.9822267177227078
+   },
+   "matched_categories": []
+  }
+ ],
+ "futility look": {
+  "chains": 2,
+  "mean": 0.0,
+  "t": 0.0,
+  "stop": true
+ },
+ "items": [
+  {
+   "item": 1,
+   "name": "primary-a",
+   "done": true,
+   "why": null
+  },
+  {
+   "item": 2,
+   "name": "primary-b",
+   "done": false,
+   "why": "cancelled by the futility look"
+  },
+  {
+   "item": 3,
+   "name": "shuffled",
+   "done": false,
+   "why": "cancelled by the futility look"
+  },
+  {
+   "item": 4,
+   "name": "o0@relay",
+   "done": false,
+   "why": "dropped by the CPU plan"
+  },
+  {
+   "item": 5,
+   "name": "offpolicy",
+   "done": false,
+   "why": "cancelled by the futility look"
+  },
+  {
+   "item": 6,
+   "name": "libonly",
+   "done": false,
+   "why": "cancelled by the futility look"
+  },
+  {
+   "item": 7,
+   "name": "frozen@ceiling",
+   "done": false,
+   "why": "dropped by the CPU plan"
+  },
+  {
+   "item": 8,
+   "name": "prioronly",
+   "done": false,
+   "why": "cancelled by the futility look"
+  },
+  {
+   "item": 9,
+   "name": "depth-a",
+   "done": false,
+   "why": "cancelled by the futility look"
+  },
+  {
+   "item": 10,
+   "name": "depth-b",
+   "done": false,
+   "why": "cancelled by the futility look"
+  },
+  {
+   "item": 11,
+   "name": "references",
+   "done": false,
+   "why": "dropped by the CPU plan"
+  },
+  {
+   "item": 12,
+   "name": "a0@relay",
+   "done": false,
+   "why": "dropped by the CPU plan"
+  }
+ ],
+ "cap": [],
+ "endpoints": {
+  "E-R1 relay minus frozen": {
+   "mean": 0.0,
+   "se": 0.0,
+   "t": 0.0,
+   "critical_t": 31.820515953773928,
+   "alpha": 0.01,
+   "met": false,
+   "complete": false,
+   "upper_95": 0.0,
+   "interval_95_chains": [
+    0.0,
+    0.0
+   ],
+   "per_category": {
+    "pmedian": 0.0
+   },
+   "categories_positive": 0,
+   "negative_transfer_categories": [],
+   "chains": 2,
+   "n_pairs": 4,
+   "cpu_ratio": 0.9822267177227078,
+   "why": "measured on 2 of the 4 registered chains",
+   "frozen raised to relay's CPU on": [],
+   "bootstraps": {
+    "chains and seeds": [
+     0.0,
+     0.0
+    ],
+    "categories and seeds": [
+     0.0,
+     0.0
+    ]
+   },
+   "decisive_negative": true
+  },
+  "E-R2 relay minus shuffled": {
+   "n_pairs": 0,
+   "chains": 0,
+   "met": false,
+   "complete": false,
+   "why": "not measured"
+  },
+  "E-R3 relay minus o0@relay (matched CPU)": {
+   "n_pairs": 0,
+   "chains": 0,
+   "met": false,
+   "complete": false,
+   "why": "not measured",
+   "void": true,
+   "p_one_sided": 1.0
+  },
+  "E-R4 relay minus offpolicy": {
+   "n_pairs": 0,
+   "chains": 0,
+   "met": false,
+   "complete": false,
+   "why": "not measured",
+   "p_one_sided": 1.0
+  },
+  "E-R5 relay minus libonly": {
+   "n_pairs": 0,
+   "chains": 0,
+   "met": false,
+   "complete": false,
+   "why": "not measured",
+   "p_one_sided": 1.0
+  }
+ },
+ "gate": {
+  "E-R1": false,
+  "E-R2": false,
+  "E-R3": false,
+  "E-R4": false,
+  "E-R5": false
+ },
+ "tiers": {
+  "T1": false,
+  "T2": false,
+  "T3": false,
+  "meaning": {
+   "T1": "the record carries information that helps on these unseen categories (E-R1, E-R2)",
+   "T2": "recursive, beyond accumulation and beyond retained blocks (and E-R4, E-R5)",
+   "T3": "useful at matched compute (and E-R3); 'recursive improvement observed' only here"
+  }
+ },
+ "m_net": {
+  "definition": "relay minus the worst of frozen, shuffled, offpolicy, libonly, o0@relay",
+  "value": 0.0,
+  "against": "frozen",
+  "lower_bound": 0.0,
+  "per_comparator": {
+   "frozen": {
+    "mean": 0.0,
+    "lower": 0.0,
+    "chains": 2
+   }
+  },
+  "relative_to_frozen_gain": null,
+  "complete": false
+ },
+ "diagnostics": {
+  "L3 inner productivity": {
+   "frozen": {
+    "all": {
+     "acquisitions": 4,
+     "switches_per_round": null,
+     "informative_share": null,
+     "dplus_per_informative": null,
+     "kept_switched_program": 0.0,
+     "kept_spliced_block": 0.0
+    },
+    "by_category": {
+     "pmedian": {
+      "acquisitions": 4,
+      "switches_per_round": null,
+      "informative_share": null,
+      "dplus_per_informative": null,
+      "kept_switched_program": 0.0,
+      "kept_spliced_block": 0.0
+     }
+    }
+   },
+   "relay": {
+    "all": {
+     "acquisitions": 4,
+     "switches_per_round": null,
+     "informative_share": null,
+     "dplus_per_informative": null,
+     "kept_switched_program": 0.0,
+     "kept_spliced_block": 0.0
+    },
+    "by_category": {
+     "pmedian": {
+      "acquisitions": 4,
+      "switches_per_round": null,
+      "informative_share": null,
+      "dplus_per_informative": null,
+      "kept_switched_program": 0.0,
+      "kept_spliced_block": 0.0
+     }
+    }
+   }
+  },
+  "L6 prospective transfer of discovery knowledge": {
+   "by_category": {
+    "pmedian": {
+     "cells": 0,
+     "relay": null,
+     "shuffled": null,
+     "top10": null,
+     "chains": 0
+    }
+   },
+   "mean": null,
+   "categories_positive": 0,
+   "shuffled_mean": null,
+   "top10_mean": null
+  },
+  "L8 depth curve": {
+   "depths": [
+    4
+   ],
+   "slope": null
+  },
+  "2x2 prior x library": null,
+  "per arm: CPU, units, constructions, share at or above the threshold, acquired": {
+   "frozen": {
+    "runs": 4,
+    "cpu_total": 13.841000000000001,
+    "cpu_per_run": 3.4602500000000003,
+    "train_units_used": 1715420.0,
+    "constructions": 64.0,
+    "at_or_above_threshold": {
+     "pmedian": 0.0
+    },
+    "acquired": {
+     "pmedian": 0.6726768744589682
+    }
+   },
+   "relay": {
+    "runs": 4,
+    "cpu_total": 13.594999999999999,
+    "cpu_per_run": 3.39875,
+    "train_units_used": 1715420.0,
+    "constructions": 64.0,
+    "at_or_above_threshold": {
+     "pmedian": 0.0
+    },
+    "acquired": {
+     "pmedian": 0.6726768744589682
+    }
+   }
+  },
+  "untrained answers identical across the design-r arms and o0": true,
+  "relay over frozen CPU per category (primary pairs)": {
+   "pmedian": 0.9822267177227078
+  },
+  "relay over frozen CPU, smallest": 0.9822267177227078,
+  "relay over frozen CPU, largest": 0.9822267177227078,
+  "categories where relay's switches per round are at least 1.15 times frozen's": 0,
+  "largest informative-share difference, relay minus frozen": null,
+  "largest threshold-share difference, relay minus frozen": 0.0,
+  "o0@relay reached within 2 levels": null,
+  "void comparisons": 1
+ },
+ "predictions": []
+}

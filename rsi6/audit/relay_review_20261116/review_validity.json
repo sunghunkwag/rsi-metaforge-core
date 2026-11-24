@@ -1,0 +1,84 @@
+{
+ "findings": [
+  {
+   "file": "<scratch>/notes/make_dev_r.py",
+   "line": 92,
+   "severity": "major",
+   "summary": "Held-out information reaches development rules. D2(a)'s layout choice and D4's cap/J rule are computed from the real construction units of the four fresh categories, not from the planning held-out costs. Those units come from dev_r_d4.py lines 57-64, which call fresh.install() and relay.units(environments.load(c)) for tardiness, quadratic, projects and clique in development, before any unlock.",
+   "scenario": "make_dev_r lines 92-93 turn D4['fresh'][c]['predicted_o0_cpu'] into held_r0. Line 100 uses held_r0 in each layout's cost, and lines 146-149 use the fresh units in plan_of and in D4's projected total. Take tau*=0.010, sigma*=0.03 (checked with relay_report's t functions): (48,2) has power 0.818 and fails, while (64,2) at 0.925 and (48,3) at 0.893 both qualify. The cost difference (64,2)-(48,3) is 16*per_chain - 32*sum(held_r0). With the spec's planning costs (43 s per r0 run, so sum 172 s, and per_chain about 476 s) the rule picks (48,3). If the fresh categories' predicted r0 CPU sums above about 238 s, it picks (64,2) instead. So the registered (J, S), and D4's J fall, depend on held-out instance sizes. This contradicts four statements in the spec: D4 says 'with planning held-out costs'; the power analysis says 'fresh categories are unknown: planning 39 s (o0) and 43 s (r0)'; section 8 says 'held-out instance sizes are read at the start of the held-out stage'; and section 0.3 says development 'refuses any category whose effective role is not source'.",
+   "fix": "In make_dev_r, use the planning per-run costs (39 s o0 and 43 s r0 at train 200, the spec's T) for the four held-out categories, both in the layout costs and in D4's projection. Remove the fresh section from dev_r_d4.py, so that only relay.py reads held-out sizes, at the start of the held-out stage. Do not carry D4['fresh'] into the registration."
+  },
+  {
+   "file": "<scratch>/repo/rsi6/learner/design_r.py",
+   "line": 487,
+   "severity": "major",
+   "summary": "The shuffled placebo does not keep the library's amounts, for two reasons. (1) Every block occurrence is replaced independently, so a block repeated across r_lib entries becomes several distinct random blocks and the deduplicated library grows. (2) _random_block (lines 454-461) turns every term block into the 4- or 6-instruction skeleton with one new constant, whatever its real length and fresh count. Both contradict the spec's 'same part, length, fresh count and term flag'.",
+   "scenario": "Checked by a pure call. Take a memory with 5 r_lib entries, each holding two blocks: the relocated grow block [['scale',3,3,-1]] (score), and the pick term block [['add',0,0,2]]. relocate() gives the second term=True and fresh=0; such blocks come from a mutarg, replace or insert info, or from a no-op mutarg copy of one of the default program's add-0-0-r instructions inside a multi-edit switch. prior_from(M) gives a library of 2 one-instruction blocks. prior_from(shuffled(M,0)) gives 9 blocks, and its pick blocks are 4 instructions long with fresh=1. The shuffled arm therefore splices among 9 blocks instead of 2, and adds 4 instructions plus a constant where relay adds one instruction. E-R2 (relay - shuffled), L5 and the L6 placebo then measure more than 'which operator did what'. Test T7 misses this: it compares only (part, len, term) block by block, on a chain that has neither case, and never checks fresh or library size.",
+   "fix": "Memoize the random replacement by the block's canonical JSON, so each distinct block maps to one random block. For a term block, draw a random block of the same length and fresh count that ends in ['add',0,0,r]; use the skeleton only when the original is a skeleton. Extend T7 to compare prior_from's library size and the multiset of (part, length, fresh, term)."
+  },
+  {
+   "file": "<scratch>/notes/make_dev_r.py",
+   "line": 107,
+   "severity": "major",
+   "summary": "D2(b) removes libonly, prioronly and E-R5 but does not drop the library from design r. relay_changes gets no lib_max=0 or lib_per_run=0, so the registered relay arm keeps building and splicing a library with no library control left.",
+   "scenario": "Suppose D2 finds a median library size of 1.5. Then dropped_arms = ['libonly','prioronly'], relay_changes stays {}, and RELAY0 keeps lib_max 32 and lib_per_run 4. The held-out relay memories still hold r_lib entries; prior_from returns them, and _variant switches on the splice cells. relay_report (lines 521-527) sets gate E-R5 = None and e5 = True, so T2 ('beyond accumulation and beyond retained macros') can be met while relay's library is active and uncontrolled. The spec says 'drop the library: libonly, prioronly and E-R5 are removed, and the Owner's comparison 3 then coincides with frozen'. That last clause holds only if the relay carries no library.",
+   "fix": "When rule (b) fires, also set relay_changes['lib_per_run'] = 0 (or lib_max = 0). make_registration_r's assertion then forces RELAY0 to drop the library in every arm, and the D0 tests must be re-run. Otherwise, keep libonly and E-R5."
+  },
+  {
+   "file": "<scratch>/notes/make_dev_r.py",
+   "line": 162,
+   "severity": "major",
+   "summary": "D6's prescribed switch to a sign-flip permutation test cannot take effect anywhere. make_dev_r only appends a decision text; dev.json has no field for the test; make_registration_r.py registers no test choice; and relay_report.endpoint always uses the one-sided t-test.",
+   "scenario": "Suppose dev_r_d6.py finds a rejection rate of 0.016, above 0.013, so switch_to_permutation_test is True. make_dev_r line 164 records 'switch to a sign-flip permutation test', but the out dict (lines 171-175) carries no test choice. relay_report.endpoint (lines 114-137) and the Holm step (lines 504-520) use only t_quantile and t_sf. E-R1 to E-R5 are then decided by the very t-test whose null rejection rate D6 found too high, against the spec's 'E-R1 to E-R5 switch to a sign-flip permutation test on chain means (10,000 seeded flips) before registration'.",
+   "fix": "Add a registered test field (from dev.json into registration_r.endpoints). Implement the seeded 10,000-flip sign-flip test on chain means in relay_report.endpoint, and use its p-values for E-R1 to E-R5 and for Holm whenever the field says so."
+  },
+  {
+   "file": "<scratch>/repo/rsi6/open/relay_report.py",
+   "line": 394,
+   "severity": "major",
+   "summary": "The CPU rule is not conservative in either direction. Wherever it applies (on every category when D2(f) sets frozen_matched_everywhere), it replaces the comparator, pair by pair, with a run at a raised training budget. On D1's evidence a raised budget does not help r0 or o0 and may hurt them, so E-R1 and E-R2 to E-R5 can be measured against a weakened comparator. Separately, the doubling first raise (relay.py line 198) gives the comparator about 1.6x relay's CPU, so L1 and E-R3 are not equal-CPU comparisons either.",
+   "scenario": "From dev_r_d1.json: r0 at 4x the budget acquired 0.014 less than at train 200 (pmedian -0.034, jobshop -0.007; the interval includes 0). o0 raised to r0's CPU acquired about 0.001 less than o0, and it received 1.55-1.72x r0's CPU (cpu_ratio r0/o0@r0 = 0.62). Now suppose D2(f) fires. cpu_rule then sets over = all categories, and every primary pair where frozen's CPU is below relay's (about half when the two CPUs are similar) is replaced by r0 at 2x the budget or more. With no true relay effect, and a degradation delta from the doubled budget, E-R1's mean rises by about delta/2: a path to a false E-R1 pass. The other direction is the label: P18 (make_registration_r.py line 112) reads 'L1 < 0' as 'inner discovery harmful at equal CPU', yet the o0 in L1 got about 1.6x frozen's CPU.",
+   "fix": "Let a comparator given more CPU decline it. For example, per category, use whichever of the raw and the raised comparator has the higher mean, or require E-R1 to hold against both. Also report the achieved CPU ratio of the matched pairs, and describe L1 and E-R3 as 'o0 with at least relay's CPU' rather than equal CPU."
+  },
+  {
+   "file": "<scratch>/notes/make_registration_r.py",
+   "line": 21,
+   "severity": "minor",
+   "summary": "make_registration_r.py writes registration_r.json and amendment_6.json without checking dev['register'] (D2(e)'s stop rule) or dev['d6_done'].",
+   "scenario": "Suppose D2(e) fires: L2_dev is -0.014 (below 0.003) and the upper 80% bound of the development effect is 0.002 (below 0.003). dev.json then has register False and the decision 'do not register'. Running make_registration_r.py on that dev.json still writes the registration, with the 'do not register' decision sitting inside its own development record. The same happens with d6_done False, i.e. when D6 has not been run at the final (J, S, tau*).",
+   "fix": "Refuse to write unless dev['register'] and dev['d6_done'] are both true."
+  },
+  {
+   "file": "<scratch>/notes/make_dev_r.py",
+   "line": 63,
+   "severity": "minor",
+   "summary": "Rules D2(b), (c) and (d) are applied to summaries of per-left-out-category summaries, not to the statistics over the 24 development chains: the median of three median library sizes, the mean of three mean Spearman correlations (with unequal counts n), and the median of three median top-3 masses. The decisions can flip.",
+   "scenario": "Take final library sizes per chain of LOO-jobshop [0,0,0,0,5,5,5,5], LOO-quadassign [0,0,0,0,5,5,5,5] and LOO-pmedian [0,0,0,0,0,0,0,5]. The per-ledger medians are 2.5, 2.5 and 0, so lib_median is 2.5 and the library is kept. The median over all 24 chains is 0, below 2, so the spec's rule (b) would drop it. rho(dplus) and rho(dmean) for rule (c) average per-ledger means built from different numbers of correlations.",
+   "fix": "Have dev_r_d2.py write the per-chain library sizes and top-3 masses and the per-acquisition correlations. Pool them across the three ledgers in make_dev_r before taking the median or mean."
+  },
+  {
+   "file": "<scratch>/notes/make_dev_r.py",
+   "line": 94,
+   "severity": "minor",
+   "summary": "The per-run meta CPU used in D4's cap check and in D2(a)'s layout costs is dev_r_d4's by_category_mean_cpu. That is the mean over every r0 run of a category at any training budget, so it includes D1's r0@800 runs at about 4x the CPU of a train-200 meta run.",
+   "scenario": "dev_r_d4.py line 49 averages every r0 row of a category without filtering by budget. In dev_r_d1.json, r0@800 runs cost 240, 67 and 273 s against 56, 17 and 59 s at train 200. Six such runs among about 100 train-200 runs raise a category's mean by roughly 15-20%. That inflates per_chain (line 95) and meta_runs_cpu (lines 142-143). D4's projected total is overstated, so J can fall without cause. The (64,2) vs (48,3) comparison (16*per_chain vs 32*sum(held_r0)) is also tilted toward (48,3).",
+   "fix": "Take the per-run meta CPU from train-200, part-A r0 runs only, or from the fitted model at train 200 with part-A test units."
+  },
+  {
+   "file": "<scratch>/repo/rsi6/open/relay.py",
+   "line": 361,
+   "severity": "minor",
+   "summary": "The primary items submit relay and frozen as two consecutive Cache.get batches, not as one interleaved batch. The relay/frozen CPU ratio that decides the CPU rule is therefore exposed to machine drift between the batches. Spec 6.2(3) says 'each item is submitted as one interleaved batch'.",
+   "scenario": "In item 1, the 256 relay runs (J/2 = 32 chains x 4 categories x 2 seeds) fill the 4-worker pool first, and the 256 frozen runs follow. A change in CPU frequency or co-running load between the two batches shifts every relay CPU against every frozen CPU. That can push a category's ratio across 1.10 in either direction, which switches E-R1's comparator to or from frozen@relay. run_meta interleaves on- and off-policy jobs in one batch; the held-out primary does not (item 11's o0@ref and a0@ref batches are separate too).",
+   "fix": "Build the relay and frozen jobs of an item, interleave them pair by pair in a single cache.get, then split the rows by arm. Do the same for item 11."
+  },
+  {
+   "file": "<scratch>/repo/rsi6/open/relay.py",
+   "line": 452,
+   "severity": "minor",
+   "summary": "Development (--dev) does not wait while ledger/.writer.lock is held, so development runs can share the machine with a registered stage and perturb its measured CPU-seconds, against spec 0.3.",
+   "scenario": "Run relay.py --dev --stage meta on a scratch ledger while a registration_o stage, or the relay's own registered stage, holds ledger/.writer.lock. guard.single_writer locks only the scratch ledger's .lock, since is_registered is false, and 4 workers start at once. The registered runs' CPU-seconds then feed matched comparisons and the CPU rule under contention. Spec 0.3 says 'It waits while ledger/.writer.lock is held, so the running experiment's CPU-seconds are not perturbed'. The development scripts (dev_r_d2.py, for example) take no lock at all.",
+   "fix": "In dev mode, block on a shared flock of ledger/.writer.lock before any measurement, and hold it for the run. Do the same in the dev_r_* scripts."
+  }
+ ]
+}

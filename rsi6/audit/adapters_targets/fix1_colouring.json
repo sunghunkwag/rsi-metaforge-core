@@ -1,0 +1,95 @@
+{
+ "buildable": true,
+ "files_written": [
+  "<scratch>/targets/colouring/repo/rsi6/environments/colouring.py",
+  "<scratch>/targets/colouring/work/checks.py",
+  "<scratch>/targets/colouring/work/checks.out",
+  "<scratch>/targets/colouring/work/indep.py",
+  "<scratch>/targets/colouring/work/norule.py",
+  "<scratch>/targets/colouring/work/norule.out",
+  "<scratch>/targets/colouring/work/colouring.before_audit1.py",
+  "<scratch>/targets/colouring/work/patch1.py",
+  "<scratch>/targets/colouring/work/patch2.py"
+ ],
+ "checks": [
+  {
+   "id": "a fast evaluation equals the specification (partial_totals)",
+   "n": "118,347 candidate rows and 676 partial states on 33 instances",
+   "result": "PASS (code of the problem class unchanged)"
+  },
+  {
+   "id": "b independent evaluator agrees with Environment.score, answers in own labels through decode",
+   "n": "259 valid, 257 conflicting, 430 malformed answers on 43 instances",
+   "result": "PASS on the new scale: score = min(1, number / colours used), 0 for a conflict or a malformed answer; valid scores span 0.072 to 1.000. Extended: a proper colouring with more colours than the form offers (every vertex its own colour, labels shifted by 10^9) scores exactly number / n, not 0"
+  },
+  {
+   "id": "c colourings with the page's number score exactly 1; corrupted ones less or 0",
+   "n": "39 of 43 instances (builder's own colourings)",
+   "result": "PASS; one colour more scores number / (number + 1); not attained by the builder's search: le450_15c, le450_15d, le450_25c, le450_25d"
+  },
+  {
+   "id": "d one layout over all instances",
+   "n": "43",
+   "result": "PASS, one layout; vertices 11 to 450, colours on offer 6 to 180, cells 66 to 81,000"
+  },
+  {
+   "id": "e same answer under relabellings scores the same",
+   "n": "86 answers, three relabellings each",
+   "result": "PASS"
+  },
+  {
+   "id": "f split(env, 16, 24)",
+   "n": "16 training, 24 fresh",
+   "result": "PASS; training from LEI and SGB-miles, fresh from MYC, REG, SGB-book, SGB-game, SGB-queen; halves: A = 8 queen + 4 book, B = 7 REG + 4 MYC + games120"
+  },
+  {
+   "id": "g interface check, learner as a black box on made-up random graphs, designs a and b",
+   "n": "2 designs x 2 budgets",
+   "result": "PASS; both designs acquire and give well-formed answers; no score reported; no benchmark instance given to the learner"
+  },
+  {
+   "id": "h scan of the problem object for reference, name, class",
+   "n": "43 instances",
+   "result": "PASS; the only array is the 0/1 adjacency matrix"
+  },
+  {
+   "id": "i which score scale (rewritten)",
+   "n": "5 sampled random valid answers per instance, 43 instances",
+   "result": "PASS; random valid answers average 0.298 on the plain ratio over all instances, 0.270 on the training 16, 0.318 on the fresh 24, all below 0.5, so the plain ratio is the scale. Above 0.5 on six single instances (myciel3, games120 fresh; miles500, miles750, miles1000, miles1500 training). Floor number/(largest degree+1): games120 0.643, miles1500 0.682, miles500 0.513, myciel3 0.667, at most 0.483 elsewhere; asserted against the module text"
+  },
+  {
+   "id": "j what the threshold means: no-search rule scored by env.score (new; own code, not the learner)",
+   "n": "20 random orders per instance, 43 instances, first-fit and random-fit",
+   "result": "PASS; reproduces the auditor: fresh 24 first-fit 0.888, random-fit 0.831; half A 0.791 / 0.755; half B 0.986 / 0.907; training 0.677 / 0.624. Fresh queen graphs 0.636 to 0.785; fresh REG 0.985 to 1.000, MYC 0.919 to 0.990, book 0.933 to 1.000, games120 1.000. All fresh queens one colour over and the rest exact gives 0.965 (half A 0.930), two over 0.937. Asserted: 0.937 < 0.95 < 0.965, both rules below 0.95 on fresh and on half A, first-fit ABOVE 0.95 on half B"
+  },
+  {
+   "id": "k how the files list the edges (new)",
+   "n": "43 files",
+   "result": "PASS; all 18 SGB files list each edge in both directions and the p line counts both; the 25 LEI, REG, MYC files list each once; the page prints the doubled count for queen9_9, queen11_11, queen13_13 only. Confirms the auditor's minor finding"
+  }
+ ],
+ "open_issues": [
+  "Major finding (score scale) CORRECTED as suggested: score is now the plain ratio min(1, page's number / colours used), 0 for a conflict or malformed answer. Decision to note: I read R2 at the level of the environment (random valid answers average 0.30 overall, 0.32 on the fresh set), not per instance. On six single instances random valid answers average above 0.5 (games120 and myciel3 among the fresh ones); a per-instance switch to the other scale was not made because the expectation of a uniformly random proper colouring cannot be computed exactly and a sampled table would be a table beyond the instance. Stated in the module text.",
+  "Threshold changed from 0.90 to 0.95 and declared an operating point set WITH knowledge of the no-search rule's score on the fresh instances (first-fit 0.89, random-fit 0.83) and of no learner result. I reproduced the auditor's numbers with my own code on benchmark instances (work/norule.py and check j); the learner was not run on any benchmark instance.",
+  "Minor finding (what the fresh set can show) corrected in text only, as it can be: module text and anchor now say that REG, MYC, book graphs and games120 are nearly solved by first-fit, that the eight queen graphs carry the signal, and that the confirming half B has almost no headroom. NOT resolved and not resolvable by the adapter: on half B first-fit alone scores 0.986, above the 0.95 threshold; whether a confirmation on half B means anything is the owner's decision. On half A, 0.95 requires the page's number on some queen graphs (one colour over on all eight gives 0.930).",
+  "Minor finding (edge listing text) corrected and verified by check k.",
+  "Note (form restriction) handled as suggested: form kept; a proper colouring with more than largest degree + 1 colours cannot be written in the form but now gets number / used from score(); module text says so. R1 therefore holds with this one stated restriction (only dominated answers are lost).",
+  "Note (page markup at le450_15a): one sentence added to the module text; no code change.",
+  "Note (MAX_CELLS = 100,000, above the preferred 30,000) NOT changed: the auditor required nothing; ten used instances exceed 30,000 cells. The claim that the limit was fixed before anything was scored remains unverifiable from file times.",
+  "Note (audit procedure) needs no change in the adapter; importing the package may refresh __pycache__ under REPO, as in the audit.",
+  "Unchanged from before: for le450_15c, le450_15d, le450_25c and le450_25d the reference rests on the page alone (no colouring with the page's number in hand).",
+  "Manifest rsi6/environments/manifests/colouring.json not changed (it does not state the scale or the threshold). No file under rsi6/kernel or rsi6/learner was touched; rsi6/learner/learner.py was not opened. The whole test file was not run; check a covers the fast-evaluation property for this adapter."
+ ],
+ "learner_run_on_benchmark_instances": false,
+ "answer_form": "AssignProblem: one variable per vertex, options = colours, n_opts = largest degree + 1 (instance data, always suffices), a colour may be taken any number of times (capacity None, not ordered). Groups: [0] soft, number of colours in use (the published value for a complete answer); [1] hard, number of edges with both ends assigned the same colour. One var_var relation (0/1 adjacency), no attribute columns. Restriction: proper colourings with more than largest degree + 1 colours are outside the form (dominated answers only).",
+ "groups": "7 groups: LEI 12, MYC 5, REG 8, SGB-book 4, SGB-game 1, SGB-miles 5, SGB-queen 8 (source code printed on the page; SGB divided into the page's four kinds)",
+ "hosts_used": [
+  "none in this session (data already pinned from mat.tepper.cmu.edu by the manifest; no new download)"
+ ],
+ "instances_used": 43,
+ "instances_left_out": "36 of the page's 79: 21 only in binary .col.b; 8 where the page prints '?' (no reference); 4 with more than 500 vertices (inithx.i.1-3, homer); 3 with vertices x (largest degree + 1) above 100,000 (fpsol2.i.1-3). Unchanged by this correction.",
+ "reference": "The chromatic number printed beside each instance on the pinned page instances.html; attainable by an answer of the form (always below largest degree + 1). The builder holds a colouring with that number for 39 of 43 instances; for le450_15c, le450_15d, le450_25c, le450_25d it rests on the page alone.",
+ "score_scale": "Plain ratio min(1, page's number / colours used); 0 for a conflict or a malformed answer. Chosen because random valid answers average 0.30 on it over all instances (0.32 on the fresh set), below 0.5, and because the alternative zero (expected value of a uniformly random valid colouring) cannot be computed exactly. Stated limit: on games120, miles500, miles1500 and myciel3 no answer of the form can score below 0.51 to 0.68.",
+ "source": "Graph Coloring Instances page of M. Trick, https://mat.tepper.cmu.edu/COLOR/instances.html, DIMACS text .col files; page pinned by SHA-256 as the reference source",
+ "threshold_and_anchor": "threshold 0.95 (was 0.90). Anchor: an operating point, not an external fact, set knowing that a rule with no search (first-fit in a random vertex order) scores 0.89 on the fresh instances and knowing no learner result: a mean ratio of the chromatic number printed on the instance page to the colours used of 0.95, which is between one and two colours too many on every queen graph with the rest exact (0.965 and 0.937); the queen graphs carry the signal, the other fresh graphs are nearly solved by first-fit, and the confirming half holds almost no headroom (first-fit 0.986 there)."
+}

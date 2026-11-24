@@ -1,0 +1,127 @@
+{
+ "category": "quadratic",
+ "buildable": true,
+ "files_written": [
+  "<scratch>/fresh/quadratic/repo/rsi6/environments/quadratic.py",
+  "<scratch>/fresh/quadratic/repo/rsi6/environments/manifests/quadratic.json",
+  "<scratch>/fresh/quadratic/repo/rsi6/environments/__init__.py (one line added to REGISTRY: \"quadratic\": (\"rsi6.environments.quadratic\", \"Quadratic\"))",
+  "<scratch>/fresh/quadratic/repo/rsi6/data/quadratic/ (152 pinned data files, fetched by python3 -m rsi6.fetch quadratic)",
+  "<scratch>/fresh/quadratic/work/check_quadratic.py (the step-3 checks; output in work/check.out)",
+  "<scratch>/fresh/quadratic/work/check.out",
+  "<scratch>/fresh/quadratic/work/verify_hashes.py (fresh curl download in work/refetch compared with the manifest)",
+  "<scratch>/fresh/quadratic/work/crosscheck_mat.py (.mat vs .sparse, .mat files in work/dl_mat, not pinned)",
+  "<scratch>/fresh/quadratic/work/convention_check.py (which reading of the sparse files fits the published values)",
+  "<scratch>/fresh/quadratic/work/probe_files.py (format facts of every file; output work/probe.out)",
+  "<scratch>/fresh/quadratic/work/baselines.py (plain non-learner procedures on the scale)",
+  "<scratch>/fresh/quadratic/work/make_manifest.py",
+  "<scratch>/fresh/quadratic/work/stats.py",
+  "<scratch>/fresh/quadratic/work/stats2.py",
+  "<scratch>/fresh/quadratic/work/split_probe.py",
+  "<scratch>/fresh/quadratic/work/registry_probe.py"
+ ],
+ "learner_run_on_benchmark_instances": false,
+ "source": "Biq Mac Library (A. Wiegele), https://biqmac.aau.at/biqmaclib.html. The quadratic part is 'Biq: min x'Qx s.t. x in {0,1}^n' with Q symmetric. The library's description is https://biqmac.aau.at/biqmaclib.tex (September 2007), pinned and parsed as text. The instance files are the .sparse files under https://biqmac.aau.at/library/biq/{beasley,gka,be}/, fetched one by one. All 152 files are pinned by sha256 in the manifest (the tex, the html page, 150 instance files). rsi6.fetch recorded the hashes. A second, independent curl download of all 152 files into work/refetch confirmed every hash, and rsi6.fetch re-verified them later. Terms of use: the pages state no licence or terms. The manifest quotes what the page does say ('mainly ment to be used for testing exact solution methods ...'; the beasley and gka sets 'can be obtained from this site or from the OR-Library'). The only host used was biqmac.aau.at, always with the agent research-data-check/1.0. The tar_files directory listing returned 403. The individual files were used, so no archive was needed.",
+ "answer_form": "There are n variables, one per x_i in the file's order (before relabelling). Each variable has two options: option 0 is x_i=0 and option 1 is x_i=1. There is no capacity, domain, ordering or hard group. Every x in {0,1}^n is a published answer and an answer of this form, and the other way round, because the published problem has no constraint. There is one soft group [0]: the sum of the terms of x'Qx whose variables are all assigned. q_ii x_i counts once i is assigned; q_ij x_i x_j and q_ji x_j x_i count once i and j are both assigned. For a complete answer this is exactly x'Qx = sum_i q_ii x_i + 2 sum_{i<j} q_ij x_i x_j. Exposed arrays: var_attr[i,0] = q_ii (file entry (i,i), 0 if not listed), and var_var[0][i,j] = q_ij for i != j (file entry (min,max), symmetric, zero diagonal, 0 if not listed). Nothing else is exposed. Variables are relabelled with the seed by one permutation of the rows and columns. decode keeps the dtype and maps back exactly. The options are not relabelled, because x -> 1-x changes Q and adds a constant (as with knapsack's taken/left). Reading of the files: entries with i<j stand for q_ij = q_ji. Three things establish this reading. (1) The page's notation. (2) The .mat files (full matrices, not pinned) equal the symmetric completion of the .sparse files for all 120 gka and be instances. (3) A 300-start one-flip descent reached the published value exactly on 10/10 small instances and never went below it; under the 'each listed entry counted once' reading it went below the published minimum on gka1b (-154 vs -133) and gka3b (-134 vs -118). Fast state: field[v] = sum of q_vj over the j assigned 1. The change for v->1 is q_vv + 2 field[v], and the reverse change for a variable already at 1. All values are integers, so the arithmetic is exact.",
+ "reference": "The reference is the optimal values in the tables of biqmaclib.tex. parse_tables reads them from the quadratic section, from '\\section{Quadratic 0-1 Programming problems}' to '\\section{Max-Cut instances}'. A row is 'name & value \\\\' (beasley, be) or 'name & n & density & value \\\\' (gka). A row whose value cell reads '$\\le$ v' and is followed by a lower bound gives an upper bound, not an optimum, and its instance is not used (15 rows: bqp500-1..10, gka1f..gka5f). The n stated by the table (the gka column n, or the '$n=..., d=...$' line above a class) must equal the file's n, or loading fails. The values are in the library's convention: minimisation of x'Qx for the library's own matrices, all negative. The OR-Library states beasley and gka as maximisation; the library's values were followed. 150 values are used. They agree exactly with an independent regex parse in the check script. The source publishes values only, no solution vectors.",
+ "score_scale": "score = (zero - value) / (zero - optimum), cut to [0,1]. It is 1 at the published optimum and 0 at the zero point or above, and it falls as x'Qx rises. A malformed answer scores 0 and is never repaired. That means anything not an integer ndarray of shape (n,) with entries 0/1: float, bool, object, NaN, 2, -1, wrong shape or None. The zero point is min(0, chance), and it is EXACT and in closed form. 0 is the value of x=0. chance = E[x'Qx] for uniform x = sum_i q_ii/2 + sum_{i<j} q_ij/2 = (sum Q + trace Q)/4, which is half the sum of the listed entries. This differs from the suggested zero point (the chance value alone). The reason is the gka set b: diagonal entries in [-63,0], off-diagonal ones in [1,100], density 1. Its chance value runs from 4196.5 to 191686 while its optima run from -118 to -160, so on the chance value alone x=0 would score 0.969 to 0.999 there. 9 of the 24 fresh instances of split(env,16,24) are gka-b. With min(0, chance), x=0 scores 0 on all 150 instances, and a uniform random answer averages 0.029. The chance value is negative on 84 instances (at most 0.132 of |opt| below 0) and non-negative on 66. A score s therefore corresponds to s to s+0.132(1-s) of the optimum. The zero point never reads the reference.",
+ "checks": [
+  {
+   "id": "hashes",
+   "n": "152 files",
+   "result": "PASS: all 152 manifest files were re-downloaded with curl into a fresh directory (work/refetch) and every sha256 matched the manifest; rsi6.fetch re-verified them on the copy"
+  },
+  {
+   "id": "file_format",
+   "n": "150 files",
+   "result": "PASS: in every file the header m equals the number of lines, every line has 3 integer fields, i<=j, no pair appears twice and every index is in 1..n (no zero values, no CR)"
+  },
+  {
+   "id": "reading",
+   "n": "120 + 10 instances",
+   "result": "PASS: the .mat files equal the symmetric completion of the .sparse files on 120/120 gka and be instances; a descent under that reading reached the published value on 10/10 small instances and never went below it, while the other reading contradicts gka1b and gka3b"
+  },
+  {
+   "id": "A_reference",
+   "n": "150",
+   "result": "PASS: the adapter's references equal an independent regex parse of the tex; the 15 bound-only rows are excluded; the file n equals the name or table n"
+  },
+  {
+   "id": "B_independent_evaluator",
+   "n": "750 valid answers",
+   "result": "PASS: evaluate() of the relabelled problem and score() of the decoded answer equal a separate evaluator written from the specification exactly (450 uniform, 150 sparse, 150 greedy answers; 377 scores strictly inside (0,1)); scores are in [0,1] and never rise as x'Qx rises within an instance"
+  },
+  {
+   "id": "B_malformed",
+   "n": "180 malformed answers on 15 instances",
+   "result": "PASS: wrong shape (n-1, n+1, (n,1), 0-d), float, bool, object, value 2, value -1, NaN and None all score 0, also after decode; run._valid rejects them all; decode does not cast the dtype. A Python list of 0/1 ints is refused by _valid, and score() reads it as the same array"
+  },
+  {
+   "id": "C_decode",
+   "n": "5 instances x 5 seeds",
+   "result": "PASS: decode maps back exactly; var_attr and var_var equal the file's entries under the recovered permutation; 5 seeds give 5 different permutations; the same seed repeats exactly"
+  },
+  {
+   "id": "D_fast_vs_slow",
+   "n": "504 partial states, 18 instances x 2 seeds",
+   "result": "PASS: _rows (8 variables, both assigned and unassigned), candidates and _new equal the AssignProblem defaults exactly; totals equal partial_totals after every assignment; complete totals equal the independent x'Qx; candidates(s, []) has shape (0,2,1)"
+  },
+  {
+   "id": "E_no_reference",
+   "n": "150",
+   "result": "PASS: after replacing the stored best, chance and zero, the pickled problem, the view fields, the candidates of every variable, evaluate of 3 answers and decode are unchanged, while score() does change; the reference value is not among the problem's numbers; the view hides the adapter (AssignView, allowed fields only, state keys {a,used,tot,n}, read-only arrays)"
+  },
+  {
+   "id": "F_layout",
+   "n": "150",
+   "result": "PASS: one layout ('assign', False, True, True, (False,), (False,), 1, 0, 1, 0, 0, 0, True, True); nothing padded"
+  },
+  {
+   "id": "G_split_halves",
+   "result": "PASS: train has 16 instances from 9 sets {be100 3, be120.3 1, be120.8 1, be150.8 2, be200.8 1, bqp250 2, bqp50 2, gka-d 2, gka-e 2}; fresh has 24 {be200.3 9, be250 6, gka-b 9}; deciding half {be250 6, gka-b 9}, confirming half {be200.3 9}; groups are disjoint"
+  },
+  {
+   "id": "H_units",
+   "result": "PASS: the largest instance, be250.1 (n=250), costs 751 construction units"
+  },
+  {
+   "id": "I_meter",
+   "result": "PASS: candidates charge 2 units per variable, assign 1 per assignment, evaluate n"
+  },
+  {
+   "id": "J_reference_answers",
+   "n": "10",
+   "result": "PASS: the source publishes values only, no answers; answers found outside the adapter by a 300-start descent that reach the published value score exactly 1.0 on 10/10 small instances"
+  },
+  {
+   "id": "K_zero_point",
+   "n": "150 + 3 sampled",
+   "result": "PASS: zero = min(0, half the sum of the listed entries) for all instances; 100000 uniform samples agree with the closed form within 1.3 standard errors on bqp100-1, gka5b and be150.8.2; x=0 scores 0 on all 150"
+  },
+  {
+   "id": "registry",
+   "result": "PASS: environments.load('quadratic') gives 150 instances with threshold 0.97"
+  }
+ ],
+ "open_issues": [
+  "Integration: rsi6/registry/roles.json has no 'quadratic' key, so roles.role_of('quadratic') raises KeyError. With the new REGISTRY line, rsi6/tests/test_kernel.py therefore fails at import time (the ASSIGN_ENVIRONMENTS comprehension), and test_problem_carries_no_reference and test_split_keeps_groups_apart would hit the same error. I did not change roles (rule 4); whoever assigns roles must add the category.",
+  "Zero point: min(0, chance) replaces the suggested chance-value-only zero, because on gka-b x=0 would score 0.969-0.999 on the chance value alone and 9 of the 24 fresh instances are gka-b. The audit should confirm this choice.",
+  "Threshold 0.97 (not the package's usual 0.90 on chance-type scales). It was fixed after measuring plain non-learner procedures and before any learner score. Best-first greedy averages 0.93 overall and 0.91 on the fresh instances, so 0.90 would be met by a greedy that learns nothing. One one-flip descent averages 0.96 overall and 0.87 on fresh. 0.97 is anchored to the knapsack adapter's operating point. The parent may want to revisit it.",
+  "The fresh side is 3 sets. gka-b is structurally unlike every training set: all its off-diagonal entries are positive, its optima are small (-118 to -160), and one descent reaches only 0.69 there against about 0.97 on the be sets. The deciding half holds 9 gka-b instances out of 15. A fresh mean is a mean over 3 published sets, not 24 independent samples.",
+  "The source publishes no solution vectors. Optimality of the 150 values rests on the library's statement; per the instructions it was not proven here. The descent reaching the value on 10 small instances is a consistency check only.",
+  "The source states no licence or terms of use. The manifest quotes what the page says.",
+  "biqmaclib.html is pinned as the record of the file format but is not parsed. Any change to the page will make rsi6.fetch refuse to load the category (strict pin).",
+  "score() reads a Python list of 0/1 ints as the equivalent array (like genassign), while run._valid refuses non-ndarrays. The scored path through the kernel is unaffected.",
+  "The relabelling is a function of the seed and n only, as in the other adapters. A separate relabelling per instance relies on the kernel passing each instance its own seed; run._seed was not called, by rule.",
+  "Kernel observation, outside scope and not changed: AssignProblem.evaluate casts the answer to int64 before well_formed, so evaluate() of non-integer floats is evaluated after truncation. This is metered and learner-side only; score() and run._valid both refuse float answers.",
+  "For the record: the tex's generator-parameter lines for gka sets b and c disagree with its own tables, the page and the files. The adapter reads the files and uses neither statement; this is noted in the module text.",
+  "Environment note: python3 -I ignores PYTHONPATH, so the check scripts take the package copy as an argument and put it on sys.path. The __pycache__ directories my runs created in the copy were removed; the final runs used -B. Only the two new files, the one registry line and the fetched data differ from the copy."
+ ],
+ "groups": "The 16 published sets, taken from the instance name: bqp50, bqp100, bqp250 (beasley, 10 each); gka-a (8, n 30-100), gka-b (10, n 20-125), gka-c (7, n 40-100), gka-d (10, n 100), gka-e (5, n 200); and be100, be120.3, be120.8, be150.3, be150.8, be200.3, be200.8, be250 (10 each). split(env,16,24) gives fresh = be200.3 9, be250 6, gka-b 9, and train = 16 instances from nine other sets. halves() gives deciding = be250 + gka-b (15) and confirming = be200.3 (9).",
+ "threshold_and_anchor": "Threshold 0.97. It is an operating point, not an external fact, fixed after measuring plain non-learner procedures and before any learner answer was scored. It means a value within about three hundredths of the published optimum on average: a score of 0.97 is 0.970 to 0.974 of the optimum. This is the knapsack adapter's operating point. For orientation, the plain procedures (seeded) score as follows, over all 150 instances and over the 24 fresh ones: a uniform random answer 0.029 / 0.013; one greedy pass in a random order 0.56 / 0.59; best-first greedy 0.93 / 0.91; one one-flip descent from a random answer 0.96 / 0.87 (0.69 on gka-b).",
+ "instances_used": 150,
+ "instances_left_out": "The size rule (n <= 1000 and 2n <= 30000) leaves nothing out; the largest instance has n = 250. Left out, not fetched: bqp500-1..10 and gka1f..gka5f, for which the tables give only an upper and a lower bound; and bqp1000-* and bqp2500-*, which are in the beasley folder but absent from the tables. Also not used: the .mat files (the same matrices in full; used only for the outside cross-check), the gka .mc and .mat.mlb files, and the Max-Cut part of the library (another problem).",
+ "hosts_used": [
+  "biqmac.aau.at"
+ ],
+ "cpu_seconds_used_estimate": 60
+}

@@ -1,0 +1,75 @@
+PREDICTIONS (misses first)
+  O1 MISSED     every lineage of the recursive arm accepts at least one mechanism in discovery | accepted >= 1 for both recursive lineages | measured: {'discovery:recursive0': 0, 'discovery:recursive1': 0}
+  O4 MISSED     the recursive arm accepts at least one change of the learning principle | principle changes >= 1 over the recursive lineages | measured: {'discovery:recursive0': 0, 'discovery:recursive1': 0}
+  O2 held       E1 is not met | recursive minus o0@recursive: void, or below 0.01, or an interval that includes zero | measured: {'interval': (0.0, 0.0, 0.0), 'void': False, 'arms whose final is not generation 0': []}
+  O3 held       the learned discoverer shows no advantage over uniform edits on the held-out categories | recursive minus uniform: the interval includes zero | measured: {'interval': (0.0, 0.0, 0.0), 'void': False, 'arms whose final is not generation 0': []}
+  O5 held       the swap test shows no advantage of a discovered principle | not exercised, or mean difference below swap.threshold | measured: (None, None, "the recursive arm's final mechanism has generation 0's learning principle: the recursion was never exercised")
+
+DISCOVERY, per lineage (the score on the discovery seeds is the selected one, biased upward)
+  discovery:recursive0     steps  16 spent    6102 candidates  96 confirmations 0/2 accepted 0 (principle changes 0) final 765e0e601c9a 0.7072
+  discovery:recursive1     steps  16 spent    6139 candidates  96 confirmations 0/1 accepted 0 (principle changes 0) final 765e0e601c9a 0.7072
+  discovery:frozen0        steps  16 spent    6101 candidates  96 confirmations 0/2 accepted 0 (principle changes 0) final 765e0e601c9a 0.7072
+  discovery:frozen1        steps  16 spent    6153 candidates  96 confirmations 0/1 accepted 0 (principle changes 0) final 765e0e601c9a 0.7072
+  discovery:uniform0       steps  16 spent    6292 candidates  96 confirmations 0/1 accepted 0 (principle changes 0) final 765e0e601c9a 0.7072
+  discovery:uniform1       steps  13 spent    6340 candidates  78 confirmations 0/4 accepted 0 (principle changes 0) final 765e0e601c9a 0.7072
+  discovery:shuffled0      steps  14 spent    6062 candidates  84 confirmations 0/3 accepted 0 (principle changes 0) final 765e0e601c9a 0.7072
+  discovery:shuffled1      steps  17 spent    6196 candidates 102 confirmations 0/1 accepted 0 (principle changes 0) final 765e0e601c9a 0.7072
+  discovery:tune0          steps  14 spent    6172 candidates  84 confirmations 0/2 accepted 0 (principle changes 0) final 765e0e601c9a 0.7072
+  discovery:tune1          steps  14 spent    6201 candidates  84 confirmations 0/1 accepted 0 (principle changes 0) final 765e0e601c9a 0.7072
+
+SELECTION on the confirming half of the discovery categories, fresh seeds: minus o0
+  discovery:frozen0        +0.0000  <- final of its arm
+  discovery:frozen1        +0.0000
+  discovery:recursive0     +0.0000  <- final of its arm
+  discovery:recursive1     +0.0000
+  discovery:shuffled0      +0.0000  <- final of its arm
+  discovery:shuffled1      +0.0000
+  discovery:tune0          +0.0000  <- final of its arm
+  discovery:tune1          +0.0000
+  discovery:uniform0       +0.0000  <- final of its arm
+  discovery:uniform1       +0.0000
+
+SWAP TEST: {'exercised': False, 'why': "the recursive arm's final mechanism has generation 0's learning principle: the recursion was never exercised", 'pairs': None, 'mean_difference': None, 'positive': None, 'from': None}
+
+HELDOUT ['binpacking', 'partitioning', 'setcover'] seeds [170001, 170002, 170003, 170004, 170005, 170006]; matched controls {'o0@recursive': {'reached': 18, 'of': 18}, 'a0@recursive': {'reached': 18, 'of': 18}, 'frozen@recursive': {'reached': 18, 'of': 18}, 'uniform@recursive': {'reached': 18, 'of': 18}, 'shuffled@recursive': {'reached': 18, 'of': 18}, 'tune@recursive': {'reached': 18, 'of': 18}}
+  a0             untrained 0.5756 acquired 0.8053 gain +0.2297 cpu/run 120.5
+  a0@recursive   untrained 0.5756 acquired 0.9018 gain +0.3262 cpu/run 280.8
+  frozen         untrained 0.5760 acquired 0.9124 gain +0.3365 cpu/run 211.8
+  frozen:other   untrained 0.5760 acquired 0.9124 gain +0.3365 cpu/run 211.8
+  frozen@recursive untrained 0.5760 acquired 0.9124 gain +0.3365 cpu/run 211.8
+  o0             untrained 0.5760 acquired 0.9124 gain +0.3365 cpu/run 211.8
+  o0@recursive   untrained 0.5760 acquired 0.9124 gain +0.3365 cpu/run 211.8
+  recursive      untrained 0.5760 acquired 0.9124 gain +0.3365 cpu/run 211.8
+  recursive:other untrained 0.5760 acquired 0.9124 gain +0.3365 cpu/run 211.8
+  shuffled       untrained 0.5760 acquired 0.9124 gain +0.3365 cpu/run 211.8
+  shuffled:other untrained 0.5760 acquired 0.9124 gain +0.3365 cpu/run 211.8
+  shuffled@recursive untrained 0.5760 acquired 0.9124 gain +0.3365 cpu/run 211.8
+  tune           untrained 0.5760 acquired 0.9124 gain +0.3365 cpu/run 211.8
+  tune:other     untrained 0.5760 acquired 0.9124 gain +0.3365 cpu/run 211.8
+  tune@recursive untrained 0.5760 acquired 0.9124 gain +0.3365 cpu/run 211.8
+  uniform        untrained 0.5760 acquired 0.9124 gain +0.3365 cpu/run 211.8
+  uniform:other  untrained 0.5760 acquired 0.9124 gain +0.3365 cpu/run 211.8
+  uniform@recursive untrained 0.5760 acquired 0.9124 gain +0.3365 cpu/run 211.8
+  recursive minus o0@recursive   min-change +0.0000 [+0.0000, +0.0000] all categories positive False | acquired +0.0000 untrained +0.0000 gain +0.0000 | cpu x1.00 | per category {'binpacking': 0.0, 'partitioning': 0.0, 'setcover': 0.0}
+  recursive minus a0@recursive   min-change +0.0103 [-0.0072, +0.0388] all categories positive False | acquired +0.0107 untrained +0.0004 gain +0.0103 | cpu x0.75 | per category {'binpacking': -0.006713982215944918, 'partitioning': -0.0038683406675964482, 'setcover': 0.042587200723157435}
+  recursive minus frozen@recursive min-change +0.0000 [+0.0000, +0.0000] all categories positive False | acquired +0.0000 untrained +0.0000 gain +0.0000 | cpu x1.00 | per category {'binpacking': 0.0, 'partitioning': 0.0, 'setcover': 0.0}
+  recursive minus uniform@recursive min-change +0.0000 [+0.0000, +0.0000] all categories positive False | acquired +0.0000 untrained +0.0000 gain +0.0000 | cpu x1.00 | per category {'binpacking': 0.0, 'partitioning': 0.0, 'setcover': 0.0}
+  recursive minus shuffled@recursive min-change +0.0000 [+0.0000, +0.0000] all categories positive False | acquired +0.0000 untrained +0.0000 gain +0.0000 | cpu x1.00 | per category {'binpacking': 0.0, 'partitioning': 0.0, 'setcover': 0.0}
+  recursive minus tune@recursive min-change +0.0000 [+0.0000, +0.0000] all categories positive False | acquired +0.0000 untrained +0.0000 gain +0.0000 | cpu x1.00 | per category {'binpacking': 0.0, 'partitioning': 0.0, 'setcover': 0.0}
+  recursive minus o0             min-change +0.0000 [+0.0000, +0.0000] all categories positive False | acquired +0.0000 untrained +0.0000 gain +0.0000 | cpu x1.00 | per category {'binpacking': 0.0, 'partitioning': 0.0, 'setcover': 0.0}
+  recursive minus a0             min-change +0.1067 [-0.0051, +0.2583] all categories positive False | acquired +0.1071 untrained +0.0004 gain +0.1067 | cpu x1.76 | per category {'binpacking': -0.005363737894177452, 'partitioning': 0.05407210159344913, 'setcover': 0.27259152249921814}
+  recursive minus frozen         min-change +0.0000 [+0.0000, +0.0000] all categories positive False | acquired +0.0000 untrained +0.0000 gain +0.0000 | cpu x1.00 | per category {'binpacking': 0.0, 'partitioning': 0.0, 'setcover': 0.0}
+  recursive minus uniform        min-change +0.0000 [+0.0000, +0.0000] all categories positive False | acquired +0.0000 untrained +0.0000 gain +0.0000 | cpu x1.00 | per category {'binpacking': 0.0, 'partitioning': 0.0, 'setcover': 0.0}
+  recursive minus shuffled       min-change +0.0000 [+0.0000, +0.0000] all categories positive False | acquired +0.0000 untrained +0.0000 gain +0.0000 | cpu x1.00 | per category {'binpacking': 0.0, 'partitioning': 0.0, 'setcover': 0.0}
+  recursive minus tune           min-change +0.0000 [+0.0000, +0.0000] all categories positive False | acquired +0.0000 untrained +0.0000 gain +0.0000 | cpu x1.00 | per category {'binpacking': 0.0, 'partitioning': 0.0, 'setcover': 0.0}
+  frozen minus o0                min-change +0.0000 [+0.0000, +0.0000] all categories positive False | acquired +0.0000 untrained +0.0000 gain +0.0000 | cpu x1.00 | per category {'binpacking': 0.0, 'partitioning': 0.0, 'setcover': 0.0}
+  uniform minus o0               min-change +0.0000 [+0.0000, +0.0000] all categories positive False | acquired +0.0000 untrained +0.0000 gain +0.0000 | cpu x1.00 | per category {'binpacking': 0.0, 'partitioning': 0.0, 'setcover': 0.0}
+  shuffled minus o0              min-change +0.0000 [+0.0000, +0.0000] all categories positive False | acquired +0.0000 untrained +0.0000 gain +0.0000 | cpu x1.00 | per category {'binpacking': 0.0, 'partitioning': 0.0, 'setcover': 0.0}
+  tune minus o0                  min-change +0.0000 [+0.0000, +0.0000] all categories positive False | acquired +0.0000 untrained +0.0000 gain +0.0000 | cpu x1.00 | per category {'binpacking': 0.0, 'partitioning': 0.0, 'setcover': 0.0}
+  recursive:other minus recursive min-change +0.0000 [+0.0000, +0.0000] all categories positive False | acquired +0.0000 untrained +0.0000 gain +0.0000 | cpu x1.00 | per category {'binpacking': 0.0, 'partitioning': 0.0, 'setcover': 0.0}
+  frozen:other minus frozen      min-change +0.0000 [+0.0000, +0.0000] all categories positive False | acquired +0.0000 untrained +0.0000 gain +0.0000 | cpu x1.00 | per category {'binpacking': 0.0, 'partitioning': 0.0, 'setcover': 0.0}
+  uniform:other minus uniform    min-change +0.0000 [+0.0000, +0.0000] all categories positive False | acquired +0.0000 untrained +0.0000 gain +0.0000 | cpu x1.00 | per category {'binpacking': 0.0, 'partitioning': 0.0, 'setcover': 0.0}
+  shuffled:other minus shuffled  min-change +0.0000 [+0.0000, +0.0000] all categories positive False | acquired +0.0000 untrained +0.0000 gain +0.0000 | cpu x1.00 | per category {'binpacking': 0.0, 'partitioning': 0.0, 'setcover': 0.0}
+  tune:other minus tune          min-change +0.0000 [+0.0000, +0.0000] all categories positive False | acquired +0.0000 untrained +0.0000 gain +0.0000 | cpu x1.00 | per category {'binpacking': 0.0, 'partitioning': 0.0, 'setcover': 0.0}
+
+SUCCESS CONDITION, part by part: {'E1': False, 'E3b': False, 'E3a': False, 'E3c': False} -> not met

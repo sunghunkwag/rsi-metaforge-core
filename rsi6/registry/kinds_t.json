@@ -1,0 +1,35 @@
+{
+ "what": "kinds of prediction problem added for design t (2026-11-24); roles in registry/roles.json",
+ "categories": {
+  "friedman": {
+   "module": "rsi6.environments.tabular",
+   "class": "Friedman",
+   "admitted": true
+  },
+  "table": {
+   "module": "rsi6.environments.tabular",
+   "class": "Table",
+   "admitted": true
+  },
+  "binary": {
+   "module": "rsi6.environments.tabular",
+   "class": "Binary",
+   "admitted": true
+  },
+  "cif": {
+   "module": "rsi6.environments.series",
+   "class": "Cif",
+   "admitted": true
+  },
+  "nn5": {
+   "module": "rsi6.environments.series",
+   "class": "Nn5",
+   "admitted": true
+  },
+  "fredmd": {
+   "module": "rsi6.environments.series",
+   "class": "FredMd",
+   "admitted": true
+  }
+ }
+}

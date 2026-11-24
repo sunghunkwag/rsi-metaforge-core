@@ -1,0 +1,556 @@
+{
+ "what": "a sample of the runs of the gate of process d, measured again on the session's machine",
+ "runs": 32,
+ "identical": 30,
+ "cpu_here_over_recorded": 0.44196863480927523,
+ "rows": [
+  {
+   "env": "clique",
+   "seed": 8101,
+   "version": "4766c8e406dd",
+   "purpose": "gate:d:1:incumbent",
+   "fields_that_differ": [],
+   "acquired": [
+    0.6803978588301332,
+    0.6803978588301332
+   ],
+   "untrained": [
+    0.6395214860390446,
+    0.6395214860390446
+   ],
+   "cpu_recorded": 24.387,
+   "cpu_here": 9.941
+  },
+  {
+   "env": "projects",
+   "seed": 8101,
+   "version": "4766c8e406dd",
+   "purpose": "gate:d:1:incumbent",
+   "fields_that_differ": [],
+   "acquired": [
+    0.9806644097375763,
+    0.9806644097375763
+   ],
+   "untrained": [
+    0.9806644097375763,
+    0.9806644097375763
+   ],
+   "cpu_recorded": 26.612000000000002,
+   "cpu_here": 14.048
+  },
+  {
+   "env": "quadratic",
+   "seed": 8101,
+   "version": "4766c8e406dd",
+   "purpose": "gate:d:1:incumbent",
+   "fields_that_differ": [],
+   "acquired": [
+    0.9031079031450128,
+    0.9031079031450128
+   ],
+   "untrained": [
+    0.6463202907801944,
+    0.6463202907801944
+   ],
+   "cpu_recorded": 10.556999999999999,
+   "cpu_here": 3.638
+  },
+  {
+   "env": "tardiness",
+   "seed": 8101,
+   "version": "4766c8e406dd",
+   "purpose": "gate:d:1:incumbent",
+   "fields_that_differ": [],
+   "acquired": [
+    0.951305597514008,
+    0.951305597514008
+   ],
+   "untrained": [
+    0.7484445692095301,
+    0.7484445692095301
+   ],
+   "cpu_recorded": 4.522,
+   "cpu_here": 1.765
+  },
+  {
+   "env": "clique",
+   "seed": 8101,
+   "version": "54945fe09723",
+   "purpose": "gate:d:1:nominee",
+   "fields_that_differ": [],
+   "acquired": [
+    0.682440687796039,
+    0.682440687796039
+   ],
+   "untrained": [
+    0.6395214860390446,
+    0.6395214860390446
+   ],
+   "cpu_recorded": 30.353,
+   "cpu_here": 12.742999999999999
+  },
+  {
+   "env": "projects",
+   "seed": 8101,
+   "version": "54945fe09723",
+   "purpose": "gate:d:1:nominee",
+   "fields_that_differ": [],
+   "acquired": [
+    0.9806644097375763,
+    0.9806644097375763
+   ],
+   "untrained": [
+    0.9806644097375763,
+    0.9806644097375763
+   ],
+   "cpu_recorded": 28.539,
+   "cpu_here": 14.779
+  },
+  {
+   "env": "quadratic",
+   "seed": 8101,
+   "version": "54945fe09723",
+   "purpose": "gate:d:1:nominee",
+   "fields_that_differ": [],
+   "acquired": [
+    0.925494011035667,
+    0.925494011035667
+   ],
+   "untrained": [
+    0.6463202907801944,
+    0.6463202907801944
+   ],
+   "cpu_recorded": 12.516,
+   "cpu_here": 4.445
+  },
+  {
+   "env": "tardiness",
+   "seed": 8101,
+   "version": "54945fe09723",
+   "purpose": "gate:d:1:nominee",
+   "fields_that_differ": [],
+   "acquired": [
+    0.9686104819399662,
+    0.9686104819399662
+   ],
+   "untrained": [
+    0.7484445692095301,
+    0.7484445692095301
+   ],
+   "cpu_recorded": 5.132,
+   "cpu_here": 1.9300000000000002
+  },
+  {
+   "env": "clique",
+   "seed": 8117,
+   "version": "4766c8e406dd",
+   "purpose": "gate:d:1:incumbent",
+   "fields_that_differ": [],
+   "acquired": [
+    0.6258393028376307,
+    0.6258393028376307
+   ],
+   "untrained": [
+    0.637461265044877,
+    0.637461265044877
+   ],
+   "cpu_recorded": 27.983999999999998,
+   "cpu_here": 10.93
+  },
+  {
+   "env": "projects",
+   "seed": 8117,
+   "version": "4766c8e406dd",
+   "purpose": "gate:d:1:incumbent",
+   "fields_that_differ": [],
+   "acquired": [
+    0.9763306609765177,
+    0.9763306609765177
+   ],
+   "untrained": [
+    0.9763306609765177,
+    0.9763306609765177
+   ],
+   "cpu_recorded": 25.729999999999997,
+   "cpu_here": 14.648
+  },
+  {
+   "env": "quadratic",
+   "seed": 8117,
+   "version": "4766c8e406dd",
+   "purpose": "gate:d:1:incumbent",
+   "fields_that_differ": [],
+   "acquired": [
+    0.9048951302882761,
+    0.9048951302882761
+   ],
+   "untrained": [
+    0.6602310693126728,
+    0.6602310693126728
+   ],
+   "cpu_recorded": 9.805,
+   "cpu_here": 4.058
+  },
+  {
+   "env": "tardiness",
+   "seed": 8117,
+   "version": "4766c8e406dd",
+   "purpose": "gate:d:1:incumbent",
+   "fields_that_differ": [
+    "train_acquired"
+   ],
+   "acquired": [
+    0.9509818827572929,
+    0.9509818827572929
+   ],
+   "untrained": [
+    0.7303918932837475,
+    0.7303918932837475
+   ],
+   "cpu_recorded": 4.861000000000001,
+   "cpu_here": 1.597
+  },
+  {
+   "env": "clique",
+   "seed": 8117,
+   "version": "54945fe09723",
+   "purpose": "gate:d:1:nominee",
+   "fields_that_differ": [],
+   "acquired": [
+    0.6826894983500336,
+    0.6826894983500336
+   ],
+   "untrained": [
+    0.637461265044877,
+    0.637461265044877
+   ],
+   "cpu_recorded": 31.757,
+   "cpu_here": 12.407
+  },
+  {
+   "env": "projects",
+   "seed": 8117,
+   "version": "54945fe09723",
+   "purpose": "gate:d:1:nominee",
+   "fields_that_differ": [],
+   "acquired": [
+    0.9763306609765177,
+    0.9763306609765177
+   ],
+   "untrained": [
+    0.9763306609765177,
+    0.9763306609765177
+   ],
+   "cpu_recorded": 27.319000000000003,
+   "cpu_here": 15.122
+  },
+  {
+   "env": "quadratic",
+   "seed": 8117,
+   "version": "54945fe09723",
+   "purpose": "gate:d:1:nominee",
+   "fields_that_differ": [],
+   "acquired": [
+    0.8939498134989035,
+    0.8939498134989035
+   ],
+   "untrained": [
+    0.6602310693126728,
+    0.6602310693126728
+   ],
+   "cpu_recorded": 11.786,
+   "cpu_here": 4.688
+  },
+  {
+   "env": "tardiness",
+   "seed": 8117,
+   "version": "54945fe09723",
+   "purpose": "gate:d:1:nominee",
+   "fields_that_differ": [],
+   "acquired": [
+    0.95710436724927,
+    0.95710436724927
+   ],
+   "untrained": [
+    0.7303918932837475,
+    0.7303918932837475
+   ],
+   "cpu_recorded": 4.806,
+   "cpu_here": 1.8239999999999998
+  },
+  {
+   "env": "clique",
+   "seed": 9101,
+   "version": "4766c8e406dd",
+   "purpose": "confirm:d:1:incumbent",
+   "fields_that_differ": [],
+   "acquired": [
+    0.8422077922077922,
+    0.8422077922077922
+   ],
+   "untrained": [
+    0.49137769069188936,
+    0.49137769069188936
+   ],
+   "cpu_recorded": 31.143,
+   "cpu_here": 12.392000000000001
+  },
+  {
+   "env": "projects",
+   "seed": 9101,
+   "version": "4766c8e406dd",
+   "purpose": "confirm:d:1:incumbent",
+   "fields_that_differ": [],
+   "acquired": [
+    0.9852905117470527,
+    0.9852905117470527
+   ],
+   "untrained": [
+    0.9631808782538435,
+    0.9631808782538435
+   ],
+   "cpu_recorded": 23.064,
+   "cpu_here": 12.780000000000001
+  },
+  {
+   "env": "quadratic",
+   "seed": 9101,
+   "version": "4766c8e406dd",
+   "purpose": "confirm:d:1:incumbent",
+   "fields_that_differ": [],
+   "acquired": [
+    0.7663254186052988,
+    0.7663254186052988
+   ],
+   "untrained": [
+    0.7663254186052988,
+    0.7663254186052988
+   ],
+   "cpu_recorded": 9.775,
+   "cpu_here": 3.482
+  },
+  {
+   "env": "tardiness",
+   "seed": 9101,
+   "version": "4766c8e406dd",
+   "purpose": "confirm:d:1:incumbent",
+   "fields_that_differ": [
+    "train_acquired"
+   ],
+   "acquired": [
+    0.8490441192400038,
+    0.8490441192400038
+   ],
+   "untrained": [
+    0.5575475819529081,
+    0.5575475819529081
+   ],
+   "cpu_recorded": 4.202,
+   "cpu_here": 1.396
+  },
+  {
+   "env": "clique",
+   "seed": 9101,
+   "version": "54945fe09723",
+   "purpose": "confirm:d:1:nominee",
+   "fields_that_differ": [],
+   "acquired": [
+    0.6782106782106783,
+    0.6782106782106783
+   ],
+   "untrained": [
+    0.49137769069188936,
+    0.49137769069188936
+   ],
+   "cpu_recorded": 30.564,
+   "cpu_here": 11.346
+  },
+  {
+   "env": "projects",
+   "seed": 9101,
+   "version": "54945fe09723",
+   "purpose": "confirm:d:1:nominee",
+   "fields_that_differ": [],
+   "acquired": [
+    0.978477384450876,
+    0.978477384450876
+   ],
+   "untrained": [
+    0.9631808782538435,
+    0.9631808782538435
+   ],
+   "cpu_recorded": 23.477,
+   "cpu_here": 12.995000000000001
+  },
+  {
+   "env": "quadratic",
+   "seed": 9101,
+   "version": "54945fe09723",
+   "purpose": "confirm:d:1:nominee",
+   "fields_that_differ": [],
+   "acquired": [
+    0.9736847353875694,
+    0.9736847353875694
+   ],
+   "untrained": [
+    0.7663254186052988,
+    0.7663254186052988
+   ],
+   "cpu_recorded": 10.658000000000001,
+   "cpu_here": 3.902
+  },
+  {
+   "env": "tardiness",
+   "seed": 9101,
+   "version": "54945fe09723",
+   "purpose": "confirm:d:1:nominee",
+   "fields_that_differ": [],
+   "acquired": [
+    0.9072235255791427,
+    0.9072235255791427
+   ],
+   "untrained": [
+    0.5575475819529081,
+    0.5575475819529081
+   ],
+   "cpu_recorded": 4.635,
+   "cpu_here": 1.615
+  },
+  {
+   "env": "clique",
+   "seed": 9117,
+   "version": "4766c8e406dd",
+   "purpose": "confirm:d:1:incumbent",
+   "fields_that_differ": [],
+   "acquired": [
+    0.7305194805194805,
+    0.7305194805194805
+   ],
+   "untrained": [
+    0.49411371232554885,
+    0.49411371232554885
+   ],
+   "cpu_recorded": 25.796,
+   "cpu_here": 9.86
+  },
+  {
+   "env": "projects",
+   "seed": 9117,
+   "version": "4766c8e406dd",
+   "purpose": "confirm:d:1:incumbent",
+   "fields_that_differ": [],
+   "acquired": [
+    0.9770006268546014,
+    0.9770006268546014
+   ],
+   "untrained": [
+    0.9658992965305423,
+    0.9658992965305423
+   ],
+   "cpu_recorded": 23.183,
+   "cpu_here": 11.916
+  },
+  {
+   "env": "quadratic",
+   "seed": 9117,
+   "version": "4766c8e406dd",
+   "purpose": "confirm:d:1:incumbent",
+   "fields_that_differ": [],
+   "acquired": [
+    0.8859110859389941,
+    0.8859110859389941
+   ],
+   "untrained": [
+    0.7689612192551016,
+    0.7689612192551016
+   ],
+   "cpu_recorded": 11.965,
+   "cpu_here": 4.281
+  },
+  {
+   "env": "tardiness",
+   "seed": 9117,
+   "version": "4766c8e406dd",
+   "purpose": "confirm:d:1:incumbent",
+   "fields_that_differ": [],
+   "acquired": [
+    0.8890310509282605,
+    0.8890310509282605
+   ],
+   "untrained": [
+    0.5674166459417416,
+    0.5674166459417416
+   ],
+   "cpu_recorded": 4.826,
+   "cpu_here": 1.645
+  },
+  {
+   "env": "clique",
+   "seed": 9117,
+   "version": "54945fe09723",
+   "purpose": "confirm:d:1:nominee",
+   "fields_that_differ": [],
+   "acquired": [
+    0.8117604617604619,
+    0.8117604617604619
+   ],
+   "untrained": [
+    0.49411371232554885,
+    0.49411371232554885
+   ],
+   "cpu_recorded": 27.372999999999998,
+   "cpu_here": 10.845
+  },
+  {
+   "env": "projects",
+   "seed": 9117,
+   "version": "54945fe09723",
+   "purpose": "confirm:d:1:nominee",
+   "fields_that_differ": [],
+   "acquired": [
+    0.9658992965305423,
+    0.9658992965305423
+   ],
+   "untrained": [
+    0.9658992965305423,
+    0.9658992965305423
+   ],
+   "cpu_recorded": 22.866999999999997,
+   "cpu_here": 13.013
+  },
+  {
+   "env": "quadratic",
+   "seed": 9117,
+   "version": "54945fe09723",
+   "purpose": "confirm:d:1:nominee",
+   "fields_that_differ": [],
+   "acquired": [
+    0.9747650861741833,
+    0.9747650861741833
+   ],
+   "untrained": [
+    0.7689612192551016,
+    0.7689612192551016
+   ],
+   "cpu_recorded": 10.234,
+   "cpu_here": 3.713
+  },
+  {
+   "env": "tardiness",
+   "seed": 9117,
+   "version": "54945fe09723",
+   "purpose": "confirm:d:1:nominee",
+   "fields_that_differ": [],
+   "acquired": [
+    0.9044906791995311,
+    0.9044906791995311
+   ],
+   "untrained": [
+    0.5674166459417416,
+    0.5674166459417416
+   ],
+   "cpu_recorded": 4.901,
+   "cpu_here": 1.694
+  }
+ ]
+}

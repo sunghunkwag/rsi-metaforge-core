@@ -6,7 +6,7 @@
     "role": "maintainer",
     "name": "Sung Hun Kwag",
     "email": "sunghunkwag@gmail.com",
-    "description": "Independent maintainer of RSI MetaForge Core. I build and maintain a deterministic, CPU-runnable Python research runtime for reproducible experiments in program synthesis, self-generated task search, and measured system improvement. The project is developed in public with executable tests, frozen evaluation instruments, committed result records, and explicit limitations.",
+    "description": "Independent maintainer of RSI MetaForge Core. I build and maintain a deterministic, CPU-runnable Python research codebase for reproducible experiments in measured self-improvement of learning systems. The project is developed in public with executable tests, frozen evaluation instruments, committed result records, and explicit limitations.",
     "webpageUrl": {
       "url": "https://github.com/sunghunkwag"
     }
@@ -15,7 +15,7 @@
     {
       "guid": "rsi-metaforge-core",
       "name": "RSI MetaForge Core",
-      "description": "RSI MetaForge Core is an Apache-2.0-licensed, standard-library-only Python runtime for studying whether programs can propose, test, and retain measurable improvements under fixed evaluation conditions. The public repository includes 286 executable tests, quick and full-evidence GitHub Actions workflows, sealed held-out evaluations, deterministic replay checks, failure and rollback records, pre-registered predictions, and committed result documents across stack-VM, file-processing, formal-reasoning, and self-generated-task substrates. It is a bounded experimental research instrument, not a claim of general intelligence or a production code-evolution service. Funding supports maintenance, reproducible releases, faster CI, independent reproduction tooling, documentation, and broader externally designed evaluation tasks.",
+      "description": "RSI MetaForge Core is an Apache-2.0-licensed, CPU-runnable Python research codebase for studying whether programs can propose, test, and retain measurable improvements under fixed evaluation conditions. Since 2026-11-22 the tree holds the RSI-6 package: one domain-independent learner that modifies its own learning mechanism, measured on 19 published benchmark families with held-out and sealed evaluation categories, a hash-chained ledger of every run and decision, replay from the ledger, pre-registered predictions with misses retained, and records of independent audits; its measured outcome so far is negative and is reported as such. The earlier standard-library runtime, with its 286 tests, quick and full-evidence workflows and result documents across stack-VM, file-processing, formal-reasoning, and self-generated-task substrates, is preserved in the history at commit c4f0a86. It is a bounded experimental research instrument, not a claim of general intelligence or a production code-evolution service. Funding supports maintenance, reproducible releases, faster CI, independent reproduction tooling, documentation, and broader externally designed evaluation tasks.",
       "webpageUrl": {
         "url": "https://github.com/sunghunkwag/rsi-metaforge-core",
         "wellKnown": "https://github.com/sunghunkwag/rsi-metaforge-core/blob/main/.well-known/funding-manifest-urls"

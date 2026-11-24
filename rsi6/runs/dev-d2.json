@@ -1,0 +1,11 @@
+{
+ "what": "Development check D2 of design r (the relay): leave one category out, 8 chains each, then relay, frozen and shuffled on the left-out category (rsi6/open/dev_d2.py; rsi6/audit/design_panel_20261116/synthesize.json, development_checks). Development only: categories of the source pool, scratch ledgers, nothing here is evidence. Each job measures all arms of its category on one machine.",
+ "tests": ["rsi6.tests.test_design_r"],
+ "fetch": ["binpacking", "jobshop", "forecasting", "quadassign", "pmedian", "knapsack", "regression", "partitioning",
+           "setcover", "satisfiability", "routing", "facility", "tour", "colouring", "genassign"],
+ "jobs": [
+  {"id": "jobshop", "module": "rsi6.open.dev_d2", "args": ["jobshop", "--out", "run_out"]},
+  {"id": "quadassign", "module": "rsi6.open.dev_d2", "args": ["quadassign", "--out", "run_out"]},
+  {"id": "pmedian", "module": "rsi6.open.dev_d2", "args": ["pmedian", "--out", "run_out"]}
+ ]
+}

@@ -1,0 +1,18 @@
+quadassign   9001 o0 acq 0.4514 gain +0.1024 cpu 2.1 | q0 acq 0.4304 gain +0.0814 cpu 2.4 rounds 18 program rounds 9 switches 3 learned True size [18, 11]
+quadassign   9002 o0 acq 0.4082 gain +0.0588 cpu 1.5 | q0 acq 0.3928 gain +0.0434 cpu 1.4 rounds 6 program rounds 3 switches 3 learned True size [26, 14]
+quadassign   9003 o0 acq 0.4168 gain +0.0664 cpu 1.1 | q0 acq 0.4182 gain +0.0679 cpu 1.2 rounds 6 program rounds 3 switches 0 learned True size None
+quadassign   9004 o0 acq 0.4057 gain +0.0490 cpu 1.9 | q0 acq 0.4239 gain +0.0671 cpu 2.1 rounds 13 program rounds 6 switches 2 learned True size [26, 11]
+pmedian      9001 o0 acq 0.6766 gain +0.0000 cpu 7.8 | q0 acq 0.6766 gain +0.0000 cpu 11.0 rounds 7 program rounds 3 switches 1 learned False size None
+pmedian      9002 o0 acq 0.7261 gain +0.0000 cpu 10.3 | q0 acq 0.7267 gain +0.0007 cpu 6.9 rounds 6 program rounds 3 switches 0 learned True size None
+pmedian      9003 o0 acq 0.6828 gain +0.0000 cpu 9.2 | q0 acq 0.6771 gain -0.0057 cpu 10.3 rounds 8 program rounds 4 switches 1 learned True size [26, 17]
+pmedian      9004 o0 acq 0.6715 gain +0.0000 cpu 8.9 | q0 acq 0.6715 gain +0.0000 cpu 7.9 rounds 6 program rounds 3 switches 0 learned False size None
+jobshop      9001 o0 acq 0.8153 gain +0.0176 cpu 5.6 | q0 acq 0.8504 gain +0.0528 cpu 5.4 rounds 9 program rounds 4 switches 0 learned True size None
+jobshop      9002 o0 acq 0.8171 gain +0.0047 cpu 5.4 | q0 acq 0.8124 gain +0.0000 cpu 6.6 rounds 9 program rounds 4 switches 2 learned False size None
+jobshop      9003 o0 acq 0.8754 gain +0.0683 cpu 3.9 | q0 acq 0.8071 gain +0.0000 cpu 5.1 rounds 8 program rounds 4 switches 1 learned False size None
+jobshop      9004 o0 acq 0.8137 gain +0.0078 cpu 4.9 | q0 acq 0.8274 gain +0.0216 cpu 4.8 rounds 8 program rounds 4 switches 0 learned True size None
+binpacking   9001 o0 acq 0.9790 gain +0.0569 cpu 37.3 | q0 acq 0.9881 gain +0.0660 cpu 34.2 rounds 7 program rounds 3 switches 1 learned True size [30, 11]
+binpacking   9002 o0 acq 0.9802 gain +0.0527 cpu 34.6 | q0 acq 0.9802 gain +0.0527 cpu 34.2 rounds 7 program rounds 3 switches 0 learned True size None
+binpacking   9003 o0 acq 0.9813 gain +0.0529 cpu 34.5 | q0 acq 0.9881 gain +0.0597 cpu 40.7 rounds 7 program rounds 3 switches 1 learned True size [32, 11]
+binpacking   9004 o0 acq 0.9790 gain +0.0528 cpu 35.2 | q0 acq 0.9790 gain +0.0528 cpu 33.5 rounds 7 program rounds 3 switches 0 learned True size None
+q0 minus o0, acquired: mean -0.0019 per run [-0.021, -0.0154, 0.0014, 0.0182, 0.0, 0.0007, -0.0057, 0.0, 0.0351, -0.0047, -0.0683, 0.0137, 0.0091, 0.0, 0.0068, 0.0]
+wall 489.7

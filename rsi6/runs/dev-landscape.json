@@ -1,0 +1,25 @@
+{
+ "what": "Development: every single-field change of generation 0 of the first design on every category of the source pool (rsi6/experiments/dev_landscape.py). The question is whether a change of one field carries from one category to another at all, measured with every change on every category. Development only: source-pool categories, scratch ledgers, seeds 730001 to 730008 that no other run uses, nothing here is evidence. A job measures generation 0 and every change on one machine; CPU is compared inside a job and seed only.",
+ "tests": [],
+ "fetch": ["binpacking", "forecasting", "jobshop", "knapsack", "partitioning", "pmedian", "quadassign", "regression", "setcover"],
+ "jobs": [
+  {"id": "partitioning-1", "fetch": ["partitioning"], "module": "rsi6.experiments.dev_landscape", "args": ["partitioning", "--seeds", "730001", "--out", "run_out"]},
+  {"id": "partitioning-2", "fetch": ["partitioning"], "module": "rsi6.experiments.dev_landscape", "args": ["partitioning", "--seeds", "730002", "--out", "run_out"]},
+  {"id": "partitioning-3", "fetch": ["partitioning"], "module": "rsi6.experiments.dev_landscape", "args": ["partitioning", "--seeds", "730003", "--out", "run_out"]},
+  {"id": "partitioning-4", "fetch": ["partitioning"], "module": "rsi6.experiments.dev_landscape", "args": ["partitioning", "--seeds", "730004", "--out", "run_out"]},
+  {"id": "setcover-1", "fetch": ["setcover"], "module": "rsi6.experiments.dev_landscape", "args": ["setcover", "--seeds", "730001", "--out", "run_out"]},
+  {"id": "setcover-2", "fetch": ["setcover"], "module": "rsi6.experiments.dev_landscape", "args": ["setcover", "--seeds", "730002", "--out", "run_out"]},
+  {"id": "setcover-3", "fetch": ["setcover"], "module": "rsi6.experiments.dev_landscape", "args": ["setcover", "--seeds", "730003", "--out", "run_out"]},
+  {"id": "setcover-4", "fetch": ["setcover"], "module": "rsi6.experiments.dev_landscape", "args": ["setcover", "--seeds", "730004", "--out", "run_out"]},
+  {"id": "binpacking-a", "fetch": ["binpacking"], "module": "rsi6.experiments.dev_landscape", "args": ["binpacking", "--seeds", "730001", "730002", "730003", "730004", "--out", "run_out"]},
+  {"id": "binpacking-b", "fetch": ["binpacking"], "module": "rsi6.experiments.dev_landscape", "args": ["binpacking", "--seeds", "730005", "730006", "730007", "730008", "--out", "run_out"]},
+  {"id": "jobshop-a", "fetch": ["jobshop"], "module": "rsi6.experiments.dev_landscape", "args": ["jobshop", "--seeds", "730001", "730002", "730003", "730004", "--out", "run_out"]},
+  {"id": "jobshop-b", "fetch": ["jobshop"], "module": "rsi6.experiments.dev_landscape", "args": ["jobshop", "--seeds", "730005", "730006", "730007", "730008", "--out", "run_out"]},
+  {"id": "knapsack-a", "fetch": ["knapsack"], "module": "rsi6.experiments.dev_landscape", "args": ["knapsack", "--seeds", "730001", "730002", "730003", "730004", "--out", "run_out"]},
+  {"id": "knapsack-b", "fetch": ["knapsack"], "module": "rsi6.experiments.dev_landscape", "args": ["knapsack", "--seeds", "730005", "730006", "730007", "730008", "--out", "run_out"]},
+  {"id": "pmedian", "fetch": ["pmedian"], "module": "rsi6.experiments.dev_landscape", "args": ["pmedian", "--seeds", "730001", "730002", "730003", "730004", "730005", "730006", "730007", "730008", "--out", "run_out"]},
+  {"id": "quadassign", "fetch": ["quadassign"], "module": "rsi6.experiments.dev_landscape", "args": ["quadassign", "--seeds", "730001", "730002", "730003", "730004", "730005", "730006", "730007", "730008", "--out", "run_out"]},
+  {"id": "forecasting", "fetch": ["forecasting"], "module": "rsi6.experiments.dev_landscape", "args": ["forecasting", "--seeds", "730001", "730002", "730003", "730004", "730005", "730006", "730007", "730008", "--out", "run_out"]},
+  {"id": "regression", "fetch": ["regression"], "module": "rsi6.experiments.dev_landscape", "args": ["regression", "--seeds", "730001", "730002", "730003", "730004", "730005", "730006", "730007", "730008", "--out", "run_out"]}
+ ]
+}

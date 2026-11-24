@@ -1,0 +1,79 @@
+{
+ "summary": "I reviewed rsi6/learner/design_o.py, its dispatch in designs.py and its use in kernel/run.py, using synthetic AssignProblem subclasses only. My scripts are in WORK: check1.py, check2.py, check3.py and fuzz.py, all under <review>/work_a/. Total CPU was about one minute.\n\nWhat is correct:\n- The incremental sensors (neigh, vvdone/vvopen, usedrel, optsum, for every relation and column index) equal a from-scratch computation at every step. I checked free and ordered problems and three successive constructions with the same Sensors object: 0 mismatches. begin() resets the sensors.\n- live() and compile_vector_program are consistent: Sensors reads only the live loads, and dead code draws no noise.\n- Budget estimates are upper bounds on what the meter charges, and the held-back reserve covers the 3-way check.\n- A run of the same mechanism with the same seed is identical: same capability, answers and units.\n- I found no path by which a program reads anything beyond the AssignView fields. Nothing is category-specific.\n- Fuzzing 150 random validated mechanisms on problems with capacity, all relation kinds and occ_attr, free and ordered: no crash, no loop and no memory growth.\n\nDefects:\n1. The behaviour key in edits.py zeroes the values of constants that no live score or pick instruction reads. The learning principle still sees those values through the cross-dimension acquirer ops mean and norm. I built two mechanisms with equal keys that learn different constants and give different answers, and discovery's memo, which is keyed by that key, would hand one of them the other's score.\n2. Generation 0 of design o differs from design a's generation 0 in more than the machine. The biggest difference: o uses shortlist 1 where a uses 4, so o gets 3 to 4 times more learning rounds from the same budget (the smoke log shows 6 to 8 rounds against 2). The docstring's claim that only what acquisition produced differs between the designs is false.\n3. Smaller points: a fallback that crashes on problems with a domain (no adapter here has one); counted units do not bound CPU (up to about 6 times gen0 per unit at 200 variables); and a few notes on the select option, the state aliasing in AssignView, and the fitness registers.",
+ "checks_run": [
+  "check1.py check_sensors: incremental neigh/done/usedrel/optsum vs from-scratch recomputation from s['a'] after every assign, via view(), free and ordered, 3 constructions reusing one Sensors object, all 3 var_var / 2 opt_opt / 3 var_attr indices plus out-of-range index 3 -> 0 mismatches",
+  "check1.py check_determinism: acquire+apply twice, default mechanism, same seed -> capability, answers and meter units identical",
+  "check2.py: two mechanisms with an init using 'mean' over theta that differ only in an unread constant (5.0 vs 90.0): edits.behaviour equal; Acquirer step sizes 0.4545 vs 7.27; learned theta [-1.65,-5.55,-3.58] vs [-12.97,-10.97,-16.61] (seed 7); answers differ on fresh problems (seeds 7 and 8)",
+  "check3.py: CPU per counted unit on a 200x200 fast synthetic problem: gen0 0.59-1.02 us/unit, a 46-'rel' score program 2.26 us/unit, a 24-instruction pick reading vomin/vosum 6.08 us/unit",
+  "fuzz.py seed 1: 150 random validated mechanisms on capacity+domain problems -> 23 ValueError('option not available') from the construct fallback",
+  "fuzz.py seed 2: 150 random validated mechanisms on free/ordered problems with capacity, all relation kinds and occ_attr, no domain -> 0 failures, worst 4.8e-5 CPU-s/unit",
+  "grep of the five data adapters for domain=/start_answer=/s['used']= : none use domain or start_answer; no adapter rebinds s['used']",
+  "read smoke.log: design a iters 2 on every free category vs design o iters 6-8; knapsack untrained a 0.8510 vs o 0.8515; pmedian cpu a 3.0s vs o 8.5s",
+  "code reading of design_o.py (all of it), designs.py, kernel/run.py, kernel/problem.py, open/edits.py, learner.py (construct/_acquire_assign/_apply_assign/_improve), version.py defaults, discovery.py memo/measure"
+ ],
+ "findings": [
+  {
+   "severity": "major",
+   "file": "rsi6/open/edits.py",
+   "line": "187-201 (effective/behaviour); used by rsi6/open/discovery.py 103,111,131,138,203",
+   "what": "The behaviour key calls two mechanisms equal when they behave differently. effective() sets to 0.0 every constant that no live score or pick instruction reads. The learning principle, however, works on the whole theta vector: it starts from all of it (Acquirer.__init__ A[0]=start) and can mix coordinates with the cross-dimension ops 'mean' and 'norm' (design_o.py 515-519), which are in A_UNARY and can be inserted by edits into init, propose or update. The values of unread constants therefore change the step sizes and population of the dimensions that are read.",
+   "why_it_matters": "discovery.py keys its memo of (score, cpu) and its 'seen' set by this key. A candidate that differs from its parent only in an unread constant, for example after a 'perturb' or a 'grow' into a dead register, is either dropped as 'seen' or handed the measured value of a different mechanism. At acceptance, measure(mechanism, 'accepted') can return the score of another mechanism. The ledger runs themselves are keyed by the full digest and are correct, so the discovery decisions and the values the recursive learner learns from disagree with what the accepted mechanism actually does.",
+   "evidence": "check2.py: g1 = default + theta[10]=5.0 + init [ones 1; mean 2 0; abs 2 2; mul 1 1 2]; g2 identical except theta[10]=90.0. edits.behaviour(g1)==edits.behaviour(g2) -> True. Acquirer step sizes are 0.4545 vs 7.2727. With seed 7 the learned theta[:3] is [-1.65,-5.55,-3.58] vs [-12.97,-10.97,-16.61], and the answers on fresh problems differ (seeds 7 and 8).",
+   "suggested_fix": "Keep the real values of all constants in the key, and drop only dead score and pick instructions. Alternatively, zero unread constants only when init, propose and update contain no cross-coordinate op (mean, norm)."
+  },
+  {
+   "severity": "major",
+   "file": "rsi6/learner/design_o.py",
+   "line": "86-112 (default), 38-41 (module docstring)",
+   "what": "Generation 0 of design o is not the first design's prior and cross-entropy search in another machine. (a) shortlist is 1, while design a's default (version.py) is 4. Each construction of design a therefore costs about 4 times the units on free problems, which gives design a about 4 times fewer cross-entropy rounds from the same training budget, a different construction at test time (design a's shortlist is halved to 2 by the test meter) and a different leftover budget for _improve. (b) The search space is 10 constants over relation 0 and attribute 0 only. There is no per-group, rem, oa, occ (next/left) or optsum term and no var2 feature; on jobshop, whose only relation data is occ_attr, design o gen0 can learn nothing from relations. (c) The sigma floor is 0.1 against 0.02. (d) The held-back check chooses among 3 vectors (start, mean, last_best) against 2 in design a. (e) The dhard term is mm(dhard) where design a uses amount/top, which keeps zero, so the prior differs whenever every allowed option already has a violation. The docstring says the test-time answer is chosen 'so that what differs between designs is what acquisition produced'; that is false, because the untrained answers already differ.",
+   "why_it_matters": "Any comparison of the two designs at generation 0 ('against generation 0 of both designs' in evaluate.py) mixes the machine with the shortlist, the iteration count, the test-time improvement budget, CPU and the representation. A gain of design o over design a could come from 3 to 4 times more cross-entropy rounds per unit rather than from the open design.",
+   "evidence": "smoke.log: design a 'iters 2' on pmedian, knapsack, partitioning and setcover; design o 'iters 8/7/6/6'. knapsack untrained is 0.8510 for a and 0.8515 for o, so the answers differ before any acquisition. pmedian CPU is 3.0s for a and 8.5s for o. version.py: 'shortlist': ('choice',(1,2,4,8),4). learner.py 501: sigma floor 0.02; design_o.py 109: floor CONST[5]=0.1.",
+   "suggested_fix": "State these differences in the docstring and in the registration. For a design comparison, either set design o gen0's shortlist to 4 with a 0.02 floor and a 2-way check, or compare designs only at matched units and CPU with the shortlist reported. Do not describe generation 0 of design o as 'the first design in this machine'."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/learner/design_o.py",
+   "line": "487-491 (construct fallback)",
+   "what": "When no shortlisted variable has an allowed option inside its domain, the fallback assigns an allowed option outside the domain, or indexes an empty array if no option is allowed. AssignProblem.assign then raises ValueError, which acquire does not catch, so the whole run crashes. Whether this happens depends on the policy, so validate() accepts mechanisms that crash on problems with a domain and capacities. Design a raises the same way (argmax of an all -inf vector).",
+   "why_it_matters": "It cannot happen in the current adapters: none passes domain=. A future adapter with domains would make discovery runs crash for some mechanisms but not others.",
+   "evidence": "fuzz.py seed 1, with a synthetic problem that has capacity and a domain: 23 of about 150 random valid mechanisms fail with ValueError('option not available') at design_o.py:707 -> construct -> assign. Default mechanism on the same problems: no failure. grep 'domain=' over rsi6/environments: no hits.",
+   "suggested_fix": "In the fallback, search the other unassigned variables for one with an option that is both allowed and in its domain. If there is none, raise BudgetExhausted or a caught error and finish with _finish_arbitrarily."
+  },
+  {
+   "severity": "minor",
+   "file": "rsi6/learner/design_o.py",
+   "line": "417-446 (pick_sensor), 448-453 (rel), 308-329",
+   "what": "Counted units do not bound CPU. The meter charges shortlist*n_opts per step. A pick program can read 'domsize', 'vosum' or 'vomin' up to 24 times per step, each costing O(|U|*n_opts), and a score program can apply 'rel' (an O(n_opts^2) product) up to 46 times per step. CPU per unit therefore grows with n_vars and n_opts. The cost is bounded by a constant per problem size (program lengths are limited, and every loop is bounded by the meter), so validate() admits no unbounded CPU or memory. The ratio is large, though.",
+   "why_it_matters": "Claims 1 and 3 are made 'at matched CPU'. Units are equal for every mechanism, so the CPU guard in discovery and the compute-matched control in evaluate are the only protection. Separately, design o gen0 already uses 2 to 3 times the CPU of design a gen0 at equal units (smoke.log).",
+   "evidence": "check3.py on a 200x200 fast synthetic problem: gen0 0.59-1.02 us/unit, a 46-'rel' score program 2.26 us/unit, a pick reading vomin/vosum 12 times 6.08 us/unit. fuzz.py over random mechanisms on 7x3 problems: worst 5.8e-5 s/unit.",
+   "suggested_fix": "Keep the CPU guard mandatory, and report CPU-seconds next to units for every comparison. Optionally charge pick sensors and 'rel' to a CPU-proportional internal counter."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/learner/design_o.py",
+   "line": "691-697, 721-722",
+   "what": "When select is 'state' or 'last_best' and n_check>0, a quarter of the training problems is held back and 3 times their cost is reserved, but neither is used. The learned vector is adopted with learned=True and no check, even when it is worse than the start.",
+   "why_it_matters": "This is a mechanism-level choice that discovery can make. It is not a leak, but report['learned'] then says nothing about the quality of what was learned, and some training budget is wasted. Anyone reading 'learned' rates across mechanisms should know this.",
+   "evidence": "Line 722 takes options[g['select']] with learned=True. The reserve at line 696 is subtracted in the loop guard at line 704 whatever the value of select.",
+   "suggested_fix": "When select is not 'best_of_3', set n_check=0, or report that no check was made."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/kernel/problem.py",
+   "line": "259-263, 255-257",
+   "what": "The correctness of the 'used', 'capleft', 'occnext' and 'usedrel' sensors depends on aliasing. AssignView.start shares inner['a'] and inner['used'] with the learner's state dict, and _sync refreshes only 'tot' and 'n'. If an adapter's _push or _new rebound s['used'] or s['a'] instead of changing them in place, design o's sensors would silently read stale arrays. The arrays are also writable through the view, although design_o never writes them.",
+   "why_it_matters": "This holds today: no adapter of the five data categories rebinds them (grep), and the incremental-sensor check through view() passed. It is a fragile contract for future adapters.",
+   "evidence": "check1.py check_sensors through view(): 0 mismatches. grep 's[\"used\"] =' over rsi6/environments: no hits.",
+   "suggested_fix": "Have _sync also copy 'used' and 'a', or document the in-place requirement for adapters in AssignProblem."
+  },
+  {
+   "severity": "note",
+   "file": "rsi6/learner/design_o.py",
+   "line": "545-575, 610-621",
+   "what": "The fitness registers W persist across updates and are never clipped or checked for finite values. Repeated 'wadd'/'wmul' can overflow to inf or NaN. The damage is contained: A registers and C are replaced by 0 where non-finite and clipped to [-100,100], wtop and wbest stay well-defined, and no crash occurred in fuzzing. A_UNARY, A_NULLARY and score UNARY instructions leave their unused fields unchecked, which only makes keys differ for mechanisms that behave the same (a harmless direction).",
+   "why_it_matters": "Nothing is wrong today; an overflowed W silently turns an update into 'set to 0'.",
+   "evidence": "fuzz.py seed 2: 0 failures over 150 random mechanisms.",
+   "suggested_fix": "None needed. Optionally clip W like A."
+  }
+ ]
+}

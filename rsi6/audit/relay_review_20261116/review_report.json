@@ -1,0 +1,92 @@
+{
+ "findings": [
+  {
+   "file": "rsi6/open/relay_report.py",
+   "line": 134,
+   "severity": "major",
+   "summary": "endpoint() computes cpu_ratio over every row of `arm` and every row of `base`. It ignores the (env, seed) pairing and the `chains` filter that the statistic uses, so every comparison whose two sides hold different numbers of runs reports a wrong CPU ratio. That includes E-R3, the matched-CPU endpoint.",
+   "scenario": "J=64, S=2. E-R2 passes arms['relay'] (512 runs, 49 s each) against shuffled (256 runs, 42 s each). It reports cpu_ratio 2.33, but the paired ratio is 1.17. E-R3 compares relay with o0@relay (256 runs raised to 51 s) and reports 1.92 instead of 0.96, which suggests the matched control got half of relay's CPU. L2 compares frozen@ceiling (128 runs, 151 s) with frozen (512 runs, 41 s) and reports 0.92 instead of 3.68. L1, L5, 'prioronly/libonly minus frozen', 'relay minus prioronly' and 'relay minus a0@relay' (7.84 instead of 0.98) are wrong the same way. All of these were reproduced on a synthetic ledger (work/stats/synth.py).",
+   "fix": "Accumulate CPU inside paired() over the matched pairs only, after the `chains` filter: sum cpu(arm row) and cpu(base row) for each kept pair, and return the ratio of those sums."
+  },
+  {
+   "file": "rsi6/open/relay_report.py",
+   "line": 543,
+   "severity": "major",
+   "summary": "m_net is reported with a numeric value and lower_bound when some of its five registered comparators were not measured (it only sets complete=False). score_predictions then scores P13 on that number instead of treating it as not measured.",
+   "scenario": "The futility look stops the stage (registered probability about 0.41). Items 3, 5 and 6 are cancelled, so shuffled, offpolicy and libonly are missing. m_net becomes min over {frozen, o0@relay}, with per_comparator [frozen, o0@relay] and complete False. P13 is still scored ('met' True on the synthetic futility ledger). A minimum over a subset is never below the minimum over all five, so P13 can be scored a miss when the registered m_net is undefined. With J=48 a stop leaves only 24 chains in those two comparators instead of the registered 32.",
+   "fix": "When len(comps) < len(m_arms), or any comparator has fewer than J2 chains, set m_net value, lower_bound and relative_to_frozen_gain to None and keep the partial per_comparator for information. P13 is then 'not scored'."
+  },
+  {
+   "file": "rsi6/open/relay_report.py",
+   "line": 339,
+   "severity": "minor",
+   "summary": "l8 computes and reports a slope whenever at least two depths are present. If a depth arm is missing, P14 ('slope over k = 4, 8, 12') is scored on a two-point difference.",
+   "scenario": "The CPU plan or an r_cap drops item 10 (depth 4) but keeps item 9, which can happen because items are dropped from the end. L8 returns depths [8, 12] and a slope equal to (relay - depth8)/4 per chain, and P14 is scored ('met' True on the synthetic ledger run with --drop-items 10).",
+   "fix": "Return slope None unless every registered depth (H['depths'] plus K) was measured for the chains."
+  },
+  {
+   "file": "rsi6/open/relay_report.py",
+   "line": 537,
+   "severity": "minor",
+   "summary": "The m_net comparators are restricted to chains j < 32 but not to seeds s < 2. When S = 3, the frozen comparator (all frozen and frozen@relay rows) averages three seeds per chain, but the specification and registration define m_net over '(s < 2)' / '(two seeds)'.",
+   "scenario": "D2(a) picks (48, 3) whenever sigma* is about 0.033-0.04 at tau* 0.008. (48, 2) then has power 0.81-0.84 < 0.85, and (48, 3) costs less than (64, 2) under make_dev_r's model (75,014 vs 78,003). On a synthetic J=48, S=3 ledger the reported frozen comparator mean is 0.00019, but with s < 2 it is 0.0017. That changes m_net whenever frozen is the worst comparator.",
+   "fix": "Filter every m_net comparator's rows to (seed - base_seed) % 10 < 2 (and chain < J2) before calling endpoint()."
+  },
+  {
+   "file": "rsi6/open/relay_report.py",
+   "line": 104,
+   "severity": "minor",
+   "summary": "For a0 comparisons ('relay minus a0@relay', 'o0@ref minus a0@ref') the report averages a per-pair min(\u0394acquired, \u0394gain). The specification requires the min of the two mean changes, as in experiments.report.both_interval. Because E[min] <= min(E), the reported difference is biased down.",
+   "scenario": "16 chains x 4 categories, with \u0394acquired = 0 in every pair and \u0394untrained = +0.02 on two categories and -0.02 on the other two. The report gives -0.010, but both_interval's point is 0.000 (computed with endpoint(..., statistic='min') and both_interval on the same rows).",
+   "fix": "For a0 compute the chain means of \u0394acquired and of \u0394gain separately, take the min of the two means for the point and the test, or call both_interval on per-category arrays as the specification says."
+  },
+  {
+   "file": "rsi6/open/relay_report.py",
+   "line": 562,
+   "severity": "minor",
+   "summary": "The untrained-identity check lists only relay, frozen, shuffled, offpolicy, libonly, prioronly and o0@relay. It skips the raised r0 arms that the endpoints actually use, and frozen@ceiling and the depth arms. A False result also changes nothing: the endpoints stay on \u0394acquired.",
+   "scenario": "The CPU rule raises frozen on clique and quadratic, so E-R1 uses frozen@relay there. On a synthetic ledger whose frozen@relay rows have untrained 0.52 against relay's 0.50, the report still prints 'untrained answers identical ...: True', and E-R1 keeps the \u0394acquired statistic. The specification requires the assertion 'for every r0 arm'; *@relay, frozen@ceiling, depth8 and depth4 are r0 arms.",
+   "fix": "Run the check over every arm except those of design a and o0@ref, including every '*@relay', frozen@ceiling and depth arm. When it fails, compute the affected endpoints with min(\u0394acquired, \u0394gain) or mark them void."
+  },
+  {
+   "file": "rsi6/open/relay_report.py",
+   "line": 127,
+   "severity": "minor",
+   "summary": "Every bootstrap uses fixed seeds (20261116 in endpoint, 20261117 in bootstraps, 20261118 in l7). Spec section 8 says 'bootstraps of 5,000 draws seeded by the CRC-32 of the comparison's name', and make_registration_r's reproduction block says nothing about seeding.",
+   "scenario": "Someone reproduces E-R1's two bootstraps or the 95% chain intervals with the registered rule (default_rng(crc32(name))). They get different interval endpoints from the report. In the report itself, every 32-chain comparison (E-R2 to E-R5, the m_net comparators, the diagnostics) is resampled with identical index matrices.",
+   "fix": "Pass the comparison label into endpoint(), bootstraps() and l7(), seed each with np.random.default_rng(zlib.crc32(label.encode())), and state that rule in the registration's reproduction field."
+  },
+  {
+   "file": "rsi6/open/relay_report.py",
+   "line": 126,
+   "severity": "minor",
+   "summary": "Development rule D6's alternative test is not implemented. If the null calibration rejects at more than 0.013, the specification switches E-R1 to E-R5 to a seeded sign-flip permutation test on chain means. relay_report only has the t critical value and t_sf p-values, and make_registration_r reads neither the D6 decision nor dev['d6_done'].",
+   "scenario": "dev_r_d6.json has switch_to_permutation_test true, for example a rejection rate of 0.015. make_dev_r only appends a decision text. make_registration_r still registers 't at least t(0.99, J-1)', and the report decides E-R1, E-R2 and the Holm family by the t-test, against the pre-written rule.",
+   "fix": "Carry a registered test choice (t or sign-flip) from D6 into registration_r.heldout. Implement a 10,000-flip seeded sign-flip p-value on chain means in endpoint() for the critical decision and the Holm p-values. Or have make_registration_r refuse to register when D6 says to switch or was not run."
+  },
+  {
+   "file": "rsi6/open/relay_report.py",
+   "line": 500,
+   "severity": "minor",
+   "summary": "In the endpoint records, 'met' for E-R2 to E-R5 is an unconditional single test at 0.01. It ignores the fixed sequence, Holm and E-R3's void flag, so the record can say met: True for an endpoint the registration says is not met.",
+   "scenario": "One o0@relay pair is unreached and E-R3's t is 3.0. endpoints['E-R3 ...'] then shows met True and void True while gate['E-R3'] is False, but the specification says 'void, and so not met'. In the same way, E-R2 shows met True when E-R1 failed.",
+   "fix": "After the gate is computed, overwrite E[label]['met'] with the gate value, or rename the single-test field (for example 'single_test_met') so it cannot be read as the registered decision."
+  },
+  {
+   "file": "rsi6/open/relay_report.py",
+   "line": 552,
+   "severity": "minor",
+   "summary": "L1 (frozen minus o0@relay) always uses raw frozen. On categories where the CPU rule raised frozen to relay's CPU, o0@relay had relay's CPU but frozen had less than 1/1.1 of it, so L1 is no longer the equal-CPU comparison that P18 relies on ('L1 < 0 means inner discovery is harmful at equal CPU').",
+   "scenario": "relay/frozen CPU is 1.2 on quadratic, or frozen_matched_everywhere is set by D2(f). On those categories frozen@relay exists, but L1 pairs raw frozen (about 0.83 of relay's CPU) with o0 raised to relay's CPU. That biases L1, and P8's score, toward negative.",
+   "fix": "For L1 use compared(arms, rules, 'frozen')[0] as the frozen side, which gives frozen@relay on raised categories, so that both sides sit at relay's CPU."
+  },
+  {
+   "file": "rsi6/learner/design_r.py",
+   "line": 306,
+   "severity": "minor",
+   "summary": "kept_splice is true whenever a program was kept and any confirmed switch used a splice cell, even if a later switch deleted or replaced the spliced instructions. P5's quantity ('keep a program that contains a spliced block', relay_report L3 kept_spliced_block) is therefore over-counted.",
+   "scenario": "Switch 1 splices a 4-instruction term block into score. Switch 2's variant applies score/delete or score/replace to one of those instructions. The kept program no longer contains the block, but kept_splice is True, so held-out relay's kept_spliced_block can exceed P5's 0.10 bound and give a false miss.",
+   "fix": "Set kept_splice by checking that every instruction of some confirmed splice's info['block'] is in capability['program'][info['part']], with the same membership test the library extraction uses."
+  }
+ ]
+}

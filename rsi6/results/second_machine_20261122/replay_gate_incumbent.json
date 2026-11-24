@@ -1,0 +1,189 @@
+{
+ "runs": 18,
+ "identical": 18,
+ "workers": 4,
+ "cpus": 2,
+ "wall_seconds": 454.6,
+ "cpu_recorded": 906.278,
+ "cpu_here": 704.452,
+ "cpu_ratio_here_over_recorded": 0.7773,
+ "gate_record_incumbent_cpu": 906.278,
+ "per_env": {
+  "jobshop": {
+   "cpu_recorded": 76.93,
+   "cpu_here": 46.32
+  },
+  "knapsack": {
+   "cpu_recorded": 105.85,
+   "cpu_here": 89.57
+  },
+  "setcover": {
+   "cpu_recorded": 723.5,
+   "cpu_here": 568.56
+  }
+ },
+ "rows": [
+  {
+   "env": "jobshop",
+   "seed": 2021,
+   "identical": true,
+   "acquired_recorded": 0.8702023403694126,
+   "acquired_here": 0.8702023403694126,
+   "cpu_recorded": 14.493,
+   "cpu_here": 8.443
+  },
+  {
+   "env": "jobshop",
+   "seed": 2022,
+   "identical": true,
+   "acquired_recorded": 0.827101472779796,
+   "acquired_here": 0.827101472779796,
+   "cpu_recorded": 13.383,
+   "cpu_here": 6.643
+  },
+  {
+   "env": "jobshop",
+   "seed": 2023,
+   "identical": true,
+   "acquired_recorded": 0.8184580315404908,
+   "acquired_here": 0.8184580315404908,
+   "cpu_recorded": 13.402,
+   "cpu_here": 7.495
+  },
+  {
+   "env": "jobshop",
+   "seed": 2024,
+   "identical": true,
+   "acquired_recorded": 0.9008109518748401,
+   "acquired_here": 0.9008109518748401,
+   "cpu_recorded": 14.033999999999999,
+   "cpu_here": 6.669
+  },
+  {
+   "env": "jobshop",
+   "seed": 2025,
+   "identical": true,
+   "acquired_recorded": 0.8906694474817878,
+   "acquired_here": 0.8906694474817878,
+   "cpu_recorded": 10.482000000000001,
+   "cpu_here": 8.427999999999999
+  },
+  {
+   "env": "jobshop",
+   "seed": 2026,
+   "identical": true,
+   "acquired_recorded": 0.8852396259530472,
+   "acquired_here": 0.8852396259530472,
+   "cpu_recorded": 11.136000000000001,
+   "cpu_here": 8.644
+  },
+  {
+   "env": "knapsack",
+   "seed": 2021,
+   "identical": true,
+   "acquired_recorded": 0.875699117406398,
+   "acquired_here": 0.875699117406398,
+   "cpu_recorded": 13.313,
+   "cpu_here": 11.725000000000001
+  },
+  {
+   "env": "knapsack",
+   "seed": 2022,
+   "identical": true,
+   "acquired_recorded": 0.8667745776764094,
+   "acquired_here": 0.8667745776764094,
+   "cpu_recorded": 19.209000000000003,
+   "cpu_here": 16.944
+  },
+  {
+   "env": "knapsack",
+   "seed": 2023,
+   "identical": true,
+   "acquired_recorded": 0.8679174919249394,
+   "acquired_here": 0.8679174919249394,
+   "cpu_recorded": 17.089,
+   "cpu_here": 15.235
+  },
+  {
+   "env": "knapsack",
+   "seed": 2024,
+   "identical": true,
+   "acquired_recorded": 0.8712729977879873,
+   "acquired_here": 0.8712729977879873,
+   "cpu_recorded": 17.45,
+   "cpu_here": 15.1
+  },
+  {
+   "env": "knapsack",
+   "seed": 2025,
+   "identical": true,
+   "acquired_recorded": 0.8736420661599807,
+   "acquired_here": 0.8736420661599807,
+   "cpu_recorded": 18.3,
+   "cpu_here": 15.91
+  },
+  {
+   "env": "knapsack",
+   "seed": 2026,
+   "identical": true,
+   "acquired_recorded": 0.8812620433183005,
+   "acquired_here": 0.8812620433183005,
+   "cpu_recorded": 20.491999999999997,
+   "cpu_here": 14.653
+  },
+  {
+   "env": "setcover",
+   "seed": 2021,
+   "identical": true,
+   "acquired_recorded": 0.7748807400920987,
+   "acquired_here": 0.7748807400920987,
+   "cpu_recorded": 127.175,
+   "cpu_here": 103.29499999999999
+  },
+  {
+   "env": "setcover",
+   "seed": 2022,
+   "identical": true,
+   "acquired_recorded": 0.22659483651419582,
+   "acquired_here": 0.22659483651419582,
+   "cpu_recorded": 111.776,
+   "cpu_here": 92.369
+  },
+  {
+   "env": "setcover",
+   "seed": 2023,
+   "identical": true,
+   "acquired_recorded": 0.4528640708163184,
+   "acquired_here": 0.4528640708163184,
+   "cpu_recorded": 128.241,
+   "cpu_here": 106.295
+  },
+  {
+   "env": "setcover",
+   "seed": 2024,
+   "identical": true,
+   "acquired_recorded": 0.5886200783212535,
+   "acquired_here": 0.5886200783212535,
+   "cpu_recorded": 124.082,
+   "cpu_here": 103.154
+  },
+  {
+   "env": "setcover",
+   "seed": 2025,
+   "identical": true,
+   "acquired_recorded": 0.31827632712150755,
+   "acquired_here": 0.31827632712150755,
+   "cpu_recorded": 123.994,
+   "cpu_here": 89.39399999999999
+  },
+  {
+   "env": "setcover",
+   "seed": 2026,
+   "identical": true,
+   "acquired_recorded": 0.21760766957789004,
+   "acquired_here": 0.21760766957789004,
+   "cpu_recorded": 108.227,
+   "cpu_here": 74.056
+  }
+ ]
+}

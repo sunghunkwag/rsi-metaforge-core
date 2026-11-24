@@ -1,0 +1,124 @@
+{
+ "category": "clique",
+ "buildable": true,
+ "files_written": [
+  "<scratch>/fresh/clique/repo/rsi6/environments/clique.py",
+  "<scratch>/fresh/clique/repo/rsi6/environments/manifests/clique.json",
+  "<scratch>/fresh/clique/repo/rsi6/environments/__init__.py (one REGISTRY line added: \"clique\": (\"rsi6.environments.clique\", \"Clique\"); nothing else changed)",
+  "<scratch>/fresh/clique/repo/rsi6/data/clique/ (104 data files written by rsi6.fetch, 1.4 MB)",
+  "<scratch>/fresh/clique/work/check_clique.py",
+  "<scratch>/fresh/clique/work/check2.log",
+  "<scratch>/fresh/clique/work/baseline.py",
+  "<scratch>/fresh/clique/work/baseline.log",
+  "<scratch>/fresh/clique/work/compare_hashes.py",
+  "<scratch>/fresh/clique/work/refetch/ (second, independent curl fetch of all 104 files plus the 16 volume duplicates)",
+  "<scratch>/fresh/clique/work/explore.py",
+  "<scratch>/fresh/clique/work/explore.log",
+  "<scratch>/fresh/clique/work/smoke.py",
+  "<scratch>/fresh/clique/work/make_manifest.py",
+  "<scratch>/fresh/clique/work/finish_manifest.py",
+  "<scratch>/fresh/clique/work/peek.py",
+  "<scratch>/fresh/clique/work/fetch1.log",
+  "<scratch>/fresh/clique/work/fetch2.log"
+ ],
+ "learner_run_on_benchmark_instances": false,
+ "source": "The source is the archive of the second DIMACS implementation challenge (1992-93). Its root is https://archive.dimacs.rutgers.edu/pub/challenge/graph/; the http address in the brief redirects to https. 104 files are pinned by SHA-256.\n\nGraphs (DIMACS binary format, .clq.b):\n- 58 of the 66 files in benchmarks/clique: those with at most 1000 vertices by the table contents.tex.\n- 11 graphs from benchmarks/volume/Clique that are not in benchmarks/clique: gen x5, C125.9, C250.9, C500.9, C1000.9, DSJC500.5, DSJC1000.5. The volume's other 16 graphs are byte-identical to the benchmarks/clique copies (checked) and are not pinned.\n\nParsed for the reference:\n- benchmarks/clique/contents.tex (the benchmark table: Code, Nodes, Edges, Clique Size).\n- solvers/results.dmclique: \"[OPT = k]\", described in the file as \"the true maximum clique size, when known\".\n- solvers/results.dfmax: column Max, from the exact branch-and-bound code dfmax.\n- 25 of the 27 files in benchmarks/clique/SOLUTIONS/*.sol: \"s cqu k\" lines, \"v\" lines, and the comment \"Solution is optimal.\".\n- The comment lines (preambles) of the graph files.\n\nPinned as records, not parsed:\n- translators/binformat/README.binformat (binary format specification)\n- doc/ccformat.tex (text format and solution lines)\n- gen_info.tex (problem statement)\n- LAST_UPDATESep23 (correction of the p_hat files)\n- solvers/README\n- benchmarks/volume/instruct.tex\n- benchmarks/volume/Clique/Appendix.tex (an empty results form)\n\nTerms: the archive states no licence or terms of use. gen_info.tex says: \"With author's permission, submitted inputs and generators will be made available to Challenge participants; some may be included in the set of DIMACS benchmarks.\" The data are fetched by hash and not redistributed. No code was downloaded; the translators' C sources were not fetched.",
+ "answer_form": "AssignProblem with n_vars = n vertices and n_opts = 2 (0 = out, 1 = in). There is no capacity, no fixed order, no domain and no start answer. The answer is the set of vertices with option 1.\n\nTerm groups:\n- [0] soft: minus the number of vertices that are in. One term per vertex.\n- [1] hard: the number of pairs of different vertices, both in, that no edge joins. One term per non-adjacent pair, counted as soon as both vertices are assigned.\n\nExactness: every vertex set is exactly one answer, so every published clique is an answer. An answer is a clique exactly when group [1] = 0, and its published value (the clique size) is then minus group [0]. The valid answers are therefore exactly the cliques of the graph. The empty set is an answer with both totals 0 and scores 0.\n\nExposed: var_var[0] is the adjacency matrix decoded from the file's bit block (symmetric, diagonal 0). Nothing else is exposed: no comment lines and no edge count. Vertices are relabelled with the seed; options are not (option 1 always means in). decode maps an answer back with out[perm] = answer and keeps the dtype; a non-array or an array of the wrong shape is returned unchanged, so it scores 0.\n\nFast state methods: CliqueProblem._new/_rows/_push keep, per vertex, the count of vertices already in that are not adjacent to it. They are exact for unassigned variables and also for already-assigned ones (the change if that vertex were moved), and equal the slow defaults.\n\nOne layout for every instance: ('assign', False, True, True, (False, True), (False, False), 0, 0, 1, 0, 0, 0, True, True). No padding is needed.\n\nFormat details read off the data (the README leaves them to C code that was not fetched): each row i (from 0) has i//8+1 bytes, and the first bit of a row is the high bit of its first byte. read_graph raises an error if any file breaks these rules.",
+ "reference": "The reference is the maximum clique size the source states for each graph. It is read only by the scorer and kept per graph in env.claims as (file, kind, value).\n\nStatements of the maximum (exact):\n- \"[OPT = k]\" in results.dmclique (\"[OPT = ??]\" means none).\n- A plain number in contents.tex's Clique Size column.\n- results.dfmax Max.\n- The \"s cqu k\" line of a .sol file whose comment says \"Solution is optimal.\" and whose k vertices (numbered from 0) are a clique of the pinned graph; otherwise the adapter raises an error.\n- The preamble lines \"k max clique\" (san, gen) and \"Largest Clique: k\" (keller).\n\nLower bounds:\n- \"$\\ge$ k\" in contents.tex.\n- The preamble line \"Clique Size: k\" (brock, MANN), which lists the clique the generator built.\n\nRule: the reference is the value on which every exact statement agrees. A graph with no exact statement is left out. The adapter raises an error if two statements disagree or a lower bound exceeds them. No statement disagrees on any of the 56 graphs.\n\nProvenance:\n- 50 graphs have [OPT = k]. The other statements of those graphs agree with it: 32 in contents.tex, 28 in dfmax, 24 in a .sol file, 13 in comment lines.\n- hamming8-2 = 128 (OPT and its solution file); the table's \"$\\ge$ 79\" is a stale lower bound.\n- c-fat500-10 = 126 rests on its .sol file only; dmclique prints OPT = ??.\n- The 5 gen graphs (44, 55, 55, 65, 75) rest only on their own comment line \"k max clique\" (\"known embedded clique\").\n\nPublished answers: 39 in total (25 .sol files numbered from 0, 12 brock clique lists from 0, 2 MANN lists from 1 ending in \"*\"). Each is a clique of exactly the reference size and scores 1. No value was typed from memory, and none was re-proved.",
+ "score_scale": "A valid answer with k vertices scores (k-1)/(reference-1), cut to [0,1]. It is 1 at the reference and 0 for a single vertex or the empty set, and increases with k.\n\nThe zero point is exact: a single vertex is a clique of every graph, so nothing is estimated.\n\nAn invalid answer (two chosen vertices not joined by an edge) scores 0. A malformed answer also scores 0: anything that is not a numpy integer array of 0s and 1s of length n, including bool, float, NaN, complex, lists, None and wrong shapes. Nothing is converted or repaired.\n\nThe score is cut at 1 in case a published value is not the true maximum.\n\nFor reading the scale, two rules with no search and no learning were scored (not the learner):\n- Random maximal clique: 0.646 over all 56 graphs, 0.602 on the fresh 24.\n- Greedy (take the candidate with the most candidate neighbours): 0.827 overall, 0.845 on the fresh 24.",
+ "checks": [
+  {
+   "id": "hashes",
+   "n": "104 files",
+   "result": "pass: rsi6.fetch recorded every hash; a second, independent curl fetch into work/refetch reproduces 104/104; the 16 duplicate graphs in volume/Clique are byte-identical to the clique/ copies"
+  },
+  {
+   "id": "decode_format",
+   "n": "69 graph files",
+   "result": "pass: read high bit first, all 69 files have no bit on the diagonal or in the padding, and 67 have exactly the p-line edge count; DSJC500.5 and DSJC1000.5 (unused, no reference) have p lines that count twice. Read low bit first, 67 files have bits on or above the diagonal. A plain-Python bit-by-bit decoder written from README.binformat equals the adapter's adjacency on 56/56. hamming6-2, 6-4, 8-2 and 8-4 equal the contents.tex definition exactly (vertex k = word of value k). The 51 table graphs match the table's Nodes and Edges"
+  },
+  {
+   "id": "reference_parse",
+   "n": "56",
+   "result": "pass: an independent reference parse (dmclique OPT, else the .sol s line, else the gen comment) equals env.reference on 56/56; every published statement agrees"
+  },
+  {
+   "id": "fast_equals_slow",
+   "n": "2199 partial states, 10860 variable rows, 13 instances",
+   "result": "pass: candidates() equals AssignProblem._rows exactly, for assigned and unassigned variables and for sparse to conflicting states; totals equal partial_totals; _new/_push equal the slow defaults run side by side; empty candidates have shape (0,2,2)"
+  },
+  {
+   "id": "independent_evaluator",
+   "n": "347 valid + 661 invalid answers on all 56 instances",
+   "result": "pass: a plain evaluator written from the specification (pairwise adjacency checked against an edge set) agrees with score() and with evaluate() totals [-size, missing edges] for every answer, after decode"
+  },
+  {
+   "id": "published_answers",
+   "n": "39",
+   "result": "pass: all 25 solution files and the 14 clique lists in the brock and MANN comments are cliques of exactly the reference size and score 1 under exactly one numbering (the .sol files and brock lists from 0, the MANN lists from 1)"
+  },
+  {
+   "id": "decode_seeds",
+   "n": "6 seeds x 5 instances",
+   "result": "pass: decode is a permutation; the relabelled var_var equals the original adjacency under it; decode maps every vertex back and keeps the dtype; evaluation is consistent. Each instance gets its own relabelling under run._seed. The same clique given under two relabellings scores the same (0.5357)"
+  },
+  {
+   "id": "malformed",
+   "n": "896 (16 kinds x 56)",
+   "result": "pass: run._valid rejects every one (float, bool, NaN, complex, wrong shape, out of range 2 and -1, list, None, str) and score() gives 0, decoded or not; a single vertex is well formed and scores 0; a pair scores 1/(ref-1)"
+  },
+  {
+   "id": "no_reference_in_problem",
+   "n": "56",
+   "result": "pass: with the stored reference replaced by 2, ref+7 and 10^6 in the same process, the pickled problem fields, the public view fields and the outputs of a fixed sequence of start/candidates/assign/totals/evaluate calls are byte-identical. The reference value is not among the problem's numbers. The view is an AssignView with read-only arrays and state keys {a, used, tot, n}"
+  },
+  {
+   "id": "layout",
+   "n": "56",
+   "result": "pass: one layout ('assign', False, True, True, (False, True), (False, False), 0, 0, 1, 0, 0, 0, True, True)"
+  },
+  {
+   "id": "split",
+   "n": "split(env, 16, 24)",
+   "result": "pass: training 16 = San 9, CFat 4, Kel 2, Stein 1; fresh 24 = Bro 11, PHat 7, Ham 4, Joh 2; no group on both sides. Fresh: brock200_1/3/4, brock400_1-4, brock800_1-4, hamming6-2/6-4/8-2/8-4, johnson16-2-4, johnson8-2-4, p_hat300-1/2/3, p_hat500-1/2, p_hat700-1, p_hat1000-1"
+  },
+  {
+   "id": "halves",
+   "n": "24",
+   "result": "deciding 13 = Bro 11 + Joh 2 (greedy 0.783); confirming 11 = PHat 7 + Ham 4 (greedy 0.918, above the threshold)"
+  },
+  {
+   "id": "cost",
+   "n": "largest instances",
+   "result": "p_hat1000-1 and san1000: 1000 variables x 2 options = 2000 cells; 3001 construction units"
+  },
+  {
+   "id": "construction",
+   "n": "1",
+   "result": "Clique() is built in about 0.2 CPU-s"
+  },
+  {
+   "id": "generic_test_suite",
+   "n": "-",
+   "result": "not run: rsi6/tests/test_kernel.py imports rsi6.learner at module level, which the rules forbid; its non-learner checks are replicated above"
+  }
+ ],
+ "open_issues": [
+  "Blocking for the kernel and test suite, outside my brief: rsi6/registry/roles.json has no role for 'clique', so roles.role_of('clique') raises KeyError (shown). With the registry line in place, rsi6/tests/test_kernel.py fails when it is imported (ASSIGN_ENVIRONMENTS calls role_of for every registered assign category), and every lock check on clique raises KeyError instead of PermissionError. The owner has to assign a role; I changed no other file.",
+  "Reference values are the source's statements and were not re-proved. c-fat500-10 (126) rests only on the solver's comment 'Solution is optimal.', and results.dmclique prints OPT = ?? for it. The five gen graphs rest only on their own comment line 'k max clique'. brock400_1-4 and brock800_1-4, keller5, MANN_a27, johnson32-2-4 and the san graphs other than san400_0.5_1 have no run of the exact code dfmax: they rest on results.dmclique and contents.tex (and, for san and keller, the generator's comment). The score is cut at 1 if a value is beaten.",
+  "Two format details (each row padded to whole bytes; high bit first) were read off the data, because the README points to C code that was not fetched. They are strongly corroborated: no stray bits in 69 files, edge counts, 39 published cliques, and the Hamming definitions.",
+  "Grouping decisions for the audit. sanr* forms its own family SanR, although the table codes it (San); the table's notes and the files' comments describe sanr as random graphs. gen* (not in the table) is merged into San, because instruct.tex calls them 'Sanchis graphs' and they share the contributor, the known-clique construction and the comment format. Keeping gen as its own group could change the split.",
+  "The confirming half (PHat + Ham) has little headroom: the greedy rule already reaches 0.918 there, above the 0.90 threshold. The signal of the fresh side is carried by the 11 brock graphs (greedy 0.74) and partly by p_hat (0.87); the greedy rule reaches the maximum on every fresh hamming and johnson graph.",
+  "score() and decode are stricter than some existing adapters: score() returns 0 for anything that is not an integer numpy array (no np.asarray conversion), matching run._valid.",
+  "hamming8-2's table entry '$\\ge$ 79' is stale. The reference 128 comes from results.dmclique and the solution file, consistent with the table's own note that n-2 Hamming graphs have maximum clique 2^(n-1).",
+  "Importing rsi6.kernel.run (allowed, only for split, halves, layout and _valid) also imports rsi6.learner.designs as a module; no learner was constructed or called. The __pycache__ folders my runs created in the copy were removed."
+ ],
+ "groups": "9 published families. Each is the table's Code column, with two corrections taken from the source's own texts:\n\n| Family | Instances | Note |\n|---|---|---|\n| Bro | 12 | |\n| CFat | 7 | |\n| Ham | 4 | |\n| Joh | 4 | |\n| Kel | 2 | |\n| PHat | 7 | |\n| San | 16 | 11 san plus the 5 gen graphs (instruct.tex calls gen \"Sanchis graphs\") |\n| SanR | 2 | the table codes sanr as (San); its notes and the sanr comments describe them as random graphs |\n| Stein | 2 | MANN |\n\nsplit(env, 16, 24) puts whole groups on each side:\n- Fresh: Bro, Ham, Joh and PHat (27 instances, 24 kept).\n- Training: drawn from CFat, Kel, San, SanR and Stein.",
+ "hosts_used": [
+  "archive.dimacs.rutgers.edu"
+ ],
+ "instances_used": 56,
+ "instances_left_out": "69 graphs were fetched and 56 are used.\n\nAbove the size rule by the table (more than 1000 vertices; not fetched): hamming10-2, hamming10-4, MANN_a45, MANN_a81, keller6, p_hat1500-1, p_hat1500-2, p_hat1500-3. Of these, hamming10-2, MANN_a45 and p_hat1500-1 do have a published maximum. From the volume, C2000.5, C2000.9 and C4000.5 are also above the rule and have no published value.\n\nNo maximum clique size published (13):\n- p_hat500-3, p_hat700-2, p_hat700-3, p_hat1000-2, p_hat1000-3, sanr200_0.9, sanr400_0.7: results.dmclique prints OPT = ?? or ???, and no other file gives a value.\n- C125.9, C250.9, C500.9, C1000.9, DSJC500.5, DSJC1000.5: no file of the source gives a value, and the volume's Appendix.tex results form is empty.\n\nSolution files not fetched:\n- san2.sol: no such graph exists, it has no s line, and its v lines repeat its comment text.\n- hamming10-2.sol: its graph is above the size rule.",
+ "threshold_and_anchor": "Threshold 0.90. It is an operating point, not an external fact, fixed without any learner score: on average nine tenths of the way from a single vertex to the maximum clique size the source publishes, with an invalid answer counting 0. For example, 21 of 23 vertices on brock800_1 scores 0.909, and 7 of 8 on p_hat300-1 scores 0.857.\n\nIt was fixed knowing the scores of two no-search rules on the fresh instances: random maximal clique 0.602 and greedy 0.845 (deciding half 0.783, confirming half 0.918).\n\nThe anchor text in the class says this plainly: the brock graphs carry the signal, and the confirming half holds little headroom.",
+ "cpu_seconds_used_estimate": 45
+}

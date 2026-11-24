@@ -1,0 +1,89 @@
+{
+ "buildable": true,
+ "files_written": [
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/setcover/repo/rsi6/environments/manifests/setcover.json",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/setcover/repo/rsi6/environments/setcover.py",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/setcover/repo/rsi6/environments/__init__.py",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/setcover/repo/rsi6/data/setcover/ (41 fetched data files: scpinfo.html and 40 instance files, pinned by SHA-256 in the manifest)",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/setcover/work/checks.py",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/setcover/work/checks.out",
+  "/tmp/claude-0/-home-user-rsi-metaforge-core/49317f35-39aa-5636-a36c-c80f42cd346e/scratchpad/adapters3/setcover/work/make_manifest.py"
+ ],
+ "answer_form": "AssignProblem, one variable per column, two options (0 = left out, 1 = taken), unordered, no capacity, no domain, no start answer. Every set of columns is exactly one answer, so the form is exact. Groups: [0] soft = sum of the costs of the taken columns; [1] hard = number of uncovered rows (a row's term is 1 once all columns covering it are assigned and none is taken). For a complete answer [0] is the published value and [1] is 0 exactly for a cover. Exposed arrays: var_attr[:,0] = cost c(j); var_attr[:,1] = number of rows the column covers; var_var[0][j,k] = number of rows covered by both columns. Rows are not entities of the form and no array is indexed by them; columns are relabelled by the seed; the options keep their two meanings, as in knapsack.py. The per-row form (each row picks its covering column) was rejected: covers with redundant columns or more columns than rows cannot be written in it, and it needs 200 x 1000 options or more.",
+ "source": "OR-Library (J. E. Beasley), set covering, https://people.brunel.ac.uk/~mastjjb/jeb/orlib/scpinfo.html and .../orlib/files/scp*.txt. Used: problem sets 4, 5, 6, A, B, E of Beasley, EJOR 31 (1987) 85-93. Terms as recorded in the package's other OR-Library manifests (freely available, MIT licence, Copyright (c) 2010 J E Beasley). The description page is pinned as a data file but not parsed.",
+ "reference": "The optimal values of Beasley (1987) for the 40 instances, stored under reference_values in the manifest and read only by score() and reference(). The task brief's premise is wrong: the description page does NOT print the values, it only says \"the value of the optimal solution for each of these data files is given in the paper\". I recorded them from that paper's table as the literature reproduces it, from memory; the paper could not be fetched under the network rule. The source says they are optimal, so they are attainable values, not bounds. My checks bracket every value from the files: a Lagrangian lower bound, rounded up, is at most the reference on all 40 and equals it on 11; covers found by plain algorithms never cost less than the reference and reach it on 21 (those score exactly 1). The other 19 are bracketed but not reproduced.",
+ "score_scale": "Plain ratio: optimal value / cost of the cover, cut at 1; 0 for an answer that is not a 0/1 integer vector over the columns or leaves a row uncovered. The plain ratio is kept because a uniformly random valid answer scores far below 0.5. At least 96.7% of uniformly drawn subsets are covers on every instance, so a random cover is essentially a random half of the columns. Measured score of a random cover: group means 0.001 to 0.020, maximum 0.027.",
+ "threshold_and_anchor": "threshold = 0.95. The anchor says it is an operating point, not an external fact: a mean ratio of the optimal value to the cover's cost of 0.95, i.e. covers about 5% dearer than optimal; an uncovering answer counts 0. I fixed it before measuring any algorithm. For orientation only, my checks then ran plain published algorithms on the files, never the learner. Chvatal greedy: mean score 0.897 over all 40, 0.903 on the fresh side. Greedy followed by removal of unneeded columns: 0.956 over all 40, 0.950 on the fresh side. A Lagrangian heuristic: 0.993 over all 40, 0.994 on the fresh side.",
+ "groups": "The group is the published problem set: 4 (10 instances, 200x1000), 5 (10, 200x2000), 6 (5, 200x1000), A (5, 300x3000), B (5, 300x3000), E (5, 50x500, all costs 1). split(env, 16, 24) gives training 16 = {4: 9, A: 3, B: 4} and fresh 20 = {5: 10, 6: 5, E: 5}, with no shared group. The fresh side has 20, not 24, because the kernel stops filling it at half of the 40 instances. Halves of the fresh side: {5: 10} and {6: 5, E: 5}.",
+ "instances_used": 40,
+ "instances_left_out": "Size rule, fixed in the module text before anything was scored: more than 3,000 columns. 3,000 is the smallest limit that leaves 40 instances. It excludes scpc1..5 and scpd1..5 (400x4000), scpnre1..5 and scpnrf1..5 (500x5000), scpnrg1..5 and scpnrh1..5 (1000x10000), scpcyc10, scpcyc11 and the seven rail files. Second rule, which is NOT a size rule and is said so in the module text: scpclr10..13 and scpcyc06..09 are within the size limit but left out because the source states no optimal or best known value for them, so R7 cannot be met. Which classes fit the size guidance of about 1,000 variables: only sets 4, 6 and E (20 instances). Set 5 has 2,000 variables and sets A and B have 3,000. In units all are cheap: one construction costs 3n+1, at most 9,001.",
+ "hosts_used": [
+  "people.brunel.ac.uk"
+ ],
+ "learner_run_on_benchmark_instances": false,
+ "checks": [
+  {
+   "id": "a",
+   "n": "32 instances (6+6+5+5+5+5 by group), 960 partial states, 18,798 option rows",
+   "result": "PASS. candidates() equals the default AssignProblem._rows built on partial_totals for undecided columns, and totals equal partial_totals at every checkpoint and at completion. 1,396 of the compared rows had a non-zero hard change, so the hard group was exercised. Rows of already decided columns are zero, the knapsack convention."
+  },
+  {
+   "id": "b",
+   "n": "40 instances; 279 valid, 281 uncovering, 280 malformed answers; 193 distinct scores",
+   "result": "PASS. An independent evaluator (own parser, plain Python sets, 1-based columns, no adapter code) agrees with Environment.score to 1e-12 and with problem.evaluate totals, for answers given through decode. Malformed answers (wrong length, floats, a 2, negatives, 2-D, booleans) score 0 in both."
+  },
+  {
+   "id": "c",
+   "n": "40 instances",
+   "result": "The source publishes no optimal covers, so the check as specified cannot be run. Substitute: on all 40, Lagrangian lower bound (rounded up) <= recorded optimum <= cost of covers found by plain algorithms in the checker. 21 covers reach the reference and score exactly 1.0; adding one column to them scores below 1; removing the cover of one row scores 0 on all 40. The reference equals the proven lower bound on 11. No cover beats a recorded optimum."
+  },
+  {
+   "id": "d",
+   "n": "40 instances x 2 seeds",
+   "result": "PASS. One layout: ('assign', False, True, True, (False, True), (False, False), 2, 0, 1, 0, 0, 0, True, True). No padding is needed."
+  },
+  {
+   "id": "e",
+   "n": "40 instances, 160 answers, two relabellings each",
+   "result": "PASS. Equal totals and equal scores; decode inverts; var_attr and var_var are carried by the relabelling; candidate rows of the same partial state agree."
+  },
+  {
+   "id": "f",
+   "n": "split(env, 16, 24)",
+   "result": "PASS. Training 16 = {4: 9, A: 3, B: 4}; fresh 20 = {5: 10, 6: 5, E: 5}; no shared group or instance. Halves of the fresh side: {5: 10} and {6: 5, E: 5}."
+  },
+  {
+   "id": "g",
+   "n": "6 made-up cover tables (9-20 rows, 24-45 columns, random numbers)",
+   "result": "PASS. One layout; Learner.acquire ran within the registered budget (1 iteration, 64 constructions, 19,952 of 24,840 units); Learner.apply returned well-formed answers on two made-up problems whose totals match a recomputation. The learner was not run on any benchmark instance and learner.py was not opened."
+  },
+  {
+   "id": "h",
+   "n": "160 arrays of the learner's view over 40 instances",
+   "result": "PASS. Every exposed array equals its rebuild from the file alone by the independent parser; the arrays behind the view are the file's costs and row lists; no text and no extra attribute. 15 arrays hold a number equal to the reference (10 var_attr, 5 var_var), each exactly as often as the file-built array does: references 5..641 coincide with costs 1..100 and with row counts."
+  },
+  {
+   "id": "scale",
+   "n": "300 uniform random subsets per instance, 40 instances",
+   "result": "PASS. Share of covers 0.967..1.000; score of a random cover: group means 0.001..0.020, maximum 0.027. The plain ratio scale applies."
+  },
+  {
+   "id": "manifest",
+   "n": "41 files",
+   "result": "PASS. python3 -m rsi6.fetch setcover fetched scpinfo.html and the 40 instance files and pinned 41 SHA-256 hashes; a second fetch reproduced them; none missing."
+  }
+ ],
+ "open_issues": [
+  "Reference provenance: the description page does not print the optimal values, contrary to the task brief. The 40 values in the manifest were recorded from memory of the Beasley (1987) table as the literature reproduces it; the paper was not fetched. My checks bracket all 40 from the files and reproduce 21 exactly, but an auditor should compare the manifest's reference_values with the paper or with Beasley and Chu (1996).",
+  "Check (c) could not be run as specified because the source publishes no optimal covers. The substitute uses covers and lower bounds computed by the checker (greedy, greedy with pruning, a Lagrangian heuristic), not the learner. 19 of the 40 references are bracketed but not reproduced by a cover of exactly that value.",
+  "Size against the guidance: only sets 4, 6 and E (20 instances) have at most about 1,000 variables. To reach R6's 40 instances I set the limit at 3,000 columns, so set 5 has 2,000 variables and sets A and B have 3,000. Construction units stay small (at most 9,001), but the kernel's test-time limit contains n_vars squared (9 million units for A and B) and var_var is 72 MB per 3,000-column problem. The 16 training problems hold 576 MB of var_var, about 1.15 GB with the view's copies, per run process. If that is too heavy, MAX_COLUMNS = 2000 gives 30 instances in 4 groups and 1000 gives 20 in 3; either changes the split and must be decided before anything is scored.",
+  "The fresh side has 20 instances, not 24: the kernel's split stops at half of the 40 instances.",
+  "R6 deviation: scpclr10..13 and scpcyc06..09 are within the size limit but left out because the source gives no reference value for them. This is a no-reference rule, not a size rule; the module text says so.",
+  "The threshold 0.95 was fixed before any algorithm was measured. It happens to equal what greedy with removal of unneeded columns scores on the fresh side (0.950), so a learner that behaves like that heuristic would sit on the threshold. The module text gives these orientation numbers.",
+  "Set E is unicost with optimum 5, so its scores are coarse (5/5, 5/6, 5/7); it is 5 of the 20 fresh instances.",
+  "var_var (shared-row counts) is a derived, row-order-free table and does not determine the incidence table completely. The exact incidence acts through candidates/evaluate. Exposing the incidence itself as per-row attribute columns would need padding to a common number of rows, and a zero column for an absent row is not exact here: it would be a row that can never be covered.",
+  "The hard group shows a violation only when the last undecided column of an uncovered row is left out, which is exact under the kernel's rule that a term contributes once all its variables are assigned. A construction that never accepts a hard increase always ends in a cover.",
+  "I did not run the package's test_kernel.py, not even single tests: importing it loads every registered environment and would fetch other benchmarks' data, which the network rule does not allow me. Check (a) repeats the logic of test_fast_evaluation_equals_the_specification, and (h) part of test_view_hides_the_adapter, for this adapter only.",
+  "The user's relayed message was only the status question 'are you working now?'. I carried out the adapter task as the assigned workflow step, inside REPO and WORK only."
+ ]
+}

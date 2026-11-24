@@ -1,0 +1,270 @@
+{
+ "name": "table",
+ "category": "table",
+ "source": "Penn Machine Learning Benchmarks (github.com/EpistasisLab/pmlb), the data set tables as published",
+ "terms": "MIT licence (the repository's LICENSE). Fetched by hash, not committed.",
+ "reference": "the target column of the rows used as queries (kernel only)",
+ "rule": "regression data sets other than the Feynman, Strogatz, Friedman, first-principles and BNG families, the poker table, deprecated names and second names of one table, with at least 100 rows and at most 25 attributes",
+ "summary_table_sha256": "d658820a844a555776273a2c1b6766eba983bb078e3bcc539141b1ac2cc33960",
+ "files": [
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/1027_ESL/1027_ESL.tsv.gz",
+   "path": "1027_ESL.tsv.gz",
+   "sha256": "cb678bbf79f2daf10d64ecbafab7019ead486dad2e925ba4bdab445a4886fc79",
+   "rows": 488,
+   "features": 4
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/1028_SWD/1028_SWD.tsv.gz",
+   "path": "1028_SWD.tsv.gz",
+   "sha256": "b0526495039ad62169c52a9cf34a957f16b1d02cab995746d3098bbdbfa951cc",
+   "rows": 1000,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/1029_LEV/1029_LEV.tsv.gz",
+   "path": "1029_LEV.tsv.gz",
+   "sha256": "3964b6b6cff54dc436705f70389b6adb12f28c2af43cba666498fda2daf2a1eb",
+   "rows": 1000,
+   "features": 4
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/1030_ERA/1030_ERA.tsv.gz",
+   "path": "1030_ERA.tsv.gz",
+   "sha256": "cc5b7c9f04e56da7063b1162ec057f6e777634b73d4cd0e3a4b253ba330bce91",
+   "rows": 1000,
+   "features": 4
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/197_cpu_act/197_cpu_act.tsv.gz",
+   "path": "197_cpu_act.tsv.gz",
+   "sha256": "d00fd6bac2eda0821a04ff10277663d211127745a19a474c0feee41a16914fdc",
+   "rows": 8192,
+   "features": 21
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/210_cloud/210_cloud.tsv.gz",
+   "path": "210_cloud.tsv.gz",
+   "sha256": "030e8ed8bc25b858a391eb1f9eb275c144de9bbe08ce0e5150c068903d8f8246",
+   "rows": 108,
+   "features": 5
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/215_2dplanes/215_2dplanes.tsv.gz",
+   "path": "215_2dplanes.tsv.gz",
+   "sha256": "ae5fc47c8b6d2aa8022890876e7f5f29fbc0220857cf6e38fe484c71a4ca108d",
+   "rows": 40768,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/218_house_8L/218_house_8L.tsv.gz",
+   "path": "218_house_8L.tsv.gz",
+   "sha256": "034378d7304b89725c914779ed819b6d22e62f60f15d1eac774c4a1244bbc790",
+   "rows": 22784,
+   "features": 8
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/225_puma8NH/225_puma8NH.tsv.gz",
+   "path": "225_puma8NH.tsv.gz",
+   "sha256": "0be6203e167cc5e7b038368dbfe0a7790d5dc423c9d7e42887907c5c03f81c27",
+   "rows": 8192,
+   "features": 8
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/227_cpu_small/227_cpu_small.tsv.gz",
+   "path": "227_cpu_small.tsv.gz",
+   "sha256": "2d1386a66ab4548b5bdfc95581a77d5fd21852094da5ad2a7844b04e47e1e612",
+   "rows": 8192,
+   "features": 12
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/229_pwLinear/229_pwLinear.tsv.gz",
+   "path": "229_pwLinear.tsv.gz",
+   "sha256": "b815690f48bb9680c2c997c9190b826099d93178f6d948c2b525b44b3672f0c1",
+   "rows": 200,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/230_machine_cpu/230_machine_cpu.tsv.gz",
+   "path": "230_machine_cpu.tsv.gz",
+   "sha256": "937b0a23076f948343b8b7ac005bc70ea7080c391218fb4896462699b8cb59c4",
+   "rows": 209,
+   "features": 6
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/344_mv/344_mv.tsv.gz",
+   "path": "344_mv.tsv.gz",
+   "sha256": "087be6d353160ac187935aae1bf246b787d88be3d84b44e1533ce71cc8c43cb6",
+   "rows": 40768,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/503_wind/503_wind.tsv.gz",
+   "path": "503_wind.tsv.gz",
+   "sha256": "2cc1e040bdc20737674a00039cd80e16758c511e697e524ed17e4335ec93e9a6",
+   "rows": 6574,
+   "features": 14
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/519_vinnie/519_vinnie.tsv.gz",
+   "path": "519_vinnie.tsv.gz",
+   "sha256": "c732ca37d4225a8b159ed5150ebf42422ad6d8eb61e9bf8d63f2d14be299e7db",
+   "rows": 380,
+   "features": 2
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/522_pm10/522_pm10.tsv.gz",
+   "path": "522_pm10.tsv.gz",
+   "sha256": "ecbabaa5a989a8c11f5a57e874c135f386da5379d6689ae6d5d4264a652fa5e0",
+   "rows": 500,
+   "features": 7
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/523_analcatdata_neavote/523_analcatdata_neavote.tsv.gz",
+   "path": "523_analcatdata_neavote.tsv.gz",
+   "sha256": "f5b2d99fd5cedd50730dea186dab5f2cec9ab6afdf3f533b2fe3c56653136182",
+   "rows": 100,
+   "features": 2
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/529_pollen/529_pollen.tsv.gz",
+   "path": "529_pollen.tsv.gz",
+   "sha256": "2e9414f0216e75296ba4211c567dd8a60d269273b38f8e00bd8fea3a37d2e654",
+   "rows": 3848,
+   "features": 4
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/537_houses/537_houses.tsv.gz",
+   "path": "537_houses.tsv.gz",
+   "sha256": "d383fd58bb79760ffaf0b615942fd47d926a19e75a8f980b79fbe9ad479d9cbf",
+   "rows": 20640,
+   "features": 8
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/547_no2/547_no2.tsv.gz",
+   "path": "547_no2.tsv.gz",
+   "sha256": "e116f24d2cabc7388a0714f1d0bf3a85f7613e3fc2b88642c47154fece000c73",
+   "rows": 500,
+   "features": 7
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/556_analcatdata_apnea2/556_analcatdata_apnea2.tsv.gz",
+   "path": "556_analcatdata_apnea2.tsv.gz",
+   "sha256": "95cee5abe3479338a52c419567b944199c6c6cef629d1111de7b1d2afe0b2b08",
+   "rows": 475,
+   "features": 3
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/557_analcatdata_apnea1/557_analcatdata_apnea1.tsv.gz",
+   "path": "557_analcatdata_apnea1.tsv.gz",
+   "sha256": "39628a3401b9ebfe2b4da629e0182736917694bf6f793dd4be821343459fca1e",
+   "rows": 475,
+   "features": 3
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/560_bodyfat/560_bodyfat.tsv.gz",
+   "path": "560_bodyfat.tsv.gz",
+   "sha256": "479f25b491115302fb2adaaa80f2670ab812154007d68ec5c566a45f6210d04d",
+   "rows": 252,
+   "features": 14
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/561_cpu/561_cpu.tsv.gz",
+   "path": "561_cpu.tsv.gz",
+   "sha256": "89f895f7be5f4005731ba28d018c1660ffee114af13d5e62edd90f17a6ec209a",
+   "rows": 209,
+   "features": 7
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/574_house_16H/574_house_16H.tsv.gz",
+   "path": "574_house_16H.tsv.gz",
+   "sha256": "a551e2941365201552a3a819f035c64f297467464f7c7c349d00711316ce3c57",
+   "rows": 22784,
+   "features": 16
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/663_rabe_266/663_rabe_266.tsv.gz",
+   "path": "663_rabe_266.tsv.gz",
+   "sha256": "361eae2fa7d1210720623958adc10debe35eadf7c23deace7fa71cd89df604bc",
+   "rows": 120,
+   "features": 2
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/665_sleuth_case2002/665_sleuth_case2002.tsv.gz",
+   "path": "665_sleuth_case2002.tsv.gz",
+   "sha256": "620f8815ffc7802d77bc942e005a23e107ed7b2ac91447cd094343faec537dd6",
+   "rows": 147,
+   "features": 6
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/666_rmftsa_ladata/666_rmftsa_ladata.tsv.gz",
+   "path": "666_rmftsa_ladata.tsv.gz",
+   "sha256": "955f006886606699ceab5fb38693e4fe10f74f450a2fd6dfd75af09b8b134d31",
+   "rows": 508,
+   "features": 10
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/678_visualizing_environmental/678_visualizing_environmental.tsv.gz",
+   "path": "678_visualizing_environmental.tsv.gz",
+   "sha256": "996db450c025b7586db095411d743fa8632c3e810f60435b6150c3869972c37f",
+   "rows": 111,
+   "features": 3
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/690_visualizing_galaxy/690_visualizing_galaxy.tsv.gz",
+   "path": "690_visualizing_galaxy.tsv.gz",
+   "sha256": "5fe909e08a622224135a2dcfd409bbe10abab4919f917a07b771c3fb00580852",
+   "rows": 323,
+   "features": 4
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/695_chatfield_4/695_chatfield_4.tsv.gz",
+   "path": "695_chatfield_4.tsv.gz",
+   "sha256": "642076c10a6fdecb53994f6dde89cf74b445e23445035378e914c36b95cdc4f0",
+   "rows": 235,
+   "features": 12
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/712_chscase_geyser1/712_chscase_geyser1.tsv.gz",
+   "path": "712_chscase_geyser1.tsv.gz",
+   "sha256": "9231e5c6bb08d6a7fab8509e4a8330063a5e3da77b75ff3b9dc412557ed3e334",
+   "rows": 222,
+   "features": 2
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/auto_insurance_losses/auto_insurance_losses.tsv.gz",
+   "path": "auto_insurance_losses.tsv.gz",
+   "sha256": "fc3565edb4c6e03a7758fbe3c25e5805098a6642811c6f67f060b093f9fcc6a4",
+   "rows": 164,
+   "features": 24
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/auto_insurance_price/auto_insurance_price.tsv.gz",
+   "path": "auto_insurance_price.tsv.gz",
+   "sha256": "244c05ca33384bcdd519ff88fad036ae7140a5438b76a8248401cdc065582ac7",
+   "rows": 201,
+   "features": 23
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/nikuradse_1/nikuradse_1.tsv.gz",
+   "path": "nikuradse_1.tsv.gz",
+   "sha256": "be6942e13096c21f10496a24056b01ff791e24d6172f5b7a09013c3307d38f28",
+   "rows": 362,
+   "features": 2
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/nikuradse_2/nikuradse_2.tsv.gz",
+   "path": "nikuradse_2.tsv.gz",
+   "sha256": "0d43780ab866e54a2a78d8c86ba231ad0a5d55588450a33ed6fe52bee9638341",
+   "rows": 362,
+   "features": 1
+  },
+  {
+   "url": "https://media.githubusercontent.com/media/EpistasisLab/pmlb/master/datasets/solar_flare/solar_flare.tsv.gz",
+   "path": "solar_flare.tsv.gz",
+   "sha256": "cf266818a2ab4d185db9c21d28019871604dee7b8755ff27b7c6ebc41c908004",
+   "rows": 1066,
+   "features": 10
+  }
+ ]
+}

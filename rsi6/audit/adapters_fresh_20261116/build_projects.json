@@ -1,0 +1,124 @@
+{
+ "category": "projects",
+ "buildable": true,
+ "files_written": [
+  "<scratch>/fresh/projects/repo/rsi6/environments/projects.py",
+  "<scratch>/fresh/projects/repo/rsi6/environments/manifests/projects.json",
+  "<scratch>/fresh/projects/repo/rsi6/environments/__init__.py (one REGISTRY line added: \"projects\": (\"rsi6.environments.projects\", \"Projects\"))",
+  "<scratch>/fresh/projects/repo/rsi6/data/projects/ (10 data files written by python -m rsi6.fetch projects)",
+  "<scratch>/fresh/projects/work/checks_a.py",
+  "<scratch>/fresh/projects/work/checks_b.py",
+  "<scratch>/fresh/projects/work/checks_c.py",
+  "<scratch>/fresh/projects/work/smoke.py",
+  "<scratch>/fresh/projects/work/scale.py",
+  "<scratch>/fresh/projects/work/inspect1.py",
+  "<scratch>/fresh/projects/work/inspect2.py",
+  "<scratch>/fresh/projects/work/inspect3.py",
+  "<scratch>/fresh/projects/work/show.py",
+  "<scratch>/fresh/projects/work/pages/ (specification pages fetched for reading)",
+  "<scratch>/fresh/projects/work/refetch_1794821273/ (second fetch with curl, used to confirm the hashes)"
+ ],
+ "learner_run_on_benchmark_instances": false,
+ "source": "PSPLIB (R. Kolisch, A. Sprecher), https://www.om-db.wi.tum.de/psplib/. The data page getdata.php?mode=sm lists, for each single-mode set, an archive (TGZ) and the solution files HRS, LB and OPT plus a JSON summary.\n\nPinned files (10). rsi6.fetch recorded each hash on its first fetch. A second fetch of every file with curl into a fresh directory reproduced all 10 hashes:\n- getdata_sm.html (the data page, parsed for a cross-check)\n- library.html (the source of the terms)\n- par.sm (the parameter classes)\n- j30.sm.tgz and j60.sm.tgz (480 instance files each, read in memory with tarfile)\n- j30opt.sm\n- j60hrs.sm\n- j60lb.sm\n- j30.json and j60.json (cross-checks)\n\nTerms. The site states no licence. The library page says: \"The data sets may be used for the evaluation of solution procedures for single- and multi-mode resource-constrained project scheduling problems.\" and \"Researchers may download the benchmark sets to evaluate their algorithms, and they may send their results to be added to the library.\" The manifest quotes both sentences, and the citation the page gives.\n\nInstance files. Every one of the 960 files was checked to have:\n- one mode per job, 4 renewable resources and no other resource;\n- a dummy supersource (job 1) that is the only job without a predecessor, and a dummy supersink (job J) that is the only job without a successor;\n- a topological numbering;\n- every request at most its capacity;\n- a horizon field equal to the sum of the durations.\n\nOnly one host was contacted: www.om-db.wi.tum.de, with user agent research-data-check/1.0.",
+ "answer_form": "Activity list.\n- Variables: the positions 0..n-1, assigned in index order (ordered=True).\n- Options: the n = J-2 real jobs, each with capacity 1. Activity p is job p+2 of the file; the dummies are dropped, which is exact because they have zero duration and request nothing.\n\nDecoding: the serial schedule-generation rule. Activities are taken in list order. Each starts at the earliest whole period at which (a) every predecessor that stands before it in the list has finished and (b) every resource has enough units left for its whole duration. The rule compares no alternatives, but it is the adapter's choice and shapes difficulty; the module text says so.\n\nHow the form matches the published problem (stated and argued in the module text):\n1. Every list in precedence order decodes to a valid schedule.\n2. For every valid schedule, its list by start time decodes to a schedule in which no activity starts later. So the optimum is attained by some list, and no list beats a proven optimum.\n3. The schedules of lists are exactly the active schedules. A non-active optimal schedule is therefore not itself an answer, but it is dominated by one.\n\nTerm groups:\n- [0] soft: makespan of the activities placed so far.\n- [1] detail: sum of their finish times (the min-max detail mechanism, as in jobshop.py).\n- [2] hard: number of activities placed while one of their predecessors is not yet placed.\n\nExposed arrays:\n- opt_attr: 9 columns per activity, (duration, 4 requests, 4 capacities). The capacities are the same in every row.\n- opt_opt[0]: the directed direct-predecessor matrix.\n- Nothing else. Activities and resources are relabelled with the seed; positions are not.\n- decode returns perm[answer]. A malformed answer is returned unchanged, so it is never repaired.\n\nOne layout for all 960 instances, with no padding. Construction cost of the largest instance (j60, n=60): 3661 units; j30: 931. Kernel test limit for j60: 10922.",
+ "reference": "Values only: the source publishes no schedule for any instance, so there is no reference answer to score.\n\n- j30: the 480 optimal makespans of j30opt.sm, the third number of each line that starts with three integers. The data page calls these \"OPT ... optimality has been formally proven\" and says \"480 instances (fully optimal)\". All are proven optima.\n- j60: the 480 best known makespans of j60hrs.sm (HRS: \"not guaranteed to be optimal\"). These are upper bounds.\n  - j60lb.sm gives lower bounds for the 410 instances of classes 1-41.\n  - Where the lower bound equals the HRS value (382 instances, the data page's \"382/480 proven optimal\"), the reference is a proven optimum.\n  - The other 98 are upper bounds only: 28 with a smaller lower bound, and 70 in classes 42-48 with no lower bound at all. reference_kind() reports which.\n\nWhen the environment is built, the adapter checks that:\n- every (class, instance) pair is listed exactly once;\n- no lower bound exceeds its HRS value;\n- the 382 count matches the data page;\n- the JSON summaries agree with the text files on every value and on the proven/unproven status.\n\nThe check script re-parsed the tables independently and also confirmed that, on all 960 instances, MPM-Time <= reference < horizon.",
+ "score_scale": "A valid answer is a permutation of an integer type in precedence order. It scores (Z - M)/(Z - ref), cut to [0,1], where M is the decoded makespan and Z is the sum of all durations.\n\n- Z is exact. It equals the file's horizon field (checked) and is the makespan of doing one activity at a time.\n- Every list in precedence order has M <= Z under the rule, so valid answers lie in [0,1] before the cut. The score is 1 at the reference. The cut at 1 matters only on the 98 j60 upper bounds.\n- An invalid or malformed answer scores 0.\n- Z exceeds the reference by at least 40 periods on every instance.\n\nThe scale is compressed at the top, which the module text says plainly:\n- Random lists in precedence order (3 per instance, measured outside the adapter after the threshold was fixed) score 0.914 on j30 (makespan 13.4% above the reference) and 0.946 on j60 (15.2%).\n- 0.01 of score is about 1.9% of makespan on j30 and 3.3% on j60.\n- The list in the file's own numbering order scores 0.937 and 0.961, which is why activities are relabelled.",
+ "threshold_and_anchor": "The threshold is an operating point, not an external fact: the mean score that makespans 5% longer than the reference would get on the same instances (threshold_for, with EXCESS = 0.05).\n- On the 24 fresh instances of split(env,16,24): 0.9830.\n- Over all 960 instances: 0.9773. Per instance it runs from 0.844 to 0.991.\n\nThe 5% is the builder's choice. It was fixed before any answer was scored and before the random lists were drawn; nothing was measured to set it. It is computed from the durations and the reference values only. The anchor text says that random lists already score high on this scale.",
+ "groups": "96 groups, each a set plus a published generation parameter class P taken from the file name (j30<P>_<I>.sm), for example \"j30-10\"; 10 instances per group. par.sm lists the 48 classes of each set by NC, RF and RS.\n- Each class is generated from one base-data file (checked).\n- The file-name class is the par.sm class: every file's arcs per job are within 0.025 of its class's NC, and its share of nonzero requests is within 0.0083 of its RF, against par.sm's stated tolerance of 0.05.\n- The j30 and j60 classes with the same number share NC, RF and RS but differ in J, so they are separate groups.\n\nsplit(env,16,24):\n- fresh: 24 instances from groups j30-8, j60-11 and j60-44 (30 instances, cut to 24);\n- train: 16 instances from j30-23, j30-24, j30-28, j30-30, j30-35, j30-44, j30-45, j60-2, j60-32, j60-35, j60-39, j60-4, j60-41, j60-5;\n- no group is shared between the two sides.\n\nhalves(): one half is j30-8 (9 instances); the other is j60-11 and j60-44 (15 instances).",
+ "instances_used": 960,
+ "instances_left_out": "No instance of j30 or j60 is left out. The size rule (at most 1000 variables and variables times options at most 30000) admits all of them: 900 cells for j30 and 3600 for j60.\n\nj90 (480 instances) and j120 (600 instances) are left out because this category is defined as j30 and j60. The size rule would admit them (8100 and 14400 cells), and the data page gives 375/480 and 89/600 proven optima for them. PSPLIB's other problems (multi-mode, time lags, resource investment) are different problems.",
+ "checks": [
+  {
+   "id": "A1-reference",
+   "n": "960",
+   "result": "All references equal the independently parsed tables and the JSON summaries. j60 has 382 proven optima. MPM <= ref < horizon on all."
+  },
+  {
+   "id": "A2-independent-evaluator",
+   "n": "320 valid + 128 invalid answers on 64 instances",
+   "result": "The independent parser and serial rule, plus a check of the schedule against the published constraints (precedence, and capacity in every period), agree exactly with score() (max diff 0.0) and with evaluate() (makespan, sum of finish times, late count). Every valid answer gave a feasible schedule; every invalid answer scored 0."
+  },
+  {
+   "id": "A3-decode",
+   "n": "4 instances x 5 seeds",
+   "result": "The problem arrays are the file's arrays under one activity permutation and one resource permutation. decode maps back, and scores are unchanged. Two instances given per-instance seeds are relabelled differently."
+  },
+  {
+   "id": "A4-malformed",
+   "n": "14 cases x 2 instances",
+   "result": "Float, bool, short, long, 2-D, value n, value -1, NaN, all zeros, all -1, all n, duplicates and None: run._valid refuses all, decode leaves them malformed, and score() gives 0. A Python list is refused by run._valid. evaluate() raises on all except a float array holding integers, which the kernel's base evaluate casts to int64."
+  },
+  {
+   "id": "A5-no-reference",
+   "n": "4 instances",
+   "result": "With the stored reference value and kind replaced in-process, the problem fields, the view fields, every candidates() row of a full construction, the totals and decode were byte-identical, while score() changed. The kernel's scalar test on j3010_1 passes (reference 42 is absent)."
+  },
+  {
+   "id": "A9-view-meter",
+   "result": "The view is an AssignView whose public fields are within the generic set, with state keys {a,n,tot,used}. Its arrays are read-only. 30 assignments cost 30 meter units."
+  },
+  {
+   "id": "A6-layout",
+   "n": "960",
+   "result": "One layout over all instances: ('assign', ordered, capacity given, max capacity 1, hard (F,F,T), detail (F,T,F), 0 var_attr columns, 9 opt_attr columns, 1 opt_opt relation, no domain, no start answer)."
+  },
+  {
+   "id": "A7-split-halves",
+   "result": "Fresh groups j30-8, j60-11 and j60-44; train has 16 instances from 14 other groups; no group is shared. Halves are 9 instances (j30-8) and 15 (j60-11, j60-44)."
+  },
+  {
+   "id": "A8-cost",
+   "result": "Largest instance (j60): 3661 construction units; j30: 931. Kernel test limit for the largest: 10922."
+  },
+  {
+   "id": "B1-fast-equals-slow",
+   "n": "1060 partial states, 1380 assignments, 38 instances (8 of j60)",
+   "result": "Fast candidates() equal AssignProblem._rows exactly, for every option and all 3 groups. They also match on 376 rows of already-assigned or later positions. Totals equal partial_totals after every assignment. The walks included 133 precedence-violating assignments."
+  },
+  {
+   "id": "C1-random-lists",
+   "n": "2880 lists",
+   "result": "Random precedence-order lists score 0.914 on j30 and 0.946 on j60; the file-order list scores 0.937 and 0.961."
+  },
+  {
+   "id": "C2-dominance",
+   "n": "80 schedules (3780 random delays kept)",
+   "result": "For each schedule, the list by start time decodes to a schedule in which no activity starts later. This is the empirical check of argument (2)."
+  },
+  {
+   "id": "C3-active",
+   "n": "30 schedules",
+   "result": "In no decoded schedule can any single activity start at an earlier period while the others keep their start times."
+  },
+  {
+   "id": "C4-classes",
+   "n": "960",
+   "result": "Maximum deviation from the par.sm class NC/RF: j30 0.025/0.0083, j60 0.0129/0.0042 (stated tolerance 0.05)."
+  },
+  {
+   "id": "hashes",
+   "n": "10 files",
+   "result": "rsi6.fetch recorded the hashes. A second curl fetch into a fresh directory reproduced all 10, and rsi6.fetch re-verified the data directory."
+  },
+  {
+   "id": "copy-unchanged",
+   "result": "By modification time, only projects.py, manifests/projects.json and the registry line changed, plus the data in rsi6/data/projects. The __pycache__ folders created by my runs were removed."
+  }
+ ],
+ "open_issues": [
+  "The score scale is compressed. Z is exact, but random precedence-order lists already score 0.914 (j30) and 0.946 (j60), and the threshold is 0.983. A chance-level zero would need a sampler, which this adapter avoids. The audit should judge whether this scale serves the experiment.",
+  "98 j60 references are best known upper bounds, not proven optima, and scores are cut at 1. The fresh side of the split contains j60-44, whose 10 instances are all unproven with no published lower bound.",
+  "Groups are set plus class. The j30 and j60 classes with the same number share NC, RF and RS, and the current split has j30-44 on the training side and j60-44 on the fresh side (same generator parameters, different J). Merging them into 48 groups of 20 is the alternative.",
+  "The decoding rule is the adapter's choice. It does part of the scheduling, and the detail group reveals each candidate's finish time. Non-active schedules are not answers (they are dominated). The module text says this plainly.",
+  "These are living files. The site re-enabled solution upload on 06.05.2026, so j60hrs.sm, j60lb.sm, the JSON summaries and the two PHP pages may change. A later fetch on a new machine would then fail the pinned hash.",
+  "The file's job numbering is a good list (file-order lists score 0.937 and 0.961). Relabelling hides it; the audit may want to confirm that nothing leaks the original order.",
+  "Importing rsi6.kernel.run, to call split, halves, layout and _valid, imports rsi6.learner.designs through its module header. No learner was constructed or called.",
+  "test_kernel.py could not be run, because it imports the learner at module level; equivalent checks were written in the work scripts. The learner-dependent tests (relabelling with learner answers, the learner's Layout names) were not run.",
+  "score() accepts any integer array-like, such as a list, as other adapters do; run._valid refuses non-ndarrays. The kernel's base evaluate() casts a float array holding integers to int64 and evaluates it; run._valid refuses it and score() gives 0.",
+  "As in other adapters, the same seed on two same-size instances gives the same permutation. The kernel derives seeds per instance."
+ ],
+ "hosts_used": [
+  "www.om-db.wi.tum.de"
+ ],
+ "cpu_seconds_used_estimate": 55
+}
