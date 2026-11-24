@@ -710,7 +710,7 @@ what a version carries, and what a step of self-modification changes, is what th
 knows about its own programs. The attempts made so far, in order, with what each showed, are
 in `results/design_t_20261124/README.md`.
 
-**Where it stands (2026-11-25, 00:40 UTC).** Three ways of letting design t improve itself
+**Where it stands (2026-11-24, 15:35 UTC).** Three ways of letting design t improve itself
 were measured in development, each on a kind left out. The first half of the hypothesis shows
 there (+0.044, +0.043, +0.008, +0.015 on the four unordered kinds); the second does not, in any
 of the three, and the reason was measured rather than supposed: the space of design t's
@@ -731,7 +731,7 @@ design stood at 0.52 whatever its budget. There what is acquired depends on how 
 evaluations are spent, which can be learned from the search's own record. The next design is
 built there.
 
-The Owner was asked on 2026-11-25 (01:30 UTC) whether mathematical integer sequences may be
+The Owner was asked on 2026-11-24 (15:42 UTC) whether mathematical integer sequences may be
 added as kinds of the prediction form, because self-improvement that compounds over
 generations is documented there. The question should not have been put as an open choice: the
 directive's hard constraint excludes integer arithmetic, list manipulation, fixed DSL puzzles

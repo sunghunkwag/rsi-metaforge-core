@@ -81,3 +81,6 @@ jobs:
 
       - name: Design t (the learner of the prediction form) and the parts of its improver
         run: python -m rsi6.tests.test_design_t
+
+      - name: Design v (the learner that searches)
+        run: python -m rsi6.tests.test_design_v

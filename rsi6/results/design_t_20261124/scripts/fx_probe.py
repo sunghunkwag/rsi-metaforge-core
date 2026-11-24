@@ -2,7 +2,7 @@
 Greedy forward construction: candidates are one-argument maps of a column and two-argument combinations of columns (and, at
 depth 2, of constructed attributes); each step adds the candidate that most raises the leave-one-out skill of a ridge fit;
 compared with the ridge on the columns as they are and with the best of the 600 programs of the pool."""
-# Development script, kept as it was run (2026-11-25) apart from the two paths below.
+# Development script, kept as it was run (2026-11-24) apart from the two paths below.
 import os as _os, sys as _sys
 REPO = _os.path.abspath(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "..", "..", "..", ".."))
 DEV = _os.environ.get("RSI6_T_DEV", "t_dev")

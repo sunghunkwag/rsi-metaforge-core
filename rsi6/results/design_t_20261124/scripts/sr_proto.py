@@ -8,7 +8,7 @@ For every law: is it recovered (R2 > 0.999 on held-back observed rows AND on the
 
     python3 -I sr_proto.py OUT.pkl
 """
-# Development script, kept as it was run (2026-11-25) apart from the path below.
+# Development script, kept as it was run (2026-11-24) apart from the path below.
 import os as _os, sys as _sys
 REPO = _os.path.abspath(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "..", "..", "..", ".."))
 _sys.path.insert(0, REPO)

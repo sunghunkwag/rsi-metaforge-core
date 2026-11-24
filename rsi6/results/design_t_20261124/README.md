@@ -1,4 +1,4 @@
-# Design t in development (2026-11-24 to 25): the first half shows, the second does not
+# Design t in development (2026-11-24): the first half shows, the second does not
 
 Development only. Nothing here was registered and nothing here is evidence for the hypothesis.
 Every number is from kinds of problem used in development, with one kind left out in turn.

@@ -484,7 +484,7 @@ is bounded by what the weights of its policy can express; no change of how it se
 them, by a setting or by a procedure, lifts it, and no improver has a second step to find in
 that space.** The registered stage of the design was not run.
 
-## Design t in development: a learner of programs, and three ways to make it improve itself (2026-11-24 to 25)
+## Design t in development: a learner of programs, and three ways to make it improve itself (2026-11-24)
 
 Development only; nothing registered. The account with every table is
 `results/design_t_20261124/README.md`.

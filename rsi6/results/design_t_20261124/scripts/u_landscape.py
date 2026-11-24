@@ -9,7 +9,7 @@ and what the top 10% by prediction are worth on the kind left out, against a ran
 
     python3 -I u_landscape.py POOL.pkl [train]
 """
-# Development script, kept as it was run (2026-11-24/25) apart from the two paths below.
+# Development script, kept as it was run (2026-11-24) apart from the two paths below.
 # REPO: the root of the repository; DEV: a scratch directory for pools and outputs (RSI6_T_DEV).
 import os as _os, sys as _sys
 REPO = _os.path.abspath(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "..", "..", "..", ".."))

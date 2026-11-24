@@ -1,6 +1,6 @@
 """Scratch: at equal units (E * n_vars^2), random exchanges scored by full evaluations against a generic destroy-and-repair
 search (unassign r random variables, re-assign them greedily by the exact changes candidates() gives; keep if not worse)."""
-# Development script, kept as it was run (2026-11-25) apart from the path below. Importing ls_probe runs its own loop first.
+# Development script, kept as it was run (2026-11-24) apart from the path below. Importing ls_probe runs its own loop first.
 import os as _os, sys as _sys
 REPO = _os.path.abspath(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "..", "..", "..", ".."))
 _sys.path.insert(0, REPO)

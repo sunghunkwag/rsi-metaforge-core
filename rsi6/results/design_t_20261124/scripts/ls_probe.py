@@ -1,6 +1,6 @@
 """Scratch (pre-study B1): what is a plain local search worth after a greedy construction, on training instances of
 assignment kinds, as a function of the evaluations allowed (E * n_vars full evaluations)?"""
-# Development script, kept as it was run (2026-11-25) apart from the path below.
+# Development script, kept as it was run (2026-11-24) apart from the path below.
 import os as _os, sys as _sys
 REPO = _os.path.abspath(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "..", "..", "..", ".."))
 _sys.path.insert(0, REPO)

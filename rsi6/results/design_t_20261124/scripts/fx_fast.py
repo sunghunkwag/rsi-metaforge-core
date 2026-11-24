@@ -1,6 +1,6 @@
 """Scratch: the same greedy construction with every candidate of a step scored at once (rank-one updates of a ridge fit),
 to see what scoring all candidates costs next to a pass (about 2.7 ms per problem: the mean CPU of one flat stage)."""
-# Development script, kept as it was run (2026-11-25) apart from the two paths below.
+# Development script, kept as it was run (2026-11-24) apart from the two paths below.
 import os as _os, sys as _sys
 REPO = _os.path.abspath(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "..", "..", "..", ".."))
 DEV = _os.environ.get("RSI6_T_DEV", "t_dev")
