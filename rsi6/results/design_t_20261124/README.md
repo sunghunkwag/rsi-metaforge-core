@@ -167,6 +167,14 @@ E = 1 and 0.965 at E = 5, against 0.875 and 0.930 for exchanges; greedy 0.824), 
 one that moves p-median at all (0.665 to 0.685). So what such a learner acquires on a kind is
 which moves to make there, and E = 1 is the test budget the first design already had.
 
+A first sketch of such a learner (`learner/design_v.py`: a greedy construction, then the moves
+of the one operator that did best on the training problems) was run through the kernel at the
+budget of the registrations, two seeds, fresh instances. It is mixed, as a sketch would be:
+knapsack 0.9226 against 0.8397 for the first design; quadassign 0.3226 against 0.4723 (its
+construction is the weaker one, and one evaluation per variable is little for exchanges);
+p-median 0.6855 against 0.6920. Nothing of it is tuned, tested beyond that run, or part of any
+claim.
+
 The first design acquires about 0.52 on quadassign, and 16 times its training budget adds 0.02.
 Here ten times the evaluations still add 0.17: what is acquired is no longer bounded by a
 policy but by how well the evaluations are spent, and moves drawn at random spend them badly.
