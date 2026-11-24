@@ -12,7 +12,10 @@ prediction, fetched as data and scored against their published references.
 **Status: no recursive self-improvement has been observed.** One modification of the learner
 has passed a registered gate on four categories no learner had run on (process d, generation
 1; below). That is the first half of the hypothesis for one step, and it rests on one of the
-four categories. Every registered number is in the hash-chained ledger
+four categories. A design built to exercise the second half, in which the improver is the
+learner's own acquisition procedure (design s; below), did not show it in development, and
+its tables show that no improver had a second step to find. Every registered number is in the
+hash-chained ledger
 [`rsi6/ledger/main.jsonl`](rsi6/ledger/main.jsonl); the full account, misses first, is
 [`rsi6/RESULTS.md`](rsi6/RESULTS.md).
 
@@ -38,14 +41,9 @@ answers is recorded verbatim in [`rsi6/OWNER_DIRECTIVE.md`](rsi6/OWNER_DIRECTIVE
 | Open design | the learner's representation and its learning principle, as programs of a small vector machine; in the recursive arm each accepted mechanism re-learns how the next candidates are generated | 152 discovery steps, 912 candidates, 18 confirmations, **0 accepted** in every arm. The recursion was never exercised |
 | Relay (design r) | the discovery machinery, rebuilt at every acquisition from the learner's own record | development only. Its second development check is negative: on a category it had not met, the learner carrying the relay's memory acquired 0.0078 less than the learner carrying nothing (24 chains, 80% interval −0.0147 to −0.0010). Not registered, not run |
 | Scan of generation 0 (development, 2026-11-22) | one field of the 38-field record at a time, every change measured on every category of the pool, the few it picks out measured again on new seeds | development only. The change the scan put first did not hold on new seeds. One did, twice, the second time fixed before the run: `model.batch` 4 → 2 adds +0.0246 to what is acquired over the nine categories (5 % point +0.0154) at 1.04 times the CPU, +0.0066 (5 % point +0.0009) with set covering, which carries most of it, left out, and is above zero on the three categories it was picked without. The statistic by which the continued process ranks candidates in its search (amendment 2: no category counts for more than +0.01) puts it at +0.0037; the registered gate, which decides an adoption, counts the plain mean. A candidate for a registered test, not a result: [`rsi6/results/dev_landscape_20261122/`](rsi6/results/dev_landscape_20261122/) |
+| Design s (development, 2026-11-23 to 24, instruction 19) | one search procedure that is the learner's acquisition and, with the fields of the improving version, the improver of versions; two steps that adapt inside a search; all 324 mechanisms of its list measured on eight categories (36,864 runs), chains of self-modification run on those tables from every mechanism, read by rules fixed beforehand | **none of the three statistics holds.** On categories the chains did not read they end +0.0011 above their starts (0.005 was needed); a chain whose improver is the current version ends where one ends whose improver stayed the start (+0.0000); a uniformly drawn nominee does as well (+0.0002). Mechanisms that acquire more are not better improvers (rank correlation −0.28). With every table in hand, the best version chosen on seven categories is −0.0070 against the adopted version on the eighth: the list holds no second step. The registered stage was not run. [`rsi6/results/design_s_20261124/`](rsi6/results/design_s_20261124/) |
 | After the adoption (development, 2026-11-23) | the same scan one step on, and the recursion question asked with the learner's own acquisition loop as the improver | no second step: of the five changes the scan around the adopted version picked out, none held on new seeds (largest mean +0.0015, 5 % point −0.0025), while settings that help one category hurt another. The recursion run gave no answer: no improver, changed or not, produced a next step. [`G1.md`](rsi6/results/dev_landscape_20261122/G1.md), [`rsi6/results/dev_recursion_20261122/`](rsi6/results/dev_recursion_20261122/) |
 | Process d, generation 1 (amendment 6) | one field, `model.batch` 4 → 2, the change the scan left standing; put once through the registered gate against generation 0 on four categories no learner had run on, 32 seeds at the gate and 32 at the confirmation | **passed, narrowly.** Gate +0.0195 (10 % point +0.0135, CPU 1.04 times generation 0's); confirmation +0.0009. With both halves, quadratic 0-1 is up by 0.055, weighted tardiness by 0.005, project scheduling is flat and maximum clique is down by 0.018. Adopted as generation 1 of process d. Not recursion: as an improver the adopted learner is generation 0 exactly. [`rsi6/results/gate_d1_20261122/`](rsi6/results/gate_d1_20261122/) |
-
-In development since 2026-11-23 (instruction 19): design s, in which one search procedure is both the
-learner's acquisition and the improver of versions, so that a change of how the learner acquires is a
-change of how it improves itself. Its design, what was known before it was written, and the reading
-fixed before its first measurement are in
-[`rsi6/results/design_s_20261124/`](rsi6/results/design_s_20261124/). No result yet.
 
 Not run yet: the external gate of process c, the recursion check, and the test on the
 sealed target categories that decides the hypothesis. No learner has run on the two reserves
@@ -61,6 +59,11 @@ What limits the result, as measured (details in `rsi6/RESULTS.md`):
   discovery seeds were not better on fresh seeds (+0.0080 against +0.0000).
 * The versions of the first three processes are points of a closed list. The improver
   chooses among values; it cannot write a mechanism that is not on the list.
+* Where the first design stands, what it acquires is bounded by what the weights of its
+  policy can express, not by its search: 16 times the training budget adds about 0.02 where
+  it was tried, and of 324 search mechanisms measured in full none beats the adopted version
+  on a category it was not chosen on. A second step, and with it any recursion, needs a
+  learner that can acquire more, not a better search for the same weights.
 * Every environment is an assignment problem or a prediction problem in one generic form.
   Nothing is claimed about software, proof, planning or judgement: they are not in the
   experiment.

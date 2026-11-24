@@ -659,3 +659,27 @@ about 0.02 to what the first design acquires: its acquisition is bounded by what
 express, not by its search. Design s does not change the policy. It can show whether an
 improved improver compounds inside a closed list of mechanisms; it is not expected to lift the
 top of that list much above the adopted version.
+
+**Outcome (2026-11-24, 01:15 UTC).** Built, tested, and measured in development; the reading
+fixed beforehand says no on all three counts (`results/design_s_20261124/README.md`). On
+categories the chains did not read they end +0.0011 above their starts where 0.005 was needed;
+a chain whose improver is the current version ends where one ends whose improver stayed the
+start; a uniformly drawn nominee with the same gate does as well. Compared directly as
+improvers, the mechanisms that acquire more yield less (rank correlation −0.28). And with every
+table in hand, the best version of the list chosen on seven categories scores −0.0070 against
+the adopted version on the eighth: there is no second step in this space for any improver to
+find.
+
+The verification the instruction asks for was therefore not taken to its registered stage: no
+category was built, nothing was registered, the reserves and the sealed targets are untouched.
+A registered test of a design whose development reading fails on every count would have spent
+unseen categories on a known answer.
+
+Where this leaves the standing instruction (18: make it happen). Two things are now measured
+rather than supposed. The first design's acquisition is at the limit of what its policy can
+express (16 times the training budget: about +0.02; 324 search mechanisms: nothing above the
+adopted version that carries over). And a better search of the same weights is not a better
+improver. A further attempt therefore has to change what the learner can acquire, which is a
+different learner and not a version of this one. That is a decision about the experiment, not
+a step inside it, and it is the Owner's.
+

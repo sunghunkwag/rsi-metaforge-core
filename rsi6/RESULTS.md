@@ -448,6 +448,42 @@ says why (on a grid of field values the loop stops exploring after a few rounds;
 measured on two or four runs) and what an answer would take. **No recursion has been
 observed, and none could have been by the registered check.**
 
+## Design s in development: one search procedure at two levels (2026-11-23 to 24)
+
+Not registered; `results/design_s_20261124/` (design, the reading fixed before the run, the
+tables, the chains). Instruction 19. Design s makes the learner's acquisition one function and
+uses the same function, with the fields of the improving version, as the improver of versions;
+and it adds two steps that adapt inside a search (`adapt.spread`, `adapt.race`). With the new
+fields off it is the first design run by run. Every one of its 324 mechanisms was measured on
+eight categories of the pool with 16 seeds (36,864 runs), and chains of self-modification were
+then run on those tables from every mechanism, 30 times each, in four assignments of the
+categories to discovery, gate and test.
+
+| | Statistic (mean of the folds, after four generations, on test categories) | Mean | 5 % point | Needed |
+|---|---|---|---|---|
+| A | where the chains end, above their starts | +0.0011 | +0.0009 | mean 0.005 |
+| B | improver is the current version, minus improver stays the start | +0.0000 | −0.0000 | 5 % point above 0 |
+| C | the search, minus a uniformly drawn nominee with the same gate | +0.0002 | −0.0000 | 5 % point above 0 |
+
+None holds. The gate adopts a nominee of the search in 2 to 9 % of generations and a uniformly
+drawn version as often or more; the recursive and the frozen arm differ in 0.08 to 2.2 % of
+chains, so the comparison of improvers was hardly exercised; and where every mechanism was
+compared as improver from the same incumbents, those that acquire more yield less (rank
+correlation −0.28).
+
+What the tables settle, beyond the chains: choosing with every table of seven categories in
+hand the best version of the list and scoring it on the eighth gives −0.0070 against the
+adopted version (5 % point −0.0143, 95 % point +0.0003) and +0.0029 against generation 0
+(−0.0060, +0.0119). Around generation 0 three changes gain and are one gain by three routes,
+more rounds in the same budget (`adapt.race` 1 +0.0170, `model.pop` 8 +0.0115, `model.batch` 2
++0.0099); around the adopted version nothing gains (largest +0.0035, standard error 0.0042),
+the two new procedures included (+0.0010, +0.0009). A diagnostic run before the design
+(`DESIGN.md`) had the adopted version with 16 times the training budget gain about 0.02 on
+quadratic assignment and nothing on p-median. **Where the first design stands, what it acquires
+is bounded by what the weights of its policy can express; no change of how it searches for
+them, by a setting or by a procedure, lifts it, and no improver has a second step to find in
+that space.** The registered stage of the design was not run.
+
 ## How to reproduce
 
     OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m rsi6.tests.test_kernel
