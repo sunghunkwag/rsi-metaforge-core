@@ -159,6 +159,14 @@ evaluations:
 | setcover | 0.086 | 0.089 | 0.093 | 0.108 |
 | pmedian, binpacking | 0.698, 0.950 | no change | no change | no change |
 
+Which move works depends on the kind (`scripts/lns_probe.py`; four training instances, equal
+units E·n²). Unassigning a few variables and assigning them again greedily by the exact changes
+the problem reports does nothing on quadassign (0.335 with twelve variables taken out, where
+exchanges reach 0.518 at E = 1 and 0.765 at E = 5), is the better move on knapsack (0.938 at
+E = 1 and 0.965 at E = 5, against 0.875 and 0.930 for exchanges; greedy 0.824), and is the only
+one that moves p-median at all (0.665 to 0.685). So what such a learner acquires on a kind is
+which moves to make there, and E = 1 is the test budget the first design already had.
+
 The first design acquires about 0.52 on quadassign, and 16 times its training budget adds 0.02.
 Here ten times the evaluations still add 0.17: what is acquired is no longer bounded by a
 policy but by how well the evaluations are spent, and moves drawn at random spend them badly.
