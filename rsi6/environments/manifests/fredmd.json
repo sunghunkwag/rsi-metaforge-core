@@ -1,0 +1,15 @@
+{
+ "name": "fredmd",
+ "category": "fredmd",
+ "source": "Monash Time Series Forecasting Archive (forecastingdata.org), the FRED-MD data set, as published on Zenodo",
+ "terms": "CC BY 4.0 (the Zenodo records). Fetched by hash, not committed.",
+ "reference": "the last values of each series, the horizon of its file (kernel only)",
+ "files": [
+  {
+   "url": "https://zenodo.org/api/records/4654833/files/fred_md_dataset.zip/content",
+   "path": "fred_md_dataset.zip",
+   "sha256": "305c0edd2b5e97159c6339be4990ea97fdf86772c1edef2a0dfc836bf29f45c3",
+   "horizon": 12
+  }
+ ]
+}

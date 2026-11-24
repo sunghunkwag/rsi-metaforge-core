@@ -78,3 +78,6 @@ jobs:
 
       - name: Design s and its chains on tables
         run: python -m rsi6.tests.test_design_s
+
+      - name: Design t (the learner of the prediction form) and the parts of its improver
+        run: python -m rsi6.tests.test_design_t

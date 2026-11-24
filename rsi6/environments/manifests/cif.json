@@ -1,0 +1,15 @@
+{
+ "name": "cif",
+ "category": "cif",
+ "source": "Monash Time Series Forecasting Archive (forecastingdata.org), the CIF 2016 data set, as published on Zenodo",
+ "terms": "CC BY 4.0 (the Zenodo records). Fetched by hash, not committed.",
+ "reference": "the last values of each series, the horizon of its file (kernel only)",
+ "files": [
+  {
+   "url": "https://zenodo.org/api/records/4656042/files/cif_2016_dataset.zip/content",
+   "path": "cif_2016_dataset.zip",
+   "sha256": "e0a7d93d6fb66dd2bb3ceb23bec73c2f39fe9cec909b4599ca35fef22b8d8f59",
+   "horizon": 12
+  }
+ ]
+}

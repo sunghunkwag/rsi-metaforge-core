@@ -683,3 +683,46 @@ improver. A further attempt therefore has to change what the learner can acquire
 different learner and not a version of this one. That is a decision about the experiment, not
 a step inside it, and it is the Owner's.
 
+
+## Instruction 20 (2026-11-24, 12:53 UTC), verbatim
+
+> 왜 도중에 관뒀냐 ?  성공할떄 까지 새로운 방법이나 새로운 차원의 레벨 계속 시도해
+
+(In English: "Why did you stop midway? Keep trying new methods, or a level of a new dimension,
+until it succeeds.")
+
+**How it is read.** Instruction 19 ended on a decision that was left to the Owner: whether to
+go on with a different learner. This is that decision. The work goes on, and it is not to stop
+at a negative reading; each attempt that fails is followed by the next.
+
+**What does not change.** Success is the hypothesis of the README with both halves, by a
+registered test on kinds of problem that no learner has run on. A development reading is not
+that, and neither is one half. An attempt whose result is fixed by how it was built does not
+count either. Nothing is merged and nothing is pushed to the main branch on less; the two
+reserves and the four sealed targets stay closed. Every attempt is written down with its
+numbers, also when it fails, so that the next one starts from what was measured.
+
+**How it is carried out.** A different learner (design t, `learner/design_t.py`), in the
+prediction form: there the first design acquires nothing above the nearest observed value, a
+run costs about a second, and the noise between seeds is small, so a difference between two
+improvers can be measured instead of supposed. What is acquired is a small set of programs;
+what a version carries, and what a step of self-modification changes, is what the learner
+knows about its own programs. The attempts made so far, in order, with what each showed, are
+in `results/design_t_20261124/README.md`.
+
+**Where it stands (2026-11-25, 00:40 UTC).** Three ways of letting design t improve itself
+were measured in development, each on a kind left out. The first half of the hypothesis shows
+there (+0.044, +0.043, +0.008, +0.015 on the four unordered kinds); the second does not, in any
+of the three, and the reason was measured rather than supposed: the space of design t's
+programs is flat, so one step holds what can be known about it and no improver has a second
+step to find. Nothing was registered, since a registered test of a design whose development
+reading lacks one half would spend unseen kinds on a known answer.
+
+The next attempt, under the same instruction, changes the one thing these measurements point
+at: the space. It needs programs built from parts, where a part once found is reused inside
+larger ones. A first look found such a space on the development kinds: attributes constructed
+from the columns, level on level. On `friedman` two levels of construction reach a mean skill
+of 0.56 where the best flat program reaches 0.35 and one level 0.16; scoring every candidate
+costs about fifty times the budget of a fresh problem, so what a learner tries first decides
+what it builds, and what is worth trying at the second level can only be learned by a learner
+that gets there (`results/design_t_20261124/README.md`, "What follows").

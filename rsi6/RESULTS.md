@@ -484,6 +484,49 @@ is bounded by what the weights of its policy can express; no change of how it se
 them, by a setting or by a procedure, lifts it, and no improver has a second step to find in
 that space.** The registered stage of the design was not run.
 
+## Design t in development: a learner of programs, and three ways to make it improve itself (2026-11-24 to 25)
+
+Development only; nothing registered. The account with every table is
+`results/design_t_20261124/README.md`.
+
+**What was built.** A different learner, in the prediction form (`learner/design_t.py`): a
+capability is at most four passes of small programs over a fresh problem, and a version is
+what the learner knows about its own programs: a library it tries first, a memory of programs
+with their skill, and a model of its programs that it acquires itself by an ordinary
+acquisition on problems made from that memory. Six kinds of prediction problem were added
+(three from PMLB, three from the Monash archive). Each reading leaves one kind out, makes
+versions from the other kinds of its form, and measures them on the kind left out.
+
+**What missed.** The second half, three times.
+
+* A proposal distribution fitted to what the runs found: nothing on a kind left out (0.6802
+  against 0.6821 for generation 0, training budget 40).
+* A library made from the learner's own runs: generation 1 gains on the kinds left out
+  (unordered +0.018 on average, training budget 12), but a chain whose steps are made from the
+  current version's runs ends below a chain whose steps are made from generation 0's runs
+  (0.6521 against 0.6775 at generation 3).
+* Memory and a model of its own programs: the same order (0.6585 against 0.6829), and the
+  recursive chain is no better than its shuffled control (0.6548).
+
+**What held.** The first half, in development: with knowledge made on three kinds, what is
+acquired on the fourth rises by +0.044 (regression), +0.043 (friedman), +0.008 (table) and
++0.015 (binary) at a training budget of 12. And one link of the second half: a learner that
+carries a library models its own programs more accurately than generation 0 does (rank
+correlation with the value of unseen programs 0.68 to 0.74 against 0.57 to 0.63).
+
+**Why nothing follows from that link.** With library and memory equal, the version whose model
+the modified learner made acquires +0.0014 more on average than the version whose model
+generation 0 made (+0.0060, −0.0005, −0.0003, +0.0004; 48 seeds, three models each). And when
+the next programs to evaluate are chosen by a perfect model of their value on the kinds in use,
+the library that results covers the kind left out no better than when they are drawn at random
+(+0.0015 and −0.0024 unordered, −0.011 ordered). The space of programs is flat: the best
+program of one stage is as good as the best of three, and a hundred random draws hold what
+carries over. One step exhausts what can be known about it in general.
+
+**What limits these numbers.** Compute was matched in the learner's units (passes), not in CPU;
+a stage of the most expensive model costs twelve times the cheapest, and one version used 3.4
+times the CPU of generation 0 on one kind. Four kinds per form. No gate.
+
 ## How to reproduce
 
     OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m rsi6.tests.test_kernel
