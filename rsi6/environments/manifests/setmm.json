@@ -1,0 +1,14 @@
+{
+ "name": "setmm",
+ "category": "formal proof (C1 of RESEARCH_PLAN.md, section 2)",
+ "source": "Metamath set.mm, the Metamath Proof Explorer database (N. Megill, D. A. Wheeler and contributors), fetched from the metamath/set.mm repository at commit 04fc7e75a93e788879987546b4a0921891b96b07 of the develop branch (2026-11-28)",
+ "terms": "set.mm is released to the public domain under CC0 1.0 (stated in the file's header). Fetched by hash.",
+ "reference": "the checking rule of the Metamath language (the kernel's verifier, rsi6/kernel/metamath.py) and the human proof of every theorem in the database",
+ "files": [
+  {
+   "url": "https://raw.githubusercontent.com/metamath/set.mm/04fc7e75a93e788879987546b4a0921891b96b07/set.mm",
+   "path": "set.mm",
+   "sha256": "6fe2ae61cb7ef74da2be30b3fbfc64f144c4e09bf502ff7570d6975d28290293"
+  }
+ ]
+}
