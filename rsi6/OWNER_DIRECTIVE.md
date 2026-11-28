@@ -768,3 +768,35 @@ can write mechanisms that are on no list (a language model in the loop; the runs
 repository have no model credentials, which the directive names as an infrastructure limit).
 A third, building some dozens of related kinds so that a group of kinds is itself deep, is
 weeks of adapters and audits with no measurement yet that says it would be enough.
+
+
+## Instruction 21 (2026-11-28, 13:18 UTC), verbatim
+
+> 그 전에 rsi metaforge 레포나 점검해서 개선 작업해라 실제 도약이 되게끔 심층 추론 해서 테스트 해서 질적 도약 하라
+
+(In English: "Before that, inspect the rsi-metaforge repository and do the work of improving it:
+reason it through deeply so that there is a real leap, test it, and make a qualitative leap."
+"Before that" is before an application for funding is sent.)
+
+**How it is read.** What counts as success does not change: the hypothesis of the README with
+both halves, by a registered test on kinds no learner has run on. A development reading is not
+that. The reserves and the sealed targets stay closed, and nothing is merged or pushed to the
+main branch on less. "A qualitative leap" is read as a change in what the experiment can test,
+not a larger number on the same kinds: instruction 20 ended on a measured obstacle, that in the
+assignment and prediction forms nothing that carries between kinds has depth, so no improver has
+a second step to find. The protocol names a third form that was never built, formal proof
+(`RESEARCH_PLAN.md`, section 2, C1: Metamath `set.mm`, CC0), and the directive names formal
+theorem proving among the target domains (section 3). In mathematics a proved theorem is the
+material of later proofs, so depth is where this form would have it. Building that form and
+measuring whether it has depth is the step taken here; it adds no integer, list or puzzle domain.
+
+**How it is carried out.**
+
+* The kernel reads `set.mm` (pinned by commit and SHA-256, `environments/manifests/setmm.json`)
+  and checks proofs by the rule of the language (`kernel/metamath.py`): every human proof of the
+  pool (1620) is accepted, and every one of 192 corrupted proofs is rejected (`tests/test_proof.py`).
+* A search that knows only the language and the statements it is handed, never a proof
+  (`learner/prover.py`). Every proof it finds is decided by the kernel's checker.
+* The depth measurement, its plan committed before the run
+  (`results/dev_proof_depth_20261128/`), and arm D, an acquisition that allocates its own budget,
+  its plan committed before the run (`results/dev_proof_gate_20261128/`).
