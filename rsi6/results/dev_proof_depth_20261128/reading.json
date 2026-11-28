@@ -1,0 +1,89 @@
+{
+ "readable": 1619,
+ "unreadable": 1,
+ "proved": {
+  "A": 59,
+  "B": 103,
+  "C": 953
+ },
+ "rejected": {
+  "A": [],
+  "B": [],
+  "C": []
+ },
+ "B_not_A": 57,
+ "A_not_B": 13,
+ "depth_hist_B": {
+  "0": 7,
+  "1": 8,
+  "2": 3,
+  "3": 7,
+  "4": 9,
+  "5": 9,
+  "6": 6,
+  "7": 8,
+  "8": 6,
+  "9": 3,
+  "10": 4,
+  "11": 2,
+  "12": 4,
+  "13": 9,
+  "14": 7,
+  "15": 6,
+  "16": 5
+ },
+ "depth_hist_B_not_A": {
+  "4": 1,
+  "5": 1,
+  "6": 3,
+  "7": 8,
+  "8": 5,
+  "9": 2,
+  "10": 4,
+  "11": 2,
+  "12": 4,
+  "13": 9,
+  "14": 7,
+  "15": 6,
+  "16": 5
+ },
+ "max_depth_B": 16,
+ "after_first_200": {
+  "readable": 1419,
+  "proved": {
+   "A": 0,
+   "B": 7,
+   "C": 788
+  },
+  "B_not_A": 7,
+  "B_not_A_depth_2_or_more": 7
+ },
+ "R0_valid": true,
+ "R1_first_step": false,
+ "R2_second_step": true,
+ "B_not_A_depth_2_or_more": 57,
+ "deepest_chain": [
+  "pm2.5",
+  "pm2.5g",
+  "simplim",
+  "con1i",
+  "con1",
+  "notnot",
+  "con2i",
+  "con2",
+  "con2d",
+  "notnotr",
+  "jarli",
+  "pm2.21",
+  "idALT",
+  "id",
+  "mpi",
+  "mpd",
+  "mp2"
+ ],
+ "seconds": {
+  "A": 2140.8,
+  "B": 1447.6,
+  "C": 680.6
+ }
+}

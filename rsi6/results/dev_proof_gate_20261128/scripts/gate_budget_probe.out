@@ -1,0 +1,6 @@
+impbi library 103
+impbi budget 200000: no used 200001 in 1.0s
+impbi budget 400000: PROVED used 211583 in 1.2s
+biimp library 105
+biimp budget 1000000: no used 1000001 in 4.2s
+biimp budget 4000000: PROVED used 3798041 in 17.5s

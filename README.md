@@ -7,7 +7,9 @@ An experiment on **recursive improvement of a capability-acquisition mechanism**
 learner enters every environment with the same code, modifies its own learning mechanism,
 and keeps a modification only when it passes a gate on kinds of environment the search did
 not see. The environments are published benchmark families from operations research and
-prediction, fetched as data and scored against their published references.
+prediction, fetched as data and scored against their published references. A third form, formal
+proof, reads the Metamath database `set.mm` and decides every proof by the checking rule of its
+language (development only, since 2026-11-28).
 
 **Status: no recursive self-improvement has been observed.** One modification of the learner
 has passed a registered gate on four categories no learner had run on (process d, generation
@@ -19,7 +21,14 @@ prediction form (design t; below), shows the first half in development on kinds 
 made on, and not the second: its space of programs has no second step either. A learner that
 searches instead of constructing once (design v; below) acquires far more on some kinds, by
 its designer's change and not its own, and shows the same: what a kind needs is found on the
-kind, and what carries between kinds is known after one pass. Every registered number is in the
+kind, and what carries between kinds is known after one pass. The third form of the protocol,
+formal proof, was built to ask whether depth exists anywhere in this package (below, "The proof
+form"). In development it does: every theorem the search's own library gained over the axioms
+rests on a chain of at least four of its own theorems, up to sixteen. The library then stops at a
+gate of two theorems that the rest of the pool depends on (`impbi`, `biimp`), which the same
+search finds when it spends more there; an acquisition that allocates its own budget by what it
+is failing on gets through half of the gate at the same total budget. No learner modifies itself
+in that form yet, and nothing about the hypothesis follows. Every registered number is in the
 hash-chained ledger
 [`rsi6/ledger/main.jsonl`](rsi6/ledger/main.jsonl); the full account, misses first, is
 [`rsi6/RESULTS.md`](rsi6/RESULTS.md).
@@ -51,6 +60,8 @@ answers is recorded verbatim in [`rsi6/OWNER_DIRECTIVE.md`](rsi6/OWNER_DIRECTIVE
 | Design s (development, 2026-11-23 to 24, instruction 19) | one search procedure that is the learner's acquisition and, with the fields of the improving version, the improver of versions; two steps that adapt inside a search; all 324 mechanisms of its list measured on eight categories (36,864 runs), chains of self-modification run on those tables from every mechanism, read by rules fixed beforehand | **none of the three statistics holds.** On categories the chains did not read they end +0.0011 above their starts (0.005 was needed); a chain whose improver is the current version ends where one ends whose improver stayed the start (+0.0000); a uniformly drawn nominee does as well (+0.0002). Mechanisms that acquire more are not better improvers (rank correlation −0.28). With every table in hand, the best version chosen on seven categories is −0.0070 against the adopted version on the eighth: the list holds no second step. The registered stage was not run. [`rsi6/results/design_s_20261124/`](rsi6/results/design_s_20261124/) |
 | After the adoption (development, 2026-11-23) | the same scan one step on, and the recursion question asked with the learner's own acquisition loop as the improver | no second step: of the five changes the scan around the adopted version picked out, none held on new seeds (largest mean +0.0015, 5 % point −0.0025), while settings that help one category hurt another. The recursion run gave no answer: no improver, changed or not, produced a next step. [`G1.md`](rsi6/results/dev_landscape_20261122/G1.md), [`rsi6/results/dev_recursion_20261122/`](rsi6/results/dev_recursion_20261122/) |
 | Process d, generation 1 (amendment 6) | one field, `model.batch` 4 → 2, the change the scan left standing; put once through the registered gate against generation 0 on four categories no learner had run on, 32 seeds at the gate and 32 at the confirmation | **passed, narrowly.** Gate +0.0195 (10 % point +0.0135, CPU 1.04 times generation 0's); confirmation +0.0009. With both halves, quadratic 0-1 is up by 0.055, weighted tardiness by 0.005, project scheduling is flat and maximum clique is down by 0.018. Adopted as generation 1 of process d. Not recursion: as an improver the adopted learner is generation 0 exactly. [`rsi6/results/gate_d1_20261122/`](rsi6/results/gate_d1_20261122/) |
+| The proof form: depth (development, 2026-11-28, instruction 21) | nothing: one search, three libraries (the axioms; the axioms and its own theorems; the axioms and the database's theorems), 200,000 units per theorem, the 1619 theorems of propositional calculus in `set.mm`, read by rules committed before the run | **depth, and a gate.** 59, 103 and 953 proved. Each of the 57 theorems the search's own library gained over the axioms rests on a chain of 4 to 16 of its own theorems. The library stops after the first section, at the definition of the biconditional: `impbi` and `biimp` are not found, and nearly every later theorem depends on them. All 1115 proofs accepted by the checker. [`rsi6/results/dev_proof_depth_20261128/`](rsi6/results/dev_proof_depth_20261128/) |
+| The proof form: arms D and E (development, 2026-11-28) | how the search's units are spent, by a rule written before the run: what each theorem leaves of its allowance is banked and spent on the failures whose constructs are most blocked (D), or on the failure whose statement, assumed for a moment, lets most later failures through (E) | **half of the gate.** At B's total budget D proves 122 (B: 103): `impbi`, and 15 more theorems of the equivalence section; not `biimp`, because none of its 413 retries went past four times a first attempt. E's development check on the first two sections came out below D (109 against 122): its probes found `biimp` once and the investment stopped at half of the bank; E was not run on the full pool. [`rsi6/results/dev_proof_gate_20261128/`](rsi6/results/dev_proof_gate_20261128/), [`rsi6/results/dev_proof_leverage_20261128/`](rsi6/results/dev_proof_leverage_20261128/) |
 
 Not run yet: the external gate of process c, the recursion check, and the test on the
 sealed target categories that decides the hypothesis. No learner has run on the two reserves
@@ -76,9 +87,12 @@ What limits the result, as measured (details in `rsi6/RESULTS.md`):
   as the best of three, a hundred random draws find what carries over, and a better improver
   has nothing further to find. Recursion needs a space in which one finding makes the next
   findable.
-* Every environment is an assignment problem or a prediction problem in one generic form.
-  Nothing is claimed about software, proof, planning or judgement: they are not in the
-  experiment.
+* Apart from the proof form, every environment is an assignment problem or a prediction
+  problem in one generic form. Nothing is claimed about software, planning or judgement: they are
+  not in the experiment.
+* In the proof form, what an acquisition has to learn first is how to get through a gate: a few
+  theorems that everything after them depends on, which the search finds only where it spends
+  more. No rule of this package does that fully yet, and none of them is the system's own.
 
 ## The learner and its interface
 
@@ -89,6 +103,10 @@ as term groups with exact incremental totals) or a *prediction* problem (observe
 with targets, query entities to predict). Entity order and labels are permuted on every run.
 Compute is enforced in counted work units and measured in CPU-seconds. No code of the
 experiment calls a language model or executes third-party code.
+
+A third form, *proof* (`rsi6/kernel/metamath.py`), presents a theorem of `set.mm` with its
+hypotheses and a library of earlier statements, never their proofs; an answer is a proof, and it
+counts only if the checking rule of the Metamath language accepts it.
 
 Three numbers are measured on fresh instances, never on training ones: *untrained* (the
 learner's uninformed behaviour), *acquired* (after acquisition) and *gain* (the difference).
@@ -106,6 +124,7 @@ downloads each file from its publisher and pins it by SHA-256 in
 | targets (sealed; no learner has run on them) | satisfiability, vehicle routing, facility location, generalised assignment | SATLIB, CVRPLIB, OR-Library |
 | reserves (external gate of process c; no learner has run on them) | travelling salesman, graph colouring | TSPLIB, DIMACS |
 | adoption set 5 (held out until 2026-11-22, used once as the gate of process d, then joined the pool) | weighted tardiness, quadratic 0-1, project scheduling, maximum clique | OR-Library, Biq Mac, PSPLIB, DIMACS |
+| the proof form (development only; no role drawn) | the propositional calculus of `set.mm`: 1620 theorems before "Other axiomatizations related to classical propositional calculus"; the rest of the database is unread by any search | Metamath `set.mm` (CC0), pinned by commit and SHA-256 |
 
 Learner runs recorded so far: 9,630: 9,118 on the nine source and adoption categories of
 the first processes and 512 at the gate of process d.
@@ -126,11 +145,16 @@ python -m rsi6.tests.test_relay
 python -m rsi6.tests.test_design_s       # design s: the learner, its list of mechanisms, chains on tables
 python -m rsi6.tests.test_design_t       # design t: programs, versions, acquisition, the model of its own programs
 python -m rsi6.tests.test_design_v       # design v: ways to search, the search inside its meter, the learner
+python -m rsi6.tests.test_proof          # the proof form: reader, checker, search (fetches set.mm)
 
 python -m rsi6.experiments.report        # every number of the rounds, from the ledger
 python -m rsi6.experiments.replay        # every search again, from the ledger alone
 python -m rsi6.open.report               # every number of the open experiment
 python -m rsi6.open.diagnose --ledger rsi6/ledger/main.jsonl   # what limited its discovery
+
+python -m rsi6.experiments.dev_proof_depth --arm B --out B.json   # one arm of the proof form's depth measurement (A, B, C)
+python -m rsi6.experiments.read_proof_depth A.json B.json C.json  # its reading, by the rules of its plan
+python -m rsi6.experiments.dev_proof_gate --out D.json            # arm D
 ```
 
 ## Layout
@@ -140,10 +164,10 @@ rsi6/
   OWNER_DIRECTIVE.md   the research directive and every later instruction, verbatim
   RESEARCH_PLAN.md     the protocol
   RESULTS.md           what was measured, misses first
-  kernel/              problem forms, environment contract, measured runs, ledger, role locks
-  learner/             the learner: first and second design, the open design (o), designs q, r and s; design t (prediction form); design v (a learner that searches)
+  kernel/              problem forms, environment contract, measured runs, ledger, role locks; the proof form's reader and checker (metamath.py)
+  learner/             the learner: first and second design, the open design (o), designs q, r and s; design t (prediction form); design v (a learner that searches); the search of the proof form (prover.py)
   meta/                the space of versions and the rounds of self-modification; chains of design s on tables of measured runs; the improver of design t
-  experiments/         drivers of the registered rounds, process c, external gate, recursion check, target test; development tables (design s, design v)
+  experiments/         drivers of the registered rounds, process c, external gate, recursion check, target test; development tables (design s, design v); the proof form's depth measurement and arms D and E
   open/                discovery of mechanisms for the open design; the relay driver and report
   environments/        adapters and data manifests of the 19 benchmark families, and of six kinds of prediction problem added for design t
   registry/            registrations, amendments, roles, corrections (written before the runs they govern)
@@ -162,6 +186,8 @@ OUTER_LOOP_CONSTITUTION.md
 * An adoption inside process c is provisional and is not evidence of improvement on unseen
   categories; that is decided once, on the reserves and the sealed targets.
 * The thresholds are operating points chosen before the runs, not external facts.
+* The proof form's results are development readings on one pool of one database; no learner
+  modifies itself there.
 * Nothing here is evidence about artificial general intelligence.
 
 ## Governance

@@ -1,0 +1,4091 @@
+{
+"arm": "E",
+"allowance_per_theorem": 200000.0,
+"first": 100000.0,
+"stall": 10,
+"growth": 4.0,
+"candidates": 8,
+"probes": 8,
+"probe_units": 20000.0,
+"share": 0.5,
+"set.mm sha256": "6fe2ae61cb7ef74da2be30b3fbfc64f144c4e09bf502ff7570d6975d28290293",
+"allowance_total": 78400000.0,
+"spent_total": 75515594.0,
+"probe_units_total": 23539371.0,
+"invest_units_total": 19700127.0,
+"bank_left": 2884406.0,
+"seconds": 288.8,
+"events": [
+{
+"at": "syli",
+"leverage": {
+"sylcom": 4,
+"syl5com": 1,
+"com12": 1,
+"syl11": 0,
+"syl5": 0,
+"syl6": 0,
+"syl56": 0,
+"syl6com": 0
+},
+"pursued": "sylcom",
+"attempts": [
+{
+"units": 400000.0,
+"used": 400001.0,
+"proved": false
+},
+{
+"units": 1600000.0,
+"used": 1600001.0,
+"proved": false
+}
+]
+},
+{
+"at": "syl7",
+"leverage": {
+"sylcom": 0,
+"syl5com": 0,
+"com12": 0,
+"syl11": 0,
+"syl5": 0,
+"syl6": 0,
+"syl56": 0,
+"syl6com": 0
+},
+"pursued": null,
+"attempts": [],
+"fallback": {
+"label": "syl5com",
+"units": 400000.0,
+"proved": false
+}
+},
+{
+"at": "pm2.83",
+"leverage": {
+"sylcom": 2,
+"syl5com": 3,
+"com12": 3,
+"syl11": 2,
+"syl5": 0,
+"syl6": 0,
+"syl56": 0,
+"syl6com": 2
+},
+"pursued": "syl5com",
+"attempts": [
+{
+"units": 1600000.0,
+"used": 1600001.0,
+"proved": false
+}
+]
+},
+{
+"at": "com5l",
+"leverage": {
+"sylcom": 0,
+"syl5com": 0,
+"com12": 0,
+"syl11": 0,
+"syl5": 0,
+"syl6": 0,
+"syl56": 0,
+"syl6com": 0
+},
+"pursued": null,
+"attempts": [],
+"fallback": {
+"label": "com12",
+"units": 400000.0,
+"proved": false
+}
+},
+{
+"at": "jad",
+"leverage": {
+"sylcom": 0,
+"syl5com": 0,
+"com12": 0,
+"syl11": 0,
+"syl5": 0,
+"syl6": 0,
+"syl56": 0,
+"syl6com": 0
+},
+"pursued": null,
+"attempts": [],
+"fallback": {
+"label": "syl11",
+"units": 400000.0,
+"proved": false
+}
+},
+{
+"at": "bicomi",
+"leverage": {
+"impbi": 0,
+"impbii": 0,
+"impbidd": 0,
+"impbid21d": 0,
+"impbid": 0,
+"biimp": 0,
+"biimpi": 0,
+"sylbi": 1
+},
+"pursued": "sylbi",
+"attempts": [
+{
+"units": 400000.0,
+"used": 400001.0,
+"proved": false
+},
+{
+"units": 1600000.0,
+"used": 1600001.0,
+"proved": false
+},
+{
+"units": 6400000.0,
+"used": 6400001.0,
+"proved": false
+}
+]
+},
+{
+"at": "sylibr",
+"leverage": {
+"impbi": 0,
+"impbii": 0,
+"impbidd": 0,
+"impbid21d": 0,
+"impbid": 0,
+"biimp": 3,
+"biimpi": 0,
+"sylbi": 0
+},
+"pursued": "biimp",
+"attempts": [
+{
+"units": 400000.0,
+"used": 400001.0,
+"proved": false
+},
+{
+"units": 1600000.0,
+"used": 1600001.0,
+"proved": false
+}
+]
+},
+{
+"at": "imbitrid",
+"leverage": {
+"impbi": 0,
+"impbii": 0,
+"impbidd": 0,
+"impbid21d": 0,
+"impbid": 0,
+"biimp": 0,
+"biimpi": 0,
+"sylbi": 0
+},
+"pursued": null,
+"attempts": [],
+"fallback": {
+"label": "impbi",
+"units": 400000.0,
+"proved": true
+}
+},
+{
+"at": "biimtrrdi",
+"leverage": {
+"impbidd": 0,
+"impbid21d": 0,
+"impbid": 0,
+"biimp": 0,
+"biimpi": 0,
+"sylbi": 0,
+"sylib": 0,
+"sylbb": 0
+},
+"pursued": null,
+"attempts": [],
+"fallback": {
+"label": "impbidd",
+"units": 400000.0,
+"proved": false
+}
+},
+{
+"at": "bitr2i",
+"leverage": {
+"impbidd": 0,
+"impbid21d": 0,
+"impbid": 0,
+"biimp": 0,
+"biimpi": 0,
+"sylbi": 0,
+"sylib": 0,
+"sylbb": 0
+},
+"pursued": null,
+"attempts": [],
+"fallback": {
+"label": "impbid21d",
+"units": 400000.0,
+"proved": false
+}
+},
+{
+"at": "bitr3di",
+"leverage": {
+"impbidd": 0,
+"impbid21d": 0,
+"impbid": 0,
+"biimp": 0,
+"biimpi": 0,
+"sylbi": 0,
+"sylib": 0,
+"sylbb": 0
+},
+"pursued": null,
+"attempts": [],
+"fallback": {
+"label": "impbid",
+"units": 400000.0,
+"proved": false
+}
+},
+{
+"at": "3imtr4g",
+"leverage": {
+"impbidd": 0,
+"impbid21d": 0,
+"impbid": 0,
+"biimp": 0,
+"biimpi": 0,
+"sylbi": 0,
+"sylib": 0,
+"sylbb": 0
+},
+"pursued": null,
+"attempts": [],
+"fallback": {
+"label": "biimpi",
+"units": 400000.0,
+"proved": false
+}
+},
+{
+"at": "3bitrrd",
+"leverage": {
+"impbidd": 0,
+"impbid21d": 0,
+"impbid": 0,
+"biimp": 0,
+"biimpi": 0,
+"sylbi": 0,
+"sylib": 0,
+"sylbb": 0
+},
+"pursued": null,
+"attempts": [],
+"fallback": {
+"label": "sylib",
+"units": 400000.0,
+"proved": false
+}
+},
+{
+"at": "mtbird",
+"leverage": {
+"impbidd": 0,
+"impbid21d": 0,
+"impbid": 0,
+"biimp": 0,
+"biimpi": 0,
+"sylbi": 0,
+"sylib": 0,
+"sylbb": 0
+},
+"pursued": null,
+"attempts": [],
+"fallback": {
+"label": "sylbb",
+"units": 400000.0,
+"proved": false
+}
+},
+{
+"at": "xchbinxr",
+"leverage": {
+"impbidd": 0,
+"impbid21d": 0,
+"impbid": 0,
+"biimp": 0,
+"biimpi": 0,
+"sylbi": 0,
+"sylib": 0,
+"sylbb": 0
+},
+"pursued": null,
+"attempts": [],
+"fallback": {
+"label": "biimpr",
+"units": 400000.0,
+"proved": false
+}
+},
+{
+"at": "bibi12d",
+"leverage": {
+"impbidd": 0,
+"impbid21d": 0,
+"impbid": 0,
+"biimp": 0,
+"biimpi": 0,
+"sylbi": 0,
+"sylib": 0,
+"sylbb": 0
+},
+"pursued": null,
+"attempts": [],
+"fallback": {
+"label": "bicom1",
+"units": 400000.0,
+"proved": false
+}
+},
+{
+"at": "con1bid",
+"leverage": {
+"impbidd": 0,
+"impbid21d": 0,
+"impbid": 0,
+"biimp": 0,
+"biimpi": 0,
+"sylbi": 0,
+"sylib": 0,
+"sylbb": 0
+},
+"pursued": null,
+"attempts": [],
+"fallback": {
+"label": "bicom",
+"units": 400000.0,
+"proved": false
+}
+},
+{
+"at": "tbt",
+"leverage": {
+"impbidd": 0,
+"impbid21d": 0,
+"impbid": 0,
+"biimp": 0,
+"biimpi": 0,
+"sylbi": 0,
+"sylib": 0,
+"sylbb": 0
+},
+"pursued": null,
+"attempts": [],
+"fallback": {
+"label": "bicomd",
+"units": 400000.0,
+"proved": false
+}
+},
+{
+"at": "biass",
+"leverage": {
+"impbidd": 0,
+"impbid21d": 0,
+"impbid": 0,
+"biimp": 0,
+"biimpi": 0,
+"sylbi": 0,
+"sylib": 0,
+"sylbb": 0
+},
+"pursued": null,
+"attempts": [],
+"fallback": {
+"label": "bicomi",
+"units": 400000.0,
+"proved": false
+}
+}
+],
+"rows": [
+{
+"label": "idi",
+"readable": true,
+"proved": true,
+"first_units": 1.0,
+"retries": [],
+"how": "first",
+"lemmas": []
+},
+{
+"label": "a1ii",
+"readable": true,
+"proved": true,
+"first_units": 1.0,
+"retries": [],
+"how": "first",
+"lemmas": []
+},
+{
+"label": "mp2",
+"readable": true,
+"proved": true,
+"first_units": 61.0,
+"retries": [],
+"how": "first",
+"lemmas": []
+},
+{
+"label": "mp2b",
+"readable": true,
+"proved": true,
+"first_units": 93.0,
+"retries": [],
+"how": "first",
+"lemmas": []
+},
+{
+"label": "a1i",
+"readable": true,
+"proved": true,
+"first_units": 19.0,
+"retries": [],
+"how": "first",
+"lemmas": []
+},
+{
+"label": "2a1i",
+"readable": true,
+"proved": true,
+"first_units": 55.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"mp2b"
+]
+},
+{
+"label": "ax1w",
+"readable": true,
+"proved": true,
+"first_units": 11.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"a1i"
+]
+},
+{
+"label": "mp1i",
+"readable": true,
+"proved": true,
+"first_units": 63.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"mp2b"
+]
+},
+{
+"label": "a2i",
+"readable": true,
+"proved": true,
+"first_units": 42.0,
+"retries": [],
+"how": "first",
+"lemmas": []
+},
+{
+"label": "mpd",
+"readable": true,
+"proved": true,
+"first_units": 91.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"mp2"
+]
+},
+{
+"label": "imim2i",
+"readable": true,
+"proved": true,
+"first_units": 102.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"mp2b"
+]
+},
+{
+"label": "syl",
+"readable": true,
+"proved": true,
+"first_units": 363.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"a1i",
+"mpd"
+]
+},
+{
+"label": "3syl",
+"readable": true,
+"proved": true,
+"first_units": 254.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"syl"
+]
+},
+{
+"label": "4syl",
+"readable": true,
+"proved": true,
+"first_units": 449.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"3syl",
+"syl"
+]
+},
+{
+"label": "mpi",
+"readable": true,
+"proved": true,
+"first_units": 52314.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"a1i",
+"mpd"
+]
+},
+{
+"label": "mpisyl",
+"readable": true,
+"proved": true,
+"first_units": 588.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"mpi",
+"syl"
+]
+},
+{
+"label": "id",
+"readable": true,
+"proved": true,
+"first_units": 14.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"mpi"
+]
+},
+{
+"label": "idALT",
+"readable": true,
+"proved": true,
+"first_units": 1.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"id"
+]
+},
+{
+"label": "idd",
+"readable": true,
+"proved": true,
+"first_units": 11.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"a1i",
+"idALT"
+]
+},
+{
+"label": "a1d",
+"readable": true,
+"proved": true,
+"first_units": 73.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"syl"
+]
+},
+{
+"label": "2a1d",
+"readable": true,
+"proved": true,
+"first_units": 436.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"3syl"
+]
+},
+{
+"label": "a1i13",
+"readable": true,
+"proved": true,
+"first_units": 7820.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"a1d",
+"a1i"
+]
+},
+{
+"label": "2a1",
+"readable": true,
+"proved": true,
+"first_units": 18.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"2a1d",
+"idALT"
+]
+},
+{
+"label": "a2d",
+"readable": true,
+"proved": true,
+"first_units": 135.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"syl"
+]
+},
+{
+"label": "sylcom",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 400000.0,
+"used": 400001.0,
+"proved": false,
+"at": "syli"
+},
+{
+"units": 1600000.0,
+"used": 1600001.0,
+"proved": false,
+"at": "syli"
+}
+]
+},
+{
+"label": "syl5com",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 400000.0,
+"used": 400001.0,
+"proved": false,
+"at": "syl7"
+},
+{
+"units": 1600000.0,
+"used": 1600001.0,
+"proved": false,
+"at": "pm2.83"
+}
+]
+},
+{
+"label": "com12",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 400000.0,
+"used": 400001.0,
+"proved": false,
+"at": "com5l"
+}
+]
+},
+{
+"label": "syl11",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 400000.0,
+"used": 400001.0,
+"proved": false,
+"at": "jad"
+}
+]
+},
+{
+"label": "syl5",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syl6",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syl56",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syl6com",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mpcom",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syli",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syl2im",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syl2imc",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.27",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mpdd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mpid",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mpdi",
+"readable": true,
+"proved": true,
+"first_units": 309.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"mpisyl"
+]
+},
+{
+"label": "mpii",
+"readable": true,
+"proved": true,
+"first_units": 12118.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"a1i",
+"mpdi"
+]
+},
+{
+"label": "syld",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syldc",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mp2d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "a1dd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "2a1dd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.43i",
+"readable": true,
+"proved": true,
+"first_units": 111.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"idALT",
+"mpd"
+]
+},
+{
+"label": "pm2.43d",
+"readable": true,
+"proved": true,
+"first_units": 63.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"idALT",
+"mpdi"
+]
+},
+{
+"label": "pm2.43a",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.43b",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.43",
+"readable": true,
+"proved": true,
+"first_units": 12.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"idALT",
+"pm2.43d"
+]
+},
+{
+"label": "imim2d",
+"readable": true,
+"proved": true,
+"first_units": 939.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"3syl"
+]
+},
+{
+"label": "imim2",
+"readable": true,
+"proved": true,
+"first_units": 14.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"idALT",
+"imim2d"
+]
+},
+{
+"label": "embantd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3syld",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "sylsyld",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "imim12i",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "imim1i",
+"readable": true,
+"proved": true,
+"first_units": 93.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"mpdi"
+]
+},
+{
+"label": "imim3i",
+"readable": true,
+"proved": true,
+"first_units": 24526.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"a2d",
+"imim2i"
+]
+},
+{
+"label": "sylc",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syl3c",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syl6mpi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mpsyl",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mpsylsyld",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syl6c",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syl6ci",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syldd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syl5d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syl7",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syl6d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syl8",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syl9",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syl9r",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syl10",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "a1ddd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "imim12d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "imim1d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "imim1",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.83",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "peirceroll",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "com23",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "com3r",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "com13",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "com3l",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.04",
+"readable": true,
+"proved": true,
+"first_units": 370.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"imim2",
+"mpisyl"
+]
+},
+{
+"label": "com34",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "com4l",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "com4t",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "com4r",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "com24",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "com14",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "com45",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "com35",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "com25",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "com5l",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "com15",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "com52l",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "com52r",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "com5r",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "imim12",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "jarr",
+"readable": true,
+"proved": true,
+"first_units": 24.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"imim1i"
+]
+},
+{
+"label": "jarri",
+"readable": true,
+"proved": true,
+"first_units": 137.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"syl"
+]
+},
+{
+"label": "pm2.86d",
+"readable": true,
+"proved": true,
+"first_units": 901.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"3syl",
+"jarr",
+"pm2.04"
+]
+},
+{
+"label": "pm2.86",
+"readable": true,
+"proved": true,
+"first_units": 20.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"idALT",
+"pm2.86d"
+]
+},
+{
+"label": "pm2.86i",
+"readable": true,
+"proved": true,
+"first_units": 5949.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"pm2.86"
+]
+},
+{
+"label": "loolin",
+"readable": true,
+"proved": true,
+"first_units": 48.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"jarr",
+"pm2.43d"
+]
+},
+{
+"label": "loowoz",
+"readable": true,
+"proved": true,
+"first_units": 110.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"a2d",
+"jarr"
+]
+},
+{
+"label": "con4",
+"readable": true,
+"proved": true,
+"first_units": 13.0,
+"retries": [],
+"how": "first",
+"lemmas": []
+},
+{
+"label": "con4i",
+"readable": true,
+"proved": true,
+"first_units": 16043.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con4"
+]
+},
+{
+"label": "con4d",
+"readable": true,
+"proved": true,
+"first_units": 230.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con4",
+"syl"
+]
+},
+{
+"label": "mt4",
+"readable": true,
+"proved": true,
+"first_units": 101.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con4",
+"mp2"
+]
+},
+{
+"label": "mt4d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mt4i",
+"readable": true,
+"proved": true,
+"first_units": 327.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con4",
+"mpisyl"
+]
+},
+{
+"label": "pm2.21i",
+"readable": true,
+"proved": true,
+"first_units": 16425.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con4",
+"mp2b"
+]
+},
+{
+"label": "pm2.24ii",
+"readable": true,
+"proved": true,
+"first_units": 2436.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"a1i",
+"mt4"
+]
+},
+{
+"label": "pm2.21d",
+"readable": true,
+"proved": true,
+"first_units": 1184.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"3syl",
+"con4"
+]
+},
+{
+"label": "pm2.21ddALT",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.21",
+"readable": true,
+"proved": true,
+"first_units": 28.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"idALT",
+"pm2.21d"
+]
+},
+{
+"label": "pm2.24",
+"readable": true,
+"proved": true,
+"first_units": 15971.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"pm2.04",
+"pm2.21"
+]
+},
+{
+"label": "jarl",
+"readable": true,
+"proved": true,
+"first_units": 119.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"imim1i",
+"pm2.21"
+]
+},
+{
+"label": "jarli",
+"readable": true,
+"proved": true,
+"first_units": 177.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"pm2.21",
+"syl"
+]
+},
+{
+"label": "pm2.18d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.18",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.18i",
+"readable": true,
+"proved": true,
+"first_units": 5522.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"mpd",
+"mt4",
+"pm2.21"
+]
+},
+{
+"label": "notnotr",
+"readable": true,
+"proved": true,
+"first_units": 121.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"mt4i",
+"pm2.21"
+]
+},
+{
+"label": "notnotri",
+"readable": true,
+"proved": true,
+"first_units": 56.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"notnotr"
+]
+},
+{
+"label": "notnotriALT",
+"readable": true,
+"proved": true,
+"first_units": 3.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"notnotri"
+]
+},
+{
+"label": "notnotrd",
+"readable": true,
+"proved": true,
+"first_units": 160.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"notnotr",
+"syl"
+]
+},
+{
+"label": "con2d",
+"readable": true,
+"proved": true,
+"first_units": 37564.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con4d",
+"imim2",
+"mpisyl",
+"notnotr"
+]
+},
+{
+"label": "con2",
+"readable": true,
+"proved": true,
+"first_units": 36.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con2d",
+"idALT"
+]
+},
+{
+"label": "mt2d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mt2i",
+"readable": true,
+"proved": true,
+"first_units": 398.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con2",
+"mpisyl"
+]
+},
+{
+"label": "nsyl3",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "con2i",
+"readable": true,
+"proved": true,
+"first_units": 2036.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con2"
+]
+},
+{
+"label": "nsyl",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "nsyl2",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "notnot",
+"readable": true,
+"proved": true,
+"first_units": 38.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con2i",
+"idALT"
+]
+},
+{
+"label": "notnoti",
+"readable": true,
+"proved": true,
+"first_units": 40.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"mt4",
+"notnotr"
+]
+},
+{
+"label": "notnotd",
+"readable": true,
+"proved": true,
+"first_units": 246.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"notnot",
+"syl"
+]
+},
+{
+"label": "con1d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "con1",
+"readable": true,
+"proved": true,
+"first_units": 92580.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con4d",
+"imim2i",
+"notnot"
+]
+},
+{
+"label": "con1i",
+"readable": true,
+"proved": true,
+"first_units": 55347.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con1"
+]
+},
+{
+"label": "mt3d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mt3i",
+"readable": true,
+"proved": true,
+"first_units": 582.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con1",
+"mpisyl"
+]
+},
+{
+"label": "pm2.24i",
+"readable": true,
+"proved": true,
+"first_units": 253.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"mt4i"
+]
+},
+{
+"label": "pm2.24d",
+"readable": true,
+"proved": true,
+"first_units": 554.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"pm2.24",
+"syl"
+]
+},
+{
+"label": "con3d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "con3",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "con3i",
+"readable": true,
+"proved": true,
+"first_units": 48484.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con1i",
+"notnotr",
+"syl"
+]
+},
+{
+"label": "con3rr3",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "nsyld",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "nsyli",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "nsyl4",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "nsyl5",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm3.2im",
+"readable": true,
+"proved": true,
+"first_units": 36772.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con2d",
+"pm2.43",
+"pm2.86i"
+]
+},
+{
+"label": "jc",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "jcn",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "jcnd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "impi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "expi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "simprim",
+"readable": true,
+"proved": true,
+"first_units": 76.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con1i"
+]
+},
+{
+"label": "simplim",
+"readable": true,
+"proved": true,
+"first_units": 63.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con1i",
+"pm2.21"
+]
+},
+{
+"label": "pm2.5g",
+"readable": true,
+"proved": true,
+"first_units": 29.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"pm2.24d",
+"simplim"
+]
+},
+{
+"label": "pm2.5",
+"readable": true,
+"proved": true,
+"first_units": 1.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"pm2.5g"
+]
+},
+{
+"label": "conax1",
+"readable": true,
+"proved": true,
+"first_units": 57.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con3i"
+]
+},
+{
+"label": "conax1k",
+"readable": true,
+"proved": true,
+"first_units": 403.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"a1d",
+"conax1"
+]
+},
+{
+"label": "pm2.51",
+"readable": true,
+"proved": true,
+"first_units": 1.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"conax1k"
+]
+},
+{
+"label": "pm2.52",
+"readable": true,
+"proved": true,
+"first_units": 2.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"conax1k"
+]
+},
+{
+"label": "pm2.521g",
+"readable": true,
+"proved": true,
+"first_units": 158.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"jarli",
+"jarr"
+]
+},
+{
+"label": "pm2.521g2",
+"readable": true,
+"proved": true,
+"first_units": 71.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con1i",
+"pm2.521g"
+]
+},
+{
+"label": "pm2.521",
+"readable": true,
+"proved": true,
+"first_units": 1.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"pm2.521g2"
+]
+},
+{
+"label": "expt",
+"readable": true,
+"proved": true,
+"first_units": 2413.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"imim2",
+"mpisyl",
+"pm3.2im"
+]
+},
+{
+"label": "exptOLD",
+"readable": true,
+"proved": true,
+"first_units": 1.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"expt"
+]
+},
+{
+"label": "impt",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.61d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.61d1",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.61d2",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.61i",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.61ii",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.61nii",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.61iii",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "ja",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "jad",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.01",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.01i",
+"readable": true,
+"proved": true,
+"first_units": 2945.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con3i",
+"pm2.18i"
+]
+},
+{
+"label": "pm2.01d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.6",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.61",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.65",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.65i",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.65iOLD",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.21dd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm2.65d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mto",
+"readable": true,
+"proved": true,
+"first_units": 2675.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"mpisyl",
+"pm2.01i",
+"pm2.24"
+]
+},
+{
+"label": "mtod",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mtoi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mt2",
+"readable": true,
+"proved": true,
+"first_units": 708.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con2",
+"mp2"
+]
+},
+{
+"label": "mt3",
+"readable": true,
+"proved": true,
+"first_units": 483.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con1",
+"mp2"
+]
+},
+{
+"label": "peirce",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "looinv",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bijust0",
+"readable": true,
+"proved": true,
+"first_units": 611.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"idALT",
+"mp2",
+"pm3.2im"
+]
+},
+{
+"label": "bijust",
+"readable": true,
+"proved": true,
+"first_units": 1.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"bijust0"
+]
+},
+{
+"label": "impbi",
+"readable": true,
+"proved": true,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 400000.0,
+"used": 100105.0,
+"proved": true,
+"at": "imbitrid"
+}
+],
+"how": "retry",
+"lemmas": [
+"exptOLD",
+"mp2b",
+"simprim"
+]
+},
+{
+"label": "impbii",
+"readable": true,
+"proved": true,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 766.0,
+"proved": true,
+"at": "imbitrid",
+"catch_up": true
+}
+],
+"how": "catch-up",
+"lemmas": [
+"impbi",
+"mp2"
+]
+},
+{
+"label": "impbidd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+},
+{
+"units": 400000.0,
+"used": 400001.0,
+"proved": false,
+"at": "biimtrrdi"
+}
+]
+},
+{
+"label": "impbid21d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+},
+{
+"units": 400000.0,
+"used": 400001.0,
+"proved": false,
+"at": "bitr2i"
+}
+]
+},
+{
+"label": "impbid",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+},
+{
+"units": 400000.0,
+"used": 400001.0,
+"proved": false,
+"at": "bitr3di"
+}
+]
+},
+{
+"label": "dfbi1",
+"readable": true,
+"proved": true,
+"first_units": 666.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"mp2",
+"simprim"
+]
+},
+{
+"label": "dfbi1ALT",
+"readable": true,
+"proved": true,
+"first_units": 1.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"dfbi1"
+]
+},
+{
+"label": "biimp",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 400000.0,
+"used": 400001.0,
+"proved": false,
+"at": "sylibr"
+},
+{
+"units": 1600000.0,
+"used": 1600001.0,
+"proved": false,
+"at": "sylibr"
+},
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+}
+]
+},
+{
+"label": "biimpi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+},
+{
+"units": 400000.0,
+"used": 400001.0,
+"proved": false,
+"at": "3imtr4g"
+}
+]
+},
+{
+"label": "sylbi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 400000.0,
+"used": 400001.0,
+"proved": false,
+"at": "bicomi"
+},
+{
+"units": 1600000.0,
+"used": 1600001.0,
+"proved": false,
+"at": "bicomi"
+},
+{
+"units": 6400000.0,
+"used": 6400001.0,
+"proved": false,
+"at": "bicomi"
+},
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+}
+]
+},
+{
+"label": "sylib",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+},
+{
+"units": 400000.0,
+"used": 400001.0,
+"proved": false,
+"at": "3bitrrd"
+}
+]
+},
+{
+"label": "sylbb",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+},
+{
+"units": 400000.0,
+"used": 400001.0,
+"proved": false,
+"at": "mtbird"
+}
+]
+},
+{
+"label": "biimpr",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+},
+{
+"units": 400000.0,
+"used": 400001.0,
+"proved": false,
+"at": "xchbinxr"
+}
+]
+},
+{
+"label": "bicom1",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+},
+{
+"units": 400000.0,
+"used": 400001.0,
+"proved": false,
+"at": "bibi12d"
+}
+]
+},
+{
+"label": "bicom",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+},
+{
+"units": 400000.0,
+"used": 400001.0,
+"proved": false,
+"at": "con1bid"
+}
+]
+},
+{
+"label": "bicomd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+},
+{
+"units": 400000.0,
+"used": 400001.0,
+"proved": false,
+"at": "tbt"
+}
+]
+},
+{
+"label": "bicomi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+},
+{
+"units": 400000.0,
+"used": 400001.0,
+"proved": false,
+"at": "biass"
+}
+]
+},
+{
+"label": "impbid1",
+"readable": true,
+"proved": true,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 875.0,
+"proved": true,
+"at": "imbitrid",
+"catch_up": true
+}
+],
+"how": "catch-up",
+"lemmas": [
+"impbi",
+"mpisyl"
+]
+},
+{
+"label": "impbid2",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+}
+]
+},
+{
+"label": "impcon4bid",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+}
+]
+},
+{
+"label": "biimpri",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+}
+]
+},
+{
+"label": "biimpd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+}
+]
+},
+{
+"label": "mpbi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+}
+]
+},
+{
+"label": "mpbir",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+}
+]
+},
+{
+"label": "mpbid",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+}
+]
+},
+{
+"label": "mpbii",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+}
+]
+},
+{
+"label": "sylibr",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+}
+]
+},
+{
+"label": "sylbir",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+}
+]
+},
+{
+"label": "sylbbr",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+}
+]
+},
+{
+"label": "sylbb1",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+}
+]
+},
+{
+"label": "sylbb2",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+}
+]
+},
+{
+"label": "sylibd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+}
+]
+},
+{
+"label": "sylbid",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+}
+]
+},
+{
+"label": "mpbidi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+}
+]
+},
+{
+"label": "biimtrid",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+}
+]
+},
+{
+"label": "biimtrrid",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+}
+]
+},
+{
+"label": "imbitrid",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": [
+{
+"units": 100000.0,
+"used": 100001.0,
+"proved": false,
+"at": "imbitrid",
+"catch_up": true
+}
+]
+},
+{
+"label": "syl5ibcom",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "imbitrrid",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syl5ibrcom",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "biimprd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "biimpcd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "biimprcd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "imbitrdi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "imbitrrdi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "biimtrdi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "biimtrrdi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syl7bi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "syl8ib",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mpbird",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mpbiri",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "sylibrd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "sylbird",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "biid",
+"readable": true,
+"proved": true,
+"first_units": 69.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"idALT",
+"impbii"
+]
+},
+{
+"label": "biidd",
+"readable": true,
+"proved": true,
+"first_units": 223.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"a1i",
+"biid"
+]
+},
+{
+"label": "pm5.1im",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "2th",
+"readable": true,
+"proved": true,
+"first_units": 10911.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"a1i",
+"impbii"
+]
+},
+{
+"label": "2thd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "monothetic",
+"readable": true,
+"proved": true,
+"first_units": 72.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"2th",
+"idALT"
+]
+},
+{
+"label": "ibi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "ibir",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "ibd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm5.74",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm5.74i",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm5.74ri",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm5.74d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm5.74rd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bitri",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bitr2i",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bitr3i",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bitr4i",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bitrd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bitr2d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bitr3d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bitr4d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bitrid",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bitr2id",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bitr3id",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bitr3di",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bitrdi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bitr2di",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bitr4di",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bitr4id",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3imtr3i",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3imtr4i",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3imtr3d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3imtr4d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3imtr3g",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3imtr4g",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3bitri",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3bitrri",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3bitr2i",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3bitr2ri",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3bitr3i",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3bitr3ri",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3bitr4i",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3bitr4ri",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3bitrd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3bitrrd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3bitr2d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3bitr2rd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3bitr3d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3bitr3rd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3bitr4d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3bitr4rd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3bitr3g",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "3bitr4g",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "notnotb",
+"readable": true,
+"proved": true,
+"first_units": 47.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"impbii",
+"notnot",
+"notnotr"
+]
+},
+{
+"label": "con34b",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "con4bid",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "notbid",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "notbi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "notbii",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "con4bii",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mtbi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mtbir",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mtbid",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mtbird",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mtbii",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mtbiri",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "sylnib",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "sylnibr",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "sylnbi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "sylnbir",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "xchnxbi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "xchnxbir",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "xchbinx",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "xchbinxr",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "imbi2i",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bibi2i",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bibi1i",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bibi12i",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "imbi2d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "imbi1d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bibi2d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bibi1d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "imbi12d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bibi12d",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "imbi12",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "imbi1",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "imbi2",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "imbi1i",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "imbi12i",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bibi1",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bitr3",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "con2bi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "con2bid",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "con1bid",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "con1bii",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "con2bii",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "con1b",
+"readable": true,
+"proved": true,
+"first_units": 80.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con1",
+"impbii"
+]
+},
+{
+"label": "con2b",
+"readable": true,
+"proved": true,
+"first_units": 85.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"con2",
+"impbii"
+]
+},
+{
+"label": "biimt",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm5.5",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "a1bi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mt2bi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "mtt",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "imnot",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm5.501",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "ibib",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "ibibr",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "tbt",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "nbn2",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bibif",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "nbn",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "nbn3",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm5.21im",
+"readable": true,
+"proved": true,
+"first_units": 7259.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"3syl",
+"impbi",
+"jarl",
+"pm2.21"
+]
+},
+{
+"label": "2false",
+"readable": true,
+"proved": true,
+"first_units": 936.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"mp2",
+"pm5.21im"
+]
+},
+{
+"label": "2falsed",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm5.21ni",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm5.21nii",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm5.21ndd",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bija",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm5.18",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "xor3",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "nbbn",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "nbbnOLD",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "biass",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "birot",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "biluk",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm5.19",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "bi2.04",
+"readable": true,
+"proved": true,
+"first_units": 113.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"impbii",
+"pm2.04"
+]
+},
+{
+"label": "pm5.4",
+"readable": true,
+"proved": true,
+"first_units": 126.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"impbii",
+"pm2.43"
+]
+},
+{
+"label": "imdi",
+"readable": true,
+"proved": true,
+"first_units": 122.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"impbii",
+"pm2.86"
+]
+},
+{
+"label": "pm5.41",
+"readable": true,
+"proved": true,
+"first_units": 123.0,
+"retries": [],
+"how": "first",
+"lemmas": [
+"impbii",
+"pm2.86"
+]
+},
+{
+"label": "imbibi",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "imbibiOLD",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm4.8",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "pm4.81",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+},
+{
+"label": "imim21b",
+"readable": true,
+"proved": false,
+"first_units": 100001.0,
+"retries": []
+}
+]
+}

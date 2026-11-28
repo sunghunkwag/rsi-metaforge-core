@@ -2,7 +2,9 @@ name: RSI-6 tests
 
 # The kernel, adapter and design tests. They load every adapter, so the published benchmark
 # data are fetched first (rsi6/fetch.py; every file is pinned by SHA-256 in its manifest) and
-# kept in the Actions cache. A red run can mean that a publisher's host did not answer.
+# kept in the Actions cache. A red run can mean that a publisher's host did not answer. A run on a
+# pull request reads the cache of its base branch; a run on a push to a new branch cannot (GitHub
+# scopes caches by branch), so it fetches from every publisher.
 on:
   push:
     paths:
@@ -43,11 +45,14 @@ jobs:
       - name: Install NumPy
         run: python -m pip install numpy==2.5.3
 
+      # The key covers the manifests of the publishers' data. set.mm's manifest is left out: set.mm
+      # comes from GitHub (the proof test fetches it by hash on each run), and with its manifest in
+      # the key a branch that adds or changes it misses the cache and fetches every publisher again.
       - name: Restore the published benchmark data
         uses: actions/cache@v4
         with:
           path: rsi6/data
-          key: rsi6-data-${{ hashFiles('rsi6/environments/manifests/*.json') }}
+          key: rsi6-data-${{ hashFiles('rsi6/environments/manifests/*.json', '!rsi6/environments/manifests/setmm.json') }}
 
       - name: Fetch the published benchmark data
         run: |
@@ -84,3 +89,6 @@ jobs:
 
       - name: Design v (the learner that searches)
         run: python -m rsi6.tests.test_design_v
+
+      - name: The proof form (set.mm reader and checker, the search; fetches set.mm by hash)
+        run: python -m rsi6.tests.test_proof
