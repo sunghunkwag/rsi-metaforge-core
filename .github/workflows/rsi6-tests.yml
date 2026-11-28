@@ -84,3 +84,6 @@ jobs:
 
       - name: Design v (the learner that searches)
         run: python -m rsi6.tests.test_design_v
+
+      - name: The proof form (set.mm reader and checker, the search; fetches set.mm by hash)
+        run: python -m rsi6.tests.test_proof

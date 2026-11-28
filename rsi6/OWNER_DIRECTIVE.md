@@ -800,3 +800,15 @@ measuring whether it has depth is the step taken here; it adds no integer, list 
 * The depth measurement, its plan committed before the run
   (`results/dev_proof_depth_20261128/`), and arm D, an acquisition that allocates its own budget,
   its plan committed before the run (`results/dev_proof_gate_20261128/`).
+
+**Where it stands (2026-11-28, 15:30 UTC).** Built, tested, measured in development, all of it
+written down (`RESULTS.md`, "The proof form in development"). The form has depth: each theorem the
+search's own library gained over the axioms rests on 4 to 16 of its own theorems. Its library
+stops at a gate (`impbi`, `biimp`) that the same search gets through when it spends more there,
+and an acquisition that allocates its own budget gets through half of it at the same total. Not
+the leap the instruction asks for: no learner modifies itself in this form yet, nothing was
+registered, and success stays what it was. What changed is what the experiment can test. In the
+other two forms no improver had anything to find; in this one there is a measured gain (953
+proved with the database's lemmas against 103 with its own) and a measured place where it is
+lost, which is what a self-modifying rule of where to spend would be tested on, on sections of
+`set.mm` no search has read.

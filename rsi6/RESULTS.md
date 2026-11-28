@@ -562,6 +562,55 @@ what a kind needs is found on the kind by the learner as it is; what carries bet
 known after one pass; and a version that knows it has nothing further of that sort to find, so
 no improver, changed or not, produces a better next step.
 
+## The proof form in development: depth, and a gate (2026-11-28, instruction 21)
+
+Development only; nothing registered, no category with a role touched. The accounts with every
+table are `results/dev_proof_depth_20261128/README.md`, `results/dev_proof_gate_20261128/README.md`
+and `results/dev_proof_leverage_20261128/README.md`; each plan was committed before its run.
+
+**What was built.** The third form of the protocol (`RESEARCH_PLAN.md`, section 2, C1): the kernel
+reads Metamath `set.mm`, pinned by commit and SHA-256, and checks proofs by the rule of the
+language (`kernel/metamath.py`; every one of the 1620 human proofs of the pool accepted, every one
+of 192 corrupted proofs rejected). A search that knows the language and the statements it is
+handed, never a proof (`learner/prover.py`). The pool is the propositional calculus of `set.mm`;
+the rest of the database is unread by any search.
+
+**Depth.** One search, 200,000 units per theorem, three libraries. The axioms: 59 of 1619
+theorems. The axioms and what the run proved itself: 103. The axioms and the database's
+theorems: 953. Each of the 57 theorems the run's own library gained over the axioms rests on a
+chain of 4 to 16 of its own theorems; the longest runs `mp2`, `mpd`, `mpi`, `id`, `idALT`,
+`pm2.21`, `jarli`, `notnotr`, `con2d`, `con2`, `con2i`, `notnot`, `con1`, `con1i`, `simplim`,
+`pm2.5g`, `pm2.5`. By the plan's rules the second step holds (57 such theorems; 30 were needed) and
+the first does not (44 more than the axioms; 10% of the pool was needed). In this form a finding
+makes later findings reachable, many steps deep, which no mechanism of the other two forms found.
+
+**The gate.** The run's own library proves 98 of the 202 theorems of the first section, 4 of the
+190 of the second and 1 of the 1227 after it. The second section begins with the definition of the
+biconditional; the theorems that introduce and eliminate it, `impbi` and `biimp`, are not found
+at 200,000 units, and nearly everything later depends on them. With the same library and more
+units the same search finds both: `impbi` at 211,583, `biimp` at 3,798,041.
+
+**Arm D**, an acquisition that allocates its own budget (B's total; half of each theorem's
+allowance banked; on a stall, a retry at four times the units for the failure whose constructs
+are most blocked): 122 proved. It finds `impbi` and 15 more theorems of the second section; not
+`biimp`, because all 413 retries were made at four times a first attempt: the rule went through the
+equally blocked failures one by one instead of going deeper on one. **Arm E** (D with, before each
+investment, a probe of what a candidate would unlock if its statement were given): its
+development check on the first two sections came out below D (109 against 122). Its probes found
+`biimp` once; the investment stopped at half of the bank, one step short; most probes found
+nothing. It was not run on the full pool.
+
+**A learned order** (how often the run's own proofs used an assertion, updated after every proof)
+proved 93 of the first two sections against B's 102: ordering by past use does not get through
+the gate.
+
+**What it says.** The obstacle named at the end of instruction 20 was that nothing carries between
+kinds with depth. In the proof form depth is there, measured, and the obstacle becomes a different
+one: a gate of a few theorems that the rest depends on, which an acquisition gets through only by
+spending in the right place. Where to spend is what a self-modifying acquisition in this form
+would have to find for itself. None of this is a modification the system made to itself, and none
+of it bears on the hypothesis of the README.
+
 ## How to reproduce
 
     OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m rsi6.tests.test_kernel
