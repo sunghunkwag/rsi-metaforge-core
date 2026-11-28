@@ -73,6 +73,34 @@ class Library:
     def candidates(self, head):
         return self.by_head.get(head, []) + self.anyhead
 
+    def resort(self, key) -> None:
+        """Order every list of candidates by ``key`` (an entry -> sort key), e.g. what a model has learned."""
+        for lst in list(self.by_head.values()) + [self.anyhead]:
+            lst.sort(key=key)
+
+
+class Usage:
+    """What the search has learned about its own library: how many accepted proofs used each assertion.
+
+    A learned component, updated after every accepted proof (continual). Its order: assertions used
+    in more accepted proofs first; among equals, fewer hypotheses, then the more recent."""
+
+    def __init__(self, uses=None, proofs: int = 0):
+        self.uses = dict(uses or {})
+        self.proofs = int(proofs)
+
+    def update(self, proof, library: "Library") -> None:
+        self.proofs += 1
+        for label in set(proof):
+            if label in library.entries:
+                self.uses[label] = self.uses.get(label, 0) + 1
+
+    def key(self, e):
+        return (-self.uses.get(e.label, 0), len(e.hyps), -e.index)
+
+    def state(self) -> dict:
+        return {"uses": dict(sorted(self.uses.items())), "proofs": self.proofs}
+
 
 def _walk(t, S):
     while isinstance(t, int) and t in S:
